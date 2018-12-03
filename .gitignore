@@ -4,3 +4,4 @@ venv/
 project/migrations/
 *.db
 .idea/
+*.map
