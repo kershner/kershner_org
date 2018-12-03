@@ -1,5 +1,29 @@
 {% extends 'base.html' %}
+{% load staticfiles %}
 
 {% block content %}
-    <p>{{ title }}</p>
+    <div class="welcome-wrapper">
+        <!-- Big Text Blurbs -->
+        <section class="welcome">
+            <h1>
+                I'm <span class="purple">Tyler Kershner</span>.
+            </h1>
+
+            <h1>
+                A software developer in Ann Arbor, MI.
+            </h1>
+
+            <h1>
+                Let's <a href="">work together</a>!
+            </h1>
+        </section>
+
+        <img class="chevron-down levitate" src="{% static '/img/chevron-down.png' %}">
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script type="text/javascript">
+        console.log('poop');
+    </script>
 {% endblock %}

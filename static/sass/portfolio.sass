@@ -1,6 +1,72 @@
-$green: green
-$red: red
+@import 'reset'
 
+// Fonts
+$primary-font: 'Open-Sans', sans-serif
+$secondary-font: 'Montserrat', sans-serif
 
-p
-  color: $red
+// Colors
+$black: #202020
+$white: #FFF
+$purple: #8c53c6
+$darker-purple: #7239ad
+
+// Borders
+%red-border
+  border: 1px solid red
+%green-border
+  border: 1px solid green
+
+// Animations
+.levitate
+  -webkit-animation: levitate 3s infinite
+
+@keyframes levitate
+  0%
+    -webkit-transform: translateY(-20px)
+  50%
+    -webkit-transform: translateY(0px)
+  100%
+    -webkit-transform: translateY(-20px)
+
+body
+  font-family: $primary-font
+  color: $black
+
+.purple
+  color: $purple
+
+a
+  color: $purple
+
+.welcome-wrapper
+  min-height: 100vh
+  display: flex
+  justify-content: center
+  align-items: center
+
+section
+  position: relative
+
+  &.welcome
+    padding: 1em
+    max-width: 100%
+  h1
+    font-size: 2em
+    margin: .5em auto
+    font-family: $secondary-font
+
+.chevron-down
+  position: absolute
+  bottom: 2em
+  max-width: 2.25em
+
+// Breakpoints
+@media(min-width: 700px)
+  section
+    &.welcome
+      max-width: 50em
+    h1
+      font-size: 4em
+
+  .chevron-down
+    max-width: 4em
