@@ -1,0 +1,6 @@
+config/parameters.json
+*.pyc
+venv/
+project/migrations/
+*.db
+.idea/
