@@ -6,6 +6,10 @@ ol {
   padding: 0;
 }
 
+.project-wrapper .left-content a .project-link-btn, .project-wrapper .left-content hr {
+  background-image: linear-gradient(to right top, #8c53c6, #854dc0, #7f46b9, #7840b3, #7239ad);
+}
+
 .levitate {
   -webkit-animation: levitate 3s infinite;
 }
@@ -31,7 +35,14 @@ body {
 }
 
 a {
+  -webkit-transition: all 0.2s ease-in-out;
+  -moz-transition: all 0.2s ease-in-out;
+  -o-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
   color: #8c53c6;
+}
+a:hover {
+  color: #665CCA;
 }
 
 .welcome-wrapper {
@@ -40,37 +51,168 @@ a {
   justify-content: center;
   align-items: center;
 }
-
-section {
+.welcome-wrapper section {
   position: relative;
 }
-section.welcome {
+.welcome-wrapper section.welcome {
   padding: 1em;
   max-width: 100%;
 }
-section h1 {
+.welcome-wrapper section h1 {
   font-size: 2em;
   margin: 0.5em auto;
   font-family: "Montserrat", sans-serif;
 }
-
-.chevron-down {
+.welcome-wrapper .chevron-down {
   position: absolute;
   bottom: 2em;
   max-width: 2.25em;
 }
 
 @media (min-width: 700px) {
-  section.welcome {
+  .welcome-wrapper section.welcome {
     max-width: 50em;
   }
-  section h1 {
+  .welcome-wrapper section h1 {
     font-size: 4em;
   }
-
-  .chevron-down {
+  .welcome-wrapper .chevron-down {
     max-width: 4em;
   }
+}
+.project-wrapper {
+  display: flex;
+  flex-direction: row;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5em;
+}
+.project-wrapper .left-content {
+  width: 33.33%;
+  min-width: 300px;
+}
+.project-wrapper .left-content .project-icon img {
+  width: 100%;
+  max-width: 120px;
+  max-height: 120px;
+  margin-left: 0;
+  margin-bottom: 20px;
+}
+.project-wrapper .left-content .project-title {
+  font-family: "Montserrat", sans-serif;
+  color: #8c53c6;
+  font-size: 2.5em;
+}
+.project-wrapper .left-content .project-blurb {
+  margin-top: 0.5em;
+  color: #999999;
+  font-size: 1.4em;
+  line-height: 1.3em;
+}
+.project-wrapper .left-content hr {
+  margin: 1em 0;
+  border: 0;
+  width: 50%;
+  height: 1px;
+}
+.project-wrapper .left-content .project-info {
+  margin: 0.25em auto;
+  font-size: 1.1em;
+}
+.project-wrapper .left-content .project-info .project-info-title {
+  display: inline-block;
+  font-weight: bold;
+  color: #202020;
+}
+.project-wrapper .left-content .project-info .project-info-value {
+  display: inline-block;
+  color: #999999;
+}
+.project-wrapper .left-content a {
+  text-decoration: none;
+}
+.project-wrapper .left-content a .project-link-btn {
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  padding: 0 30px;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  margin-left: -10px;
+  height: 50px;
+  font-size: 1.5em;
+  line-height: 48px;
+  color: #FFF;
+  border-radius: 100px;
+  box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.15);
+}
+.project-wrapper .right-content {
+  display: none;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+  max-width: 840px;
+  margin-left: 20px;
+}
+.project-wrapper .right-content div {
+  display: inline-block;
+  margin: 0.5em;
+}
+.project-wrapper .right-content div img {
+  display: none;
+}
+.project-wrapper .right-content img {
+  width: 100%;
+}
+
+@media (min-width: 480px) {
+  .project-wrapper .right-content {
+    display: flex;
+  }
+  .project-wrapper .right-content div.project-img-1 img {
+    display: block;
+  }
+}
+@media (min-width: 700px) {
+  .project-wrapper .right-content div.project-img-2 img {
+    display: block;
+  }
+}
+@media (min-width: 1000px) {
+  .project-wrapper .right-content div.project-img-3 img {
+    display: block;
+  }
+}
+.footer {
+  background-color: #f5f5f5;
+  padding-top: 4em;
+  padding-bottom: 1em;
+}
+.footer .footer-links {
+  text-align: center;
+}
+.footer .footer-links .footer-link {
+  display: inline-block;
+  margin: 0 1em;
+}
+.footer .footer-links .footer-link a {
+  text-decoration: none;
+  font-family: "Montserrat", sans-serif;
+  font-size: 2em;
+}
+.footer .footer-icons {
+  text-align: center;
+}
+.footer .footer-icons a {
+  text-decoration: none;
+}
+.footer .footer-icons .footer-icon {
+  margin: 1em;
+  max-width: 5em;
+  display: inline-block;
+}
+.footer .footer-icons .footer-icon img {
+  width: 100%;
 }
 
 /*# sourceMappingURL=portfolio.css.map */

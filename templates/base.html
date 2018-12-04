@@ -27,5 +27,31 @@
     <body>
         {% block content %}{% endblock %}
         {% block javascripts %}{% endblock %}
+
+        {% block footer %}
+            <div class="footer">
+                <div class="footer-links">
+                    <div class="footer-link">
+                        <a href="#" target="_blank">
+                            Projects
+                        </a>
+                    </div>
+
+                    <div class="footer-link">
+                        <a href="#" target="_blank">
+                            Music
+                        </a>
+                    </div>
+                </div>
+
+                <div class="footer-icons">
+                    <a href="#">
+                        <div class="footer-icon">
+                            <img src="{% static '/img/github-icon.png' %}">
+                        </div>
+                    </a>
+                </div>
+            </div>
+        {% endblock %}
     </body>
 </html>

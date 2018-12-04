@@ -9,14 +9,32 @@ $black: #202020
 $white: #FFF
 $purple: #8c53c6
 $darker-purple: #7239ad
+$grey: #999999
+$light-grey: #f5f5f5
+$lime-green: #D4F75C
+$blue: #665CCA
+
+// Gradients
+%purple-gradient
+  background-image: linear-gradient(to right top, #8c53c6, #854dc0, #7f46b9, #7840b3, #7239ad)
 
 // Borders
 %red-border
   border: 1px solid red
 %green-border
   border: 1px solid green
+%purple-border
+  border: 1px solid $purple
+%black-border
+  border: 1px solid $black
 
 // Animations
+=animate($seconds)
+  -webkit-transition: all $seconds ease-in-out
+  -moz-transition: all $seconds ease-in-out
+  -o-transition: all $seconds ease-in-out
+  transition: all $seconds ease-in-out
+
 .levitate
   -webkit-animation: levitate 3s infinite
 
@@ -36,37 +54,190 @@ body
   color: $purple
 
 a
+  +animate(0.2s)
   color: $purple
 
+  &:hover
+    color: $blue
+
+// Welcome section
 .welcome-wrapper
   min-height: 100vh
   display: flex
   justify-content: center
   align-items: center
 
-section
-  position: relative
+  section
+    position: relative
 
-  &.welcome
-    padding: 1em
-    max-width: 100%
-  h1
-    font-size: 2em
-    margin: .5em auto
-    font-family: $secondary-font
+    &.welcome
+      padding: 1em
+      max-width: 100%
 
-.chevron-down
-  position: absolute
-  bottom: 2em
-  max-width: 2.25em
+    h1
+      font-size: 2em
+      margin: .5em auto
+      font-family: $secondary-font
+
+  .chevron-down
+    position: absolute
+    bottom: 2em
+    max-width: 2.25em
 
 // Breakpoints
 @media(min-width: 700px)
-  section
-    &.welcome
-      max-width: 50em
-    h1
-      font-size: 4em
+  .welcome-wrapper
+    section
+      &.welcome
+        max-width: 50em
+      h1
+        font-size: 4em
 
-  .chevron-down
-    max-width: 4em
+    .chevron-down
+      max-width: 4em
+
+// Project
+.project-wrapper
+  display: flex
+  flex-direction: row
+  max-width: 1280px
+  margin: 0 auto
+  padding: 0 1.5em
+
+  .left-content
+    width: 33.33%
+    min-width: 300px
+
+    .project-icon
+      img
+        width: 100%
+        max-width: 120px
+        max-height: 120px
+        margin-left: 0
+        margin-bottom: 20px
+
+    .project-title
+      font-family: $secondary-font
+      color: $purple
+      font-size: 2.5em
+
+    .project-blurb
+      margin-top: .5em
+      color: $grey
+      font-size: 1.4em
+      line-height: 1.3em
+
+    hr
+      margin: 1em 0
+      border: 0
+      width: 50%
+      height: 1px
+      @extend %purple-gradient
+
+    .project-info
+      margin: .25em auto
+      font-size: 1.1em
+
+      .project-info-title
+        display: inline-block
+        font-weight: bold
+        color: $black
+
+      .project-info-value
+        display: inline-block
+        color: $grey
+
+    a
+      text-decoration: none
+
+      .project-link-btn
+        cursor: pointer
+        display: inline-block
+        position: relative
+        padding: 0 30px
+        margin-top: 30px
+        margin-bottom: 30px
+        margin-left: -10px
+        height: 50px
+        font-size: 1.5em
+        line-height: 48px
+        color: $white
+        border-radius: 100px
+        @extend %purple-gradient
+        box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.15)
+
+  .right-content
+    display: none
+    flex-direction: row
+    justify-content: center
+    width: 100%
+    max-width: 840px
+    margin-left: 20px
+
+    div
+      display: inline-block
+      margin: .5em
+
+      img
+        display: none
+    img
+      width: 100%
+
+// Project Breakpoints
+@media(min-width: 480px)
+  .project-wrapper
+    .right-content
+      display: flex
+
+      div
+        &.project-img-1
+          img
+            display: block
+
+@media(min-width: 700px)
+  .project-wrapper
+    .right-content
+      div
+        &.project-img-2
+          img
+            display: block
+
+@media(min-width: 1000px)
+  .project-wrapper
+    .right-content
+      div
+        &.project-img-3
+          img
+            display: block
+
+// Footer
+.footer
+  background-color: $light-grey
+  padding-top: 4em
+  padding-bottom: 1em
+
+  .footer-links
+    text-align: center
+
+    .footer-link
+      display: inline-block
+      margin: 0 1em
+
+      a
+        text-decoration: none
+        font-family: $secondary-font
+        font-size: 2em
+
+  .footer-icons
+    text-align: center
+
+    a
+      text-decoration: none
+
+    .footer-icon
+      margin: 1em
+      max-width: 5em
+      display: inline-block
+
+      img
+        width: 100%
