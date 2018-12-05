@@ -118,6 +118,27 @@ input[type=range]
         background-color: darkgrey
         outline: 1px solid slategrey
 
+      .playlist-select
+        display: flex
+        width: 100%
+
+        div
+          @extend %purple-border
+          cursor: pointer
+          display: inline-block
+          padding: .5em
+          width: 50%
+          background-color: $blue
+          text-align: center
+          color: $white
+          font-size: 1.3em
+          +animate(0.09s)
+
+          &.active
+            background-color: $purple
+          &:hover
+            background-color: $darker-purple
+          
       .amplitude-song-container
         display: flex
         justify-content: space-between

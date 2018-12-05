@@ -34,6 +34,10 @@ body {
   color: #202020;
 }
 
+.hidden {
+  display: none;
+}
+
 .purple {
   color: #8c53c6;
 }
@@ -87,9 +91,10 @@ a:hover {
 .project-wrapper {
   display: flex;
   flex-direction: row;
-  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 1.5em;
+  margin-bottom: 5em;
+  padding: 0 3em;
+  max-width: 1280px;
 }
 .project-wrapper .left-content {
   width: 33.33%;

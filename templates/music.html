@@ -9,23 +9,36 @@
 
 {% block content %}
     <div class="player-wrapper">
-       <div class="player">
+        <div class="player">
+            <!-- Playlist -->
             <div class="playlist">
-                <div amplitude-song-index="0" class="amplitude-song-container amplitude-play-pause active">
-                    <div class="song-info">
-                        <div class="song-title">51.mp3</div>
-                    </div>
-                    <div class="duration">
-                        0:22
+                <!-- Playlist Select -->
+                <div class="playlist-select">
+                    <div class="playlist-option active" data-type="loops">Loops</div>
+                    <div class="playlist-option" data-type="songs">Songs</div>
+                </div>
+
+                <!-- Loops -->
+                <div id="loops">
+                    <div amplitude-song-index="0" class="amplitude-song-container amplitude-play-pause active">
+                        <div class="song-info">
+                            <div class="song-title">51.mp3</div>
+                        </div>
+                        <div class="duration">
+                            0:22
+                        </div>
                     </div>
                 </div>
 
-                <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause">
-                    <div class="song-info">
-                        <div class="song-title">50.mp3</div>
-                    </div>
-                    <div class="duration">
-                        0:29
+                <!-- Songs -->
+                <div id="songs" class="hidden">
+                    <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause">
+                        <div class="song-info">
+                            <div class="song-title">50.mp3</div>
+                        </div>
+                        <div class="duration">
+                            0:29
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1,3 +1,7 @@
+.player-wrapper .player .playlist .playlist-select div {
+  border: 1px solid #8c53c6;
+}
+
 .music-video-wrapper iframe, .player-wrapper .player .playlist {
   box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.15);
 }
@@ -131,6 +135,30 @@ input[type=range]:focus::-ms-fill-upper {
 .player-wrapper .player .playlist::-webkit-scrollbar-thumb {
   background-color: darkgrey;
   outline: 1px solid slategrey;
+}
+.player-wrapper .player .playlist .playlist-select {
+  display: flex;
+  width: 100%;
+}
+.player-wrapper .player .playlist .playlist-select div {
+  cursor: pointer;
+  display: inline-block;
+  padding: 0.5em;
+  width: 50%;
+  background-color: #665CCA;
+  text-align: center;
+  color: #FFF;
+  font-size: 1.3em;
+  -webkit-transition: all 0.09s ease-in-out;
+  -moz-transition: all 0.09s ease-in-out;
+  -o-transition: all 0.09s ease-in-out;
+  transition: all 0.09s ease-in-out;
+}
+.player-wrapper .player .playlist .playlist-select div.active {
+  background-color: #8c53c6;
+}
+.player-wrapper .player .playlist .playlist-select div:hover {
+  background-color: #7239ad;
 }
 .player-wrapper .player .playlist .amplitude-song-container {
   display: flex;
