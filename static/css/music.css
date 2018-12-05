@@ -1,4 +1,4 @@
-.player-wrapper .player .playlist {
+.music-video-wrapper iframe, .player-wrapper .player .playlist {
   box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.15);
 }
 
@@ -266,6 +266,33 @@ input[type=range]:focus::-ms-fill-upper {
 .player-wrapper .player .player-bottom .player-meta-container .now-playing-artist {
   color: #999999;
   font-size: 1.5em;
+}
+
+.music-video-blurb {
+  margin: 0.5em auto;
+  margin-bottom: 3em;
+  text-align: center;
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+.outer-music-video-wrapper {
+  margin: 0 auto;
+  max-width: 60em;
+}
+
+.music-video-wrapper {
+  position: relative;
+  text-align: center;
+  padding-bottom: 56.25%;
+  max-width: 100%;
+}
+.music-video-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 /*# sourceMappingURL=music.css.map */

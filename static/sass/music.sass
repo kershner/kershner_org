@@ -255,3 +255,28 @@ input[type=range]
         .now-playing-artist
           color: $grey
           font-size: 1.5em
+
+.music-video-blurb
+  margin: .5em auto
+  margin-bottom: 3em
+  text-align: center
+  font-size: 1.3em
+  font-weight: bold
+
+.outer-music-video-wrapper
+  margin: 0 auto
+  max-width: 60em
+
+.music-video-wrapper
+  position: relative
+  text-align: center
+  padding-bottom: 56.25%
+  max-width: 100%
+
+  iframe
+    position: absolute
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+    @extend %box-shadow
