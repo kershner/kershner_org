@@ -5,7 +5,6 @@
 input[type=range]
   height: 26px
   -webkit-appearance: none
-  margin: 10px 0
   width: 100%
 
   &:focus
@@ -94,6 +93,8 @@ input[type=range]
     margin-top: 3em
 
   .player
+    position: relative
+    z-index: 1
     margin: 0 auto
     max-width: 50em
 
@@ -105,6 +106,7 @@ input[type=range]
       margin-bottom: 2em
       padding-bottom: 2.5em
       overflow: auto
+      background-color: $white
       @extend %box-shadow
 
       // SCROLLBAR
@@ -175,9 +177,8 @@ input[type=range]
       // CONTROLS CONTAINER
       .player-control-container
         display: flex
-        justify-content: space-between
+        justify-content: space-evenly
         margin: 0 auto
-        max-width: 30em
 
         %icon-size
           width: 40px
@@ -191,7 +192,7 @@ input[type=range]
         .player-repeat-container
           display: flex
           justify-content: center
-          align-items: center
+          align-items: flex-start
 
           div
             display: inline-block
@@ -213,6 +214,8 @@ input[type=range]
           display: flex
           justify-content: center
           align-items: center
+          flex-flow: row wrap
+          max-width: 10em
 
           .player-central-controls
             display: flex
@@ -241,7 +244,7 @@ input[type=range]
         .player-volume-controls
           display: flex
           justify-content: center
-          align-items: center
+          align-items: flex-start
 
           .amplitude-mute
             display: inline-block
@@ -264,7 +267,6 @@ input[type=range]
       .player-meta-container
         margin-top: 1em
         margin-bottom: 4em
-        padding-right: 4.5em
         text-align: center
 
         .now-playing-name
@@ -296,6 +298,7 @@ input[type=range]
 
   iframe
     position: absolute
+    z-index: 1
     top: 0
     left: 0
     width: 100%

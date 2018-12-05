@@ -18,21 +18,28 @@ a
   &:hover
     color: $blue
 
+#page-wrapper
+  .particles-js-canvas-el
+    position: fixed
+    top: 0
+    left: 0
+    z-index: 0
+
 // Welcome section
 .welcome-wrapper
-  min-height: 100vh
   display: flex
   justify-content: center
   align-items: center
+  min-height: 100vh
 
   section
-    position: relative
-
     &.welcome
       padding: 1em
       max-width: 100%
 
     h1
+      position: relative
+      z-index: 1
       font-size: 2em
       margin: .5em auto
       font-family: $secondary-font
@@ -57,11 +64,17 @@ a
 // Project
 .project-wrapper
   display: flex
+  position: relative
+  z-index: 1
   flex-direction: row
   margin: 0 auto
   margin-bottom: 5em
-  padding: 0 3em
+  padding-left: 1.5em
   max-width: 1280px
+
+  @media(min-width: 700px)
+    padding: 0 3em
+
 
   .left-content
     width: 33.33%
@@ -171,9 +184,12 @@ a
 
 // Footer
 .footer
-  background-color: $light-grey
+  position: relative
+  z-index: 1
   padding-top: 4em
   padding-bottom: 1em
+  background-color: $light-grey
+  width: 100%
 
   .footer-links
     text-align: center

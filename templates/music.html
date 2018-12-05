@@ -77,6 +77,11 @@
                             <div class="amplitude-play-pause" amplitude-main-play-pause="true"></div>
                             <div class="amplitude-next"></div>
                         </div>
+
+                        <div class="player-meta-container">
+                            <span amplitude-song-info="name" amplitude-main-song-info="true" class="now-playing-name"></span>
+                            <span amplitude-song-info="artist" amplitude-main-song-info="true" class="now-playing-artist"></span>
+                        </div>
                     </div>
 
                     <!-- Volume -->
@@ -84,11 +89,6 @@
                         <div class="amplitude-mute amplitude-not-muted"></div>
                         <input type="range" class="amplitude-volume-slider"/>
                     </div>
-                </div>
-
-                <div class="player-meta-container">
-                    <span amplitude-song-info="name" amplitude-main-song-info="true" class="now-playing-name"></span>
-                    <span amplitude-song-info="artist" amplitude-main-song-info="true" class="now-playing-artist"></span>
                 </div>
             </div>
         </div>
@@ -103,7 +103,7 @@
     <div class="music-video-blurb">Bonus jam from 2007</div>
 {% endblock %}
 
-{% block javascripts %}
+{% block extra_javascripts %}
     <script type="text/javascript" src="{% static '/js/util.js' %}"></script>
     <script type="text/javascript" src="{% static '/js/music.js' %}"></script>
     <script type="text/javascript">

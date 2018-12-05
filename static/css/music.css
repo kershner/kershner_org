@@ -24,7 +24,6 @@
 input[type=range] {
   height: 26px;
   -webkit-appearance: none;
-  margin: 10px 0;
   width: 100%;
 }
 input[type=range]:focus {
@@ -114,6 +113,8 @@ input[type=range]:focus::-ms-fill-upper {
   }
 }
 .player-wrapper .player {
+  position: relative;
+  z-index: 1;
   margin: 0 auto;
   max-width: 50em;
 }
@@ -125,6 +126,7 @@ input[type=range]:focus::-ms-fill-upper {
   margin-bottom: 2em;
   padding-bottom: 2.5em;
   overflow: auto;
+  background-color: #FFF;
 }
 .player-wrapper .player .playlist::-webkit-scrollbar {
   width: 0.25em;
@@ -196,9 +198,8 @@ input[type=range]:focus::-ms-fill-upper {
 }
 .player-wrapper .player .player-bottom .player-control-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-evenly;
   margin: 0 auto;
-  max-width: 30em;
 }
 .player-wrapper .player .player-bottom .player-control-container .player-central-control-container .player-central-controls div {
   width: 40px;
@@ -211,7 +212,7 @@ input[type=range]:focus::-ms-fill-upper {
 .player-wrapper .player .player-bottom .player-control-container .player-repeat-container {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
 }
 .player-wrapper .player .player-bottom .player-control-container .player-repeat-container div {
   display: inline-block;
@@ -234,6 +235,8 @@ input[type=range]:focus::-ms-fill-upper {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-flow: row wrap;
+  max-width: 10em;
 }
 .player-wrapper .player .player-bottom .player-control-container .player-central-control-container .player-central-controls {
   display: flex;
@@ -260,7 +263,7 @@ input[type=range]:focus::-ms-fill-upper {
 .player-wrapper .player .player-bottom .player-control-container .player-volume-controls {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
 }
 .player-wrapper .player .player-bottom .player-control-container .player-volume-controls .amplitude-mute {
   display: inline-block;
@@ -282,7 +285,6 @@ input[type=range]:focus::-ms-fill-upper {
 .player-wrapper .player .player-bottom .player-meta-container {
   margin-top: 1em;
   margin-bottom: 4em;
-  padding-right: 4.5em;
   text-align: center;
 }
 .player-wrapper .player .player-bottom .player-meta-container .now-playing-name {
@@ -317,6 +319,7 @@ input[type=range]:focus::-ms-fill-upper {
 }
 .music-video-wrapper iframe {
   position: absolute;
+  z-index: 1;
   top: 0;
   left: 0;
   width: 100%;
