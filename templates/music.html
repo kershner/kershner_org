@@ -82,6 +82,8 @@
 {% endblock %}
 
 {% block javascripts %}
+    <script type="text/javascript" src="{% static '/js/util.js' %}"></script>
+    <script type="text/javascript" src="{% static '/js/music.js' %}"></script>
     <script type="text/javascript">
         var amplitudeOptions = {
             "songs": [
@@ -98,5 +100,6 @@
             ]
         };
         Amplitude.init(amplitudeOptions);
+        music.init();
     </script>
 {% endblock %}

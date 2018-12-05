@@ -350,7 +350,7 @@ input[type=range]:focus::-ms-fill-upper {
   color: white;
   background-color: #665CCA;
 }
-.player-wrapper .player .playlist .amplitude-song-container.active {
+.player-wrapper .player .playlist .amplitude-song-container.amplitude-active-song-container {
   background-color: #8c53c6;
   color: #FFF;
 }
@@ -455,6 +455,7 @@ input[type=range]:focus::-ms-fill-upper {
 .player-wrapper .player .player-bottom .player-meta-container {
   margin-top: 1em;
   margin-bottom: 4em;
+  padding-right: 4.5em;
   text-align: center;
 }
 .player-wrapper .player .player-bottom .player-meta-container .now-playing-name {
