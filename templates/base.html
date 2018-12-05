@@ -16,6 +16,7 @@
 
         <!-- CSS -->
         <link rel="stylesheet" href="{% static '/css/portfolio.css' %}">
+        {% block extra_head %}{% endblock %}
 
         {% if title %}
         <title>{{ title }}</title>
@@ -26,21 +27,26 @@
 
     <body>
         {% block content %}{% endblock %}
-        {% block javascripts %}{% endblock %}
 
         {% block footer %}
             <div class="footer">
                 <div class="footer-links">
                     <div class="footer-link">
-                        <a href="#" target="_blank">
+                        <a href="#">
                             Projects
                         </a>
                     </div>
 
                     <div class="footer-link">
-                        <a href="#" target="_blank">
+                        {% if request.resolver_match.url_name == 'music' %}
+                        <a href="{% url 'home' %}">
+                            Home
+                        </a>
+                        {% else %}
+                        <a href="{% url 'music' %}">
                             Music
                         </a>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -53,5 +59,7 @@
                 </div>
             </div>
         {% endblock %}
+
+        {% block javascripts %}{% endblock %}
     </body>
 </html>

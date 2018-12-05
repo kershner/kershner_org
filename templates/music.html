@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/amplitudejs@3.3.1/dist/amplitude.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="player-wrapper">
+       <div class="player">
+            <div class="playlist">
+                <div amplitude-song-index="0" class="amplitude-song-container amplitude-play-pause active">
+                    <div class="song-info">
+                        <div class="song-title">51.mp3</div>
+                    </div>
+                    <div class="duration">
+                        0:22
+                    </div>
+                </div>
+
+                <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause">
+                    <div class="song-info">
+                        <div class="song-title">50.mp3</div>
+                    </div>
+                    <div class="duration">
+                        0:29
+                    </div>
+                </div>
+            </div>
+
+            <div class="player-bottom">
+                <!-- Time -->
+                <div class="player-time-container">
+                    <!-- Current Time -->
+                    <span class="current-time">
+                      <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
+                    </span>
+
+                    <!-- Progress -->
+                    <div class="progress-container">
+                        <input type="range" class="amplitude-song-slider" amplitude-main-song-slider="true"/>
+                    </div>
+
+                    <!-- Duration -->
+                    <span class="duration">
+                      <span class="amplitude-duration-minutes" amplitude-main-duration-minutes="true"></span>:<span class="amplitude-duration-seconds" amplitude-main-duration-seconds="true"></span>
+                    </span>
+                </div>
+
+                <!-- Controls Container -->
+                <div class="player-control-container">
+                    <!-- Repeat Container -->
+                    <div class="player-repeat-container">
+                        <div class="amplitude-repeat"></div>
+                        <div class="amplitude-shuffle amplitude-shuffle-off"></div>
+                    </div>
+
+                    <!-- Central Controls -->
+                    <div class="player-central-control-container">
+                        <div class="player-central-controls">
+                            <div class="amplitude-prev"></div>
+                            <div class="amplitude-play-pause" amplitude-main-play-pause="true"></div>
+                            <div class="amplitude-next"></div>
+                        </div>
+                    </div>
+
+                    <!-- Volume -->
+                    <div class="player-volume-controls">
+                        <div class="amplitude-mute amplitude-not-muted"></div>
+                        <input type="range" class="amplitude-volume-slider"/>
+                    </div>
+                </div>
+
+                <div class="player-meta-container">
+                    <span amplitude-song-info="name" amplitude-main-song-info="true" class="now-playing-name"></span>
+                    <span amplitude-song-info="artist" amplitude-main-song-info="true" class="now-playing-artist"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script type="text/javascript">
+        var amplitudeOptions = {
+            "songs": [
+                {
+                    "name"          : "51",
+                    "artist"        : "Tyler Kershner",
+                    "url"           : "{{ base_s3_url }}/51.mp3"
+                },
+                {
+                    "name"          : "50",
+                    "artist"        : "Tyler Kershner",
+                    "url"           : "{{ base_s3_url }}/50.mp3"
+                }
+            ]
+        };
+        Amplitude.init(amplitudeOptions);
+    </script>
+{% endblock %}
