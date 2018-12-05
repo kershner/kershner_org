@@ -1,0 +1,49 @@
+// Fonts
+$primary-font: 'Open-Sans', sans-serif
+$secondary-font: 'Montserrat', sans-serif
+
+// Colors
+$black: #202020
+$white: #FFF
+$purple: #8c53c6
+$darker-purple: #7239ad
+$grey: #999999
+$light-grey: #f5f5f5
+$lime-green: #D4F75C
+$blue: #665CCA
+
+// Gradients
+%purple-gradient
+  background-image: linear-gradient(to right top, #8c53c6, #854dc0, #7f46b9, #7840b3, #7239ad)
+
+// Borders
+%red-border
+  border: 1px solid red
+%green-border
+  border: 1px solid green
+%purple-border
+  border: 1px solid $purple
+%black-border
+  border: 1px solid $black
+
+// Box Shadows
+%box-shadow
+  box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.15)
+
+// Animations
+=animate($seconds)
+  -webkit-transition: all $seconds ease-in-out
+  -moz-transition: all $seconds ease-in-out
+  -o-transition: all $seconds ease-in-out
+  transition: all $seconds ease-in-out
+
+.levitate
+  -webkit-animation: levitate 3s infinite
+
+@keyframes levitate
+  0%
+    -webkit-transform: translateY(-20px)
+  50%
+    -webkit-transform: translateY(0px)
+  100%
+    -webkit-transform: translateY(-20px)

@@ -3,7 +3,7 @@ var music = {
 };
 
 music.init = function() {
-    console.log('music!');
+    Amplitude.init(amplitudeOptions);
 
     // Onclick for song containers
     document.querySelectorAll('.' + music.songContainer).forEach(function(e) {
