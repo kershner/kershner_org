@@ -1,4 +1,4 @@
-.music-video-wrapper iframe, .player-wrapper .player .playlist {
+.music-video-wrapper iframe {
   box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.15);
 }
 
@@ -111,17 +111,48 @@ input[type=range]:focus::-ms-fill-upper {
   margin: 0 auto;
   max-width: 50em;
 }
+.player-wrapper .player .playlist-select {
+  display: flex;
+  justify-content: space-between;
+  overflow: hidden;
+  max-width: 25em;
+  margin: 0 auto;
+  font-family: "Montserrat", sans-serif;
+}
+.player-wrapper .player .playlist-select div {
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+  display: inline-block;
+  padding: 0.5em;
+  width: 50%;
+  text-align: center;
+  color: #999999;
+  font-size: 2.4em;
+  line-height: 1.5em;
+  -webkit-transition: all 0.2s ease-in-out;
+  -moz-transition: all 0.2s ease-in-out;
+  -o-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+}
+.player-wrapper .player .playlist-select div.active {
+  color: #7239ad;
+  border-bottom: none;
+  transform: scale(1.1);
+}
+.player-wrapper .player .playlist-select div:hover {
+  color: #202020;
+  transform: scale(1.1);
+}
 .player-wrapper .player .playlist {
   position: relative;
   z-index: 1;
-  max-height: 50vh;
-  min-height: 35vh;
-  max-width: 25em;
+  height: 35vh;
+  max-width: 30em;
   margin: 0 auto;
   margin-bottom: 2em;
-  padding-bottom: 2.5em;
-  overflow: auto;
-  background-color: #FFF;
+  overflow-x: hidden;
+  overflow-y: auto;
   border-radius: 0.25em;
 }
 .player-wrapper .player .playlist::-webkit-scrollbar {
@@ -134,56 +165,28 @@ input[type=range]:focus::-ms-fill-upper {
   background-color: darkgrey;
   outline: 1px solid slategrey;
 }
-.player-wrapper .player .playlist .playlist-select {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-}
-.player-wrapper .player .playlist .playlist-select div {
-  cursor: pointer;
-  display: inline-block;
-  padding: 0.5em;
-  width: 44.1%;
-  background-color: #999999;
-  text-align: center;
-  color: #FFF;
-  font-size: 1.3em;
-  -webkit-transition: all 0.09s ease-in-out;
-  -moz-transition: all 0.09s ease-in-out;
-  -o-transition: all 0.09s ease-in-out;
-  transition: all 0.09s ease-in-out;
-}
-.player-wrapper .player .playlist .playlist-select div.active {
-  background-color: #8c53c6;
-}
-.player-wrapper .player .playlist .playlist-select div:hover {
-  background-color: #7239ad;
-}
-.player-wrapper .player .playlist .playlist-select div:first-child {
-  border-radius: 0 0.25em 0 0;
-}
-.player-wrapper .player .playlist .playlist-select div:last-child {
-  border-radius: 0.25em 0 0 0;
-}
 .player-wrapper .player .playlist .amplitude-song-container {
   display: flex;
   justify-content: space-between;
   cursor: pointer;
   padding: 1em;
-  background-color: #FFF;
   color: #999999;
-  -webkit-transition: all 0.09s ease-in-out;
-  -moz-transition: all 0.09s ease-in-out;
-  -o-transition: all 0.09s ease-in-out;
-  transition: all 0.09s ease-in-out;
+  -webkit-transition: all 0.2s ease-in-out;
+  -moz-transition: all 0.2s ease-in-out;
+  -o-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+  border-bottom: 1px solid #8c53c6;
+  line-height: 1em;
 }
-.player-wrapper .player .playlist .amplitude-song-container:hover {
-  color: white;
-  background-color: #7239ad;
+.player-wrapper .player .playlist .amplitude-song-container:hover, .player-wrapper .player .playlist .amplitude-song-container.amplitude-active-song-container {
+  color: #8c53c6;
+  transform: scale(1.1);
+  font-family: "Montserrat", sans-serif;
+  padding: 0.8em 4em;
+  border-bottom: 2px solid #8c53c6;
 }
-.player-wrapper .player .playlist .amplitude-song-container.amplitude-active-song-container {
-  background-color: #8c53c6;
-  color: #FFF;
+.player-wrapper .player .playlist .amplitude-song-container .duration {
+  font-size: 0.8em;
 }
 .player-wrapper .player .player-bottom .player-time-container {
   display: flex;
@@ -291,6 +294,7 @@ input[type=range]:focus::-ms-fill-upper {
   cursor: pointer;
   -webkit-appearance: none;
   width: 70%;
+  height: 25px;
 }
 .player-wrapper .player .player-bottom .player-meta-container {
   margin-top: 1em;

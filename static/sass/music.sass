@@ -95,19 +95,46 @@ input[type=range]
     margin: 0 auto
     max-width: 50em
 
+    // PLAYLIST SELECT
+    .playlist-select
+      display: flex
+      justify-content: space-between
+      overflow: hidden
+      max-width: 25em
+      margin: 0 auto
+      font-family: $secondary-font
+
+      div
+        position: relative
+        z-index: 1
+        cursor: pointer
+        display: inline-block
+        padding: .5em
+        width: 50%
+        text-align: center
+        color: $grey
+        font-size: 2.4em
+        line-height: 1.5em
+        +animate(0.2s)
+
+        &.active
+          color: $darker-purple
+          border-bottom: none
+          transform: scale(1.1)
+        &:hover
+          color: $black
+          transform: scale(1.1)
+
     // PLAYLIST
     .playlist
       position: relative
       z-index: 1
-      max-height: 50vh
-      min-height: 35vh
-      max-width: 25em
+      height: 35vh
+      max-width: 30em
       margin: 0 auto
       margin-bottom: 2em
-      padding-bottom: 2.5em
-      overflow: auto
-      background-color: $white
-      @extend %box-shadow
+      overflow-x: hidden
+      overflow-y: auto
       border-radius: 0.25em
 
       // SCROLLBAR
@@ -121,47 +148,26 @@ input[type=range]
         background-color: darkgrey
         outline: 1px solid slategrey
 
-      .playlist-select
-        display: flex
-        justify-content: space-between
-        width: 100%
-
-        div
-          cursor: pointer
-          display: inline-block
-          padding: .5em
-          width: 44.1%
-          background-color: $grey
-          text-align: center
-          color: $white
-          font-size: 1.3em
-          +animate(0.09s)
-
-          &.active
-            background-color: $purple
-          &:hover
-            background-color: $darker-purple
-          &:first-child
-            border-radius: 0 .25em 0 0
-          &:last-child
-            border-radius: .25em 0 0 0
-
       .amplitude-song-container
         display: flex
         justify-content: space-between
         cursor: pointer
         padding: 1em
-        background-color: $white
         color: $grey
-        +animate(0.09s)
+        +animate(0.2s)
+        border-bottom: 1px solid $purple
+        line-height: 1em
 
-        &:hover
-          color: white
-          background-color: $darker-purple
-
+        &:hover,
         &.amplitude-active-song-container
-          background-color: $purple
-          color: $white
+          color: $purple
+          transform: scale(1.1)
+          font-family: $secondary-font
+          padding: 0.8em 4em
+          border-bottom: 2px solid $purple
+
+        .duration
+          font-size: 0.8em
 
     .player-bottom
       // TIME CONTAINER
@@ -274,6 +280,7 @@ input[type=range]
             cursor: pointer
             -webkit-appearance: none
             width: 70%
+            height: 25px
 
       // META CONTAINER
       .player-meta-container
