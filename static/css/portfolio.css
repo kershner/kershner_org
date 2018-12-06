@@ -6,6 +6,19 @@ ol {
   padding: 0;
 }
 
+::-webkit-scrollbar {
+  width: 0.3em;
+}
+
+::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: darkgrey;
+  outline: 1px solid slategrey;
+}
+
 .project-wrapper .left-content hr {
   background-image: linear-gradient(to right top, #8c53c6, #854dc0, #7f46b9, #7840b3, #7239ad);
 }
@@ -104,7 +117,7 @@ a:hover {
 }
 @media (min-width: 700px) {
   .project-wrapper {
-    padding: 0 3em;
+    padding: 0 1em;
   }
 }
 .project-wrapper .left-content {
@@ -266,7 +279,7 @@ a:hover {
   color: #202020;
 }
 .footer .footer-links .footer-link a:hover {
-  color: #7239ad;
+  color: #8c53c6;
 }
 .footer .footer-icons {
   text-align: center;
