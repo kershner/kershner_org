@@ -10,6 +10,10 @@ ol {
   background-image: linear-gradient(to right top, #8c53c6, #854dc0, #7f46b9, #7840b3, #7239ad);
 }
 
+.footer {
+  background-image: radial-gradient(circle, #f5f5f5, #eeeeee, #e7e7e7, #e0e0e0, #d9d9d9);
+}
+
 .project-wrapper .left-content a .project-link-btn {
   box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.15);
 }
@@ -79,7 +83,7 @@ a:hover {
 }
 .welcome-wrapper .chevron-down {
   position: absolute;
-  bottom: 2em;
+  bottom: 0;
   max-width: 2.25em;
 }
 
@@ -122,7 +126,7 @@ a:hover {
 }
 .project-wrapper .left-content .project-title {
   font-family: "Montserrat", sans-serif;
-  color: #8c53c6;
+  color: #202020;
   font-size: 2.5em;
 }
 .project-wrapper .left-content .project-blurb {
@@ -223,6 +227,10 @@ a:hover {
   text-decoration: none;
   font-family: "Montserrat", sans-serif;
   font-size: 2em;
+  color: #202020;
+}
+.footer .footer-links .footer-link a:hover {
+  color: #665CCA;
 }
 .footer .footer-icons {
   text-align: center;

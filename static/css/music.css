@@ -1,7 +1,3 @@
-.player-wrapper .player .playlist .playlist-select div {
-  border: 1px solid #8c53c6;
-}
-
 .music-video-wrapper iframe, .player-wrapper .player .playlist {
   box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.15);
 }
@@ -107,10 +103,8 @@ input[type=range]:focus::-ms-fill-upper {
   background: #8c53c6;
 }
 
-@media (min-width: 700px) {
-  .player-wrapper {
-    margin-top: 3em;
-  }
+.player-wrapper {
+  margin-top: 3em;
 }
 .player-wrapper .player {
   position: relative;
@@ -127,6 +121,7 @@ input[type=range]:focus::-ms-fill-upper {
   padding-bottom: 2.5em;
   overflow: auto;
   background-color: #FFF;
+  border-radius: 0.25em 0.25em 0 0;
 }
 .player-wrapper .player .playlist::-webkit-scrollbar {
   width: 0.25em;
@@ -140,14 +135,15 @@ input[type=range]:focus::-ms-fill-upper {
 }
 .player-wrapper .player .playlist .playlist-select {
   display: flex;
+  justify-content: space-between;
   width: 100%;
 }
 .player-wrapper .player .playlist .playlist-select div {
   cursor: pointer;
   display: inline-block;
   padding: 0.5em;
-  width: 50%;
-  background-color: #665CCA;
+  width: 44.1%;
+  background-color: #999999;
   text-align: center;
   color: #FFF;
   font-size: 1.3em;
@@ -161,6 +157,12 @@ input[type=range]:focus::-ms-fill-upper {
 }
 .player-wrapper .player .playlist .playlist-select div:hover {
   background-color: #7239ad;
+}
+.player-wrapper .player .playlist .playlist-select div:first-child {
+  border-radius: 0 0.25em 0 0;
+}
+.player-wrapper .player .playlist .playlist-select div:last-child {
+  border-radius: 0.25em 0 0 0;
 }
 .player-wrapper .player .playlist .amplitude-song-container {
   display: flex;
@@ -185,6 +187,7 @@ input[type=range]:focus::-ms-fill-upper {
 }
 .player-wrapper .player .player-bottom .player-time-container {
   display: flex;
+  align-items: center;
 }
 .player-wrapper .player .player-bottom .player-time-container .current-time,
 .player-wrapper .player .player-bottom .player-time-container .duration {
@@ -304,6 +307,7 @@ input[type=range]:focus::-ms-fill-upper {
   text-align: center;
   font-size: 1.3em;
   font-weight: bold;
+  color: #999999;
 }
 
 .outer-music-video-wrapper {

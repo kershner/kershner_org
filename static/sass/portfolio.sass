@@ -46,7 +46,7 @@ a
 
   .chevron-down
     position: absolute
-    bottom: 2em
+    bottom: 0
     max-width: 2.25em
 
 // Breakpoints
@@ -90,7 +90,7 @@ a
 
     .project-title
       font-family: $secondary-font
-      color: $purple
+      color: $black
       font-size: 2.5em
 
     .project-blurb
@@ -189,6 +189,7 @@ a
   padding-top: 4em
   padding-bottom: 1em
   background-color: $light-grey
+  @extend %light-grey-gradient
   width: 100%
 
   .footer-links
@@ -202,6 +203,10 @@ a
         text-decoration: none
         font-family: $secondary-font
         font-size: 2em
+        color: $black
+
+        &:hover
+          color: $blue
 
   .footer-icons
     text-align: center
