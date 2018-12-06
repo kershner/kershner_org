@@ -6,12 +6,8 @@ ol {
   padding: 0;
 }
 
-.project-wrapper .left-content a .project-link-btn, .project-wrapper .left-content hr {
+.project-wrapper .left-content hr {
   background-image: linear-gradient(to right top, #8c53c6, #854dc0, #7f46b9, #7840b3, #7239ad);
-}
-
-.footer {
-  background-image: radial-gradient(circle, #f5f5f5, #eeeeee, #e7e7e7, #e0e0e0, #d9d9d9);
 }
 
 .project-wrapper .left-content a .project-link-btn {
@@ -34,7 +30,7 @@ ol {
   }
 }
 body {
-  font-family: "Open-Sans", sans-serif;
+  font-family: "Open Sans", sans-serif;
   color: #202020;
 }
 
@@ -54,7 +50,7 @@ a {
   color: #8c53c6;
 }
 a:hover {
-  color: #665CCA;
+  color: #7239ad;
 }
 
 #page-wrapper .particles-js-canvas-el {
@@ -125,15 +121,15 @@ a:hover {
   margin-bottom: 20px;
 }
 .project-wrapper .left-content .project-title {
+  margin-bottom: 0.5em;
   font-family: "Montserrat", sans-serif;
   color: #202020;
   font-size: 2.5em;
 }
 .project-wrapper .left-content .project-blurb {
-  margin-top: 0.5em;
   color: #999999;
   font-size: 1.4em;
-  line-height: 1.3em;
+  line-height: 1.4em;
 }
 .project-wrapper .left-content hr {
   margin: 1em 0;
@@ -162,7 +158,6 @@ a:hover {
   display: inline-block;
   position: relative;
   z-index: 1;
-  position: relative;
   padding: 0 30px;
   margin-top: 30px;
   margin-bottom: 30px;
@@ -172,6 +167,16 @@ a:hover {
   line-height: 48px;
   color: #FFF;
   border-radius: 100px;
+  background-color: #8c53c6;
+  -webkit-transition: all 0.2s ease-in-out;
+  -moz-transition: all 0.2s ease-in-out;
+  -o-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+}
+.project-wrapper .left-content a .project-link-btn:hover {
+  background-color: #7239ad;
+  padding: 0 3em;
+  text-align: right;
 }
 .project-wrapper .right-content {
   display: none;
@@ -215,9 +220,8 @@ a:hover {
 .footer {
   position: relative;
   z-index: 1;
-  padding-top: 4em;
+  padding-top: 7em;
   padding-bottom: 1em;
-  background-color: #f5f5f5;
   width: 100%;
 }
 .footer .footer-links {
@@ -234,7 +238,7 @@ a:hover {
   color: #202020;
 }
 .footer .footer-links .footer-link a:hover {
-  color: #665CCA;
+  color: #7239ad;
 }
 .footer .footer-icons {
   text-align: center;

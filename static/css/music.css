@@ -20,7 +20,6 @@
 input[type=range] {
   position: relative;
   z-index: 1;
-  height: 26px;
   -webkit-appearance: none;
   width: 100%;
 }
@@ -173,7 +172,6 @@ input[type=range]:focus::-ms-fill-upper {
   padding: 1em;
   background-color: #FFF;
   color: #999999;
-  font-weight: bold;
   -webkit-transition: all 0.09s ease-in-out;
   -moz-transition: all 0.09s ease-in-out;
   -o-transition: all 0.09s ease-in-out;
@@ -181,7 +179,7 @@ input[type=range]:focus::-ms-fill-upper {
 }
 .player-wrapper .player .playlist .amplitude-song-container:hover {
   color: white;
-  background-color: #665CCA;
+  background-color: #7239ad;
 }
 .player-wrapper .player .playlist .amplitude-song-container.amplitude-active-song-container {
   background-color: #8c53c6;
@@ -199,6 +197,7 @@ input[type=range]:focus::-ms-fill-upper {
   font-weight: bold;
 }
 .player-wrapper .player .player-bottom .player-time-container .progress-container {
+  display: flex;
   width: 80%;
 }
 .player-wrapper .player .player-bottom .player-control-container {
@@ -296,11 +295,12 @@ input[type=range]:focus::-ms-fill-upper {
 .player-wrapper .player .player-bottom .player-meta-container {
   margin-top: 1em;
   margin-bottom: 4em;
+  min-width: 11em;
   text-align: center;
 }
 .player-wrapper .player .player-bottom .player-meta-container .now-playing-name {
   display: block;
-  color: #8c53c6;
+  color: #202020;
   font-family: "Montserrat", sans-serif;
   font-size: 3em;
 }
@@ -314,7 +314,6 @@ input[type=range]:focus::-ms-fill-upper {
   margin-bottom: 3em;
   text-align: center;
   font-size: 1.3em;
-  font-weight: bold;
   color: #999999;
 }
 

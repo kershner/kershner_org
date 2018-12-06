@@ -16,7 +16,7 @@ a
   color: $purple
 
   &:hover
-    color: $blue
+    color: $darker-purple
 
 #page-wrapper
   .particles-js-canvas-el
@@ -89,15 +89,15 @@ a
         margin-bottom: 20px
 
     .project-title
+      margin-bottom: .5em
       font-family: $secondary-font
       color: $black
       font-size: 2.5em
 
     .project-blurb
-      margin-top: .5em
       color: $grey
       font-size: 1.4em
-      line-height: 1.3em
+      line-height: 1.4em
 
     hr
       margin: 1em 0
@@ -127,7 +127,6 @@ a
         display: inline-block
         position: relative
         z-index: 1
-        position: relative
         padding: 0 30px
         margin-top: 30px
         margin-bottom: 30px
@@ -137,8 +136,14 @@ a
         line-height: 48px
         color: $white
         border-radius: 100px
-        @extend %purple-gradient
+        background-color: $purple
         @extend %box-shadow
+        +animate(0.2s)
+
+        &:hover
+          background-color: $darker-purple
+          padding: 0 3em
+          text-align: right
 
   .right-content
     display: none
@@ -190,10 +195,8 @@ a
 .footer
   position: relative
   z-index: 1
-  padding-top: 4em
+  padding-top: 7em
   padding-bottom: 1em
-  background-color: $light-grey
-  @extend %light-grey-gradient
   width: 100%
 
   .footer-links
@@ -210,7 +213,7 @@ a
         color: $black
 
         &:hover
-          color: $blue
+          color: $darker-purple
 
   .footer-icons
     text-align: center
