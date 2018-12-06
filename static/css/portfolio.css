@@ -100,8 +100,6 @@ a:hover {
 }
 .project-wrapper {
   display: flex;
-  position: relative;
-  z-index: 1;
   flex-direction: row;
   margin: 0 auto;
   margin-bottom: 5em;
@@ -118,6 +116,8 @@ a:hover {
   min-width: 300px;
 }
 .project-wrapper .left-content .project-icon img {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 120px;
   max-height: 120px;
@@ -161,6 +161,8 @@ a:hover {
   cursor: pointer;
   display: inline-block;
   position: relative;
+  z-index: 1;
+  position: relative;
   padding: 0 30px;
   margin-top: 30px;
   margin-bottom: 30px;
@@ -188,6 +190,8 @@ a:hover {
 }
 .project-wrapper .right-content img {
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 @media (min-width: 480px) {

@@ -3,6 +3,8 @@
 // Music page
 // RANGE INPUT STYLING
 input[type=range]
+  position: relative
+  z-index: 1
   height: 26px
   -webkit-appearance: none
   width: 100%
@@ -92,13 +94,13 @@ input[type=range]
   margin-top: 3em
 
   .player
-    position: relative
-    z-index: 1
     margin: 0 auto
     max-width: 50em
 
     // PLAYLIST
     .playlist
+      position: relative
+      z-index: 1
       max-height: 50vh
       min-height: 35vh
       max-width: 25em
@@ -108,7 +110,7 @@ input[type=range]
       overflow: auto
       background-color: $white
       @extend %box-shadow
-      border-radius: .25em .25em 0 0
+      border-radius: 0.25em
 
       // SCROLLBAR
       &::-webkit-scrollbar
@@ -202,6 +204,8 @@ input[type=range]
 
           div
             display: inline-block
+            position: relative
+            z-index: 1
             cursor: pointer
             margin: 0 .5em
             @extend %smaller-icon-size
@@ -229,6 +233,8 @@ input[type=range]
             align-items: center
 
             div
+              position: relative
+              z-index: 1
               display: inline-block
               margin: 0 .25em
               cursor: pointer
@@ -254,6 +260,8 @@ input[type=range]
 
           .amplitude-mute
             display: inline-block
+            position: relative
+            z-index: 1
             margin-right: .5em
             cursor: pointer
             @extend %smaller-icon-size

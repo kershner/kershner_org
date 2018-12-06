@@ -18,6 +18,8 @@
   }
 }
 input[type=range] {
+  position: relative;
+  z-index: 1;
   height: 26px;
   -webkit-appearance: none;
   width: 100%;
@@ -107,12 +109,12 @@ input[type=range]:focus::-ms-fill-upper {
   margin-top: 3em;
 }
 .player-wrapper .player {
-  position: relative;
-  z-index: 1;
   margin: 0 auto;
   max-width: 50em;
 }
 .player-wrapper .player .playlist {
+  position: relative;
+  z-index: 1;
   max-height: 50vh;
   min-height: 35vh;
   max-width: 25em;
@@ -121,7 +123,7 @@ input[type=range]:focus::-ms-fill-upper {
   padding-bottom: 2.5em;
   overflow: auto;
   background-color: #FFF;
-  border-radius: 0.25em 0.25em 0 0;
+  border-radius: 0.25em;
 }
 .player-wrapper .player .playlist::-webkit-scrollbar {
   width: 0.25em;
@@ -219,6 +221,8 @@ input[type=range]:focus::-ms-fill-upper {
 }
 .player-wrapper .player .player-bottom .player-control-container .player-repeat-container div {
   display: inline-block;
+  position: relative;
+  z-index: 1;
   cursor: pointer;
   margin: 0 0.5em;
 }
@@ -247,6 +251,8 @@ input[type=range]:focus::-ms-fill-upper {
   align-items: center;
 }
 .player-wrapper .player .player-bottom .player-control-container .player-central-control-container .player-central-controls div {
+  position: relative;
+  z-index: 1;
   display: inline-block;
   margin: 0 0.25em;
   cursor: pointer;
@@ -270,6 +276,8 @@ input[type=range]:focus::-ms-fill-upper {
 }
 .player-wrapper .player .player-bottom .player-control-container .player-volume-controls .amplitude-mute {
   display: inline-block;
+  position: relative;
+  z-index: 1;
   margin-right: 0.5em;
   cursor: pointer;
 }
