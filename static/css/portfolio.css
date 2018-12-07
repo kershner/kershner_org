@@ -261,7 +261,7 @@ a:hover {
 }
 .footer {
   padding-top: 7em;
-  padding-bottom: 1em;
+  padding-bottom: 3em;
   width: 100%;
 }
 .footer .footer-links {
@@ -271,11 +271,16 @@ a:hover {
   position: relative;
   z-index: 1;
   display: inline-block;
-  margin: 0 1em;
+  margin: 0 0.5em;
   -webkit-transition: all 0.2s ease-in-out;
   -moz-transition: all 0.2s ease-in-out;
   -o-transition: all 0.2s ease-in-out;
   transition: all 0.2s ease-in-out;
+}
+@media (min-width: 700px) {
+  .footer .footer-links .footer-link {
+    margin: 0 3em;
+  }
 }
 .footer .footer-links .footer-link:hover {
   transform: scale(1.3);
@@ -286,24 +291,27 @@ a:hover {
   font-size: 2em;
   color: #202020;
 }
-.footer .footer-links .footer-link a:hover {
-  color: #8c53c6;
-}
-.footer .footer-icons {
-  text-align: center;
-}
-.footer .footer-icons a {
-  text-decoration: none;
-}
-.footer .footer-icons .footer-icon {
-  margin: 1em;
-  max-width: 5em;
+.footer .footer-links .footer-link a .footer-icon {
   display: inline-block;
+  margin-left: -0.15em;
+  -webkit-transition: all 0.2s ease-in-out;
+  -moz-transition: all 0.2s ease-in-out;
+  -o-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
-.footer .footer-icons .footer-icon img {
+.footer .footer-links .footer-link a .footer-icon img {
   position: relative;
+  background-size: cover;
   z-index: 1;
-  width: 100%;
+  width: 0;
+  height: 0;
+  padding: 0.4em;
+}
+.footer .footer-links .footer-link a .footer-icon.github img {
+  background-image: url(../img/github-icon.png);
+}
+.footer .footer-links .footer-link a .footer-icon.email img {
+  background-image: url(../img/email-icon.png);
 }
 
 /*# sourceMappingURL=portfolio.css.map */
