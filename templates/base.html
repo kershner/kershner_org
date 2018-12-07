@@ -39,11 +39,11 @@
                     <div class="footer-link">
                         {% if request.resolver_match.url_name == 'music' %}
                         <a href="{% url 'home' %}">
-                            Home
+                            Home <div class="footer-icon home"><img></div>
                         </a>
                         {% else %}
                         <a href="{% url 'music' %}">
-                            Music
+                            Music <div class="footer-icon music"><img></div>
                         </a>
                         {% endif %}
                     </div>

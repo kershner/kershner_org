@@ -272,24 +272,22 @@ a:hover {
   z-index: 1;
   display: inline-block;
   margin: 0 0.5em;
-  -webkit-transition: all 0.2s ease-in-out;
-  -moz-transition: all 0.2s ease-in-out;
-  -o-transition: all 0.2s ease-in-out;
-  transition: all 0.2s ease-in-out;
 }
 @media (min-width: 700px) {
   .footer .footer-links .footer-link {
     margin: 0 3em;
   }
 }
-.footer .footer-links .footer-link:hover {
-  transform: scale(1.3);
-}
 .footer .footer-links .footer-link a {
   text-decoration: none;
   font-family: "Montserrat", sans-serif;
-  font-size: 2em;
+  font-size: 1.25em;
   color: #202020;
+}
+@media (min-width: 700px) {
+  .footer .footer-links .footer-link a {
+    font-size: 2em;
+  }
 }
 .footer .footer-links .footer-link a .footer-icon {
   display: inline-block;
@@ -306,6 +304,12 @@ a:hover {
   width: 0;
   height: 0;
   padding: 0.4em;
+}
+.footer .footer-links .footer-link a .footer-icon.home img {
+  background-image: url(../img/home-icon.png);
+}
+.footer .footer-links .footer-link a .footer-icon.music img {
+  background-image: url(../img/music-icon.png);
 }
 .footer .footer-links .footer-link a .footer-icon.github img {
   background-image: url(../img/github-icon.png);
