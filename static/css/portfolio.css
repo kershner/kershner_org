@@ -112,7 +112,7 @@ a:hover {
   flex-direction: row;
   margin: 0 auto;
   margin-bottom: 5em;
-  padding-left: 1.5em;
+  padding-left: 1em;
   max-width: 1280px;
 }
 @media (min-width: 700px) {
@@ -121,7 +121,7 @@ a:hover {
   }
 }
 .project-wrapper .left-content {
-  width: 33.33%;
+  width: 90%;
   min-width: 300px;
 }
 .project-wrapper .left-content .project-icon img {
@@ -234,11 +234,19 @@ a:hover {
 }
 
 @media (min-width: 480px) {
+  .project-wrapper {
+    padding-left: 1.5em;
+  }
+}
+@media (min-width: 600px) {
   .project-wrapper .right-content {
     display: flex;
   }
   .project-wrapper .right-content div.project-img-1 img {
     display: block;
+  }
+  .project-wrapper .left-content {
+    width: 33.33%;
   }
 }
 @media (min-width: 700px) {
