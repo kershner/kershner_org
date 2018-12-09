@@ -2,6 +2,7 @@ var portfolio = {};
 
 portfolio.init = function() {
     deferImages();
+    chevronClick();
 };
 
 function deferImages() {
@@ -10,5 +11,12 @@ function deferImages() {
     if (imgDefer[i].getAttribute('data-src')) {
         imgDefer[i].setAttribute('src', imgDefer[i].getAttribute('data-src'));
         }
+    }
+}
+
+function chevronClick() {
+    var bigChevron = document.getElementsByClassName('chevron-down')[0];
+    bigChevron.onclick = function() {
+        document.getElementById('first-project').scrollIntoView();
     }
 }
