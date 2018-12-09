@@ -22,14 +22,13 @@ music.init = function() {
                 classNames = 'amplitude-song-container amplitude-play-pause',
                 playlist = songsPlaylist;
 
-            if (i === 0) {
-                classNames += ' amplitude-active-song-container';
-            }
-            containerDiv.className = classNames;
-            containerDiv.setAttribute('amplitude-song-index', i.toString());
             containerDiv.setAttribute('amplitude-playlist', 'songs');
-            containerDiv.innerHTML = '<div class="song-info"><div class="song-title">'+song.name+'</div></div><div class="duration">' + song.duration + '</div>';
+            containerDiv.setAttribute('amplitude-song-index', i.toString());
+            containerDiv.className = classNames;
+            containerDiv.innerHTML =    '<div class="song-info"><div class="song-title">'+song.name+'</div></div>' +
+                                        '<div class="duration">' + song.duration + '</div>';
 
+            // Loop specific stuff
             if (song.type === 'LO') {
                 playlistContainer = document.getElementById('loops');
                 playlist = loopsPlaylist;
@@ -42,11 +41,12 @@ music.init = function() {
         }
 
         var amplitudeOptions = {
-            'songs'     : amplitudeSongs,
+            'songs' : amplitudeSongs,
             'playlists' : {
                 'loops' : loopsPlaylist,
                 'songs' : songsPlaylist
-            }
+            },
+            'starting_playlist' : 'loops'
         };
         Amplitude.init(amplitudeOptions);
     }
