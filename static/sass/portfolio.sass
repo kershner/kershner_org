@@ -44,6 +44,10 @@ a
       margin: .5em auto
       font-family: $secondary-font
 
+      a:active
+        position: relative
+        @extend %btn-click
+
   .chevron-down
     position: absolute
     bottom: 0
@@ -147,6 +151,9 @@ a
           padding: 0 3em
           text-align: right
 
+        &:active
+          @extend %btn-click
+
   .right-content
     display: none
     flex-direction: row
@@ -234,6 +241,9 @@ a
 
       @media(min-width: 700px)
         margin: 0 3em
+
+      &:active
+        @extend %btn-click
 
       a
         text-decoration: none

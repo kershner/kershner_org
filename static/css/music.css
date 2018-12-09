@@ -322,7 +322,7 @@ input[type=range]:focus::-ms-fill-upper {
   cursor: pointer;
   padding: 0.25em 1em;
   line-height: 1.5em;
-  font-size: 1.5em;
+  font-size: 1em;
   text-align: center;
   color: white;
   border-radius: 0.2em;
@@ -331,6 +331,11 @@ input[type=range]:focus::-ms-fill-upper {
   -moz-transition: all 0.2s ease-in-out;
   -o-transition: all 0.2s ease-in-out;
   transition: all 0.2s ease-in-out;
+}
+@media (min-width: 480px) {
+  .player-wrapper .player .player-bottom #old-video-toggle {
+    font-size: 1.5em;
+  }
 }
 .player-wrapper .player .player-bottom #old-video-toggle:hover {
   background-color: #202020;

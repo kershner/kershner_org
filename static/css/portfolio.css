@@ -27,6 +27,10 @@ ol {
   box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.15);
 }
 
+.footer .footer-links .footer-link:active, .project-wrapper .left-content a .project-link-btn:active, .welcome-wrapper section h1 a:active {
+  top: 4px;
+}
+
 .levitate {
   -webkit-animation: levitate 3s infinite;
 }
@@ -89,6 +93,9 @@ a:hover {
   font-size: 2em;
   margin: 0.5em auto;
   font-family: "Montserrat", sans-serif;
+}
+.welcome-wrapper section h1 a:active {
+  position: relative;
 }
 .welcome-wrapper .chevron-down {
   position: absolute;
