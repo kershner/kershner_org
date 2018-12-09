@@ -4,10 +4,7 @@ import json
 
 
 def home(request):
-    template_vars = {
-        'title': 'Tyler Kershner'
-    }
-    return render(request, 'home.html', template_vars)
+    return render(request, 'home.html')
 
 
 def music(request):
@@ -25,7 +22,7 @@ def music(request):
         songs_json.append(tmp)
 
     template_vars = {
-        'title': 'Tyler Kershner - Music',
+        'title': 'Music',
         'songs_json': json.dumps(songs_json)
     }
     return render(request, 'music.html', template_vars)
