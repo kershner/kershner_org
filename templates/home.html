@@ -22,56 +22,53 @@
 </div>
 
 <div class="projects-wrapper">
-<div id="first-project" class="project-wrapper">
-    <div class="left-content">
-        <div class="project-icon">
-            <img src="" data-src="{% static '/img/gene-square.png' %}">
+{% for project in projects %}
+    {% if forloop.counter == 1 %}
+    <div id="first-project" class="project-wrapper">
+    {% else %}
+    <div class="project-wrapper">
+    {% endif %}
+        <div class="left-content">
+            <div class="project-icon">
+                <img src="" data-src="{{ project.icon.url }}">
+            </div>
+
+            <div class="project-title">{{ project.title }}</div>
+
+            <div class="project-blurb">{{ project.blurb }}</div>
+
+            <hr align="left">
+
+            <div class="project-info">
+                <div class="project-info-title">Technologies:</div>
+                <div class="project-info-value">{{ project.technologies }}</div>
+            </div>
+
+            <div class="project-info">
+                <div class="project-info-title">More:</div>
+                <div class="project-info-value">{{ project.extra_notes }}</div>
+            </div>
+
+            <a href="{{ project.site_url}}" target="_blank">
+                <div class="project-link-btn">Visit Site →</div>
+            </a>
         </div>
 
-        <div class="project-title">Poop</div>
+        <div class="right-content">
+            <div class="project-img-1">
+                <img src="" data-src="{{ project.image_1.url }}">
+            </div>
 
-        <div class="project-blurb">
-            Riggatoni lorem ipsum check out these cute dogs on the GIF display.
-            I'm just writing a bunch of words as placeholder to see how they look.
-            Maybe this will be this long.  Remember that movie that one time?
-        </div>
+            <div class="project-img-2">
+                <img src="" data-src="{{ project.image_2.url }}">
+            </div>
 
-        <hr align="left">
-
-        <div class="project-info">
-            <div class="project-info-title">Technology:</div>
-            <div class="project-info-value">Python, poop, pee</div>
-        </div>
-
-        <div class="project-info">
-            <div class="project-info-title">More:</div>
-            <div class="project-info-value">Riggatoni</div>
-        </div>
-
-        <div class="project-info">
-            <div class="project-info-title">Whoopsy:</div>
-            <div class="project-info-value">Daisy</div>
-        </div>
-
-        <a href="#" target="_blank">
-            <div class="project-link-btn">Visit Site →</div>
-        </a>
-    </div>
-
-    <div class="right-content">
-        <div class="project-img-1">
-            <img src="" data-src="{% static '/img/gene.png' %}">
-        </div>
-
-        <div class="project-img-2">
-            <img src="" data-src="{% static '/img/gene.png' %}">
-        </div>
-
-        <div class="project-img-3">
-            <img src="" data-src="{% static '/img/gene.png' %}">
+            <div class="project-img-3">
+                <img src="" data-src="{{ project.image_3.url }}">
+            </div>
         </div>
     </div>
-</div>
+{% endfor %}
 </div>
 
 <!-- More Projects Btn -->

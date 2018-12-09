@@ -1,10 +1,15 @@
 from django.shortcuts import render
+from project.models import Project
 from song.models import Song
 import json
 
 
 def home(request):
-    return render(request, 'home.html')
+    projects = Project.objects.all().order_by('-id')
+    template_vars = {
+        'projects': projects
+    }
+    return render(request, 'home.html', template_vars)
 
 
 def music(request):
