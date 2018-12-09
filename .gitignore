@@ -5,3 +5,4 @@ project/migrations/
 *.db
 .idea/
 *.map
+song/migrations/
