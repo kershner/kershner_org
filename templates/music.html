@@ -63,6 +63,8 @@
                         <span amplitude-song-info="name" amplitude-main-song-info="true" class="now-playing-name"></span>
                         <span amplitude-song-info="artist" amplitude-main-song-info="true" class="now-playing-artist"></span>
                     </div>
+
+                    <div id="old-video-toggle">Load Old Video</div>
                 </div>
 
                 <!-- Volume -->
@@ -76,12 +78,13 @@
 </div>
 
 <!-- Old vid -->
-<div class="outer-music-video-wrapper">
+<div class="outer-music-video-wrapper hidden">
     <div class="music-video-wrapper">
         <iframe id="old-music-video-ifr" frameborder="0" allowfullscreen></iframe>
     </div>
+
+    <div class="music-video-blurb">Bonus jam from 2007</div>
 </div>
-<div class="music-video-blurb">Bonus jam from 2007</div>
 {% endblock %}
 
 {% block extra_javascripts %}

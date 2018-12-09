@@ -7,14 +7,8 @@ var music = {
 music.init = function() {
     amplitudeInit();
     playlistSelect();
+    songSelect();
     deferVideoLoad();
-
-    // Onclick for song containers
-    document.querySelectorAll('.' + music.songContainer).forEach(function(e) {
-        e.addEventListener('click', function() {
-            console.log('clicked on a song!');
-        });
-    });
 
     function amplitudeInit() {
         var amplitudeSongs = [],
@@ -66,6 +60,15 @@ music.init = function() {
         });
     }
 
+    function songSelect() {
+        // Onclick for song containers
+        document.querySelectorAll('.' + music.songContainer).forEach(function(e) {
+            e.addEventListener('click', function() {
+                console.log('clicked on a song!');
+            });
+        });
+    }
+
     function togglePlaylist(element) {
         var type = element.getAttribute('data-type'),
             songsContainer = document.getElementById('songs'),
@@ -89,9 +92,14 @@ music.init = function() {
     }
 
     function deferVideoLoad() {
-        var oldVideoIfr = document.getElementById('old-music-video-ifr');
-        setTimeout(function (){
+        var oldVideoIfr = document.getElementById('old-music-video-ifr'),
+            oldVideoToggle = document.getElementById('old-video-toggle'),
+            videoWrapper = document.getElementsByClassName('outer-music-video-wrapper')[0];
+
+        oldVideoToggle.onclick = function() {
+            addClass(this, 'hidden');
+            removeClass(videoWrapper, 'hidden');
             oldVideoIfr.src = music.oldVideoUrl
-        }, 1500);
+        };
     }
 };

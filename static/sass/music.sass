@@ -271,7 +271,7 @@ input[type=range]
       .player-meta-container
         display: block
         margin-top: 1em
-        margin-bottom: 4em
+        margin-bottom: 10em
         width: 100%
         text-align: center
 
@@ -285,12 +285,25 @@ input[type=range]
           color: $grey
           font-size: 1.5em
 
-.music-video-blurb
-  margin: .5em auto
-  margin-bottom: 3em
-  text-align: center
-  font-size: 1.3em
-  color: $grey
+      #old-video-toggle
+        position: relative
+        z-index: 1
+        margin: 0 auto
+        cursor: pointer
+        padding: 0.25em 1em
+        line-height: 1.5em
+        font-size: 1.5em
+        text-align: center
+        color: white
+        @extend %box-shadow
+        border-radius: .2em
+        background-color: $purple
+        +animate(0.2s)
+
+        &:hover
+          background-color: $black
+        &:active
+          @extend %btn-click
 
 .outer-music-video-wrapper
   margin: 0 auto
@@ -310,3 +323,10 @@ input[type=range]
     width: 100%
     height: 100%
     @extend %box-shadow
+
+.music-video-blurb
+  margin: .5em auto
+  margin-bottom: 3em
+  text-align: center
+  font-size: 1.3em
+  color: $grey
