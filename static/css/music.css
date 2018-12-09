@@ -126,14 +126,14 @@ input[type=range]:focus::-ms-fill-upper {
 }
 .player-wrapper .player {
   margin: 0 auto;
-  max-width: 50em;
+  max-width: 35em;
 }
 .player-wrapper .player .playlist-select {
   display: flex;
   justify-content: space-between;
   overflow: hidden;
-  max-width: 25em;
   margin: 0 auto;
+  max-width: 25em;
   font-family: "Montserrat", sans-serif;
 }
 .player-wrapper .player .playlist-select div {
@@ -163,7 +163,6 @@ input[type=range]:focus::-ms-fill-upper {
   position: relative;
   z-index: 1;
   height: 45vh;
-  max-width: 30em;
   margin: 0 auto;
   margin-bottom: 2em;
   overflow-x: hidden;

@@ -72,7 +72,8 @@ music.init = function() {
     function togglePlaylist(element) {
         var type = element.getAttribute('data-type'),
             songsContainer = document.getElementById('songs'),
-            loopsContainer = document.getElementById('loops');
+            loopsContainer = document.getElementById('loops'),
+            shuffleBtn = document.getElementsByClassName('amplitude-shuffle')[0];
 
         // Remove/add active class
         document.querySelectorAll('.playlist-option').forEach(function(e) {
@@ -89,6 +90,8 @@ music.init = function() {
             removeClass(songsContainer, 'hidden');
             addClass(loopsContainer, 'hidden');
         }
+
+        shuffleBtn.setAttribute('amplitude-playlist', type);
     }
 
     function deferVideoLoad() {
