@@ -151,16 +151,14 @@ input[type=range]:focus::-ms-fill-upper {
 .player-wrapper .player .playlist-select div.active {
   color: #7239ad;
   border-bottom: none;
-  transform: scale(1.1);
 }
 .player-wrapper .player .playlist-select div:hover {
   color: #202020;
-  transform: scale(1.1);
 }
 .player-wrapper .player .playlist {
   position: relative;
   z-index: 1;
-  height: 35vh;
+  height: 45vh;
   max-width: 30em;
   margin: 0 auto;
   margin-bottom: 2em;
@@ -183,10 +181,7 @@ input[type=range]:focus::-ms-fill-upper {
 }
 .player-wrapper .player .playlist .amplitude-song-container:hover, .player-wrapper .player .playlist .amplitude-song-container.amplitude-active-song-container {
   color: #8c53c6;
-  transform: scale(1.1);
   font-family: "Montserrat", sans-serif;
-  padding: 0.8em 4em;
-  border-bottom: 2px solid #8c53c6;
 }
 .player-wrapper .player .playlist .amplitude-song-container .duration {
   font-size: 0.8em;
@@ -212,10 +207,12 @@ input[type=range]:focus::-ms-fill-upper {
   margin: 0 auto;
 }
 .player-wrapper .player .player-bottom .player-control-container .player-central-control-container .player-central-controls div {
+  background-size: cover !important;
   width: 40px;
   height: 40px;
 }
 .player-wrapper .player .player-bottom .player-control-container .player-volume-controls .amplitude-mute, .player-wrapper .player .player-bottom .player-control-container .player-central-control-container .player-central-controls div.amplitude-next, .player-wrapper .player .player-bottom .player-control-container .player-central-control-container .player-central-controls div.amplitude-prev, .player-wrapper .player .player-bottom .player-control-container .player-repeat-container div {
+  background-size: cover !important;
   width: 30px;
   height: 30px;
 }

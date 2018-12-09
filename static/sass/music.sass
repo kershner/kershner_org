@@ -120,16 +120,14 @@ input[type=range]
         &.active
           color: $darker-purple
           border-bottom: none
-          transform: scale(1.1)
         &:hover
           color: $black
-          transform: scale(1.1)
 
     // PLAYLIST
     .playlist
       position: relative
       z-index: 1
-      height: 35vh
+      height: 45vh
       max-width: 30em
       margin: 0 auto
       margin-bottom: 2em
@@ -150,10 +148,7 @@ input[type=range]
         &:hover,
         &.amplitude-active-song-container
           color: $purple
-          transform: scale(1.1)
           font-family: $secondary-font
-          padding: 0.8em 4em
-          border-bottom: 2px solid $purple
 
         .duration
           font-size: 0.8em
@@ -182,10 +177,12 @@ input[type=range]
         margin: 0 auto
 
         %icon-size
+          background-size: cover !important
           width: 40px
           height: 40px
 
         %smaller-icon-size
+          background-size: cover !important
           width: 30px
           height: 30px
 
