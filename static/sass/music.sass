@@ -152,6 +152,7 @@ input[type=range]
         +animate(0.2s)
         border-bottom: 1px solid $purple
         line-height: 1em
+        @extend %ripple
 
         &:hover,
         &.amplitude-active-song-container
@@ -237,7 +238,6 @@ input[type=range]
               display: inline-block
               margin: 0 .25em
               cursor: pointer
-
               @extend %icon-size
 
               &.amplitude-paused
