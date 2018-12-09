@@ -27,40 +27,40 @@
     </head>
 
     <body>
-        <!-- Content-->
-        <div id="page-wrapper">
-        {% block content %}{% endblock %}
-        </div>
+    <!-- Content-->
+    <div id="page-wrapper">
+    {% block content %}{% endblock %}
+    </div>
 
-        <!-- Footer -->
-        {% block footer %}
-            <div class="footer">
-                <div class="footer-links">
-                    <div class="footer-link">
-                        {% if request.resolver_match.url_name == 'music' %}
-                        <a href="{% url 'home' %}">
-                            <div class="footer-icon home"><img></div> Home
-                        </a>
-                        {% else %}
-                        <a href="{% url 'music' %}">
-                            <div class="footer-icon music"><img></div> Music
-                        </a>
-                        {% endif %}
-                    </div>
+    <!-- Footer -->
+    {% block footer %}
+        <div class="footer">
+            <div class="footer-links">
+                <div class="footer-link">
+                    {% if request.resolver_match.url_name == 'music' %}
+                    <a href="{% url 'home' %}">
+                        <div class="footer-icon home"><img></div> Home
+                    </a>
+                    {% else %}
+                    <a href="{% url 'music' %}">
+                        <div class="footer-icon music"><img></div> Music
+                    </a>
+                    {% endif %}
+                </div>
 
-                    <div class="footer-link">
-                        <a href="https://www.github.com/kershner" target="_blank">
-                            <div class="footer-icon github"><img></div> Github
-                        </a>
-                    </div>
+                <div class="footer-link">
+                    <a href="https://www.github.com/kershner" target="_blank">
+                        <div class="footer-icon github"><img></div> Github
+                    </a>
+                </div>
 
-                    <div class="footer-link">
-                        <a href="mailto:tyler@kershner.org" target="_blank">
-                            <div class="footer-icon email"><img></div> Email
-                        </a>
-                    </div>
+                <div class="footer-link">
+                    <a href="mailto:tyler@kershner.org" target="_blank">
+                        <div class="footer-icon email"><img></div> Email
+                    </a>
                 </div>
             </div>
+        </div>
         {% endblock %}
 
         <!-- JS -->
@@ -68,11 +68,11 @@
         <script type="text/javascript" src="{% static 'js/particlesInit.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/main.js' %}"></script>
         {% block javascripts %}
-            <script type="text/javascript">
-                window.onload = portfolio.init();
-            </script>
+        <script type="text/javascript">
+            window.onload = portfolio.init();
+        </script>
 
-            {% block extra_javascripts %}{% endblock %}
+        {% block extra_javascripts %}{% endblock %}
         {% endblock %}
     </body>
 </html>

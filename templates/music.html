@@ -2,94 +2,93 @@
 {% load staticfiles %}
 
 {% block extra_head %}
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
     <link rel="stylesheet" href="{% static '/css/music.css' %}">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/amplitudejs@3.3.1/dist/amplitude.js"></script>
 {% endblock %}
 
 {% block content %}
-    <div class="player-wrapper">
-        <div class="player">
-            <!-- Playlist -->
-            <!-- Playlist Select -->
-            <div class="playlist-select">
-                <div class="playlist-option active" data-type="loops">Loops</div>
-                <div class="playlist-option" data-type="songs">Songs</div>
-            </div>
+<div class="player-wrapper">
+    <div class="player">
+        <!-- Playlist -->
+        <!-- Playlist Select -->
+        <div class="playlist-select">
+            <div class="playlist-option active" data-type="loops">Loops</div>
+            <div class="playlist-option" data-type="songs">Songs</div>
+        </div>
 
-            <div class="playlist">
-                <!-- Loops -->
-                <div id="loops"></div>
+        <div class="playlist">
+            <!-- Loops -->
+            <div id="loops"></div>
 
-                <!-- Songs -->
-                <div id="songs" class="hidden"></div>
-            </div>
+            <!-- Songs -->
+            <div id="songs" class="hidden"></div>
+        </div>
 
-            <div class="player-bottom">
-                <!-- Time -->
-                <div class="player-time-container">
-                    <!-- Current Time -->
-                    <span class="current-time">
-                      <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
-                    </span>
+        <div class="player-bottom">
+            <!-- Time -->
+            <div class="player-time-container">
+                <!-- Current Time -->
+                <span class="current-time">
+                  <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
+                </span>
 
-                    <!-- Progress -->
-                    <div class="progress-container">
-                        <input type="range" class="amplitude-song-slider" amplitude-main-song-slider="true"/>
-                    </div>
-
-                    <!-- Duration -->
-                    <span class="duration">
-                      <span class="amplitude-duration-minutes" amplitude-main-duration-minutes="true"></span>:<span class="amplitude-duration-seconds" amplitude-main-duration-seconds="true"></span>
-                    </span>
+                <!-- Progress -->
+                <div class="progress-container">
+                    <input type="range" class="amplitude-song-slider" amplitude-main-song-slider="true"/>
                 </div>
 
-                <!-- Controls Container -->
-                <div class="player-control-container">
-                    <!-- Repeat Container -->
-                    <div class="player-repeat-container">
-                        <div class="amplitude-repeat"></div>
-                        <div class="amplitude-shuffle amplitude-shuffle-off"></div>
+                <!-- Duration -->
+                <span class="duration">
+                  <span class="amplitude-duration-minutes" amplitude-main-duration-minutes="true"></span>:<span class="amplitude-duration-seconds" amplitude-main-duration-seconds="true"></span>
+                </span>
+            </div>
+
+            <!-- Controls Container -->
+            <div class="player-control-container">
+                <!-- Repeat Container -->
+                <div class="player-repeat-container">
+                    <div class="amplitude-repeat"></div>
+                    <div class="amplitude-shuffle amplitude-shuffle-off"></div>
+                </div>
+
+                <!-- Central Controls -->
+                <div class="player-central-control-container">
+                    <div class="player-central-controls">
+                        <div class="amplitude-prev"></div>
+                        <div class="amplitude-play-pause" amplitude-playlist="0" amplitude-main-play-pause="true"></div>
+                        <div class="amplitude-next"></div>
                     </div>
 
-                    <!-- Central Controls -->
-                    <div class="player-central-control-container">
-                        <div class="player-central-controls">
-                            <div class="amplitude-prev"></div>
-                            <div class="amplitude-play-pause" amplitude-playlist="0" amplitude-main-play-pause="true"></div>
-                            <div class="amplitude-next"></div>
-                        </div>
-
-                        <div class="player-meta-container">
-                            <span amplitude-song-info="name" amplitude-main-song-info="true" class="now-playing-name"></span>
-                            <span amplitude-song-info="artist" amplitude-main-song-info="true" class="now-playing-artist"></span>
-                        </div>
+                    <div class="player-meta-container">
+                        <span amplitude-song-info="name" amplitude-main-song-info="true" class="now-playing-name"></span>
+                        <span amplitude-song-info="artist" amplitude-main-song-info="true" class="now-playing-artist"></span>
                     </div>
+                </div>
 
-                    <!-- Volume -->
-                    <div class="player-volume-controls">
-                        <div class="amplitude-mute amplitude-not-muted"></div>
-                        <input type="range" class="amplitude-volume-slider"/>
-                    </div>
+                <!-- Volume -->
+                <div class="player-volume-controls">
+                    <div class="amplitude-mute amplitude-not-muted"></div>
+                    <input type="range" class="amplitude-volume-slider"/>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Old vid -->
-    <div class="outer-music-video-wrapper">
-        <div class="music-video-wrapper">
-            <iframe id="old-music-video-ifr" frameborder="0" allowfullscreen></iframe>
-        </div>
+<!-- Old vid -->
+<div class="outer-music-video-wrapper">
+    <div class="music-video-wrapper">
+        <iframe id="old-music-video-ifr" frameborder="0" allowfullscreen></iframe>
     </div>
-    <div class="music-video-blurb">Bonus jam from 2007</div>
+</div>
+<div class="music-video-blurb">Bonus jam from 2007</div>
 {% endblock %}
 
 {% block extra_javascripts %}
-    <script type="text/javascript" src="{% static '/js/util.js' %}"></script>
-    <script type="text/javascript" src="{% static '/js/music.js' %}"></script>
-    <script type="text/javascript">
-        music.songs = {{ songs_json|safe }};
-        music.init();
-    </script>
+<script type="text/javascript" src="{% static '/js/util.js' %}"></script>
+<script type="text/javascript" src="{% static '/js/music.js' %}"></script>
+<script type="text/javascript">
+    music.songs = {{ songs_json|safe }};
+    music.init();
+</script>
 {% endblock %}
