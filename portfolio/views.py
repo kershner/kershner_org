@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from django.conf import settings
+from song.models import Song
+import json
 
 
 def home(request):
@@ -10,9 +11,21 @@ def home(request):
 
 
 def music(request):
-    base_s3_url = 'https://{}/static/music'.format(settings.AWS_S3_CUSTOM_DOMAIN)
+    songs = Song.objects.all().order_by('-id')
+    songs_json = []
+    for song in songs:
+        tmp = {
+            'name': song.title,
+            'artist': song.artist,
+            'type': song.type,
+            'url': song.file.url,
+            'cover_art_url': song.thumbnail.url,
+            'duration': song.duration
+        }
+        songs_json.append(tmp)
+
     template_vars = {
         'title': 'Tyler Kershner - Music',
-        'base_s3_url': base_s3_url
+        'songs_json': json.dumps(songs_json)
     }
     return render(request, 'music.html', template_vars)

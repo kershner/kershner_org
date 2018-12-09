@@ -26,7 +26,9 @@ class Song(models.Model):
         ('LO', 'Loop')
     )
     type = models.CharField(max_length=2, choices=TYPE_CHOICES, default='LO')
+    duration = models.CharField(max_length=20)
     plays = models.IntegerField(default=0)
+    notes = models.TextField(null=True)
 
     def __str__(self):
         return 'ID: %d | %s' % (self.id, self.title)
@@ -36,4 +38,7 @@ class Song(models.Model):
 # https://docs.djangoproject.com/en/2.0/ref/contrib/admin/#django.contrib.admin.ModelAdmin
 @admin.register(Song)
 class ProjectAdmin(admin.ModelAdmin):
+    list_display = ('title', 'id', 'created_at', 'duration')
+    list_filter = ('type', 'created_at', 'duration')
+    search_fields = ['name', 'id']
     show_full_result_count = True

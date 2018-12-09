@@ -19,154 +19,10 @@
 
             <div class="playlist">
                 <!-- Loops -->
-                <div id="loops">
-                    <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause ">
-                        <div class="song-info">
-                            <div class="song-title">51.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:22
-                        </div>
-                    </div>
-
-
-
-
-
-                    <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause ">
-                        <div class="song-info">
-                            <div class="song-title">51.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:22
-                        </div>
-                    </div>
-                    <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause ">
-                        <div class="song-info">
-                            <div class="song-title">51.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:22
-                        </div>
-                    </div>
-
-                    <div amplitude-song-index="0" class="amplitude-song-container amplitude-play-pause active">
-                        <div class="song-info">
-                            <div class="song-title">51.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:22
-                        </div>
-                    </div>
-                    <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause ">
-                        <div class="song-info">
-                            <div class="song-title">51.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:22
-                        </div>
-                    </div>
-                    <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause ">
-                        <div class="song-info">
-                            <div class="song-title">51.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:22
-                        </div>
-                    </div>
-                    <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause ">
-                        <div class="song-info">
-                            <div class="song-title">51.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:22
-                        </div>
-                    </div>
-                    <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause ">
-                        <div class="song-info">
-                            <div class="song-title">51.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:22
-                        </div>
-                    </div>
-                    <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause ">
-                        <div class="song-info">
-                            <div class="song-title">51.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:22
-                        </div>
-                    </div>
-                    <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause ">
-                        <div class="song-info">
-                            <div class="song-title">51.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:22
-                        </div>
-                    </div>
-                    <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause ">
-                        <div class="song-info">
-                            <div class="song-title">51.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:22
-                        </div>
-                    </div>
-                    <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause ">
-                        <div class="song-info">
-                            <div class="song-title">51.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:22
-                        </div>
-                    </div>
-                    <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause ">
-                        <div class="song-info">
-                            <div class="song-title">51.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:22
-                        </div>
-                    </div>
-                    <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause ">
-                        <div class="song-info">
-                            <div class="song-title">51.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:22
-                        </div>
-                    </div><div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause ">
-                        <div class="song-info">
-                            <div class="song-title">51.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:22
-                        </div>
-                    </div>
-                    <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause ">
-                        <div class="song-info">
-                            <div class="song-title">51.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:22
-                        </div>
-                    </div>
-
-                </div>
+                <div id="loops"></div>
 
                 <!-- Songs -->
-                <div id="songs" class="hidden">
-                    <div amplitude-song-index="1" class="amplitude-song-container amplitude-play-pause">
-                        <div class="song-info">
-                            <div class="song-title">50.mp3</div>
-                        </div>
-                        <div class="duration">
-                            0:29
-                        </div>
-                    </div>
-                </div>
+                <div id="songs" class="hidden"></div>
             </div>
 
             <div class="player-bottom">
@@ -200,7 +56,7 @@
                     <div class="player-central-control-container">
                         <div class="player-central-controls">
                             <div class="amplitude-prev"></div>
-                            <div class="amplitude-play-pause" amplitude-main-play-pause="true"></div>
+                            <div class="amplitude-play-pause" amplitude-playlist="0" amplitude-main-play-pause="true"></div>
                             <div class="amplitude-next"></div>
                         </div>
 
@@ -233,21 +89,7 @@
     <script type="text/javascript" src="{% static '/js/util.js' %}"></script>
     <script type="text/javascript" src="{% static '/js/music.js' %}"></script>
     <script type="text/javascript">
-        var amplitudeOptions = {
-            "songs": [
-                {
-                    "name"          : "51",
-                    "artist"        : "Tyler Kershner",
-                    "url"           : "{{ base_s3_url }}/51.mp3"
-                },
-                {
-                    "name"          : "50",
-                    "artist"        : "Tyler Kershner",
-                    "url"           : "{{ base_s3_url }}/50.mp3"
-                }
-            ]
-        };
-
+        music.songs = {{ songs_json|safe }};
         music.init();
     </script>
 {% endblock %}

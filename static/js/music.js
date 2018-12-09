@@ -1,10 +1,11 @@
 var music = {
+    songs           : {},
     songContainer   : 'amplitude-song-container',
     oldVideoUrl     : 'https://www.youtube.com/embed/w1t-Mevr9YM'
 };
 
 music.init = function() {
-    Amplitude.init(amplitudeOptions);
+    amplitudeInit();
     playlistSelect();
     deferVideoLoad();
 
@@ -14,6 +15,47 @@ music.init = function() {
             console.log('clicked on a song!');
         });
     });
+
+    function amplitudeInit() {
+        var amplitudeSongs = [],
+            loopsPlaylist = [],
+            songsPlaylist = [];
+
+        for (var i=0; i<music.songs.length; i++) {
+            var containerDiv = document.createElement('div'),
+                playlistContainer = document.getElementById('songs'),
+                song = music.songs[i],
+                classNames = 'amplitude-song-container amplitude-play-pause',
+                playlist = songsPlaylist;
+
+            if (i === 0) {
+                classNames += ' amplitude-active-song-container';
+            }
+            containerDiv.className = classNames;
+            containerDiv.setAttribute('amplitude-song-index', i.toString());
+            containerDiv.setAttribute('amplitude-playlist', 'songs');
+            containerDiv.innerHTML = '<div class="song-info"><div class="song-title">'+song.name+'</div></div><div class="duration">' + song.duration + '</div>';
+
+            if (song.type === 'LO') {
+                playlistContainer = document.getElementById('loops');
+                playlist = loopsPlaylist;
+                containerDiv.setAttribute('amplitude-playlist', 'loops');
+            }
+
+            playlist.push(i);
+            playlistContainer.appendChild(containerDiv);
+            amplitudeSongs.push(music.songs[i]);
+        }
+
+        var amplitudeOptions = {
+            'songs'     : amplitudeSongs,
+            'playlists' : {
+                'loops' : loopsPlaylist,
+                'songs' : songsPlaylist
+            }
+        };
+        Amplitude.init(amplitudeOptions);
+    }
 
     function playlistSelect() {
         // Onclick for playlist options
