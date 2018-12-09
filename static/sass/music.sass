@@ -95,6 +95,15 @@ input[type=range]
     margin: 0 auto
     max-width: 35em
 
+    // SCROLLBAR
+    ::-webkit-scrollbar
+      width: 0.3em
+    ::-webkit-scrollbar-track
+      -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
+    ::-webkit-scrollbar-thumb
+      background-color: darkgrey
+      outline: 1px solid slategrey
+
     // PLAYLIST SELECT
     .playlist-select
       display: flex
