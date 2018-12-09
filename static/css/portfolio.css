@@ -89,13 +89,13 @@ a:hover {
 }
 .welcome-wrapper section h1 {
   position: relative;
-  z-index: 1;
   font-size: 2em;
   margin: 0.5em auto;
   font-family: "Montserrat", sans-serif;
 }
-.welcome-wrapper section h1 a:active {
+.welcome-wrapper section h1 a {
   position: relative;
+  z-index: 1;
 }
 .welcome-wrapper .chevron-down {
   position: absolute;

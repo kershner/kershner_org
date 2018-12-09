@@ -127,12 +127,14 @@ input[type=range]
     .playlist
       position: relative
       z-index: 1
+      max-width: 30em
       height: 45vh
       margin: 0 auto
       margin-bottom: 2em
       overflow-x: hidden
       overflow-y: auto
-      border-radius: 0.25em
+      border-top: 2px solid $grey
+      border-bottom: 2px solid $grey
 
       .amplitude-song-container
         display: flex
@@ -148,6 +150,8 @@ input[type=range]
         &.amplitude-active-song-container
           color: $purple
           font-family: $secondary-font
+        &:hover
+          color: $black
 
         .duration
           font-size: 0.8em
@@ -278,11 +282,22 @@ input[type=range]
           display: block
           color: $black
           font-family: $secondary-font
-          font-size: 3em
+          font-size: 1em
 
         .now-playing-artist
           color: $grey
-          font-size: 1.5em
+          font-size: 1em
+
+        @media(min-width: 480px)
+          .now-playing-name
+            font-size: 1.5em
+
+          .now-playing-artist
+            font-size: 1.5em
+
+        @media(min-width: 700px)
+          .now-playing-name
+            font-size: 3em
 
       #old-video-toggle
         position: relative

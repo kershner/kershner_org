@@ -162,12 +162,14 @@ input[type=range]:focus::-ms-fill-upper {
 .player-wrapper .player .playlist {
   position: relative;
   z-index: 1;
+  max-width: 30em;
   height: 45vh;
   margin: 0 auto;
   margin-bottom: 2em;
   overflow-x: hidden;
   overflow-y: auto;
-  border-radius: 0.25em;
+  border-top: 2px solid #999999;
+  border-bottom: 2px solid #999999;
 }
 .player-wrapper .player .playlist .amplitude-song-container {
   display: flex;
@@ -185,6 +187,9 @@ input[type=range]:focus::-ms-fill-upper {
 .player-wrapper .player .playlist .amplitude-song-container:hover, .player-wrapper .player .playlist .amplitude-song-container.amplitude-active-song-container {
   color: #8c53c6;
   font-family: "Montserrat", sans-serif;
+}
+.player-wrapper .player .playlist .amplitude-song-container:hover {
+  color: #202020;
 }
 .player-wrapper .player .playlist .amplitude-song-container .duration {
   font-size: 0.8em;
@@ -309,11 +314,24 @@ input[type=range]:focus::-ms-fill-upper {
   display: block;
   color: #202020;
   font-family: "Montserrat", sans-serif;
-  font-size: 3em;
+  font-size: 1em;
 }
 .player-wrapper .player .player-bottom .player-meta-container .now-playing-artist {
   color: #999999;
-  font-size: 1.5em;
+  font-size: 1em;
+}
+@media (min-width: 480px) {
+  .player-wrapper .player .player-bottom .player-meta-container .now-playing-name {
+    font-size: 1.5em;
+  }
+  .player-wrapper .player .player-bottom .player-meta-container .now-playing-artist {
+    font-size: 1.5em;
+  }
+}
+@media (min-width: 700px) {
+  .player-wrapper .player .player-bottom .player-meta-container .now-playing-name {
+    font-size: 3em;
+  }
 }
 .player-wrapper .player .player-bottom #old-video-toggle {
   position: relative;

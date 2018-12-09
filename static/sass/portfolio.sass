@@ -39,14 +39,16 @@ a
 
     h1
       position: relative
-      z-index: 1
       font-size: 2em
       margin: .5em auto
       font-family: $secondary-font
 
-      a:active
+      a
         position: relative
-        @extend %btn-click
+        z-index: 1
+
+        &:active
+          @extend %btn-click
 
   .chevron-down
     position: absolute
