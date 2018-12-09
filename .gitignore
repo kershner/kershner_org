@@ -6,4 +6,3 @@ project/migrations/
 .idea/
 *.map
 song/migrations/
-static/css/
