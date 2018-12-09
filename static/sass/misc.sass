@@ -54,3 +54,27 @@ $blue: #665CCA
     -webkit-transform: translateY(0px)
   100%
     -webkit-transform: translateY(-20px)
+
+
+// Buttons
+%generic-btn
+  cursor: pointer
+  display: inline-block
+  position: relative
+  z-index: 1
+  padding: 0 30px
+  height: 50px
+  font-size: 1.5em
+  line-height: 48px
+  color: $white
+  border-radius: 100px
+  background-color: $purple
+  text-align: center
+  @extend %box-shadow
+  +animate(0.2s)
+
+  &:hover
+    background-color: $darker-purple
+
+  &:active
+    @extend %btn-click

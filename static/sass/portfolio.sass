@@ -132,30 +132,10 @@ a
       text-decoration: none
 
       .project-link-btn
-        cursor: pointer
-        display: inline-block
-        position: relative
-        z-index: 1
-        padding: 0 30px
+        @extend %generic-btn
         margin-top: 30px
         margin-bottom: 30px
         margin-left: -10px
-        height: 50px
-        font-size: 1.5em
-        line-height: 48px
-        color: $white
-        border-radius: 100px
-        background-color: $purple
-        @extend %box-shadow
-        +animate(0.2s)
-
-        &:hover
-          background-color: $darker-purple
-          padding: 0 3em
-          text-align: right
-
-        &:active
-          @extend %btn-click
 
   .right-content
     display: none
@@ -226,6 +206,13 @@ a
         &.project-img-3
           img
             display: block
+
+.more-projects-btn-wrapper
+  margin: 1em auto
+  text-align: center
+
+  #more-projects-btn
+    @extend %generic-btn
 
 // Footer
 .footer
