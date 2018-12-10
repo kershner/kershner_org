@@ -7,7 +7,8 @@ import json
 def home(request):
     projects = Project.objects.all().order_by('-id')
     template_vars = {
-        'projects': projects
+        'projects': projects,
+        'projects_per_page': 3
     }
     return render(request, 'home.html', template_vars)
 

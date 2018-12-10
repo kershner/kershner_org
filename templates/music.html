@@ -89,7 +89,6 @@
 {% endblock %}
 
 {% block extra_javascripts %}
-<script type="text/javascript" src="{% static '/js/util.js' %}"></script>
 <script type="text/javascript" src="{% static '/js/music.js' %}"></script>
 <script type="text/javascript">
     music.songs = {{ songs_json|safe }};

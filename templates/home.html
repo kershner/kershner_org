@@ -21,12 +21,15 @@
     <img class="chevron-down levitate" src="{% static '/img/chevron-down.png' %}">
 </div>
 
+<!-- Projects -->
 <div class="projects-wrapper">
 {% for project in projects %}
     {% if forloop.counter == 1 %}
-    <div id="first-project" class="project-wrapper">
+    <div id="first-project" class="project-wrapper" data-index="{{ forloop.counter }}">
+    {% elif forloop.counter > projects_per_page %}
+    <div class="project-wrapper hidden" data-index="{{ forloop.counter }}">
     {% else %}
-    <div class="project-wrapper">
+    <div class="project-wrapper" data-index="{{ forloop.counter }}">
     {% endif %}
         <div class="left-content">
             <div class="project-icon">
@@ -75,4 +78,13 @@
 <div class="more-projects-btn-wrapper">
     <div id="more-projects-btn" class="generic-btn">More Projects</div>
 </div>
+{% endblock %}
+
+{% block extra_javascripts %}
+    <script type="text/javascript">
+        portfolio.projectsPerPage = {{ projects_per_page }};
+        portfolio.currentProjectIndex = {{ projects_per_page }};
+        portfolio.chevronClick();
+        portfolio.moreProjectsBtn();
+    </script>
 {% endblock %}
