@@ -19,7 +19,8 @@ music.init = function() {
             var containerDiv = document.createElement('div'),
                 playlistContainer = document.getElementById('songs'),
                 song = music.songs[i],
-                classNames = 'amplitude-song-container amplitude-play-pause',
+                currentColor = portfolio.colors[portfolio.colorIndex][0],
+                classNames = 'amplitude-song-container amplitude-play-pause dynamic-color ' + currentColor,
                 playlist = songsPlaylist;
 
             containerDiv.setAttribute('amplitude-playlist', 'songs');
@@ -73,13 +74,23 @@ music.init = function() {
         var type = element.getAttribute('data-type'),
             songsContainer = document.getElementById('songs'),
             loopsContainer = document.getElementById('loops'),
-            shuffleBtn = document.getElementsByClassName('amplitude-shuffle')[0];
+            shuffleBtn = document.getElementsByClassName('amplitude-shuffle')[0],
+            currentColor = portfolio.colors[portfolio.colorIndex][0];
 
         // Remove/add active class
         document.querySelectorAll('.playlist-option').forEach(function(e) {
             removeClass(e, 'active');
+            removeClass(e, 'dynamic-color');
+            for (var i=0; i<portfolio.colors.length; i++) {
+                if (hasClass(e, portfolio.colors[i][0])) {
+                    removeClass(e,  portfolio.colors[i][0]);
+                    break;
+                }
+            }
         });
+        addClass(element, 'dynamic-color');
         addClass(element, 'active');
+        addClass(element, currentColor);
 
         if (type === 'loops') {
             // Show loops, hide songs

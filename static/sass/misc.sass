@@ -12,9 +12,10 @@ $white: #FFF
 $purple: #8c53c6
 $darker-purple: #7239ad
 $grey: #999999
-$light-grey: #f5f5f5
-$lime-green: #D4F75C
-$blue: #665CCA
+$blue: #0079F2
+$green: #8CFF8C
+$orange: #FF724F
+$pink: #F2006D
 
 // Gradients
 %purple-gradient
@@ -55,6 +56,21 @@ $blue: #665CCA
   100%
     -webkit-transform: translateY(-20px)
 
+.fade-out
+  -webkit-animation: fade-out 1s forwards
+@keyframes fade-out
+  0%
+    opacity: 1
+  100%
+    opacity: 0
+
+.fade-in
+  -webkit-animation: fade-in 1s forwards
+@keyframes fade-in
+  0%
+    opacity: 0
+  100%
+    opacity: 1
 
 // Ripple effect
 %ripple
@@ -95,14 +111,137 @@ $blue: #665CCA
   line-height: 48px
   color: $white
   border-radius: 100px
-  background-color: $purple
   text-align: center
-  +animate(0.2s)
   @extend %box-shadow
   @extend %ripple
 
-  &:hover
-    background-color: $darker-purple
-
   &:active
     @extend %btn-click
+
+// Dynamic color stuff
+.dynamic-color
+  +animate(1s)
+
+  &.purple
+    background-color: $purple
+  &.green
+    background-color: $green
+  &.orange
+    background-color: $orange
+  &.blue
+    background-color: $blue
+  &.pink
+    background-color: $pink
+h1
+  .dynamic-color
+    background-color: rgba(0, 0, 0, 0.0) !important
+    color: $white
+
+    &.purple
+      color: $purple
+    &.green
+      color: $green
+    &.orange
+      color: $orange
+    &.blue
+      color: $blue
+    &.pink
+      color: $pink
+
+.player-wrapper
+  .player
+    .playlist
+      .amplitude-song-container
+        &.dynamic-color
+          background-color: rgba(0, 0, 0, 0.0)
+
+          &.purple
+            border-bottom: 1px solid $purple
+          &.green
+            border-bottom: 1px solid $green
+          &.orange
+            border-bottom: 1px solid $orange
+          &.blue
+            border-bottom: 1px solid $blue
+          &.pink
+            border-bottom: 1px solid $pink
+
+        &.amplitude-active-song-container
+          &.dynamic-color
+            &.purple
+              color: $purple
+            &.green
+              color: $green
+            &.orange
+              color: $orange
+            &.blue
+              color: $blue
+            &.pink
+              color: $pink
+
+.playlist-option
+  &.dynamic-color
+    background-color: rgba(0, 0, 0, 0.0)
+
+    &.active
+      &.purple
+        color: $purple
+      &.green
+        color: $green
+      &.orange
+        color: $orange
+      &.blue
+        color: $blue
+      &.pink
+        color: $pink
+
+input[type=range]
+  &.dynamic-color
+    background-color: rgba(0, 0, 0, 0.0)
+
+    &.purple
+       &::-webkit-slider-thumb
+        +animate(1s)
+        border: 0 solid $purple
+        background: $purple
+    &.orange
+      &::-webkit-slider-thumb
+        +animate(1s)
+        border: 0 solid $orange
+        background: $orange
+    &.blue
+      &::-webkit-slider-thumb
+        +animate(1s)
+        border: 0 solid $blue
+        background: $blue
+    &.pink
+      &::-webkit-slider-thumb
+        +animate(1s)
+        border: 0 solid $pink
+        background: $pink
+
+    &.purple
+      &:focus::-webkit-slider-runnable-track,
+      &::-webkit-slider-runnable-track
+        +animate(1s)
+        background: $purple
+    &.green
+      &:focus::-webkit-slider-runnable-track,
+      &::-webkit-slider-runnable-track
+        +animate(1s)
+        background: $green
+    &.orange
+      &:focus::-webkit-slider-runnable-track,
+      &::-webkit-slider-runnable-track
+        +animate(1s)
+        background: $orange
+    &.blue
+      &:focus::-webkit-slider-runnable-track,
+      &::-webkit-slider-runnable-track
+        +animate(1s)
+        background: $blue
+    &.pink
+      &:focus::-webkit-slider-runnable-track,
+      &::-webkit-slider-runnable-track
+        +animate(1s)
+        background: $pink

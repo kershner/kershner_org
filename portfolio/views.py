@@ -5,10 +5,10 @@ import json
 
 
 def home(request):
-    projects = Project.objects.all().order_by('-id')
+    projects = Project.objects.all().order_by('-id')[:3]
     template_vars = {
         'projects': projects,
-        'projects_per_page': 3
+        'projects_per_page': 2
     }
     return render(request, 'home.html', template_vars)
 

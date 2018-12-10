@@ -6,7 +6,7 @@
     <!-- Big Text Blurbs -->
     <section class="welcome">
         <h1>
-            I'm <a href="https://www.github.com/kershner" target="_blank">Tyler Kershner</a>.
+            I'm <a href="https://www.github.com/kershner" target="_blank" class="dynamic-color">Tyler Kershner</a>.
         </h1>
 
         <h1>
@@ -14,7 +14,7 @@
         </h1>
 
         <h1>
-            Let's <a href="mailto:tyler@kershner.org">work together</a>!
+            Let's <a href="mailto:tyler@kershner.org" class="dynamic-color">work together</a>!
         </h1>
     </section>
 
@@ -25,11 +25,11 @@
 <div class="projects-wrapper">
 {% for project in projects %}
     {% if forloop.counter == 1 %}
-    <div id="first-project" class="project-wrapper" data-index="{{ forloop.counter }}">
+    <div id="first-project" class="project-wrapper purple" data-index="{{ forloop.counter }}">
     {% elif forloop.counter > projects_per_page %}
-    <div class="project-wrapper hidden" data-index="{{ forloop.counter }}">
+    <div class="project-wrapper purple hidden" data-index="{{ forloop.counter }}">
     {% else %}
-    <div class="project-wrapper" data-index="{{ forloop.counter }}">
+    <div class="project-wrapper purple" data-index="{{ forloop.counter }}">
     {% endif %}
         <div class="left-content">
             <div class="project-icon">
@@ -40,7 +40,7 @@
 
             <div class="project-blurb">{{ project.blurb }}</div>
 
-            <hr align="left">
+            <hr align="left" class="dynamic-color">
 
             <div class="project-info">
                 <div class="project-info-title">Technologies:</div>
@@ -53,7 +53,7 @@
             </div>
 
             <a href="{{ project.site_url}}" target="_blank">
-                <div class="project-link-btn">Visit Site →</div>
+                <div class="project-link-btn dynamic-color">Visit Site →</div>
             </a>
         </div>
 
@@ -76,7 +76,7 @@
 
 <!-- More Projects Btn -->
 <div class="more-projects-btn-wrapper">
-    <div id="more-projects-btn" class="generic-btn">More Projects</div>
+    <div id="more-projects-btn" class="generic-btn dynamic-color">More Projects</div>
 </div>
 {% endblock %}
 
