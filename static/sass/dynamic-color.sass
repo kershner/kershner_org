@@ -1,0 +1,219 @@
+@import 'misc'
+
+// Dynamic color stuff
+.dynamic-color
+  +animate(1s)
+
+  &.purple
+    background-color: $purple
+  &.green
+    background-color: $green
+  &.orange
+    background-color: $orange
+  &.blue
+    background-color: $blue
+  &.pink
+    background-color: $pink
+h1
+  .dynamic-color
+    background-color: rgba(0, 0, 0, 0.0) !important
+    color: $white
+
+    &.purple
+      color: $purple
+    &.green
+      color: $green
+    &.orange
+      color: $orange
+    &.blue
+      color: $blue
+    &.pink
+      color: $pink
+
+.chevron-down
+  &.dynamic-color
+    &.purple
+      background: url(../img/chevron-down-purple.png)
+    &.orange
+      background: url(../img/chevron-down-orange.png)
+    &.blue
+      background: url(../img/chevron-down-blue.png)
+    &.pink
+      background: url(../img/chevron-down-pink.png)
+
+.player-wrapper
+  .player
+    .playlist
+      .amplitude-song-container
+        &.dynamic-color
+          background-color: rgba(0, 0, 0, 0.0)
+
+          &.purple
+            border-bottom: 1px solid $purple
+          &.green
+            border-bottom: 1px solid $green
+          &.orange
+            border-bottom: 1px solid $orange
+          &.blue
+            border-bottom: 1px solid $blue
+          &.pink
+            border-bottom: 1px solid $pink
+
+        &.amplitude-active-song-container
+          &.dynamic-color
+            &.purple
+              color: $purple
+            &.green
+              color: $green
+            &.orange
+              color: $orange
+            &.blue
+              color: $blue
+            &.pink
+              color: $pink
+
+.playlist-option
+  &.dynamic-color
+    background-color: rgba(0, 0, 0, 0.0)
+
+    &.active
+      &.purple
+        color: $purple
+      &.green
+        color: $green
+      &.orange
+        color: $orange
+      &.blue
+        color: $blue
+      &.pink
+        color: $pink
+
+.player-control-container
+  .player-repeat-container
+    .amplitude-repeat-on
+      &.dynamic-color
+        &.purple
+          background: url(../img/repeat-on-purple.png)
+        &.orange
+          background: url(../img/repeat-on-orange.png)
+        &.blue
+          background: url(../img/repeat-on-blue.png)
+        &.pink
+          background: url(../img/repeat-on-pink.png)
+    .amplitude-shuffle-on
+      &.dynamic-color
+        &.purple
+          background: url(../img/shuffle-on-purple.png)
+        &.orange
+          background: url(../img/shuffle-on-orange.png)
+        &.blue
+          background: url(../img/shuffle-on-blue.png)
+        &.pink
+          background: url(../img/shuffle-on-pink.png)
+
+  .player-central-control-container
+    .player-central-controls
+      .amplitude-prev
+        &.dynamic-color
+          &.purple
+            background: url(../img/prev-purple.png)
+          &.orange
+            background: url(../img/prev-orange.png)
+          &.blue
+            background: url(../img/prev-blue.png)
+          &.pink
+            background: url(../img/prev-pink.png)
+      .amplitude-play-pause
+        &.dynamic-color
+          &.amplitude-paused
+            &.purple
+              background: url(../img/play-purple.png)
+            &.orange
+              background: url(../img/play-orange.png)
+            &.blue
+              background: url(../img/play-blue.png)
+            &.pink
+              background: url(../img/play-pink.png)
+          &.amplitude-playing
+            &.purple
+              background: url(../img/pause-purple.png)
+            &.orange
+              background: url(../img/pause-orange.png)
+            &.blue
+              background: url(../img/pause-blue.png)
+            &.pink
+              background: url(../img/pause-pink.png)
+      .amplitude-next
+        &.dynamic-color
+          &.purple
+            background: url(../img/next-purple.png)
+          &.orange
+            background: url(../img/next-orange.png)
+          &.blue
+            background: url(../img/next-blue.png)
+          &.pink
+            background: url(../img/next-pink.png)
+
+  .player-volume-controls
+    .amplitude-mute
+      &.amplitude-not-muted
+        &.dynamic-color
+          &.purple
+            background: url(../img/volume-purple.png)
+          &.orange
+            background: url(../img/volume-orange.png)
+          &.blue
+            background: url(../img/volume-blue.png)
+          &.pink
+            background: url(../img/volume-pink.png)
+
+input[type=range]
+  &.dynamic-color
+    background-color: rgba(0, 0, 0, 0.0)
+
+    &.purple
+       &::-webkit-slider-thumb
+        +animate(1s)
+        border: 0 solid $purple
+        background: $purple
+    &.orange
+      &::-webkit-slider-thumb
+        +animate(1s)
+        border: 0 solid $orange
+        background: $orange
+    &.blue
+      &::-webkit-slider-thumb
+        +animate(1s)
+        border: 0 solid $blue
+        background: $blue
+    &.pink
+      &::-webkit-slider-thumb
+        +animate(1s)
+        border: 0 solid $pink
+        background: $pink
+
+    &.purple
+      &:focus::-webkit-slider-runnable-track,
+      &::-webkit-slider-runnable-track
+        +animate(1s)
+        background: $purple
+    &.green
+      &:focus::-webkit-slider-runnable-track,
+      &::-webkit-slider-runnable-track
+        +animate(1s)
+        background: $green
+    &.orange
+      &:focus::-webkit-slider-runnable-track,
+      &::-webkit-slider-runnable-track
+        +animate(1s)
+        background: $orange
+    &.blue
+      &:focus::-webkit-slider-runnable-track,
+      &::-webkit-slider-runnable-track
+        +animate(1s)
+        background: $blue
+    &.pink
+      &:focus::-webkit-slider-runnable-track,
+      &::-webkit-slider-runnable-track
+        +animate(1s)
+        background: $pink

@@ -1,11 +1,5 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
-
-{% block extra_head %}
-    <link rel="stylesheet" href="{% static '/css/music.css' %}">
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/amplitudejs@3.3.1/dist/amplitude.js"></script>
-{% endblock %}
-
 {% block content %}
 <!-- Player -->
 <div class="player-wrapper">
@@ -89,7 +83,8 @@
 {% endblock %}
 
 {% block extra_javascripts %}
-<script type="text/javascript" src="{% static '/js/music.js' %}"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/amplitudejs@3.3.1/dist/amplitude.js"></script>
+<script type="text/javascript" src="{% static 'js/music.js' %}"></script>
 <script type="text/javascript">
     music.songs = {{ songs_json|safe }};
     music.init();
