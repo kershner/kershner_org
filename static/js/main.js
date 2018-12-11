@@ -9,7 +9,7 @@ var portfolio = {
         ['blue', '#0079F2']
     ],
     'colorIndex'            : 0,
-    'colorChangeInnterval'  : 10000  // 10 seconds
+    'colorChangeInterval'  : 10000  // 10 seconds
 };
 
 portfolio.init = function() {
@@ -35,7 +35,7 @@ portfolio.rotateColors = function() {
         var particlesWrapper = document.getElementsByClassName(particlesCanvas)[0];
         particlesWrapper.addEventListener('animationend', fadeoutCallback);
         addClass(particlesWrapper, 'fade-out');
-    }, portfolio.colorChangeInnterval);
+    }, portfolio.colorChangeInterval);
 
     function fadeoutCallback() {
         particlesTeardown();
