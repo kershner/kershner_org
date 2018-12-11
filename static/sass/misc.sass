@@ -39,11 +39,14 @@ $pink: #F2006D
   top: 4px
 
 // Animations
+=animation-prefix($property, $seconds)
+  -webkit-transition: $property $seconds ease-in-out
+  -moz-transition: $property $seconds ease-in-out
+  -o-transition: $property $seconds ease-in-out
+  transition: $property $seconds ease-in-out
+
 =animate($seconds)
-  -webkit-transition: all $seconds ease-in-out
-  -moz-transition: all $seconds ease-in-out
-  -o-transition: all $seconds ease-in-out
-  transition: all $seconds ease-in-out
+  +animation-prefix(all, $seconds)
 
 .levitate
   -webkit-animation: levitate 3s infinite

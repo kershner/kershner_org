@@ -125,20 +125,49 @@ input[type=range]
         display: flex
         justify-content: space-between
         cursor: pointer
-        padding: 1em
+        padding: 0.5em 1em
         color: $grey
-        +animate(0.2s)
         line-height: 1em
         @extend %ripple
 
         &:hover,
         &.amplitude-active-song-container
-          font-family: $secondary-font
+          font-weight: bold
         &:hover
           color: $black
 
+        &.amplitude-active-song-container
+          &.dynamic-color
+            .song-info
+              .song-thumbnail
+                .activity
+                  +animate(0.2s)
+                  position: absolute
+                  top: 50%
+                  left: 50%
+                  transform: translate(-50%, -50%)
+                  width: 80%
+                  height: 80%
+                  background-size: cover !important
+
+        .song-info
+          display: flex
+          .song-thumbnail
+            display: inline-block
+            position: relative
+            height: 3em
+            width: 3em
+            margin-right: 1em
+            img
+              width: 100%
+              border-radius: .2em
+              @extend %box-shadow
+          .song-title
+            display: inline-block
+            align-self: center
         .duration
           font-size: 0.8em
+          align-self: center
 
     .player-bottom
       // TIME CONTAINER

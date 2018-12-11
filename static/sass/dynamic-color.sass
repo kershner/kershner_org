@@ -2,7 +2,10 @@
 
 // Dynamic color stuff
 .dynamic-color
-  +animate(1s)
+  -webkit-transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
+  -moz-transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
+  -o-transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
+  transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
 
   &.purple
     background-color: $purple
@@ -72,6 +75,30 @@ h1
             &.pink
               color: $pink
 
+          &.amplitude-paused
+            .song-info
+              .song-thumbnail
+                .activity
+                  &.purple
+                    background: url(../img/play-purple.png)
+                  &.orange
+                    background: url(../img/play-orange.png)
+                  &.blue
+                    background: url(../img/play-blue.png)
+                  &.pink
+                    background: url(../img/play-pink.png)
+          &.amplitude-playing
+            .song-info
+                .song-thumbnail
+                  .activity
+                    &.purple
+                      background: url(../img/pause-purple.png)
+                    &.orange
+                      background: url(../img/pause-orange.png)
+                    &.blue
+                      background: url(../img/pause-blue.png)
+                    &.pink
+                      background: url(../img/pause-pink.png)
 .playlist-option
   &.dynamic-color
     background-color: rgba(0, 0, 0, 0.0)
@@ -179,47 +206,38 @@ input[type=range]
 
     &.purple
        &::-webkit-slider-thumb
-        +animate(1s)
         border: 0 solid $purple
         background: $purple
     &.orange
       &::-webkit-slider-thumb
-        +animate(1s)
         border: 0 solid $orange
         background: $orange
     &.blue
       &::-webkit-slider-thumb
-        +animate(1s)
         border: 0 solid $blue
         background: $blue
     &.pink
       &::-webkit-slider-thumb
-        +animate(1s)
         border: 0 solid $pink
         background: $pink
 
     &.purple
       &:focus::-webkit-slider-runnable-track,
       &::-webkit-slider-runnable-track
-        +animate(1s)
         background: $purple
     &.green
       &:focus::-webkit-slider-runnable-track,
       &::-webkit-slider-runnable-track
-        +animate(1s)
         background: $green
     &.orange
       &:focus::-webkit-slider-runnable-track,
       &::-webkit-slider-runnable-track
-        +animate(1s)
         background: $orange
     &.blue
       &:focus::-webkit-slider-runnable-track,
       &::-webkit-slider-runnable-track
-        +animate(1s)
         background: $blue
     &.pink
       &:focus::-webkit-slider-runnable-track,
       &::-webkit-slider-runnable-track
-        +animate(1s)
         background: $pink
