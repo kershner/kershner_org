@@ -6,3 +6,4 @@ project/migrations/
 .idea/
 *.map
 song/migrations/
+site_config/parameters.json
