@@ -27,7 +27,7 @@ music.init = function() {
             containerDiv.setAttribute('amplitude-song-index', i.toString());
             containerDiv.className = classNames;
             containerDiv.innerHTML =    '<div class="song-info"><div class="song-thumbnail">' +
-                                        '<img src="' + song.cover_art_url + '">' +
+                                        '<img data-src="' + song.cover_art_url+ '">' +
                                         '<div class="activity dynamic-color ' + currentColor + '"></div>' +
                                         '</div><div class="song-title">'+song.name+'</div></div>' +
                                         '<div class="duration">' + song.duration + '</div>';
@@ -52,6 +52,7 @@ music.init = function() {
             'starting_playlist' : 'loops'
         };
         Amplitude.init(amplitudeOptions);
+        portfolio.deferImages();
     }
 
     function playlistSelect() {
