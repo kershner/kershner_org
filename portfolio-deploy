@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+####################################
+# Place this file in /usr/local/sbin
+####################################
+DJANGODIR=/home/tylerkershner/portfolio/portfolio
+VENVDIR=/home/tylerkershner/.virtualenvs/portfolio-venv
+PIP="$VENVDIR/bin/pip"
+PYTHON="$VENVDIR/bin/python"
+PROD_SETTINGS="--settings=config.settings.prod"
+
+echo '==========[ DEPLOYING KERSHNER.ORG ]=========='
+echo ''
+
+echo '==========[ Reverting repo to HEAD (git checkout .) ]=========='
+cd $DJANGODIR
+git checkout .
+echo ''
+
+echo '==========[ git pull ]=========='
+git pull
+echo ''
+
+echo '==========[ Installing Python requirements ]=========='
+$PIP install -r requirements.txt --no-cache-dir
+echo ''
+
+echo '==========[ Migrating DB ]=========='
+$PYTHON manage.py makemigrations $PROD_SETTINGS
+$PYTHON manage.py migrate $PROD_SETTINGS
+echo ''
+
+echo '==========[ Collecting static files ]=========='
+$PYTHON manage.py collectstatic $PROD_SETTINGS --noinput
+echo ''
+
+echo '==========[ Deploy Complete! ]=========='
+echo ''
