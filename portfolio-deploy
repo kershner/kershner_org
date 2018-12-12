@@ -7,7 +7,7 @@ DJANGODIR=/home/tylerkershner/portfolio/portfolio
 VENVDIR=/home/tylerkershner/.virtualenvs/portfolio-venv
 PIP="$VENVDIR/bin/pip"
 PYTHON="$VENVDIR/bin/python"
-PROD_SETTINGS="--settings=config.settings.prod"
+PROD_SETTINGS="--settings=site_config.settings.prod"
 
 echo '==========[ DEPLOYING KERSHNER.ORG ]=========='
 echo ''
