@@ -9,13 +9,24 @@ $secondary-font: 'Montserrat', sans-serif
 // Colors
 $black: #202020
 $white: #FFF
-$purple: #8c53c6
 $darker-purple: #7239ad
 $grey: #999999
+$purple: #8c53c6
 $blue: #0079F2
 $green: #8CFF8C
 $orange: #FF724F
 $pink: #F2006D
+
+=purple-rgba($property, $opacity)
+  $property: rgba(140, 83, 198, $opacity) !important
+=blue-rgba($property, $opacity)
+  $property: rgba(	0, 121, 242, $opacity) !important
+=green-rgba($property, $opacity)
+  $property: rgba(140, 83, 198, $opacity) !important
+=orange-rgba($property, $opacity)
+  $property: rgba(255, 114, 79, $opacity) !important
+=pink-rgba($property, $opacity)
+  $property: rgba(242, 0, 109, $opacity) !important
 
 // Gradients
 %purple-gradient
@@ -117,6 +128,7 @@ $pink: #F2006D
   text-align: center
   @extend %box-shadow
   @extend %ripple
+  +animation-prefix(background-color, 0.2s)
 
   &:active
     @extend %btn-click

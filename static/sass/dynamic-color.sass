@@ -1,12 +1,8 @@
 @import 'misc'
 
-// Dynamic color stuff
-.dynamic-color
-  -webkit-transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
-  -moz-transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
-  -o-transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
-  transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
-
+$asset-path-start: '../img/'
+$asset-path-end: '.png'
+%dynamic-background-color
   &.purple
     background-color: $purple
   &.green
@@ -17,32 +13,48 @@
     background-color: $blue
   &.pink
     background-color: $pink
+
+%dynamic-text-color
+  &.purple
+    color: $purple
+  &.green
+    color: $green
+  &.orange
+    color: $orange
+  &.blue
+    color: $blue
+  &.pink
+    color: $pink
+
+=dynamic-background-image($img-file)
+  &.purple
+    background: url($asset-path-start + $img-file + '-purple' + $asset-path-end)
+  &.orange
+    background: url($asset-path-start + $img-file + '-orange' + $asset-path-end)
+  &.blue
+    background: url($asset-path-start + $img-file + '-blue' + $asset-path-end)
+  &.pink
+    background: url($asset-path-start + $img-file + '-pink' + $asset-path-end)
+
+
+// Dynamic color stuff
+.dynamic-color
+  -webkit-transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
+  -moz-transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
+  -o-transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
+  transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
+
+  @extend %dynamic-background-color
+
 h1
   .dynamic-color
     background-color: rgba(0, 0, 0, 0.0) !important
     color: $white
-
-    &.purple
-      color: $purple
-    &.green
-      color: $green
-    &.orange
-      color: $orange
-    &.blue
-      color: $blue
-    &.pink
-      color: $pink
+    @extend %dynamic-text-color
 
 .chevron-down
   &.dynamic-color
-    &.purple
-      background: url(../img/chevron-down-purple.png)
-    &.orange
-      background: url(../img/chevron-down-orange.png)
-    &.blue
-      background: url(../img/chevron-down-blue.png)
-    &.pink
-      background: url(../img/chevron-down-pink.png)
+    +dynamic-background-image('chevron-down')
 
 .player-wrapper
   .player
@@ -64,56 +76,24 @@ h1
 
         &.amplitude-active-song-container
           &.dynamic-color
-            &.purple
-              color: $purple
-            &.green
-              color: $green
-            &.orange
-              color: $orange
-            &.blue
-              color: $blue
-            &.pink
-              color: $pink
+            @extend %dynamic-text-color
 
           &.amplitude-paused
             .song-info
               .song-thumbnail
                 .activity
-                  &.purple
-                    background: url(../img/play-purple.png)
-                  &.orange
-                    background: url(../img/play-orange.png)
-                  &.blue
-                    background: url(../img/play-blue.png)
-                  &.pink
-                    background: url(../img/play-pink.png)
+                  +dynamic-background-image('play')
           &.amplitude-playing
             .song-info
                 .song-thumbnail
                   .activity
-                    &.purple
-                      background: url(../img/pause-purple.png)
-                    &.orange
-                      background: url(../img/pause-orange.png)
-                    &.blue
-                      background: url(../img/pause-blue.png)
-                    &.pink
-                      background: url(../img/pause-pink.png)
+                    +dynamic-background-image('pause')
 .playlist-option
   &.dynamic-color
     background-color: rgba(0, 0, 0, 0.0)
 
     &.active
-      &.purple
-        color: $purple
-      &.green
-        color: $green
-      &.orange
-        color: $orange
-      &.blue
-        color: $blue
-      &.pink
-        color: $pink
+      @extend %dynamic-text-color
 
 .player-control-container
   .player-repeat-container
@@ -122,24 +102,10 @@ h1
         background-color: rgba(0,0,0,0.0)
     .amplitude-repeat-on
       &.dynamic-color
-        &.purple
-          background: url(../img/repeat-on-purple.png)
-        &.orange
-          background: url(../img/repeat-on-orange.png)
-        &.blue
-          background: url(../img/repeat-on-blue.png)
-        &.pink
-          background: url(../img/repeat-on-pink.png)
+        +dynamic-background-image('repeat-on')
     .amplitude-shuffle-on
       &.dynamic-color
-        &.purple
-          background: url(../img/shuffle-on-purple.png)
-        &.orange
-          background: url(../img/shuffle-on-orange.png)
-        &.blue
-          background: url(../img/shuffle-on-blue.png)
-        &.pink
-          background: url(../img/shuffle-on-pink.png)
+        +dynamic-background-image('shuffle-on')
 
   .player-central-control-container
     .player-central-controls
@@ -148,57 +114,22 @@ h1
           background-color: rgba(0,0,0,0.0)
       .amplitude-prev
         &.dynamic-color
-          &.purple
-            background: url(../img/prev-purple.png)
-          &.orange
-            background: url(../img/prev-orange.png)
-          &.blue
-            background: url(../img/prev-blue.png)
-          &.pink
-            background: url(../img/prev-pink.png)
+          +dynamic-background-image('prev')
       .amplitude-play-pause
         &.dynamic-color
           &.amplitude-paused
-            &.purple
-              background: url(../img/play-purple.png)
-            &.orange
-              background: url(../img/play-orange.png)
-            &.blue
-              background: url(../img/play-blue.png)
-            &.pink
-              background: url(../img/play-pink.png)
+            +dynamic-background-image('play')
           &.amplitude-playing
-            &.purple
-              background: url(../img/pause-purple.png)
-            &.orange
-              background: url(../img/pause-orange.png)
-            &.blue
-              background: url(../img/pause-blue.png)
-            &.pink
-              background: url(../img/pause-pink.png)
+            +dynamic-background-image('pause')
       .amplitude-next
         &.dynamic-color
-          &.purple
-            background: url(../img/next-purple.png)
-          &.orange
-            background: url(../img/next-orange.png)
-          &.blue
-            background: url(../img/next-blue.png)
-          &.pink
-            background: url(../img/next-pink.png)
+          +dynamic-background-image('next')
 
   .player-volume-controls
     .amplitude-mute
       &.amplitude-not-muted
         &.dynamic-color
-          &.purple
-            background: url(../img/volume-purple.png)
-          &.orange
-            background: url(../img/volume-orange.png)
-          &.blue
-            background: url(../img/volume-blue.png)
-          &.pink
-            background: url(../img/volume-pink.png)
+          +dynamic-background-image('volume')
 
 input[type=range]
   &.dynamic-color
