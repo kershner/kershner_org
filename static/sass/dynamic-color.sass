@@ -1,16 +1,5 @@
 @import 'misc'
 
-=purple-rgba($property, $opacity)
-  $property: rgba(140, 83, 198, $opacity) !important
-=blue-rgba($property, $opacity)
-  $property: rgba(0, 121, 242, $opacity) !important
-=green-rgba($property, $opacity)
-  $property: rgba(140, 83, 198, $opacity) !important
-=orange-rgba($property, $opacity)
-  $property: rgba(255, 114, 79, $opacity) !important
-=pink-rgba($property, $opacity)
-  $property: rgba(242, 0, 109, $opacity) !important
-
 %dynamic-background-color
   &.purple
     background-color: $purple
@@ -22,6 +11,8 @@
     background-color: $blue
   &.pink
     background-color: $pink
+  &.black
+    background-color: $black
 
 %dynamic-text-color
   &.purple
@@ -34,6 +25,8 @@
     color: $blue
   &.pink
     color: $pink
+  &.black
+    color: $black
 
 =dynamic-icon($icon-name)
   @extend %dynamic-background-color
@@ -64,17 +57,6 @@ h1,
       .amplitude-song-container
         &.dynamic-color
           background-color: rgba(0, 0, 0, 0.0)
-
-          &.purple
-            border-bottom: 1px solid $purple
-          &.green
-            border-bottom: 1px solid $green
-          &.orange
-            border-bottom: 1px solid $orange
-          &.blue
-            border-bottom: 1px solid $blue
-          &.pink
-            border-bottom: 1px solid $pink
 
         &.amplitude-active-song-container
           &.dynamic-color
@@ -153,6 +135,10 @@ input[type=range]
       &::-webkit-slider-thumb
         border: 0 solid $pink
         background: $pink
+    &.black
+      &::-webkit-slider-thumb
+        border: 0 solid $black
+        background: $black
 
     &.purple
       &:focus::-webkit-slider-runnable-track,
@@ -174,3 +160,7 @@ input[type=range]
       &:focus::-webkit-slider-runnable-track,
       &::-webkit-slider-runnable-track
         background: $pink
+    &.black
+      &:focus::-webkit-slider-runnable-track,
+      &::-webkit-slider-runnable-track
+        background: $black
