@@ -1,8 +1,5 @@
 @import 'misc'
 
-$asset-path-start: '../img/'
-$asset-path-end: '.png'
-
 =purple-rgba($property, $opacity)
   $property: rgba(140, 83, 198, $opacity) !important
 =blue-rgba($property, $opacity)
@@ -38,16 +35,9 @@ $asset-path-end: '.png'
   &.pink
     color: $pink
 
-=dynamic-background-image($img-file)
-  &.purple
-    background: url($asset-path-start + $img-file + '-purple' + $asset-path-end)
-  &.orange
-    background: url($asset-path-start + $img-file + '-orange' + $asset-path-end)
-  &.blue
-    background: url($asset-path-start + $img-file + '-blue' + $asset-path-end)
-  &.pink
-    background: url($asset-path-start + $img-file + '-pink' + $asset-path-end)
-
+=dynamic-icon($icon-name)
+  @extend %dynamic-background-color
+  +icon-mask($icon-name)
 
 // Dynamic color stuff
 .dynamic-color
@@ -55,7 +45,6 @@ $asset-path-end: '.png'
   -moz-transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
   -o-transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
   transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
-
   @extend %dynamic-background-color
 
 h1,
@@ -67,7 +56,7 @@ h1,
 
 .chevron-down
   &.dynamic-color
-    +dynamic-background-image('chevron-down')
+    +dynamic-icon('chevron-down')
 
 .player-wrapper
   .player
@@ -95,12 +84,12 @@ h1,
             .song-info
               .song-thumbnail
                 .activity
-                  +dynamic-background-image('play')
+                  +dynamic-icon('play')
           &.amplitude-playing
             .song-info
                 .song-thumbnail
                   .activity
-                    +dynamic-background-image('pause')
+                    +dynamic-icon('pause')
 .playlist-option
   &.dynamic-color
     background-color: rgba(0, 0, 0, 0.0)
@@ -115,10 +104,10 @@ h1,
         background-color: rgba(0,0,0,0.0)
     .amplitude-repeat-on
       &.dynamic-color
-        +dynamic-background-image('repeat-on')
+        +dynamic-icon('repeat')
     .amplitude-shuffle-on
       &.dynamic-color
-        +dynamic-background-image('shuffle-on')
+        +dynamic-icon('shuffle')
 
   .player-central-control-container
     .player-central-controls
@@ -127,22 +116,22 @@ h1,
           background-color: rgba(0,0,0,0.0)
       .amplitude-prev
         &.dynamic-color
-          +dynamic-background-image('prev')
+          +dynamic-icon('prev')
       .amplitude-play-pause
         &.dynamic-color
           &.amplitude-paused
-            +dynamic-background-image('play')
+            +dynamic-icon('play')
           &.amplitude-playing
-            +dynamic-background-image('pause')
+            +dynamic-icon('pause')
       .amplitude-next
         &.dynamic-color
-          +dynamic-background-image('next')
+          +dynamic-icon('next')
 
   .player-volume-controls
     .amplitude-mute
       &.amplitude-not-muted
         &.dynamic-color
-          +dynamic-background-image('volume')
+          +dynamic-icon('volume')
 
 input[type=range]
   &.dynamic-color

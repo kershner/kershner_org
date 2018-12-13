@@ -6,6 +6,13 @@ $secondary-font: 'Montserrat', sans-serif
 .secondary-font
   font-family: $secondary-font
 
+// Icon / SVG stuff
+$asset-path-start: '../svg/'
+$asset-path-ext: '.svg'
+=icon-mask($icon-name)
+  -webkit-mask-image: url($asset-path-start + $icon-name + $asset-path-ext)
+  mask-image: url($asset-path-start + $icon-name + $asset-path-ext)
+
 // Colors
 $black: #202020
 $white: #FFF

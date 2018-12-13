@@ -1,15 +1,15 @@
 var portfolio = {
     'projectsPerPage'       : 0,
     'currentProjectIndex'   : 0,
+    'colorIndex'            : 0,
+    'colorChangeInterval'  : 2500,  // 10 seconds
     'colors'                : [
         ['purple', '#8c53c6'],
         ['pink', '#F2006D'],
         ['orange', '#FF724F'],
-        //['green', '#8CFF8C'],
+        ['green', '#8CFF8C'],
         ['blue', '#0079F2']
-    ],
-    'colorIndex'            : 0,
-    'colorChangeInterval'  : 10000  // 10 seconds
+    ]
 };
 
 portfolio.init = function() {

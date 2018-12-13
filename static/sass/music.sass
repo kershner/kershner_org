@@ -148,7 +148,8 @@ input[type=range]
                   transform: translate(-50%, -50%)
                   width: 80%
                   height: 80%
-                  background-size: cover !important
+                  -webkit-mask-size: cover
+                  mask-size: cover
                   background-color: rgba(0, 0, 0, 0.0)
 
         .song-info
@@ -194,12 +195,14 @@ input[type=range]
         margin: 0 auto
 
         %icon-size
-          background-size: cover !important
+          -webkit-mask-size: cover
+          mask-size: cover
           width: 40px
           height: 40px
 
         %smaller-icon-size
-          background-size: cover !important
+          -webkit-mask-size: cover
+          mask-size: cover
           width: 30px
           height: 30px
 
@@ -219,9 +222,11 @@ input[type=range]
             +animate(0.2s)
 
           .amplitude-repeat-off
-            background: url(../img/repeat-off.png)
+            +icon-mask('repeat')
+            fill: $grey
           .amplitude-shuffle-off
-            background: url(../img/shuffle-off.png)
+            +icon-mask('shuffle')
+            fill: $grey
 
         // CENTRAL CONTROLS CONTAINER
         .player-central-control-container
@@ -265,7 +270,8 @@ input[type=range]
             +animate(0.2s)
 
             &.amplitude-muted
-              background: url(../img/mute.png)
+              +icon-mask('volume')
+              fill: $grey
 
           .amplitude-volume-slider
             display: inline-block
