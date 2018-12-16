@@ -6,4 +6,5 @@ urlpatterns = [
     path('', portfolio_views.home, name='home'),
     path('music/', portfolio_views.music, name='music'),
     path('admin/', admin.site.urls),
+    path('get-projects/', portfolio_views.get_projects, name='get-projects'),
 ]

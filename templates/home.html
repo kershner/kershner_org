@@ -25,11 +25,9 @@
 <div class="projects-wrapper">
 {% for project in projects %}
     {% if forloop.counter == 1 %}
-    <div id="first-project" class="project-wrapper purple" data-index="{{ forloop.counter }}">
-    {% elif forloop.counter > projects_per_page %}
-    <div class="project-wrapper purple hidden" data-index="{{ forloop.counter }}">
+    <div id="first-project" class="project-wrapper" data-id="{{ project.id }}">
     {% else %}
-    <div class="project-wrapper purple" data-index="{{ forloop.counter }}">
+    <div class="project-wrapper" data-id="{{ project.id }}">
     {% endif %}
         <div class="left-content">
             <div class="project-icon">
@@ -82,6 +80,8 @@
 
 {% block extra_javascripts %}
     <script type="text/javascript">
+        portfolio.baseS3Url = '{{ base_s3_url }}';
+        portfolio.getProjectsURL = '{% url 'get-projects' %}';
         portfolio.projectsPerPage = {{ projects_per_page }};
         portfolio.currentProjectIndex = {{ projects_per_page }};
         portfolio.chevronClick();

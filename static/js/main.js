@@ -1,8 +1,11 @@
 var portfolio = {
+    'baseS3Url'             : '',
+    'getProjectsURL'        : '',
     'projectsPerPage'       : 0,
-    'currentProjectIndex'   : 0,
     'colorIndex'            : 0,
-    'colorChangeInterval'   : 10000,  // 10 seconds
+    'colorChangeInterval'   : 10000,  // 10 seconds,
+    'projectsWrapper'       : document.getElementsByClassName('projects-wrapper')[0],
+    'projectWrappers'       : document.getElementsByClassName('project-wrapper'),
     'colors'                : [
         ['purple', '#8c53c6'],
         ['pink', '#F2006D'],
@@ -69,20 +72,73 @@ portfolio.chevronClick = function() {
 };
 
 portfolio.moreProjectsBtn = function() {
-    var moreProjectsBtn = document.getElementById('more-projects-btn'),
-        projectWrappers = document.getElementsByClassName('project-wrapper');
+    var moreProjectsBtn = document.getElementById('more-projects-btn');
 
     moreProjectsBtn.addEventListener('click', function() {
-        portfolio.currentProjectIndex += portfolio.projectsPerPage;
-        for (var i=0; i<projectWrappers.length; i++) {
-            var projectWrapper = projectWrappers[i],
-                index = projectWrapper.getAttribute('data-index');
+        portfolio.projectWrappers = document.getElementsByClassName('project-wrapper');
 
-            if (index <= portfolio.currentProjectIndex && hasClass(projectWrapper, 'hidden')) {
-                removeClass(projectWrapper, 'hidden');
-            }
-        }
+        var projectWrapper = portfolio.projectWrappers[portfolio.projectWrappers.length - 1],
+            id = projectWrapper.getAttribute('data-id');
+
+        let data = new FormData();
+        data.append('last_project_id', id);
+
+        fetch(portfolio.getProjectsURL, {
+          method : 'post',
+          body : data,
+          credentials : 'same-origin'
+        }).then(response => {
+            return response.json();
+        }).then(function(data) {
+            portfolio.addMoreProjects(data);
+        });
     });
+};
+
+portfolio.addMoreProjects = function(projects) {
+    for (var i=0; i<projects.length; i++) {
+        var project = projects[i];
+        portfolio.projectsWrapper.innerHTML += portfolio.getNewProjectHtml(project);
+    }
+    portfolio.deferImages();
+};
+
+portfolio.getNewProjectHtml = function(project) {
+    var currentColor = portfolio.colors[portfolio.colorIndex][0];
+    var html =  `
+                <div class="project-wrapper" data-id="${project.pk}">
+                    <div class="left-content">
+                        <div class="project-icon">
+                            <img src="" data-src="${portfolio.baseS3Url}/${project.fields.icon}">
+                        </div>
+
+                        <div class="project-title">${project.fields.title}</div>
+                        <div class="project-blurb">${project.fields.blurb}</div>
+
+                        <hr align="left" class="dynamic-color ${currentColor}">
+
+                        <div class="project-info"><div class="project-info-title">Technologies:</div>
+                            <div class="project-info-value">${project.fields.technologies}</div>
+                        </div>
+
+                        <div class="project-info">
+                            <div class="project-info-title">More:</div>
+                            <div class="project-info-value">${project.fields.extra_notes}</div>
+                        </div>
+
+                        <a href="${project.fields.site_url}" target="_blank">
+                            <div class="project-link-btn dynamic-color ${currentColor}">Visit Site →</div>
+                        </a>
+                    </div>
+
+                    <div class="right-content">
+                        <div class="project-img-1"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}"></div>
+                        <div class="project-img-2"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}"></div>
+                        <div class="project-img-3"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}"></div>
+                    </div>
+                </div>
+                `;
+    return html;
 };
 
 portfolio.changeColors = function() {
