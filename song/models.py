@@ -30,6 +30,21 @@ class Song(models.Model):
     plays = models.IntegerField(default=0)
     notes = models.TextField(null=True, blank=True)
     position = models.IntegerField(default=0)
+    __original_position = None
+
+    def __init__(self, *args, **kwargs):
+        super(Song, self).__init__(*args, **kwargs)
+        self.__original_position = self.position
+
+    def save(self, force_insert=False, force_update=False, *args, **kwargs):
+        if self.position != self.__original_position:
+            # Position has changed
+            old_song_with_position = Song.objects.filter(position=self.position)
+            if old_song_with_position:
+                old_song_with_position.update(position=self.__original_position)
+
+        super(Song, self).save(force_insert, force_update, *args, **kwargs)
+        self.__original_position = self.position
 
     def __str__(self):
         return 'ID: %d | %s' % (self.id, self.title)
@@ -38,8 +53,8 @@ class Song(models.Model):
 # Admin config for this model
 # https://docs.djangoproject.com/en/2.0/ref/contrib/admin/#django.contrib.admin.ModelAdmin
 @admin.register(Song)
-class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('title', 'id', 'created_at', 'duration')
+class SongAdmin(admin.ModelAdmin):
+    list_display = ('title', 'id', 'created_at', 'position', 'duration')
     list_filter = ('type', 'created_at', 'duration')
     search_fields = ['name', 'id']
     show_full_result_count = True
