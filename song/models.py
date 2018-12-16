@@ -29,7 +29,7 @@ class Song(models.Model):
     duration = models.CharField(max_length=20)
     plays = models.IntegerField(default=0)
     notes = models.TextField(null=True, blank=True)
-    order = models.IntegerField(default=0)
+    position = models.IntegerField(default=0)
 
     def __str__(self):
         return 'ID: %d | %s' % (self.id, self.title)

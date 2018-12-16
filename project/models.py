@@ -23,7 +23,7 @@ class Project(models.Model):
     image_2 = models.ImageField(upload_to=rename_upload)
     image_3 = models.ImageField(upload_to=rename_upload)
     site_url = models.CharField(max_length=255)
-    order = models.IntegerField(default=0)
+    position = models.IntegerField(default=0)
 
     def __str__(self):
         return 'ID: %d | %s' % (self.id, self.title)
