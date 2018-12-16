@@ -96,6 +96,11 @@ portfolio.moreProjectsBtn = function() {
 };
 
 portfolio.addMoreProjects = function(projects) {
+    if (!projects.length) {
+        addClass(document.getElementById('more-projects-btn'), 'hidden');
+        return
+    }
+
     for (var i=0; i<projects.length; i++) {
         var project = projects[i];
         portfolio.projectsWrapper.innerHTML += portfolio.getNewProjectHtml(project);
