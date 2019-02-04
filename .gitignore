@@ -7,3 +7,6 @@ project/migrations/
 *.map
 song/migrations/
 site_config/parameters.json
+www_kershner_org.cert
+www_kershner_org.ca-bundle
+kershner.org.combined.cert
