@@ -69,7 +69,7 @@
         <script type="text/javascript" src="{% static 'vendor/js/particles.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/particles.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/util.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/main.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/main.js' %}?timestamp={{ timestamp }}"></script>
         {% block javascripts %}
         <script type="text/javascript">
             window.onload = portfolio.init();

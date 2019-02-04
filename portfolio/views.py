@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.conf import settings
 from project.models import Project
 from song.models import Song
+import time
 import json
 
 
@@ -12,7 +13,8 @@ def home(request):
     base_s3_url = 'https://{}/{}'.format(settings.AWS_S3_CUSTOM_DOMAIN, settings.AWS_LOCATION)
     template_vars = {
         'base_s3_url': base_s3_url,
-        'projects_per_page': settings.PROJECTS_PER_PAGE
+        'projects_per_page': settings.PROJECTS_PER_PAGE,
+        'timestamp': time.time()
     }
     return render(request, 'home.html', template_vars)
 
@@ -41,7 +43,8 @@ def music(request):
             'type': song.type,
             'url': song.file.url,
             'cover_art_url': song.thumbnail.url,
-            'duration': song.duration
+            'duration': song.duration,
+            'timestamp': time.time()
         }
         songs_json.append(tmp)
 
