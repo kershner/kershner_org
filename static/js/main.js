@@ -117,7 +117,7 @@ portfolio.getNewProjectHtml = function(project) {
         firstProjectId = project.fields.position === 1 ? 'first-project' : '';
 
     var html =  `
-                <div id="${firstProjectId}" class="project-wrapper" data-position="${project.fields.position}">
+                <div id="${firstProjectId}" class="project-wrapper ${project.fields.image_orientation}" data-position="${project.fields.position}">
                     <div class="left-content">
                         <div class="project-icon">
                             <img src="" data-src="${portfolio.baseS3Url}/${project.fields.icon}">

@@ -19,6 +19,12 @@ class Project(models.Model):
     technologies = models.CharField(max_length=255)
     extra_notes = models.TextField()
     icon = models.ImageField(upload_to=rename_upload)
+    # (actual DB value, human-readable name)
+    IMAGE_ORIENTATION_CHOICES = (
+        ('landscape', 'Landscape'),
+        ('portrait', 'Portrait')
+    )
+    image_orientation = models.CharField(max_length=9, choices=IMAGE_ORIENTATION_CHOICES, default='Portrait')
     image_1 = models.ImageField(upload_to=rename_upload)
     image_2 = models.ImageField(upload_to=rename_upload)
     image_3 = models.ImageField(upload_to=rename_upload)

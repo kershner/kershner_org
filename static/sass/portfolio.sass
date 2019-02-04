@@ -179,7 +179,34 @@ a
       z-index: 1
       border-radius: .75em
 
-// Project Breakpoints
+// Image Orientations //////////////////////////////////////////////////////////////////////////////////////////////////
+.project-wrapper
+  &.landscape
+    .right-content
+      justify-content: center
+      flex-wrap: wrap
+
+      @media(min-width: 800px)
+        height: 80%
+
+      div
+        align-self: center
+
+        img
+          display: block
+
+      div.project-img-2
+        img
+          display: none !important
+
+      div.project-img-3
+        display: none
+
+        @media(min-width: 800px)
+          display: inline-block
+          align-self: center
+
+// Project Breakpoints /////////////////////////////////////////////////////////////////////////////////////////////////
 @media(min-width: 480px)
   .project-wrapper
     padding-left: 1.5em
@@ -199,11 +226,12 @@ a
 
 @media(min-width: 700px)
   .project-wrapper
-    .right-content
-      div
-        &.project-img-2
-          img
-            display: block
+    &.portrait
+      .right-content
+        div
+          &.project-img-2
+            img
+              display: block
 
 @media(min-width: 1000px)
   .project-wrapper
@@ -212,6 +240,7 @@ a
         &.project-img-3
           img
             display: block
+// END PROJECT BREAKPOINTS /////////////////////////////////////////////////////////////////////////////////////////////
 
 .more-projects-btn-wrapper
   margin: 1em auto
