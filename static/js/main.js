@@ -78,29 +78,33 @@ portfolio.moreProjectsBtn = function() {
         portfolio.projectWrappers = document.getElementsByClassName('project-wrapper');
 
         var projectWrapper = portfolio.projectWrappers[portfolio.projectWrappers.length - 1],
-            id = projectWrapper.getAttribute('data-id');
+            position = projectWrapper.getAttribute('data-position');
 
-        let data = new FormData();
-        data.append('last_project_id', id);
+        portfolio.getProjectsFromServer(position);
+    });
+};
 
-        fetch(portfolio.getProjectsURL, {
+portfolio.getProjectsFromServer = function(lastProjectPosition) {
+    let data = new FormData();
+    data.append('last_project_position', lastProjectPosition);
+
+    fetch(portfolio.getProjectsURL, {
           method : 'post',
           body : data,
           credentials : 'same-origin'
-        }).then(response => {
-            return response.json();
-        }).then(function(data) {
-            portfolio.addMoreProjects(data);
-        });
+    }).then(response => {
+        return response.json();
+    }).then(function(data) {
+        console.log(data);
+        portfolio.addMoreProjects(data);
     });
 };
 
 portfolio.addMoreProjects = function(projects) {
-    if (!projects.length) {
+    removeClass(document.getElementById('more-projects-btn'), 'hidden');
+    if (projects.length < portfolio.projectsPerPage) {
         addClass(document.getElementById('more-projects-btn'), 'hidden');
-        return
     }
-
     for (var i=0; i<projects.length; i++) {
         var project = projects[i];
         portfolio.projectsWrapper.innerHTML += portfolio.getNewProjectHtml(project);
@@ -109,9 +113,11 @@ portfolio.addMoreProjects = function(projects) {
 };
 
 portfolio.getNewProjectHtml = function(project) {
-    var currentColor = portfolio.colors[portfolio.colorIndex][0];
+    var currentColor = portfolio.colors[portfolio.colorIndex][0],
+        firstProjectId = project.fields.position === 1 ? 'first-project' : '';
+
     var html =  `
-                <div class="project-wrapper" data-id="${project.pk}">
+                <div id="${firstProjectId}" class="project-wrapper" data-position="${project.fields.position}">
                     <div class="left-content">
                         <div class="project-icon">
                             <img src="" data-src="${portfolio.baseS3Url}/${project.fields.icon}">

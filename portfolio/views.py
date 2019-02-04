@@ -9,11 +9,9 @@ import json
 
 
 def home(request):
-    projects = Project.objects.all().order_by('-position')[:2]
     base_s3_url = 'https://{}/{}'.format(settings.AWS_S3_CUSTOM_DOMAIN, settings.AWS_LOCATION)
     template_vars = {
         'base_s3_url': base_s3_url,
-        'projects': projects,
         'projects_per_page': settings.PROJECTS_PER_PAGE
     }
     return render(request, 'home.html', template_vars)
@@ -22,8 +20,13 @@ def home(request):
 @csrf_exempt
 def get_projects(request):
     if request.method == 'POST':
-        last_project_id = request.POST.get('last_project_id', '')
-        projects = Project.objects.filter(id__lt=last_project_id).order_by('-position')[:settings.PROJECTS_PER_PAGE]
+        last_project_position = request.POST.get('last_project_position', '')
+        if last_project_position == '0':
+            # Initial call
+            projects = Project.objects.all().order_by('position')[:2]
+        else:
+            projects = Project.objects.filter(position__gt=last_project_position).order_by('-position')[:settings.PROJECTS_PER_PAGE]
+
         projects_json = serializers.serialize('json', projects)
         return HttpResponse(projects_json, content_type='application/json')
 

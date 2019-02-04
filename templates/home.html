@@ -22,59 +22,11 @@
 </div>
 
 <!-- Projects -->
-<div class="projects-wrapper">
-{% for project in projects %}
-    {% if forloop.counter == 1 %}
-    <div id="first-project" class="project-wrapper" data-id="{{ project.id }}">
-    {% else %}
-    <div class="project-wrapper" data-id="{{ project.id }}">
-    {% endif %}
-        <div class="left-content">
-            <div class="project-icon">
-                <img src="" data-src="{{ project.icon.url }}">
-            </div>
-
-            <div class="project-title">{{ project.title }}</div>
-
-            <div class="project-blurb">{{ project.blurb }}</div>
-
-            <hr align="left" class="dynamic-color">
-
-            <div class="project-info">
-                <div class="project-info-title">Technologies:</div>
-                <div class="project-info-value">{{ project.technologies }}</div>
-            </div>
-
-            <div class="project-info">
-                <div class="project-info-title">More:</div>
-                <div class="project-info-value">{{ project.extra_notes }}</div>
-            </div>
-
-            <a href="{{ project.site_url}}" target="_blank">
-                <div class="project-link-btn dynamic-color">Visit Site →</div>
-            </a>
-        </div>
-
-        <div class="right-content">
-            <div class="project-img-1">
-                <img src="" data-src="{{ project.image_1.url }}">
-            </div>
-
-            <div class="project-img-2">
-                <img src="" data-src="{{ project.image_2.url }}">
-            </div>
-
-            <div class="project-img-3">
-                <img src="" data-src="{{ project.image_3.url }}">
-            </div>
-        </div>
-    </div>
-{% endfor %}
-</div>
+<div class="projects-wrapper"></div>
 
 <!-- More Projects Btn -->
 <div class="more-projects-btn-wrapper">
-    <div id="more-projects-btn" class="generic-btn dynamic-color">More Projects</div>
+    <div id="more-projects-btn" class="generic-btn dynamic-color hidden">More Projects</div>
 </div>
 {% endblock %}
 
@@ -85,6 +37,7 @@
         portfolio.projectsPerPage = {{ projects_per_page }};
         portfolio.currentProjectIndex = {{ projects_per_page }};
         portfolio.chevronClick();
+        portfolio.getProjectsFromServer(0);
         portfolio.moreProjectsBtn();
     </script>
 {% endblock %}
