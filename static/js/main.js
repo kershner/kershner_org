@@ -131,24 +131,28 @@ portfolio.getNewProjectHtml = function(project) {
                         <div class="project-info"><div class="project-info-title">Technologies:</div>
                             <div class="project-info-value">${project.fields.technologies}</div>
                         </div>
+                        `;
 
-                        <div class="project-info">
+    var moreInfoHtml = `<div class="project-info">
                             <div class="project-info-title">More:</div>
                             <div class="project-info-value">${project.fields.extra_notes}</div>
-                        </div>
+                        </div>`;
+    if (project.fields.extra_notes !== '') {
+        html += moreInfoHtml;
+    }
 
-                        <a href="${project.fields.site_url}" target="_blank">
-                            <div class="project-link-btn dynamic-color ${currentColor}">Visit Site →</div>
-                        </a>
-                    </div>
+    html += `<a href="${project.fields.site_url}" target="_blank">
+                <div class="project-link-btn dynamic-color ${currentColor}">Visit Site →</div>
+            </a>
+        </div>
 
-                    <div class="right-content">
-                        <div class="project-img-1"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}"></div>
-                        <div class="project-img-2"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_2}"></div>
-                        <div class="project-img-3"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_3}"></div>
-                    </div>
-                </div>
-                `;
+        <div class="right-content">
+            <div class="project-img-1"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}"></div>
+            <div class="project-img-2"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_2}"></div>
+            <div class="project-img-3"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_3}"></div>
+        </div>
+    </div>
+    `;
     return html;
 };
 

@@ -17,7 +17,7 @@ class Project(models.Model):
     title = models.CharField(max_length=255)
     blurb = models.TextField()
     technologies = models.CharField(max_length=255)
-    extra_notes = models.TextField()
+    extra_notes = models.TextField(blank=True)
     icon = models.ImageField(upload_to=rename_upload)
     # (actual DB value, human-readable name)
     IMAGE_ORIENTATION_CHOICES = (
