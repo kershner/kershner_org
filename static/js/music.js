@@ -1,7 +1,7 @@
 var music = {
     songs           : {},
     songContainer   : 'amplitude-song-container',
-    oldVideoUrl     : 'https://www.youtube.com/embed/w1t-Mevr9YM'
+    oldVideoUrl     : 'https://www.youtube.com/embed/videoseries?list=PLAtCvsbFyJ9bQAqn6DUD8pmGR0FPWKRtJ'
 };
 
 music.init = function() {
@@ -49,7 +49,7 @@ music.init = function() {
                 'loops' : loopsPlaylist,
                 'songs' : songsPlaylist
             },
-            'starting_playlist' : 'loops'
+            'starting_playlist' : 'songs'
         };
         Amplitude.init(amplitudeOptions);
         portfolio.deferImages();

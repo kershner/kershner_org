@@ -7,16 +7,16 @@
         <!-- Playlist -->
         <!-- Playlist Select -->
         <div class="playlist-select">
-            <div class="playlist-option dynamic-color active" data-type="loops">Loops</div>
-            <div class="playlist-option" data-type="songs">Songs</div>
+            <div class="playlist-option" data-type="loops">Loops</div>
+            <div class="playlist-option dynamic-color active" data-type="songs">Songs</div>
         </div>
 
         <div class="playlist">
             <!-- Loops -->
-            <div id="loops"></div>
+            <div id="loops" class="hidden"></div>
 
             <!-- Songs -->
-            <div id="songs" class="hidden"></div>
+            <div id="songs"></div>
         </div>
 
         <div class="player-bottom">
@@ -59,7 +59,7 @@
                         <span amplitude-song-info="artist" amplitude-main-song-info="true" class="now-playing-artist"></span>
                     </div>
 
-                    <div id="old-video-toggle" class="dynamic-color">Old Video</div>
+                    <div id="old-video-toggle" class="dynamic-color">Videos</div>
                 </div>
 
                 <!-- Volume -->
@@ -72,13 +72,11 @@
     </div>
 </div>
 
-<!-- Old vid -->
+<!-- YouTube embed -->
 <div class="outer-music-video-wrapper hidden">
     <div class="music-video-wrapper">
         <iframe id="old-music-video-ifr" frameborder="0" allowfullscreen></iframe>
     </div>
-
-    <div class="music-video-blurb">Bonus jam from 2007</div>
 </div>
 {% endblock %}
 
