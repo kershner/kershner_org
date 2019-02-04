@@ -144,8 +144,8 @@ portfolio.getNewProjectHtml = function(project) {
 
                     <div class="right-content">
                         <div class="project-img-1"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}"></div>
-                        <div class="project-img-2"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}"></div>
-                        <div class="project-img-3"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}"></div>
+                        <div class="project-img-2"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_2}"></div>
+                        <div class="project-img-3"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_3}"></div>
                     </div>
                 </div>
                 `;
