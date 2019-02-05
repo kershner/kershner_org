@@ -26,8 +26,8 @@ class Project(models.Model):
     )
     image_orientation = models.CharField(max_length=9, choices=IMAGE_ORIENTATION_CHOICES, default='Portrait')
     image_1 = models.ImageField(upload_to=rename_upload)
-    image_2 = models.ImageField(upload_to=rename_upload)
-    image_3 = models.ImageField(upload_to=rename_upload)
+    image_2 = models.ImageField(upload_to=rename_upload, blank=True)
+    image_3 = models.ImageField(upload_to=rename_upload, blank=True)
     site_url = models.CharField(max_length=255)
     position = models.IntegerField(default=0)
     __original_position = None
