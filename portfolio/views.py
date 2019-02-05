@@ -27,7 +27,7 @@ def get_projects(request):
             # Initial call
             projects = Project.objects.all().order_by('position')[:2]
         else:
-            projects = Project.objects.filter(position__gt=last_project_position).order_by('-position')[:settings.PROJECTS_PER_PAGE]
+            projects = Project.objects.filter(position__gt=last_project_position).order_by('position')[:settings.PROJECTS_PER_PAGE]
 
         projects_json = serializers.serialize('json', projects)
         return HttpResponse(projects_json, content_type='application/json')
