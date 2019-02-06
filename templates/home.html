@@ -37,7 +37,7 @@
         portfolio.projectsPerPage = {{ projects_per_page }};
         portfolio.currentProjectIndex = {{ projects_per_page }};
         portfolio.chevronClick();
-        portfolio.getProjectsFromServer(0);
+        portfolio.loadProjectsOnScroll();
         portfolio.moreProjectsBtn();
     </script>
 {% endblock %}

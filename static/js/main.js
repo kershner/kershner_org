@@ -1,4 +1,5 @@
 var portfolio = {
+    'initialLoad'           : true,
     'baseS3Url'             : '',
     'getProjectsURL'        : '',
     'projectsPerPage'       : 0,
@@ -19,6 +20,16 @@ var portfolio = {
 portfolio.init = function() {
     portfolio.deferImages();
     portfolio.rotateColors();
+};
+
+portfolio.loadProjectsOnScroll = function() {
+    window.addEventListener('scroll', function(e) {
+        console.log('SCROLLIN');
+        if (portfolio.initialLoad) {
+            portfolio.getProjectsFromServer(0);
+        }
+        portfolio.initialLoad = false;
+    });
 };
 
 portfolio.deferImages = function() {
