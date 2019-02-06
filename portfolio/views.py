@@ -25,7 +25,7 @@ def get_projects(request):
         last_project_position = request.POST.get('last_project_position', '')
         if last_project_position == '0':
             # Initial call
-            projects = Project.objects.all().order_by('position')[:2]
+            projects = Project.objects.all().order_by('position')[:settings.PROJECTS_PER_PAGE]
         else:
             projects = Project.objects.filter(position__gt=last_project_position).order_by('position')[:settings.PROJECTS_PER_PAGE]
 
