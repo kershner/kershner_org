@@ -1,7 +1,8 @@
 var music = {
-    songs           : {},
-    songContainer   : 'amplitude-song-container',
-    oldVideoUrl     : 'https://www.youtube.com/embed/videoseries?list=PLAtCvsbFyJ9bQAqn6DUD8pmGR0FPWKRtJ'
+    'metaDataContainer' : document.getElementsByClassName('player-meta-container')[0],
+    songs               : {},
+    songContainer       : 'amplitude-song-container',
+    oldVideoUrl         : 'https://www.youtube.com/embed/videoseries?list=PLAtCvsbFyJ9bQAqn6DUD8pmGR0FPWKRtJ'
 };
 
 music.init = function() {
@@ -53,6 +54,7 @@ music.init = function() {
         };
         Amplitude.init(amplitudeOptions);
         portfolio.deferImages();
+        music.metaDataContainer.style.backgroundImage = 'url('+ Amplitude.getActiveSongMetadata().cover_art_url +')';
     }
 
     function playlistSelect() {
@@ -68,7 +70,7 @@ music.init = function() {
         // Onclick for song containers
         document.querySelectorAll('.' + music.songContainer).forEach(function(e) {
             e.addEventListener('click', function() {
-                console.log('clicked on a song!');
+                music.metaDataContainer.style.backgroundImage = 'url('+ Amplitude.getActiveSongMetadata().cover_art_url +')';
             });
         });
     }
