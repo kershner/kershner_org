@@ -3,10 +3,13 @@ var portfolio = {
     'baseS3Url'             : '',
     'getProjectsURL'        : '',
     'projectsPerPage'       : 0,
+    'projects'              : [],
     'colorIndex'            : 0,
     'colorChangeInterval'   : 10000,  // 10 seconds,
     'projectsWrapper'       : document.getElementsByClassName('projects-wrapper')[0],
     'projectWrappers'       : document.getElementsByClassName('project-wrapper'),
+    'moreProjectsBtn'       : document.getElementById('more-projects-btn'),
+    'oldProjectsUrl'        : 'http://old.kershner.org/projects',
     'colors'                : [
         ['purple', '#8c53c6'],
         ['pink', '#F2006D'],
@@ -25,7 +28,7 @@ portfolio.init = function() {
 portfolio.loadProjectsOnScroll = function() {
     window.addEventListener('scroll', function(e) {
         if (portfolio.initialLoad) {
-            portfolio.getProjectsFromServer(0);
+            portfolio.getProjectsFromServer();
         }
         portfolio.initialLoad = false;
     });
@@ -82,45 +85,41 @@ portfolio.chevronClick = function() {
     }
 };
 
-portfolio.moreProjectsBtn = function() {
-    var moreProjectsBtn = document.getElementById('more-projects-btn');
-
-    moreProjectsBtn.addEventListener('click', function() {
-        portfolio.projectWrappers = document.getElementsByClassName('project-wrapper');
-
-        var projectWrapper = portfolio.projectWrappers[portfolio.projectWrappers.length - 1],
-            position = projectWrapper.getAttribute('data-position');
-
-        portfolio.getProjectsFromServer(position);
-    });
+portfolio.moreProjectsClickEvent = function() {
+    portfolio.projectWrappers = document.getElementsByClassName('project-wrapper');
+    portfolio.addProject(portfolio.projectWrappers.length);
 };
 
-portfolio.getProjectsFromServer = function(lastProjectPosition) {
-    let data = new FormData();
-    data.append('last_project_position', lastProjectPosition);
-
+portfolio.getProjectsFromServer = function() {
     fetch(portfolio.getProjectsURL, {
-          method : 'post',
-          body : data,
+          method : 'get',
           credentials : 'same-origin'
     }).then(response => {
         return response.json();
     }).then(function(data) {
-        console.log(data);
-        portfolio.addMoreProjects(data);
+        portfolio.projects = data;
+        portfolio.addProject(0);
     });
 };
 
-portfolio.addMoreProjects = function(projects) {
-    removeClass(document.getElementById('more-projects-btn'), 'hidden');
-    if (projects.length < portfolio.projectsPerPage) {
-        addClass(document.getElementById('more-projects-btn'), 'hidden');
-    }
-    for (var i=0; i<projects.length; i++) {
-        var project = projects[i];
+portfolio.addProject = function(projectIndex) {
+    var totalProjects = portfolio.projects.length,
+        numProjectWrappers = portfolio.projectWrappers.length,
+        project = portfolio.projects[projectIndex];
+
+    if (numProjectWrappers < totalProjects) {
         portfolio.projectsWrapper.innerHTML += portfolio.getNewProjectHtml(project);
+        portfolio.deferImages();
     }
-    portfolio.deferImages();
+
+    if (numProjectWrappers === totalProjects - 1) {
+        portfolio.moreProjectsBtn.innerHTML = 'Older Projects';
+        portfolio.moreProjectsBtn.removeEventListener('click', portfolio.moreProjectsClickEvent);
+        portfolio.moreProjectsBtn.addEventListener('click', function() {
+            window.open(portfolio.oldProjectsUrl, '_blank');
+        });
+        return false;
+    }
 };
 
 portfolio.getNewProjectHtml = function(project) {

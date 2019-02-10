@@ -21,14 +21,8 @@ def home(request):
 
 @csrf_exempt
 def get_projects(request):
-    if request.method == 'POST':
-        last_project_position = request.POST.get('last_project_position', '')
-        if last_project_position == '0':
-            # Initial call
-            projects = Project.objects.all().order_by('position')[:settings.PROJECTS_PER_PAGE]
-        else:
-            projects = Project.objects.filter(position__gt=last_project_position).order_by('position')[:settings.PROJECTS_PER_PAGE]
-
+    if request.method == 'GET':
+        projects = Project.objects.all().order_by('position')
         projects_json = serializers.serialize('json', projects)
         return HttpResponse(projects_json, content_type='application/json')
 
