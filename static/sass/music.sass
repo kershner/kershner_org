@@ -292,13 +292,16 @@ input[type=range]
         justify-content: center
         align-items: center
         margin: 2em auto
-        padding: 5em
+        padding: 1em
         text-align: center
         background-repeat: no-repeat
         background-size: cover
         background-position: center
         border-radius: .3em
         @extend %box-shadow
+
+        @media(min-width: 400px)
+          padding: 5em
 
         .player-meta-container-inner
           .now-playing-name
