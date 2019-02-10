@@ -77,11 +77,8 @@ portfolio.rotateColors = function() {
 portfolio.chevronClick = function() {
     var bigChevron = document.getElementsByClassName('chevron-down')[0];
     bigChevron.onclick = function() {
-        document.getElementById('first-project').scrollIntoView();
-        if (portfolio.initialLoad) {
-            portfolio.getProjectsFromServer(0);
-            portfolio.initialLoad = false;
-        }
+        let pageHeight = window.innerHeight;
+        window.scrollBy(0, pageHeight);
     }
 };
 
