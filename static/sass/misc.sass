@@ -82,6 +82,17 @@ $pink: #F2006D
   100%
     opacity: 1
 
+.pop-up
+  z-index: 10
+  -webkit-animation: pop-up .6s forwards
+@keyframes pop-up
+  0%
+    -webkit-transform: scale(1)
+  50%
+    -webkit-transform: scale(1.1)
+  100%
+    -webkit-transform: scale(1)
+
 // Ripple effect
 %ripple
   position: relative

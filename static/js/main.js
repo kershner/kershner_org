@@ -9,6 +9,7 @@ var portfolio = {
     'projectsWrapper'       : document.getElementsByClassName('projects-wrapper')[0],
     'projectWrappers'       : document.getElementsByClassName('project-wrapper'),
     'moreProjectsBtn'       : document.getElementById('more-projects-btn'),
+    'imgAnimationClass'     : 'pop-up',
     'oldProjectsUrl'        : 'http://old.kershner.org/projects',
     'colors'                : [
         ['purple', '#8c53c6'],
@@ -35,12 +36,22 @@ portfolio.loadProjectsOnScroll = function() {
 };
 
 portfolio.deferImages = function() {
-    var imgDefer = document.getElementsByTagName('img');
-    for (var i=0; i<imgDefer.length; i++) {
-    if (imgDefer[i].getAttribute('data-src')) {
-        imgDefer[i].setAttribute('src', imgDefer[i].getAttribute('data-src'));
+    var images = document.getElementsByTagName('img');
+    for (var i=0; i<images.length; i++) {
+        if (images[i].getAttribute('data-src')) {
+            images[i].setAttribute('src', images[i].getAttribute('data-src'));
         }
     }
+    portfolio.removeImgAnimationClass();
+};
+
+portfolio.removeImgAnimationClass = function() {
+    setTimeout(function() {
+        var images = document.getElementsByTagName('img');
+        for (var i=0; i<images.length; i++) {
+            removeClass(images[i], portfolio.imgAnimationClass);
+        }
+    }, 1000);
 };
 
 portfolio.rotateColors = function() {
@@ -133,7 +144,7 @@ portfolio.getNewProjectHtml = function(project) {
                 <div id="${firstProjectId}" class="project-wrapper ${project.fields.image_orientation}" data-position="${project.fields.position}">
                     <div class="left-content">
                         <div class="project-icon">
-                            <img src="" data-src="${portfolio.baseS3Url}/${project.fields.icon}">
+                            <img src="" class="${portfolio.imgAnimationClass}" data-src="${portfolio.baseS3Url}/${project.fields.icon}">
                         </div>
 
                         <div class="project-title">${project.fields.title}</div>
@@ -160,9 +171,9 @@ portfolio.getNewProjectHtml = function(project) {
         </div>
 
         <div class="right-content">
-            <div class="project-img-1 ${firstImgClass}"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}"></div>
-            <div class="project-img-2 ${secondImgClass}"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_2}"></div>
-            <div class="project-img-3 ${thirdImgClass}"><img src="" data-src="${portfolio.baseS3Url}/${project.fields.image_3}"></div>
+            <div class="project-img-1 ${firstImgClass}"><img class="${portfolio.imgAnimationClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}"></div>
+            <div class="project-img-2 ${secondImgClass}"><img class="${portfolio.imgAnimationClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_2}"></div>
+            <div class="project-img-3 ${thirdImgClass}"><img class="${portfolio.imgAnimationClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_3}"></div>
         </div>
     </div>
     `;
