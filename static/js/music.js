@@ -1,5 +1,7 @@
 var music = {
     'metaDataContainer' : document.getElementsByClassName('player-meta-container')[0],
+    'soundWave'         : document.getElementsByClassName('sound-wave')[0],
+    'playButton'        : document.getElementsByClassName('amplitude-play-pause')[0],
     songs               : {},
     songContainer       : 'amplitude-song-container',
     oldVideoUrl         : 'https://www.youtube.com/embed/videoseries?list=PLAtCvsbFyJ9bQAqn6DUD8pmGR0FPWKRtJ'
@@ -9,6 +11,7 @@ music.init = function() {
     amplitudeInit();
     playlistSelect();
     songSelect();
+    playButtonListener();
     deferVideoLoad();
 
     function amplitudeInit() {
@@ -57,6 +60,15 @@ music.init = function() {
         music.metaDataContainer.style.backgroundImage = 'url('+ Amplitude.getActiveSongMetadata().cover_art_url +')';
     }
 
+    function showHideVisualizer() {
+        var playing = hasClass(music.playButton, 'amplitude-playing');
+
+        addClass(music.soundWave, 'hidden');
+        if (playing) {
+            removeClass(music.soundWave, 'hidden');
+        }
+    }
+
     function playlistSelect() {
         // Onclick for playlist options
         document.querySelectorAll('.playlist-option').forEach(function(e) {
@@ -66,10 +78,17 @@ music.init = function() {
         });
     }
 
+    function playButtonListener() {
+        music.playButton.addEventListener('click', function() {
+            showHideVisualizer();
+        });
+    }
+
     function songSelect() {
         // Onclick for song containers
         document.querySelectorAll('.' + music.songContainer).forEach(function(e) {
             e.addEventListener('click', function() {
+                showHideVisualizer();
                 music.metaDataContainer.style.backgroundImage = 'url('+ Amplitude.getActiveSongMetadata().cover_art_url +')';
             });
         });
