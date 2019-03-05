@@ -60,8 +60,8 @@ a
     cursor: pointer
     width: 40px
     height: 40px
-    -webkit-mask-size: 40px
-    mask-size: 40px
+    -webkit-masize: 40px
+    masize: 40px
 
 // Breakpoints
 @media(min-width: 700px)
@@ -249,6 +249,49 @@ a
 
   #more-projects-btn
     @extend %generic-btn
+
+.cube-grid 
+  width: 40px
+  height: 40px
+  margin: 0 auto
+
+.cube-grid .cube 
+  width: 33%
+  height: 33%
+  background-color: #333
+  float: left
+  animation: cubeGridScaleDelay 1.3s infinite ease-in-out
+
+.cube-grid .cube1 
+  animation-delay: 0.2s
+.cube-grid .cube2
+  animation-delay: 0.3s
+.cube-grid .cube3 
+  animation-delay: 0.4s
+.cube-grid .cube4
+  animation-delay: 0.1s
+.cube-grid .cube5 
+  animation-delay: 0.2s
+.cube-grid .cube6 
+  animation-delay: 0.3s
+.cube-grid .cube7 
+  animation-delay: 0s
+.cube-grid .cube8 
+  animation-delay: 0.1s
+.cube-grid .cube9 
+  animation-delay: 0.2s
+
+@-webkit-keyframes cubeGridScaleDelay 
+  0%, 70%, 100% 
+    transform: scale3D(1, 1, 1)
+  35%
+    transform: scale3D(0, 0, 1)
+
+@keyframes cubeGridScaleDelay
+  0%, 70%, 100% 
+    transform: scale3D(1, 1, 1)
+  35%
+    transform: scale3D(0, 0, 1)
 
 // Footer
 .footer

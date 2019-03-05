@@ -8,6 +8,7 @@ var portfolio = {
     'colorChangeInterval'   : 10000,  // 10 seconds,
     'projectsWrapper'       : document.getElementsByClassName('projects-wrapper')[0],
     'projectWrappers'       : document.getElementsByClassName('project-wrapper'),
+    'initialLoader'         : document.getElementsByClassName('initial-loader')[0],
     'moreProjectsBtn'       : document.getElementById('more-projects-btn'),
     'imgAnimationClass'     : 'pop-up',
     'oldProjectsUrl'        : 'http://old.kershner.org/projects',
@@ -117,6 +118,9 @@ portfolio.addProject = function(projectIndex) {
     var totalProjects = portfolio.projects.length,
         numProjectWrappers = portfolio.projectWrappers.length,
         project = portfolio.projects[projectIndex];
+
+    addClass(portfolio.initialLoader, 'hidden');
+    removeClass(portfolio.moreProjectsBtn, 'hidden');
 
     if (numProjectWrappers < totalProjects) {
         portfolio.projectsWrapper.innerHTML += portfolio.getNewProjectHtml(project);
