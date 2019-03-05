@@ -1,6 +1,18 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
 {% block content %}
+
+<div class="video-btn-wrapper">
+    <div id="old-video-toggle" class="dynamic-color">Videos</div>
+</div>
+
+<!-- YouTube embed -->
+<div class="outer-music-video-wrapper hidden">
+    <div class="music-video-wrapper">
+        <iframe id="old-music-video-ifr" frameborder="0" allowfullscreen></iframe>
+    </div>
+</div>
+
 <!-- Player -->
 <div class="player-wrapper">
     <div class="player">
@@ -20,6 +32,7 @@
         </div>
 
         <div class="player-bottom">
+            <!-- Controls Container -->
             <!-- Time -->
             <div class="player-time-container">
                 <!-- Current Time -->
@@ -53,28 +66,6 @@
                         <div class="amplitude-play-pause dynamic-color" amplitude-main-play-pause="true"></div>
                         <div class="amplitude-next dynamic-color"></div>
                     </div>
-
-                    <div class="player-meta-container">
-                        <div class="player-meta-container-inner">
-                            <span amplitude-song-info="name" amplitude-main-song-info="true" class="now-playing-name"></span>
-                            <span amplitude-song-info="artist" amplitude-main-song-info="true" class="now-playing-artist"></span>
-                        </div>
-
-                        <div class="sound-wave hidden">
-                            <div class="sound-wave-bar dynamic-color"></div>
-                            <div class="sound-wave-bar dynamic-color"></div>
-                            <div class="sound-wave-bar dynamic-color"></div>
-                            <div class="sound-wave-bar dynamic-color"></div>
-                            <div class="sound-wave-bar dynamic-color"></div>
-                            <div class="sound-wave-bar dynamic-color"></div>
-                            <div class="sound-wave-bar dynamic-color"></div>
-                            <div class="sound-wave-bar dynamic-color"></div>
-                            <div class="sound-wave-bar dynamic-color"></div>
-                            <div class="sound-wave-bar dynamic-color"></div>
-                        </div>
-                    </div>
-
-                    <div id="old-video-toggle" class="dynamic-color">Videos</div>
                 </div>
 
                 <!-- Volume -->
@@ -83,14 +74,28 @@
                     <input type="range" class="amplitude-volume-slider dynamic-color"/>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
 
-<!-- YouTube embed -->
-<div class="outer-music-video-wrapper hidden">
-    <div class="music-video-wrapper">
-        <iframe id="old-music-video-ifr" frameborder="0" allowfullscreen></iframe>
+            <!-- Meta Container -->
+            <div class="player-meta-container">
+                <div class="player-meta-container-inner">
+                    <span amplitude-song-info="name" amplitude-main-song-info="true" class="now-playing-name"></span>
+                    <span amplitude-song-info="artist" amplitude-main-song-info="true" class="now-playing-artist"></span>
+                </div>
+
+                <div class="sound-wave hidden">
+                    <div class="sound-wave-bar dynamic-color"></div>
+                    <div class="sound-wave-bar dynamic-color"></div>
+                    <div class="sound-wave-bar dynamic-color"></div>
+                    <div class="sound-wave-bar dynamic-color"></div>
+                    <div class="sound-wave-bar dynamic-color"></div>
+                    <div class="sound-wave-bar dynamic-color"></div>
+                    <div class="sound-wave-bar dynamic-color"></div>
+                    <div class="sound-wave-bar dynamic-color"></div>
+                    <div class="sound-wave-bar dynamic-color"></div>
+                    <div class="sound-wave-bar dynamic-color"></div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
