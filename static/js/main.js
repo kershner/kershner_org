@@ -10,6 +10,7 @@ var portfolio = {
     'projectWrappers'       : document.getElementsByClassName('project-wrapper'),
     'initialLoader'         : document.getElementsByClassName('initial-loader')[0],
     'moreProjectsBtn'       : document.getElementById('more-projects-btn'),
+    'bigChevron'            : document.getElementsByClassName('chevron-down')[0],
     'imgAnimationClass'     : 'pop-up',
     'oldProjectsUrl'        : 'http://old.kershner.org/projects',
     'colors'                : [
@@ -90,8 +91,8 @@ portfolio.rotateColors = function() {
 };
 
 portfolio.chevronClick = function() {
-    var bigChevron = document.getElementsByClassName('chevron-down')[0];
-    bigChevron.onclick = function() {
+    portfolio.bigChevron.onclick = function() {
+        addClass(portfolio.bigChevron, 'hidden');
         let pageHeight = window.innerHeight;
         window.scrollBy(0, pageHeight);
     }
@@ -120,6 +121,7 @@ portfolio.addProject = function(projectIndex) {
         project = portfolio.projects[projectIndex];
 
     addClass(portfolio.initialLoader, 'hidden');
+    addClass(portfolio.bigChevron, 'hidden');
     removeClass(portfolio.moreProjectsBtn, 'hidden');
 
     if (numProjectWrappers < totalProjects) {
