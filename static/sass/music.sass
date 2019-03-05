@@ -208,152 +208,151 @@ input[type=range]
           align-self: center
 
     .player-bottom
-      // TIME CONTAINER
-      .player-time-container
-        display: flex
-        align-items: center
+      display: flex
+      justify-content: space-evenly
 
-        .current-time,
-        .duration
-          margin: 0 .5em
-          line-height: 50px
-          color: $grey
-          font-weight: bold
-
-        .progress-container
+      // META CONTAINER
+      .meta-container
+        .player-meta-container
+          height: 5em
+          width: 5em
+          position: relative
           display: flex
-          width: 80%
-
-      // CONTROLS CONTAINER
-      .player-control-container
-        display: flex
-        justify-content: space-evenly
-        margin: 0 auto
-
-        %icon-size
-          -webkit-mask-size: 40px
-          mask-size: 40px
-          width: 40px
-          height: 40px
-
-        %smaller-icon-size
-          -webkit-mask-size: 30px
-          mask-size: 30px
-          width: 30px
-          height: 30px
-
-        // REPEAT CONTAINER
-        .player-repeat-container
-          display: flex
-          justify-content: center
-          align-items: flex-start
-
-          div
-            display: inline-block
-            position: relative
-            z-index: 1
-            cursor: pointer
-            margin: 0 .5em
-            @extend %smaller-icon-size
-            +animate(0.2s)
-
-          .amplitude-repeat-off
-            background-color: $grey
-            +icon-mask('repeat')
-          .amplitude-shuffle-off
-            background-color: $grey
-            +icon-mask('shuffle')
-
-        // CENTRAL CONTROLS CONTAINER
-        .player-central-control-container
-          display: flex
+          z-index: 1
           justify-content: center
           align-items: center
-          flex-flow: row wrap
+          padding: 1em
+          text-align: center
+          background-repeat: no-repeat
+          background-size: cover
+          background-position: center
+          border-radius: .3em
+          @extend %box-shadow
 
-          .player-central-controls
+        .player-meta-container-song
+          .now-playing-name
+            display: block
+            color: $black
+            font-family: $secondary-font
+            font-size: 1.2em
+
+          .now-playing-artist
+            color: $black
+            font-size: 1.1em
+            opacity: 0.7
+
+      // CONTROLS CONTAINER
+      .player-controls-container
+        // TIME CONTAINER
+        .player-time-container
+          display: flex
+          align-items: center
+
+          .current-time,
+          .duration
+            margin: 0 .5em
+            line-height: 50px
+            color: $grey
+            font-weight: bold
+
+          .progress-container
+            display: flex
+            width: 80%
+
+        // CONTROLS CONTAINER
+        .player-control-container
+          display: flex
+          justify-content: space-evenly
+          margin: 0 auto
+          width: 100%
+
+          %icon-size
+            -webkit-mask-size: 40px
+            mask-size: 40px
+            width: 40px
+            height: 40px
+
+          %smaller-icon-size
+            -webkit-mask-size: 30px
+            mask-size: 30px
+            width: 30px
+            height: 30px
+
+          // REPEAT CONTAINER
+          .player-repeat-container
+            display: flex
+            justify-content: center
+            align-items: flex-start
+
+            div
+              display: inline-block
+              position: relative
+              z-index: 1
+              cursor: pointer
+              margin: 0 .5em
+              @extend %smaller-icon-size
+              +animate(0.2s)
+
+            .amplitude-repeat-off
+              background-color: $grey
+              +icon-mask('repeat')
+            .amplitude-shuffle-off
+              background-color: $grey
+              +icon-mask('shuffle')
+
+          // CENTRAL CONTROLS CONTAINER
+          .player-central-control-container
             display: flex
             justify-content: center
             align-items: center
+            flex-flow: row wrap
 
-            div
-              position: relative
-              z-index: 1
-              display: inline-block
-              margin: 0 .25em
-              cursor: pointer
-              @extend %icon-size
-              +animate(0.2s)
+            .player-central-controls
+              display: flex
+              justify-content: center
+              align-items: center
 
-              &.amplitude-prev
+              div
+                position: relative
+                z-index: 1
+                display: inline-block
+                margin: 0 .25em
+                cursor: pointer
+                @extend %icon-size
+                +animate(0.2s)
+
+                &.amplitude-prev
+                  @extend %smaller-icon-size
+                &.amplitude-next
+                  @extend %smaller-icon-size
+
+          // VOLUME CONTAINER
+          .player-volume-controls
+            display: flex
+            justify-content: flex-end
+            align-items: center
+            max-width: 30%
+
+            .amplitude-mute-wrapper
+              .amplitude-mute
+                display: inline-block
+                position: relative
+                z-index: 1
+                margin-right: .5em
+                cursor: pointer
                 @extend %smaller-icon-size
-              &.amplitude-next
-                @extend %smaller-icon-size
+                +animate(0.2s)
 
-        // VOLUME CONTAINER
-        .player-volume-controls
-          display: flex
-          justify-content: center
-          align-items: flex-start
+                &.amplitude-muted
+                  background-color: $grey
+                  +icon-mask('volume')
 
-          .amplitude-mute
-            display: inline-block
-            position: relative
-            z-index: 1
-            margin-right: .5em
-            cursor: pointer
-            @extend %smaller-icon-size
-            +animate(0.2s)
-
-            &.amplitude-muted
-              background-color: $grey
-              +icon-mask('volume')
-
-          .amplitude-volume-slider
-            display: inline-block
-            cursor: pointer
-            -webkit-appearance: none
-            width: 70%
-            height: 25px
-
-      // META CONTAINER
-      .player-meta-container
-        position: relative
-        display: flex
-        z-index: 1
-        justify-content: center
-        align-items: center
-        margin: 2em auto
-        padding: 1em
-        text-align: center
-        background-repeat: no-repeat
-        background-size: cover
-        background-position: center
-        border-radius: .3em
-        @extend %box-shadow
-
-        @media(min-width: 400px)
-          padding: 5em
-
-        .player-meta-container-inner
-          .now-playing-name
-            display: block
-            color: $white
-            font-family: $secondary-font
-            font-size: 2em
-
-          .now-playing-artist
-            color: $white
-            opacity: 0.7
-            font-size: 1.25em
-
-          @media(min-width: 480px)
-            .now-playing-artist
-              font-size: 1.5em
-
-          @media(min-width: 700px)
-            .now-playing-name
-              font-size: 3em
+            .amplitude-volume-wrapper
+              .amplitude-volume-slider
+                display: inline-block
+                cursor: pointer
+                -webkit-appearance: none
+                height: 25px
 
 /* Sound Wave Animation */
 .sound-wave

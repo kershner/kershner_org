@@ -32,67 +32,75 @@
         </div>
 
         <div class="player-bottom">
-            <!-- Controls Container -->
-            <!-- Time -->
-            <div class="player-time-container">
-                <!-- Current Time -->
-                <span class="current-time">
-                  <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
-                </span>
-
-                <!-- Progress -->
-                <div class="progress-container">
-                    <input type="range" class="amplitude-song-slider dynamic-color" amplitude-main-song-slider="true"/>
-                </div>
-
-                <!-- Duration -->
-                <span class="duration">
-                  <span class="amplitude-duration-minutes" amplitude-main-duration-minutes="true"></span>:<span class="amplitude-duration-seconds" amplitude-main-duration-seconds="true"></span>
-                </span>
-            </div>
-
-            <!-- Controls Container -->
-            <div class="player-control-container">
-                <!-- Repeat Container -->
-                <div class="player-repeat-container">
-                    <div class="amplitude-repeat dynamic-color"></div>
-                    <div class="amplitude-shuffle amplitude-shuffle-off dynamic-color" amplitude-playlist="loops"></div>
-                </div>
-
-                <!-- Central Controls -->
-                <div class="player-central-control-container">
-                    <div class="player-central-controls">
-                        <div class="amplitude-prev dynamic-color"></div>
-                        <div class="amplitude-play-pause dynamic-color" amplitude-main-play-pause="true"></div>
-                        <div class="amplitude-next dynamic-color"></div>
+            <!-- Meta Container -->
+            <div class="meta-container">
+                <div class="player-meta-container">
+                    <div class="sound-wave hidden">
+                        <div class="sound-wave-bar dynamic-color"></div>
+                        <div class="sound-wave-bar dynamic-color"></div>
+                        <div class="sound-wave-bar dynamic-color"></div>
+                        <div class="sound-wave-bar dynamic-color"></div>
+                        <div class="sound-wave-bar dynamic-color"></div>
+                        <div class="sound-wave-bar dynamic-color"></div>
+                        <div class="sound-wave-bar dynamic-color"></div>
+                        <div class="sound-wave-bar dynamic-color"></div>
+                        <div class="sound-wave-bar dynamic-color"></div>
+                        <div class="sound-wave-bar dynamic-color"></div>
                     </div>
                 </div>
 
-                <!-- Volume -->
-                <div class="player-volume-controls">
-                    <div class="amplitude-mute amplitude-not-muted dynamic-color"></div>
-                    <input type="range" class="amplitude-volume-slider dynamic-color"/>
-                </div>
-            </div>
-
-            <!-- Meta Container -->
-            <div class="player-meta-container">
-                <div class="player-meta-container-inner">
+                <div class="player-meta-container-song">
                     <span amplitude-song-info="name" amplitude-main-song-info="true" class="now-playing-name"></span>
                     <span amplitude-song-info="artist" amplitude-main-song-info="true" class="now-playing-artist"></span>
                 </div>
+            </div>
 
-                <div class="sound-wave hidden">
-                    <div class="sound-wave-bar dynamic-color"></div>
-                    <div class="sound-wave-bar dynamic-color"></div>
-                    <div class="sound-wave-bar dynamic-color"></div>
-                    <div class="sound-wave-bar dynamic-color"></div>
-                    <div class="sound-wave-bar dynamic-color"></div>
-                    <div class="sound-wave-bar dynamic-color"></div>
-                    <div class="sound-wave-bar dynamic-color"></div>
-                    <div class="sound-wave-bar dynamic-color"></div>
-                    <div class="sound-wave-bar dynamic-color"></div>
-                    <div class="sound-wave-bar dynamic-color"></div>
+            <!-- Controls Container -->
+            <div class="player-controls-container">
+                <!-- Time -->
+                <div class="player-time-container">
+                    <!-- Current Time -->
+                    <span class="current-time">
+                      <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
+                    </span>
+
+                    <!-- Progress -->
+                    <div class="progress-container">
+                        <input type="range" class="amplitude-song-slider dynamic-color" amplitude-main-song-slider="true"/>
+                    </div>
+
+                    <!-- Duration -->
+                    <span class="duration">
+                      <span class="amplitude-duration-minutes" amplitude-main-duration-minutes="true"></span>:<span class="amplitude-duration-seconds" amplitude-main-duration-seconds="true"></span>
+                    </span>
+                </div>
+
+                <div class="player-control-container">
+                    <!-- Repeat Container -->
+                    <div class="player-repeat-container">
+                        <div class="amplitude-repeat dynamic-color"></div>
+                        <div class="amplitude-shuffle amplitude-shuffle-off dynamic-color" amplitude-playlist="loops"></div>
+                    </div>
+
+                    <!-- Central Controls -->
+                    <div class="player-central-control-container">
+                        <div class="player-central-controls">
+                            <div class="amplitude-prev dynamic-color"></div>
+                            <div class="amplitude-play-pause dynamic-color" amplitude-main-play-pause="true"></div>
+                            <div class="amplitude-next dynamic-color"></div>
+                        </div>
+                    </div>
+
+                    <!-- Volume -->
+                    <div class="player-volume-controls">
+                        <div class="amplitude-mute-wrapper">
+                            <div class="amplitude-mute amplitude-not-muted dynamic-color"></div>
+                        </div>
+
+                        <div class="amplitude-volume-wrapper">
+                            <input type="range" class="amplitude-volume-slider dynamic-color"/>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
