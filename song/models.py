@@ -58,3 +58,9 @@ class SongAdmin(admin.ModelAdmin):
     list_filter = ('type', 'created_at')
     search_fields = ['name', 'id']
     show_full_result_count = True
+
+    def get_form(self, request, obj=None, **kwargs):
+        last_song = Song.objects.latest('position')
+        form = super(SongAdmin, self).get_form(request, obj, **kwargs)
+        form.base_fields['position'].initial = last_song.position + 1
+        return form
