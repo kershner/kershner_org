@@ -85,11 +85,19 @@ music.init = function() {
     }
 
     function songSelect() {
+        setTimeout(function() {
+            removeClass(music.metaDataContainer, 'pop-up');
+        }, 700);
+
         // Onclick for song containers
         document.querySelectorAll('.' + music.songContainer).forEach(function(e) {
             e.addEventListener('click', function() {
                 showHideVisualizer();
                 music.metaDataContainer.style.backgroundImage = 'url('+ Amplitude.getActiveSongMetadata().cover_art_url +')';
+                addClass(music.metaDataContainer, 'pop-up');
+                setTimeout(function() {
+                    removeClass(music.metaDataContainer, 'pop-up');
+                }, 700);
             });
         });
     }
@@ -98,7 +106,6 @@ music.init = function() {
         var type = element.getAttribute('data-type'),
             songsContainer = document.getElementById('songs'),
             loopsContainer = document.getElementById('loops'),
-            shuffleBtn = document.getElementsByClassName('amplitude-shuffle')[0],
             currentColor = portfolio.colors[portfolio.colorIndex][0];
 
         // Remove/add active class
@@ -125,8 +132,6 @@ music.init = function() {
             removeClass(songsContainer, 'hidden');
             addClass(loopsContainer, 'hidden');
         }
-
-        shuffleBtn.setAttribute('amplitude-playlist', type);
     }
 
     function deferVideoLoad() {
