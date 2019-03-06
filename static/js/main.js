@@ -8,7 +8,7 @@ var portfolio = {
     'colorChangeInterval'   : 10000,  // 10 seconds,
     'projectsWrapper'       : document.getElementsByClassName('projects-wrapper')[0],
     'projectWrappers'       : document.getElementsByClassName('project-wrapper'),
-    'cubeGrid'              : document.getElementsByClassName('initial-loader')[0],
+    'cubeGrid'              : document.getElementsByClassName('cube-grid')[0],
     'moreProjectsBtn'       : document.getElementById('more-projects-btn'),
     'imgAnimationClass'     : 'pop-up',
     'oldProjectsUrl'        : 'http://old.kershner.org/projects',
@@ -23,6 +23,7 @@ var portfolio = {
 };
 
 portfolio.init = function() {
+    addClass(portfolio.cubeGrid, 'huge-pop-up');
     portfolio.deferImages();
     portfolio.rotateColors();
 };
