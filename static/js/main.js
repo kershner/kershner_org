@@ -23,9 +23,12 @@ var portfolio = {
 };
 
 portfolio.init = function() {
-    addClass(portfolio.cubeGrid, 'huge-pop-up');
     portfolio.deferImages();
     portfolio.rotateColors();
+
+    setTimeout(function() {
+        addClass(portfolio.cubeGrid, 'huge-pop-up');
+    }, 800);
 };
 
 portfolio.loadProjectsOnScroll = function() {
