@@ -18,23 +18,22 @@
         </h1>
     </section>
 
-    <div class="chevron-down dynamic-color levitate"></div>
-</div>
-
-<!-- Initial Loader -->
-<div class="cube-grid initial-loader">
-    <div class="cube cube1 dynamic-color"></div>
-    <div class="cube cube2 dynamic-color"></div>
-    <div class="cube cube3 dynamic-color"></div>
-    <div class="cube cube4 dynamic-color"></div>
-    <div class="cube cube5 dynamic-color"></div>
-    <div class="cube cube6 dynamic-color"></div>
-    <div class="cube cube7 dynamic-color"></div>
-    <div class="cube cube8 dynamic-color"></div>
-    <div class="cube cube9 dynamic-color"></div>
+    <!-- Cool Cube Grid thingy -->
+    <div class="cube-grid initial-loader">
+        <div class="cube cube1 dynamic-color"></div>
+        <div class="cube cube2 dynamic-color"></div>
+        <div class="cube cube3 dynamic-color"></div>
+        <div class="cube cube4 dynamic-color"></div>
+        <div class="cube cube5 dynamic-color"></div>
+        <div class="cube cube6 dynamic-color"></div>
+        <div class="cube cube7 dynamic-color"></div>
+        <div class="cube cube8 dynamic-color"></div>
+        <div class="cube cube9 dynamic-color"></div>
+    </div>
 </div>
 
 <!-- Projects -->
+<a id="projects-wrapper-anchor"></a>
 <div class="projects-wrapper"></div>
 
 <!-- More Projects Btn -->
@@ -50,7 +49,7 @@
         portfolio.projectsPerPage = {{ projects_per_page }};
         portfolio.currentProjectIndex = {{ projects_per_page }};
         portfolio.moreProjectsBtn.addEventListener('click', portfolio.moreProjectsClickEvent);
-        portfolio.chevronClick();
+        portfolio.cubeClick();
         portfolio.loadProjectsOnScroll();
     </script>
 {% endblock %}

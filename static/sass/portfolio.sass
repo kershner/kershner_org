@@ -52,16 +52,12 @@ a
         &:active
           @extend %btn-click
 
-  .chevron-down
+  .cube-grid
     //@extend %red-border
     position: absolute
     z-index: 1
     bottom: 0
     cursor: pointer
-    width: 40px
-    height: 40px
-    -webkit-mask-size: 40px
-    mask-size: 40px
 
 // Breakpoints
 @media(min-width: 700px)
@@ -72,10 +68,6 @@ a
         max-width: 50em
       h1
         font-size: 4em
-
-      .chevron-down
-        width: 80px
-        height: 80px
 
 // Project
 .project-wrapper
@@ -253,33 +245,35 @@ a
 .cube-grid 
   width: 40px
   height: 40px
-  margin: 0 auto
+  margin: 1em auto
 
-.cube-grid .cube 
-  width: 33%
-  height: 33%
-  background-color: #333
-  float: left
-  animation: cubeGridScaleDelay 1.3s infinite ease-in-out
+  &:hover
+    -webkit-transform: scale(1.5)
 
-.cube-grid .cube1 
-  animation-delay: 0.2s
-.cube-grid .cube2
-  animation-delay: 0.3s
-.cube-grid .cube3 
-  animation-delay: 0.4s
-.cube-grid .cube4
-  animation-delay: 0.1s
-.cube-grid .cube5 
-  animation-delay: 0.2s
-.cube-grid .cube6 
-  animation-delay: 0.3s
-.cube-grid .cube7 
-  animation-delay: 0s
-.cube-grid .cube8 
-  animation-delay: 0.1s
-.cube-grid .cube9 
-  animation-delay: 0.2s
+  .cube
+    width: 33%
+    height: 33%
+    float: left
+    animation: cubeGridScaleDelay 1.6s infinite ease-in-out
+
+  .cube1
+    animation-delay: 0.2s
+  .cube2
+    animation-delay: 0.3s
+  .cube3
+    animation-delay: 0.4s
+  .cube4
+    animation-delay: 0.1s
+  .cube5
+    animation-delay: 0.2s
+  .cube6
+    animation-delay: 0.3s
+  .cube7
+    animation-delay: 0s
+  .cube8
+    animation-delay: 0.1s
+  .cube9
+    animation-delay: 0.2s
 
 @-webkit-keyframes cubeGridScaleDelay 
   0%, 70%, 100% 
