@@ -1,5 +1,6 @@
 var portfolio = {
     'initialLoad'           : true,
+    'hideCubeGrid'          : false,
     'baseS3Url'             : '',
     'getProjectsURL'        : '',
     'projectsPerPage'       : 0,
@@ -32,8 +33,9 @@ portfolio.loadProjectsOnScroll = function() {
         if (portfolio.initialLoad) {
             portfolio.getProjectsFromServer();
         }
+        portfolio.initialLoad = false;
 
-        if (!portfolio.initialLoad) {
+        if (!portfolio.hideCubeGrid) {
             addClass(portfolio.cubeGrid, 'hidden');
         }
         if (!window.scrollY > (portfolio.cubeGrid.offsetTop + portfolio.cubeGrid.offsetHeight)) {
@@ -115,7 +117,7 @@ portfolio.getProjectsFromServer = function() {
     }).then(function(data) {
         portfolio.projects = data;
         portfolio.addProject(0);
-        portfolio.initialLoad = false;
+        portfolio.hideCubeGrid = false;
         addClass(portfolio.cubeGrid, 'hidden');
     });
 };
