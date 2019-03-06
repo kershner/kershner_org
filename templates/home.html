@@ -51,5 +51,9 @@
         portfolio.moreProjectsBtn.addEventListener('click', portfolio.moreProjectsClickEvent);
         portfolio.cubeClick();
         portfolio.loadProjectsOnScroll();
+
+        setTimeout(function() {
+            addClass(portfolio.cubeGrid, 'huge-pop-up');
+        }, 800);
     </script>
 {% endblock %}
