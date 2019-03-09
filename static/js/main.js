@@ -35,11 +35,12 @@ portfolio.loadProjectsOnScroll = function() {
         }
         portfolio.initialLoad = false;
 
-        if (!portfolio.hideCubeGrid) {
+        if (portfolio.hideCubeGrid) {
             addClass(portfolio.cubeGrid, 'hidden');
-        }
-        if (!window.scrollY > (portfolio.cubeGrid.offsetTop + portfolio.cubeGrid.offsetHeight)) {
-            removeClass(portfolio.cubeGrid, 'hidden');
+        } else {
+            if (!window.scrollY > (portfolio.cubeGrid.offsetTop + portfolio.cubeGrid.offsetHeight)) {
+                removeClass(portfolio.cubeGrid, 'hidden');
+            }
         }
     });
 };
@@ -116,9 +117,9 @@ portfolio.getProjectsFromServer = function() {
         return response.json();
     }).then(function(data) {
         portfolio.projects = data;
-        portfolio.addProject(0);
-        portfolio.hideCubeGrid = false;
         addClass(portfolio.cubeGrid, 'hidden');
+        portfolio.addProject(0);
+        portfolio.hideCubeGrid = true;
     });
 };
 
