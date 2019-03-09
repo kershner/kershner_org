@@ -37,7 +37,7 @@ portfolio.loadProjectsOnScroll = function() {
 
         if (portfolio.hideCubeGrid) {
             addClass(portfolio.cubeGrid, 'hidden');
-        } else {
+
             if (!window.scrollY > (portfolio.cubeGrid.offsetTop + portfolio.cubeGrid.offsetHeight)) {
                 removeClass(portfolio.cubeGrid, 'hidden');
             }
