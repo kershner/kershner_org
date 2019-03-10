@@ -9,6 +9,8 @@ var portfolio = {
     'colorChangeInterval'   : 10000,  // 10 seconds,
     'projectsWrapper'       : document.getElementsByClassName('projects-wrapper')[0],
     'projectWrappers'       : document.getElementsByClassName('project-wrapper'),
+    'bigName'               : document.getElementsByClassName('big-name')[0],
+    'bigCallToAction'       : document.getElementsByClassName('big-call-to-action')[0],
     'cubeGrid'              : document.getElementsByClassName('cube-grid')[0],
     'moreProjectsBtn'       : document.getElementById('more-projects-btn'),
     'imgAnimationClass'     : 'pop-up',
@@ -37,9 +39,13 @@ portfolio.loadProjectsOnScroll = function() {
         portfolio.initialLoad = false;
 
         if (portfolio.hideCubeGrid) {
+            removeClass(portfolio.bigName, 'pop-up');
+            removeClass(portfolio.bigCallToAction, 'pop-up');
             addClass(portfolio.cubeGrid, 'hidden');
 
             if (!window.scrollY > (portfolio.cubeGrid.offsetTop + portfolio.cubeGrid.offsetHeight)) {
+                addClass(portfolio.bigName, 'pop-up');
+                addClass(portfolio.bigCallToAction, 'pop-up');
                 removeClass(portfolio.cubeGrid, 'hidden');
             }
         }
@@ -49,8 +55,8 @@ portfolio.loadProjectsOnScroll = function() {
 portfolio.deferredPopUpAnimations = function() {
     var delay = 700,
         elementsToAnimate = [
-            document.getElementsByClassName('big-name')[0],
-            document.getElementsByClassName('big-call-to-action')[0],
+            portfolio.bigName,
+            portfolio.bigCallToAction,
             portfolio.cubeGrid
         ];
 
