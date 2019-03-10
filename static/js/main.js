@@ -26,6 +26,7 @@ var portfolio = {
 portfolio.init = function() {
     portfolio.deferImages();
     portfolio.rotateColors();
+    portfolio.deferredPopUpAnimations();
 };
 
 portfolio.loadProjectsOnScroll = function() {
@@ -43,6 +44,24 @@ portfolio.loadProjectsOnScroll = function() {
             }
         }
     });
+};
+
+portfolio.deferredPopUpAnimations = function() {
+    var delay = 700,
+        elementsToAnimate = [
+            document.getElementsByClassName('big-name')[0],
+            document.getElementsByClassName('big-call-to-action')[0],
+            portfolio.cubeGrid
+        ];
+
+    for (var i=0; i<elementsToAnimate.length; i++) {
+        var cssClass = 'pop-up';
+        if (i === elementsToAnimate.length -1) {
+            cssClass = 'huge-pop-up';
+        }
+        addClassWithDelay(elementsToAnimate[i], cssClass, delay);
+        delay *= 1.3;
+    }
 };
 
 portfolio.deferImages = function() {

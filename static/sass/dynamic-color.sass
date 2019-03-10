@@ -40,11 +40,14 @@
   transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
   @extend %dynamic-background-color
 
-h1,
-.site-code-link
+h1
   .dynamic-color
     background-color: rgba(0, 0, 0, 0.0) !important
     @extend %dynamic-text-color
+
+.site-code-link
+  background-color: rgba(0, 0, 0, 0.0) !important
+  @extend %dynamic-text-color
 
 .player-wrapper
   .player

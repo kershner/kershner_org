@@ -19,6 +19,10 @@ a
   &:hover
     color: $darker-purple
 
+.big-name,
+.big-call-to-action
+  display: inline-block
+
 #page-wrapper
   .particles-js-canvas-el
     position: fixed
@@ -278,6 +282,9 @@ a
   .cube9
     animation-delay: 0.2s
 
+#footer-cube
+  margin-top: 2em
+
 @-webkit-keyframes cubeGridScaleDelay 
   0%, 70%, 100% 
     transform: scale3D(1, 1, 1)
@@ -319,20 +326,3 @@ a
 
         @media(min-width: 700px)
           font-size: 2em
-
-  .site-code-link
-    position: relative
-    z-index: 1
-    margin-top: 2em
-
-    a
-      text-decoration: none
-      color: $grey
-      font-size: 0.9em
-      font-weight: bold
-      font-family: $secondary-font
-      letter-spacing: 0.1em
-
-      &:hover
-        +animate(0.2s)
-        color: $black !important

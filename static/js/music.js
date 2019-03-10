@@ -2,6 +2,7 @@ var music = {
     'metaDataContainer' : document.getElementsByClassName('player-meta-container')[0],
     'soundWave'         : document.getElementsByClassName('sound-wave')[0],
     'playButton'        : document.getElementsByClassName('amplitude-play-pause')[0],
+    'oldVideoToggle'    : document.getElementById('old-video-toggle'),
     songs               : {},
     songContainer       : 'amplitude-song-container',
     oldVideoUrl         : 'https://www.youtube.com/embed/videoseries?list=PLAtCvsbFyJ9bQAqn6DUD8pmGR0FPWKRtJ'
@@ -12,6 +13,7 @@ music.init = function() {
     playlistSelect();
     songSelect();
     playButtonListener();
+    deferredPopUpAnimations();
     deferVideoLoad();
 
     function amplitudeInit() {
@@ -58,6 +60,21 @@ music.init = function() {
         Amplitude.init(amplitudeOptions);
         portfolio.deferImages();
         music.metaDataContainer.style.backgroundImage = 'url('+ Amplitude.getActiveSongMetadata().cover_art_url +')';
+    }
+
+    function deferredPopUpAnimations() {
+        var delay = 600,
+            elementsToAnimate = [
+                music.oldVideoToggle,
+                document.getElementsByClassName('playlist-option')[0],
+                document.getElementsByClassName('playlist-option')[1],
+                document.getElementsByClassName('player-bottom')[0]
+            ];
+
+        for (var i = 0; i < elementsToAnimate.length; i++) {
+            addClassWithDelay(elementsToAnimate[i], 'pop-up', delay);
+            delay *= 1.3;
+        }
     }
 
     function showHideVisualizer() {
@@ -136,10 +153,9 @@ music.init = function() {
 
     function deferVideoLoad() {
         var oldVideoIfr = document.getElementById('old-music-video-ifr'),
-            oldVideoToggle = document.getElementById('old-video-toggle'),
             videoWrapper = document.getElementsByClassName('outer-music-video-wrapper')[0];
 
-        oldVideoToggle.onclick = function() {
+        music.oldVideoToggle.onclick= function() {
             addClass(this, 'hidden');
             removeClass(videoWrapper, 'hidden');
             oldVideoIfr.src = music.oldVideoUrl

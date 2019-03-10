@@ -13,6 +13,12 @@ function addClass(el, className) {
     }
 }
 
+function addClassWithDelay(element, cssClass, delay) {
+    setTimeout(function() {
+        addClass(element, cssClass);
+    }, delay);
+}
+
 function removeClass(el, className) {
     if (el.classList) {
         el.classList.remove(className);
