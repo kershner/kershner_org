@@ -155,9 +155,10 @@ music.init = function() {
         var oldVideoIfr = document.getElementById('old-music-video-ifr'),
             videoWrapper = document.getElementsByClassName('outer-music-video-wrapper')[0];
 
-        music.oldVideoToggle.onclick= function() {
+        music.oldVideoToggle.onclick = function() {
             addClass(this, 'hidden');
             removeClass(videoWrapper, 'hidden');
+            addClassWithDelay(videoWrapper, 'pop-up');
             oldVideoIfr.src = music.oldVideoUrl
         };
     }
