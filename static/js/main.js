@@ -42,11 +42,15 @@ portfolio.loadProjectsOnScroll = function() {
             removeClass(portfolio.bigName, 'pop-up');
             removeClass(portfolio.bigCallToAction, 'pop-up');
             addClass(portfolio.cubeGrid, 'hidden');
+            removeClass(portfolio.moreProjectsBtn, 'pop-up');
 
             if (!window.scrollY > (portfolio.cubeGrid.offsetTop + portfolio.cubeGrid.offsetHeight)) {
                 addClass(portfolio.bigName, 'pop-up');
                 addClass(portfolio.bigCallToAction, 'pop-up');
                 removeClass(portfolio.cubeGrid, 'hidden');
+            }
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+                addClass(portfolio.moreProjectsBtn, 'pop-up');
             }
         }
     });
