@@ -68,7 +68,7 @@ music.init = function() {
                 music.oldVideoToggle,
                 document.getElementsByClassName('playlist-option')[0],
                 document.getElementsByClassName('playlist-option')[1],
-                document.getElementsByClassName('player-bottom')[0]
+                music.metaDataContainer
             ];
 
         for (var i = 0; i < elementsToAnimate.length; i++) {
