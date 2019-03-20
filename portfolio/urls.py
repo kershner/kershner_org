@@ -7,4 +7,5 @@ urlpatterns = [
     path('music/', portfolio_views.music, name='music'),
     path('admin/', admin.site.urls),
     path('get-projects/', portfolio_views.get_projects, name='get-projects'),
+    path('bacon/', portfolio_views.bacon_redirect),
 ]

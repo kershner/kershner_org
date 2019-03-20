@@ -1,7 +1,7 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from django.core import serializers
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.conf import settings
 from project.models import Project
 from song.models import Song
@@ -47,3 +47,7 @@ def music(request):
         'songs_json': json.dumps(songs_json)
     }
     return render(request, 'music.html', template_vars)
+
+
+def bacon_redirect(request):
+    return redirect('http://old.kershner.org/bacon')
