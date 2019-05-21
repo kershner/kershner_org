@@ -155,7 +155,7 @@ music.init = function() {
         addClass(element, currentColor);
 
         addClass(songsContainer, 'hidden');
-        addClass(songsContainer, 'hidden');
+        addClass(loopsContainer, 'hidden');
         addClass(oldSongsContainer, 'hidden');
         switch (type) {
             case 'loops':
