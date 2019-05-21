@@ -122,6 +122,7 @@ input[type=range]
     .playlist-select
       display: flex
       justify-content: space-between
+      flex-wrap: wrap
       overflow: hidden
       margin: 0 auto
       max-width: 25em
@@ -132,7 +133,6 @@ input[type=range]
         z-index: 1
         cursor: pointer
         display: inline-block
-        padding-bottom: .5em
         width: 50%
         text-align: center
         color: $grey
@@ -143,12 +143,21 @@ input[type=range]
         &:hover
           color: $black
 
+        &.old-songs-select
+          cursor: pointer
+          margin: 0 auto
+          padding-bottom: .5em
+          width: 100%
+          font-family: $primary-font
+          font-weight: bold
+          font-size: 1em
+
     // PLAYLIST
     .playlist
       position: relative
       z-index: 1
       max-width: 30em
-      min-height: 15em
+      min-height: 20em
       max-height: 45vh
       margin: 0 auto
       margin-bottom: 2em

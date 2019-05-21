@@ -19,7 +19,8 @@ music.init = function() {
     function amplitudeInit() {
         var amplitudeSongs = [],
             loopsPlaylist = [],
-            songsPlaylist = [];
+            songsPlaylist = [],
+            oldSongsPlaylist = [];
 
         for (var i=0; i<music.songs.length; i++) {
             var containerDiv = document.createElement('div'),
@@ -37,11 +38,19 @@ music.init = function() {
                                         '<div class="activity dynamic-color ' + currentColor + '"></div>' +
                                         '</div><div class="song-title">'+song.name+'</div></div>' +
                                         '<div class="duration">' + song.duration + '</div>';
-            // Loop specific stuff
-            if (song.type === 'LO') {
-                playlistContainer = document.getElementById('loops');
-                playlist = loopsPlaylist;
-                containerDiv.setAttribute('amplitude-playlist', 'loops');
+            switch (song.type) {
+                // Loops
+                case 'LO':
+                    playlistContainer = document.getElementById('loops');
+                    playlist = loopsPlaylist;
+                    containerDiv.setAttribute('amplitude-playlist', 'loops');
+                    break;
+                // Old songs
+                case 'OL':
+                    playlistContainer = document.getElementById('old-songs');
+                    playlist = oldSongsPlaylist;
+                    containerDiv.setAttribute('amplitude-playlist', 'old-songs');
+                    break;
             }
 
             playlist.push(i);
@@ -52,8 +61,9 @@ music.init = function() {
         var amplitudeOptions = {
             'songs' : amplitudeSongs,
             'playlists' : {
-                'loops' : loopsPlaylist,
-                'songs' : songsPlaylist
+                'loops'     : loopsPlaylist,
+                'songs'     : songsPlaylist,
+                'oldSongs'  : oldSongsPlaylist
             },
             'starting_playlist' : 'songs'
         };
@@ -123,6 +133,7 @@ music.init = function() {
         var type = element.getAttribute('data-type'),
             songsContainer = document.getElementById('songs'),
             loopsContainer = document.getElementById('loops'),
+            oldSongsContainer = document.getElementById('old-songs'),
             currentColor = portfolio.colors[portfolio.colorIndex][0];
 
         // Remove/add active class
@@ -141,13 +152,20 @@ music.init = function() {
         addClass(element, currentColor);
 
         if (type === 'loops') {
-            // Show loops, hide songs
+            // Show loops, hide songs and old songs
             removeClass(loopsContainer, 'hidden');
             addClass(songsContainer, 'hidden');
+            addClass(oldSongsContainer, 'hidden');
+        } else if (type === 'old-songs') {
+            // Show old songs , hide loops and songs
+            removeClass(oldSongsContainer, 'hidden');
+            addClass(songsContainer, 'hidden');
+            addClass(loopsContainer, 'hidden');
         } else {
-            // Show songs, hide loops
+            // Show songs, hide loops and old songs
             removeClass(songsContainer, 'hidden');
             addClass(loopsContainer, 'hidden');
+            addClass(oldSongsContainer, 'hidden');
         }
     }
 

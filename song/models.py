@@ -18,16 +18,18 @@ class Song(models.Model):
     updated_at = models.DateTimeField(auto_now=True, editable=False)
     title = models.CharField(max_length=255)
     artist = models.CharField(max_length=255, default='Tyler Kershner')
+    year = models.CharField(max_length=40, default='Unknown', blank=True, null=True)
+    youtube_link = models.CharField(max_length=40, blank=True, null=True)
     file = models.FileField(upload_to=song_upload)
     thumbnail = models.ImageField(upload_to=song_thumbnail_upload)
     # (actual DB value, human-readable name)
     TYPE_CHOICES = (
         ('SO', 'Song'),
+        ('OL', 'Old Song'),
         ('LO', 'Loop')
     )
-    type = models.CharField(max_length=2, choices=TYPE_CHOICES, default='LO')
+    type = models.CharField(max_length=2, choices=TYPE_CHOICES, default='SO')
     duration = models.CharField(max_length=20)
-    plays = models.IntegerField(default=0)
     notes = models.TextField(null=True, blank=True)
     position = models.IntegerField(default=0)
     __original_position = None
@@ -54,8 +56,8 @@ class Song(models.Model):
 # https://docs.djangoproject.com/en/2.0/ref/contrib/admin/#django.contrib.admin.ModelAdmin
 @admin.register(Song)
 class SongAdmin(admin.ModelAdmin):
-    list_display = ('title', 'id', 'created_at', 'position', 'duration', 'plays')
-    list_filter = ('type', 'created_at')
+    list_display = ('title', 'id', 'created_at', 'position', 'duration')
+    list_filter = ('type', 'created_at', 'year')
     search_fields = ['name', 'id']
     show_full_result_count = True
 
