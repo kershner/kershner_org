@@ -28,7 +28,6 @@ var portfolio = {
 portfolio.init = function() {
     portfolio.deferImages();
     portfolio.rotateColors();
-    portfolio.deferredPopUpAnimations();
 };
 
 portfolio.loadProjectsOnScroll = function() {
