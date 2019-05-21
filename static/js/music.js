@@ -65,7 +65,8 @@ music.init = function() {
                 'songs'     : songsPlaylist,
                 'oldSongs'  : oldSongsPlaylist
             },
-            'starting_playlist' : 'songs'
+            'starting_playlist' : 'songs',
+            'volume' : 100
         };
         Amplitude.init(amplitudeOptions);
         portfolio.deferImages();
@@ -151,21 +152,19 @@ music.init = function() {
         addClass(element, 'active');
         addClass(element, currentColor);
 
-        if (type === 'loops') {
-            // Show loops, hide songs and old songs
-            removeClass(loopsContainer, 'hidden');
-            addClass(songsContainer, 'hidden');
-            addClass(oldSongsContainer, 'hidden');
-        } else if (type === 'old-songs') {
-            // Show old songs , hide loops and songs
-            removeClass(oldSongsContainer, 'hidden');
-            addClass(songsContainer, 'hidden');
-            addClass(loopsContainer, 'hidden');
-        } else {
-            // Show songs, hide loops and old songs
-            removeClass(songsContainer, 'hidden');
-            addClass(loopsContainer, 'hidden');
-            addClass(oldSongsContainer, 'hidden');
+        addClass(songsContainer, 'hidden');
+        addClass(songsContainer, 'hidden');
+        addClass(oldSongsContainer, 'hidden');
+        switch (type) {
+            case 'loops':
+                removeClass(loopsContainer, 'hidden');
+                break;
+            case 'old-songs':
+                removeClass(oldSongsContainer, 'hidden');
+                break;
+            case 'songs':
+                removeClass(songsContainer, 'hidden');
+                break;
         }
     }
 
