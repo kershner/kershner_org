@@ -134,7 +134,7 @@ portfolio.cubeClick = function() {
 
 portfolio.moreProjectsClickEvent = function() {
     portfolio.projectWrappers = document.getElementsByClassName('project-wrapper');
-    portfolio.addProject(portfolio.projectWrappers.length);
+    portfolio.addProjects(portfolio.projectWrappers.length);
 };
 
 portfolio.getProjectsFromServer = function() {
@@ -146,9 +146,16 @@ portfolio.getProjectsFromServer = function() {
     }).then(function(data) {
         portfolio.projects = data;
         addClass(portfolio.cubeGrid, 'hidden');
-        portfolio.addProject(0);
+        portfolio.addProjects(0);
         portfolio.hideCubeGrid = true;
     });
+};
+
+portfolio.addProjects = function(startingIndex) {
+    for (var i=0; i<portfolio.projectsPerPage; i++) {
+        var newIndex = startingIndex += i;
+        portfolio.addProject(newIndex);
+    }
 };
 
 portfolio.addProject = function(projectIndex) {
