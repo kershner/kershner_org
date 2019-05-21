@@ -5,7 +5,8 @@ var music = {
     'oldVideoToggle'    : document.getElementById('old-video-toggle'),
     songs               : {},
     songContainer       : 'amplitude-song-container',
-    oldVideoUrl         : 'https://www.youtube.com/embed/videoseries?list=PLAtCvsbFyJ9bQAqn6DUD8pmGR0FPWKRtJ'
+    oldVideoUrl         : 'https://www.youtube.com/embed/videoseries?list=PLAtCvsbFyJ9bQAqn6DUD8pmGR0FPWKRtJ',
+    songArtPoller       : undefined
 };
 
 music.init = function() {
@@ -15,6 +16,7 @@ music.init = function() {
     playButtonListener();
     deferredPopUpAnimations();
     deferVideoLoad();
+    pollForSongArtChanges();
 
     function amplitudeInit() {
         var amplitudeSongs = [],
@@ -178,5 +180,14 @@ music.init = function() {
             addClassWithDelay(videoWrapper, 'pop-up');
             oldVideoIfr.src = music.oldVideoUrl
         };
+    }
+
+    // Band aid for keeping cover art updated until I migrate to new version of Amplitude
+    function pollForSongArtChanges() {
+        var metadataDiv = document.getElementsByClassName('player-meta-container')[0];
+        music.songArtPoller = setInterval(function() {
+            var metadata = Amplitude.getActiveSongMetadata();
+            metadataDiv.style.backgroundImage = 'url('+metadata.cover_art_url+')';
+        }, 1000);
     }
 };
