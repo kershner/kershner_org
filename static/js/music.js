@@ -29,31 +29,55 @@ music.init = function() {
                 playlistContainer = document.getElementById('songs'),
                 song = music.songs[i],
                 currentColor = portfolio.colors[portfolio.colorIndex][0],
-                classNames = 'amplitude-song-container amplitude-play-pause dynamic-color ' + currentColor,
-                playlist = songsPlaylist;
+                classNames = 'amplitude-song-container dynamic-color ' + currentColor,
+                playlist = songsPlaylist,
+                playlistString = 'songs',
+                youtubeLinkHtml = '';
 
-            containerDiv.setAttribute('amplitude-playlist', 'songs');
-            containerDiv.setAttribute('amplitude-song-index', i.toString());
-            containerDiv.className = classNames;
-            containerDiv.innerHTML =    '<div class="song-info"><div class="song-thumbnail">' +
-                                        '<img data-src="' + song.cover_art_url+ '">' +
-                                        '<div class="activity dynamic-color ' + currentColor + '"></div>' +
-                                        '</div><div class="song-title">'+song.name+'</div></div>' +
-                                        '<div class="duration">' + song.duration + '</div>';
             switch (song.type) {
                 // Loops
                 case 'LO':
                     playlistContainer = document.getElementById('loops');
+                    playlistString = 'loops';
                     playlist = loopsPlaylist;
                     containerDiv.setAttribute('amplitude-playlist', 'loops');
                     break;
                 // Old songs
                 case 'OL':
                     playlistContainer = document.getElementById('old-songs');
+                    playlistString = 'old-songs';
                     playlist = oldSongsPlaylist;
                     containerDiv.setAttribute('amplitude-playlist', 'old-songs');
                     break;
             }
+
+            if (song.youtube_url) {
+                youtubeLinkHtml = `<a href="${song.youtube_url}" target="_blank" title="View on YouTube"><div class="song-youtube-link dynamic-color ${currentColor} amplitude-pause"></div></a>`;
+            }
+
+            containerDiv.setAttribute('amplitude-playlist', playlistString);
+            containerDiv.setAttribute('amplitude-song-index', i.toString());
+            containerDiv.className = classNames;
+            containerDiv.innerHTML = `
+                <div amplitude-playlist=${playlistString} amplitude-song-index=${i} class="song-info amplitude-play-pause">
+                    <div class="song-thumbnail">
+                        <img data-src="${song.cover_art_url}">
+                        <div class="activity dynamic-color ${currentColor}">
+                        </div>
+                    </div>
+
+                    <div class="song-title">${song.name}</div>
+                </div>
+
+                <div amplitude-playlist=${playlistString} amplitude-song-index=${i} class="song-spacer amplitude-play-pause"></div>
+
+                <div class="song-extras">
+                    ${youtubeLinkHtml}
+                    <a href="${song.url}" target="_blank" title="Download"><div class="song-download-link dynamic-color ${currentColor} amplitude-pause"></div></a>
+                </div>
+
+                <div class="duration">${song.duration}</div>
+            `;
 
             playlist.push(i);
             playlistContainer.appendChild(containerDiv);

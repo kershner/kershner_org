@@ -146,11 +146,11 @@ input[type=range]
         &.old-songs-select
           cursor: pointer
           margin: 0 auto
-          padding-bottom: .5em
+          padding-bottom: 1em
           width: 100%
           font-family: $primary-font
-          font-weight: bold
-          font-size: 1em
+          font-weight: 100
+          font-size: 1.25em
 
     // PLAYLIST
     .playlist
@@ -200,6 +200,21 @@ input[type=range]
                   mask-repeat: no-repeat
                   background-color: rgba(0, 0, 0, 0.0)
 
+            .song-spacer
+              width: 80%
+
+            .song-extras
+              display: flex
+              justify-content: flex-end
+              width: 20%
+              align-items: center
+              padding-right: 1em
+
+              a
+                div
+                  margin: auto .35em
+                  +icon-size(25px)
+
         .song-info
           display: flex
           .song-thumbnail
@@ -212,9 +227,14 @@ input[type=range]
               width: 100%
               border-radius: .2em
               @extend %box-shadow
+
           .song-title
             display: inline-block
             align-self: center
+
+        .song-spacer
+          width: 100%
+
         .duration
           font-size: 0.8em
           align-self: center
@@ -280,18 +300,6 @@ input[type=range]
           margin: 0 auto
           width: 100%
 
-          %icon-size
-            -webkit-mask-size: 40px
-            mask-size: 40px
-            width: 40px
-            height: 40px
-
-          %smaller-icon-size
-            -webkit-mask-size: 30px
-            mask-size: 30px
-            width: 30px
-            height: 30px
-
           // CENTRAL CONTROLS CONTAINER
           .player-central-control-container
             display: flex
@@ -310,13 +318,13 @@ input[type=range]
                 display: inline-block
                 margin: 0 .25em
                 cursor: pointer
-                @extend %icon-size
+                +icon-size(40px)
                 +animate(0.2s)
 
                 &.amplitude-prev
-                  @extend %smaller-icon-size
+                  +icon-size(30px)
                 &.amplitude-next
-                  @extend %smaller-icon-size
+                  +icon-size(30px)
 
 /* Sound Wave Animation */
 .sound-wave

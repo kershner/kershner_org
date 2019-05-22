@@ -60,6 +60,14 @@ h1
           &.dynamic-color
             @extend %dynamic-text-color
 
+          .song-extras
+            .song-youtube-link
+              @extend %dynamic-background-color
+              +dynamic-icon('youtube-logo')
+            .song-download-link
+              @extend %dynamic-background-color
+              +dynamic-icon('download-symbol')
+
           &.amplitude-paused
             .song-info
               .song-thumbnail
@@ -70,6 +78,7 @@ h1
                 .song-thumbnail
                   .activity
                     +dynamic-icon('pause')
+
 .playlist-option
   &.dynamic-color
     background-color: rgba(0, 0, 0, 0.0)

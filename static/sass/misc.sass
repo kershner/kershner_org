@@ -13,6 +13,12 @@ $asset-path-ext: '.svg'
   -webkit-mask-image: url($asset-path-start + $icon-name + $asset-path-ext)
   mask-image: url($asset-path-start + $icon-name + $asset-path-ext)
 
+=icon-size($size)
+  -webkit-mask-size: $size
+  mask-size: $size
+  width: $size
+  height: $size
+
 // Colors
 $black: #202020
 $white: #FFF

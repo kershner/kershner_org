@@ -34,9 +34,11 @@ def music(request):
         tmp = {
             'name': song.title,
             'artist': song.artist,
+            'year': song.year,
             'type': song.type,
             'url': song.file.url,
             'cover_art_url': song.thumbnail.url,
+            'youtube_url': song.youtube_link,
             'duration': song.duration,
             'timestamp': time.time()
         }
