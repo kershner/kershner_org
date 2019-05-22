@@ -19,7 +19,7 @@ class Song(models.Model):
     title = models.CharField(max_length=255)
     artist = models.CharField(max_length=255, default='Tyler Kershner')
     year = models.CharField(max_length=40, default='Unknown', blank=True, null=True)
-    youtube_link = models.CharField(max_length=40, blank=True, null=True)
+    youtube_link = models.CharField(max_length=255, blank=True, null=True)
     file = models.FileField(upload_to=song_upload)
     thumbnail = models.ImageField(upload_to=song_thumbnail_upload)
     # (actual DB value, human-readable name)
