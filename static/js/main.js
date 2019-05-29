@@ -38,39 +38,12 @@ portfolio.loadProjectsOnScroll = function() {
         portfolio.initialLoad = false;
 
         if (portfolio.hideCubeGrid) {
-            removeClass(portfolio.bigName, 'pop-up');
-            removeClass(portfolio.bigCallToAction, 'pop-up');
             addClass(portfolio.cubeGrid, 'hidden');
-            removeClass(portfolio.moreProjectsBtn, 'pop-up');
-
             if (!window.scrollY > (portfolio.cubeGrid.offsetTop + portfolio.cubeGrid.offsetHeight)) {
-                addClass(portfolio.bigName, 'pop-up');
-                addClass(portfolio.bigCallToAction, 'pop-up');
                 removeClass(portfolio.cubeGrid, 'hidden');
-            }
-            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
-                addClass(portfolio.moreProjectsBtn, 'pop-up');
             }
         }
     });
-};
-
-portfolio.deferredPopUpAnimations = function() {
-    var delay = 700,
-        elementsToAnimate = [
-            portfolio.bigName,
-            portfolio.bigCallToAction,
-            portfolio.cubeGrid
-        ];
-
-    for (var i=0; i<elementsToAnimate.length; i++) {
-        var cssClass = 'pop-up';
-        if (i === elementsToAnimate.length -1) {
-            cssClass = 'huge-pop-up';
-        }
-        addClassWithDelay(elementsToAnimate[i], cssClass, delay);
-        delay *= 1.3;
-    }
 };
 
 portfolio.deferImages = function() {

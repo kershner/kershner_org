@@ -14,7 +14,6 @@ music.init = function() {
     playlistSelect();
     songSelect();
     playButtonListener();
-    deferredPopUpAnimations();
     deferVideoLoad();
     pollForSongArtChanges();
 
@@ -97,21 +96,6 @@ music.init = function() {
         Amplitude.init(amplitudeOptions);
         portfolio.deferImages();
         music.metaDataContainer.style.backgroundImage = 'url('+ Amplitude.getActiveSongMetadata().cover_art_url +')';
-    }
-
-    function deferredPopUpAnimations() {
-        var delay = 600,
-            elementsToAnimate = [
-                music.oldVideoToggle,
-                document.getElementsByClassName('playlist-option')[0],
-                document.getElementsByClassName('playlist-option')[1],
-                music.metaDataContainer
-            ];
-
-        for (var i = 0; i < elementsToAnimate.length; i++) {
-            addClassWithDelay(elementsToAnimate[i], 'pop-up', delay);
-            delay *= 1.3;
-        }
     }
 
     function showHideVisualizer() {
