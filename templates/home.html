@@ -49,7 +49,7 @@
         portfolio.projectsPerPage = {{ projects_per_page }};
         portfolio.currentProjectIndex = {{ projects_per_page }};
         portfolio.moreProjectsBtn.addEventListener('click', portfolio.moreProjectsClickEvent);
+        portfolio.getProjectsFromServer();
         portfolio.cubeClick();
-        portfolio.loadProjectsOnScroll();
     </script>
 {% endblock %}

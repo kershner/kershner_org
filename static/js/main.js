@@ -1,6 +1,5 @@
 var portfolio = {
     'initialLoad'           : true,
-    'hideCubeGrid'          : false,
     'baseS3Url'             : '',
     'getProjectsURL'        : '',
     'projectsPerPage'       : 0,
@@ -28,20 +27,14 @@ var portfolio = {
 portfolio.init = function() {
     portfolio.deferImages();
     portfolio.rotateColors();
+    portfolio.scrollEvents();
 };
 
-portfolio.loadProjectsOnScroll = function() {
+portfolio.scrollEvents = function() {
     window.addEventListener('scroll', function(e) {
-        if (portfolio.initialLoad) {
-            portfolio.getProjectsFromServer();
-        }
-        portfolio.initialLoad = false;
-
-        if (portfolio.hideCubeGrid) {
-            addClass(portfolio.cubeGrid, 'hidden');
-            if (!window.scrollY > (portfolio.cubeGrid.offsetTop + portfolio.cubeGrid.offsetHeight)) {
-                removeClass(portfolio.cubeGrid, 'hidden');
-            }
+        addClass(portfolio.cubeGrid, 'hidden');
+        if (!window.scrollY > (portfolio.cubeGrid.offsetTop + portfolio.cubeGrid.offsetHeight)) {
+            removeClass(portfolio.cubeGrid, 'hidden');
         }
     });
 };
@@ -118,9 +111,7 @@ portfolio.getProjectsFromServer = function() {
         return response.json();
     }).then(function(data) {
         portfolio.projects = data;
-        addClass(portfolio.cubeGrid, 'hidden');
         portfolio.addProjects(0);
-        portfolio.hideCubeGrid = true;
     });
 };
 
@@ -156,6 +147,7 @@ portfolio.addProject = function(projectIndex) {
 portfolio.getNewProjectHtml = function(project) {
     var currentColor = portfolio.colors[portfolio.colorIndex][0],
         firstProjectId = project.fields.position === 1 ? 'first-project' : '',
+        animationClass = project.fields.position < 3 ? '' : portfolio.imgAnimationClass,
         firstImgClass = project.fields.image_1 === '' ? 'hidden' : '',
         secondImgClass = project.fields.image_2 === '' ? 'hidden' : '',
         thirdImgClass = project.fields.image_3 === '' ? 'hidden' : '';
@@ -164,7 +156,7 @@ portfolio.getNewProjectHtml = function(project) {
                 <div id="${firstProjectId}" class="project-wrapper ${project.fields.image_orientation}" data-position="${project.fields.position}">
                     <div class="left-content">
                         <div class="project-icon">
-                            <img src="" class="${portfolio.imgAnimationClass}" data-src="${portfolio.baseS3Url}/${project.fields.icon}">
+                            <img src="" class="${animationClass}" data-src="${portfolio.baseS3Url}/${project.fields.icon}">
                         </div>
 
                         <div class="project-title">${project.fields.title}</div>
@@ -191,9 +183,9 @@ portfolio.getNewProjectHtml = function(project) {
         </div>
 
         <div class="right-content">
-            <div class="project-img-1 ${firstImgClass}"><img class="${portfolio.imgAnimationClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}"></div>
-            <div class="project-img-2 ${secondImgClass}"><img class="${portfolio.imgAnimationClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_2}"></div>
-            <div class="project-img-3 ${thirdImgClass}"><img class="${portfolio.imgAnimationClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_3}"></div>
+            <div class="project-img-1 ${firstImgClass}"><img class="${animationClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}"></div>
+            <div class="project-img-2 ${secondImgClass}"><img class="${animationClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_2}"></div>
+            <div class="project-img-3 ${thirdImgClass}"><img class="${animationClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_3}"></div>
         </div>
     </div>
     `;
