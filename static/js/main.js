@@ -1,7 +1,6 @@
 var portfolio = {
     'initialLoad'           : true,
     'baseS3Url'             : '',
-    'getProjectsURL'        : '',
     'projectsPerPage'       : 0,
     'projects'              : [],
     'colorIndex'            : 0,
@@ -88,7 +87,7 @@ portfolio.rotateColors = function() {
 
     function particlesTeardown() {
         window.pJSDom[0].pJS.fn.vendors.destroypJS();
-        window["pJSDom"] = [];
+        window['pJSDom'] = [];
     }
 };
 
@@ -101,18 +100,6 @@ portfolio.cubeClick = function() {
 portfolio.moreProjectsClickEvent = function() {
     portfolio.projectWrappers = document.getElementsByClassName('project-wrapper');
     portfolio.addProjects(portfolio.projectWrappers.length);
-};
-
-portfolio.getProjectsFromServer = function() {
-    fetch(portfolio.getProjectsURL, {
-          method : 'get',
-          credentials : 'same-origin'
-    }).then(response => {
-        return response.json();
-    }).then(function(data) {
-        portfolio.projects = data;
-        portfolio.addProjects(0);
-    });
 };
 
 portfolio.addProjects = function(startingIndex) {

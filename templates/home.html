@@ -45,11 +45,11 @@
 {% block extra_javascripts %}
     <script type="text/javascript">
         portfolio.baseS3Url = '{{ base_s3_url }}';
-        portfolio.getProjectsURL = '{% url 'get-projects' %}';
         portfolio.projectsPerPage = {{ projects_per_page }};
         portfolio.currentProjectIndex = {{ projects_per_page }};
         portfolio.moreProjectsBtn.addEventListener('click', portfolio.moreProjectsClickEvent);
-        portfolio.getProjectsFromServer();
+        portfolio.projects = {{ projects_json|safe }};
+        portfolio.addProjects(0);
         portfolio.cubeClick();
     </script>
 {% endblock %}

@@ -1,9 +1,10 @@
+from django.core.serializers.json import DjangoJSONEncoder
 from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.core import serializers
-from django.shortcuts import render, redirect
-from django.conf import settings
 from project.models import Project
+from django.conf import settings
 from song.models import Song
 import time
 import json
@@ -11,20 +12,16 @@ import json
 
 def home(request):
     base_s3_url = 'https://{}/{}'.format(settings.AWS_S3_CUSTOM_DOMAIN, settings.AWS_LOCATION)
+    projects = Project.objects.order_by('position').all()
+    projects_json = serializers.serialize('json', projects)
+
     template_vars = {
         'base_s3_url': base_s3_url,
         'projects_per_page': settings.PROJECTS_PER_PAGE,
-        'timestamp': time.time()
+        'timestamp': time.time(),
+        'projects_json': projects_json
     }
     return render(request, 'home.html', template_vars)
-
-
-@csrf_exempt
-def get_projects(request):
-    if request.method == 'GET':
-        projects = Project.objects.all().order_by('position')
-        projects_json = serializers.serialize('json', projects)
-        return HttpResponse(projects_json, content_type='application/json')
 
 
 def music(request):
