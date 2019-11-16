@@ -6,7 +6,8 @@ var music = {
     songs               : {},
     songContainer       : 'amplitude-song-container',
     oldVideoUrl         : 'https://www.youtube.com/embed/videoseries?list=PLAtCvsbFyJ9bQAqn6DUD8pmGR0FPWKRtJ',
-    songArtPoller       : undefined
+    songArtPoller       : undefined,
+    noSleep             : new NoSleep()
 };
 
 music.init = function() {
@@ -16,6 +17,8 @@ music.init = function() {
     playButtonListener();
     deferVideoLoad();
     pollForSongArtChanges();
+
+    document.addEventListener('touchstart', music.enableNoSleep, false);
 
     function amplitudeInit() {
         var amplitudeSongs = [],
@@ -197,5 +200,10 @@ music.init = function() {
             var metadata = Amplitude.getActiveSongMetadata();
             metadataDiv.style.backgroundImage = 'url('+metadata.cover_art_url+')';
         }, 1000);
+    }
+
+    function enableNoSleep() {
+        music.noSleep.enable();
+        document.removeEventListener('touchstart', enableNoSleep, false);
     }
 };
