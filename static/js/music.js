@@ -203,7 +203,10 @@ music.init = function() {
     }
 
     function enableNoSleep() {
+        if (music.noSleep) {
+            music.noSleep.disable();
+        }
+        music.noSleep = new NoSleep();
         music.noSleep.enable();
-        document.removeEventListener('touchstart', enableNoSleep, false);
     }
 };
