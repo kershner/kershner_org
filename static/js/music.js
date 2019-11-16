@@ -18,8 +18,8 @@ music.init = function() {
     deferVideoLoad();
     pollForSongArtChanges();
 
-    document.on('touchstart', function() {
-        music.enableNoSleep();
+    document.addEventListener('touchstart', function(e) {
+        enableNoSleep();
     });
 
     function amplitudeInit() {
@@ -205,6 +205,7 @@ music.init = function() {
     }
 
     function enableNoSleep() {
+        console.log('Wake Lock Enabled');
         if (music.noSleep) {
             music.noSleep.disable();
         }
