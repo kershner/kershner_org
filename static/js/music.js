@@ -18,7 +18,9 @@ music.init = function() {
     deferVideoLoad();
     pollForSongArtChanges();
 
-    document.addEventListener('touchstart', music.enableNoSleep, false);
+    document.on('touchstart', function() {
+        music.enableNoSleep();
+    });
 
     function amplitudeInit() {
         var amplitudeSongs = [],
