@@ -122,7 +122,7 @@ portfolio.addProject = function(projectIndex) {
     }
 
     if (numProjectWrappers === totalProjects - 1) {
-        portfolio.moreProjectsBtn.innerHTML = 'Older Projects';
+        portfolio.moreProjectsBtn.innerHTML = 'Old Site';
         portfolio.moreProjectsBtn.removeEventListener('click', portfolio.moreProjectsClickEvent);
         portfolio.moreProjectsBtn.addEventListener('click', function() {
             window.open(portfolio.oldProjectsUrl, '_blank');
