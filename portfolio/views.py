@@ -50,3 +50,10 @@ def music(request):
 
 def bacon_redirect(request):
     return redirect('http://old.kershner.org/bacon')
+
+
+def philomania(request):
+    template_vars = {
+        'timestamp': time.time(),
+    }
+    return render(request, 'philomania.html', template_vars)
