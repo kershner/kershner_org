@@ -42,3 +42,25 @@ function shuffle(a) {
     }
     return a;
 }
+
+function randomIntFromInterval(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+/**
+ * Detects collision between two HTMLElements
+ * @param htmlElementA
+ * @param htmlElementB
+ * @returns {boolean}
+ */
+function detectCollision(htmlElementA, htmlElementB) {
+    var aRect = htmlElementA.getBoundingClientRect();
+    var bRect = htmlElementB.getBoundingClientRect();
+
+    return !(
+        ((aRect.top + aRect.height) < (bRect.top)) ||
+        (aRect.top > (bRect.top + bRect.height)) ||
+        ((aRect.left + aRect.width) < bRect.left) ||
+        (aRect.left > (bRect.left + bRect.width))
+    );
+}

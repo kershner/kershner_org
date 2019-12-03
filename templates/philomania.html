@@ -24,6 +24,7 @@
 <body>
 
     <!-- JS -->
+    <script type="text/javascript" src="{% static 'js/util.js' %}?timestamp={{ timestamp }}"></script>
     <script type="text/javascript" src="{% static 'js/philomania.js' %}?timestamp={{ timestamp }}"></script>
     <script type="text/javascript">
         window.onload = philomania.init();

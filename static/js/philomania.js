@@ -6,7 +6,6 @@ class MovingSprite {
         this.color = color;
         this.name = name;
         this.element = '';
-
         this.init();
     }
 
@@ -27,50 +26,64 @@ class MovingSprite {
         containerDiv.setAttribute('index', this.index);
         containerDiv.style.backgroundColor = this.color;
         document.body.appendChild(containerDiv);
+
         this.element = document.getElementById(this.name);
         this.element.addEventListener('transitionend', function(e) {
-            console.log('transitionend');
-            var headIndex = e.target.getAttribute('index');
-            philomania.denchHeads[headIndex].isMoving = false;
+            var denchHead = philomania.getDenchHeadFromEvent(e);
+            denchHead.isMoving = false;
         });
     }
 
     move() {
-        console.log(`${this.name} move()`);
-        console.log(`this.isMoving: ${this.isMoving}`);
-
         if (!this.isMoving) {
+            console.log(`${this.name} move()`);
             this.isMoving = true;
             let windowHeight = window.innerHeight;
             let windowWidth = window.innerWidth;
             let elementWidth = this.element.offsetWidth;
             let elementHeight = this.element.offsetHeight;
-            let newX = this.rand((windowWidth - elementWidth));
-            let newY = this.rand((windowHeight - elementHeight));
+            let newX = randomIntFromInterval(0, windowWidth - elementWidth);
+            let newY = randomIntFromInterval(0, windowHeight - elementHeight);
 
-            let transitionTime = this.rand(100) + 1200;
+            let transitionTime = randomIntFromInterval(300, 8000);
             this.element.style.transition = transitionTime + 'ms';
-
             this.element.style.top = newY + 'px';
             this.element.style.left = newX + 'px';
-            console.log(`newY: ${newY} | newX: ${newX}`);
         }
     }
-
-    rand = (multi) => {
-      return parseInt(multi * Math.random(), 10);
-    };
 }
 
 var philomania = {
-    'philHead'      : undefined,
-    'denchHeads'    : []
+    'philHead'          : undefined,
+    'numDenchHeads'     : 2,
+    'denchHeads'        : [],
+    'eventLoopMs'       : 500,
+    'eventLoopTimer'    : undefined
 };
 
-
 philomania.init = function() {
+    philomania.generatePhilHead();
     philomania.generateDenchHeads();
-    philomania.moveDenchHeads();
+    philomania.startGameLoop();
+};
+
+philomania.generatePhilHead = function() {
+    console.log('philomania.generatePhilHead()');
+    philomania.philHead = new MovingSprite(0, 'blue', 'phil_head', true);
+
+    document.addEventListener('mousemove', function(e) {
+        philomania.philHead.element.style.left = e.clientX + 'px';
+        philomania.philHead.element.style.top = e.clientY + 'px';
+
+        // Detect collisions while moving cursor
+        for (var i in philomania.denchHeads) {
+            let head = philomania.denchHeads[i];
+            if (detectCollision(head.element, philomania.philHead.element)) {
+                philomania.collisionDetected();
+                break;
+            }
+        }
+    });
 };
 
 philomania.generateDenchHeads = function() {
@@ -80,18 +93,36 @@ philomania.generateDenchHeads = function() {
         head.deinit();
     }
 
-    var denchHead = new MovingSprite(0, 'red', 'dench_head_1');
-    philomania.denchHeads.push(denchHead);
+    for (var j=0; j<philomania.numDenchHeads; j++) {
+        var denchHead = new MovingSprite(j, 'red', `dench_head_${j}`, true);
+        philomania.denchHeads.push(denchHead);
+    }
 };
 
-philomania.moveDenchHeads = function() {
-    console.log('philomania.moveDenchHeads()');
-    for (var i in philomania.denchHeads) {
-        let head = philomania.denchHeads[i];
-        head.move();
-    }
+philomania.startGameLoop = function() {
+    console.log('philomania.startGameLoop()');
+    philomania.eventLoopTimer = setInterval(function() {
+        // Main game loop
+        for (var i in philomania.denchHeads) {
+            let head = philomania.denchHeads[i];
+            // Move Dench Heads
+            head.move();
 
-    setTimeout(function() {
-        philomania.moveDenchHeads();
-    }, 1000);
+            // Detect collisions
+            if (detectCollision(head.element, philomania.philHead.element)) {
+                philomania.collisionDetected();
+                break;
+            }
+        }
+    }, philomania.eventLoopMs);
+};
+
+philomania.collisionDetected = function() {
+    console.log(`Collision with phil!`);
+};
+
+// Utility functions
+philomania.getDenchHeadFromEvent = function(event) {
+    var headIndex = event.target.getAttribute('index');
+    return philomania.denchHeads[headIndex];
 };
