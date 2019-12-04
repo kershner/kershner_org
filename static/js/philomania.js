@@ -1,16 +1,32 @@
 class MovingSprite {
-    constructor(index, color, name) {
+    constructor(index, type) {
         this.index = index;
+        this.type = type;
         this.isMoving = false;
+        this.color = '';
         this.imageUrl = '';
-        this.color = color;
-        this.name = name;
+        this.name = `${type}_${index}`;
         this.element = '';
+
+        this.initialX = 0;
+        this.initialY = 0;
         this.init();
     }
 
     init() {
         console.log(`${this.name} init()`);
+
+        switch (this.type) {
+            case 'dench_head':
+                this.color = 'red';
+                this.initialX = window.innerWidth;
+                this.initialY = window.innerHeight;
+                break;
+            case 'phil_head':
+                this.color = 'blue';
+                break;
+        }
+
         this.generateHtml();
     }
 
@@ -25,6 +41,8 @@ class MovingSprite {
         containerDiv.setAttribute('id', this.name);
         containerDiv.setAttribute('index', this.index);
         containerDiv.style.backgroundColor = this.color;
+        containerDiv.style.top = this.initialY - 100 + 'px';
+        containerDiv.style.left = this.initialX - 100 + 'px';
         document.body.appendChild(containerDiv);
 
         this.element = document.getElementById(this.name);
@@ -69,7 +87,7 @@ philomania.init = function() {
 
 philomania.generatePhilHead = function() {
     console.log('philomania.generatePhilHead()');
-    philomania.philHead = new MovingSprite(0, 'blue', 'phil_head', true);
+    philomania.philHead = new MovingSprite(0, 'phil_head');
 
     document.addEventListener('mousemove', function(e) {
         philomania.philHead.element.style.left = e.clientX + 'px';
@@ -79,7 +97,7 @@ philomania.generatePhilHead = function() {
         for (var i in philomania.denchHeads) {
             let head = philomania.denchHeads[i];
             if (detectCollision(head.element, philomania.philHead.element)) {
-                philomania.collisionDetected();
+                philomania.collisionDetected(head);
                 break;
             }
         }
@@ -94,7 +112,7 @@ philomania.generateDenchHeads = function() {
     }
 
     for (var j=0; j<philomania.numDenchHeads; j++) {
-        var denchHead = new MovingSprite(j, 'red', `dench_head_${j}`, true);
+        var denchHead = new MovingSprite(j, 'dench_head');
         philomania.denchHeads.push(denchHead);
     }
 };
@@ -110,15 +128,20 @@ philomania.startGameLoop = function() {
 
             // Detect collisions
             if (detectCollision(head.element, philomania.philHead.element)) {
-                philomania.collisionDetected();
+                philomania.collisionDetected(head);
                 break;
             }
         }
     }, philomania.eventLoopMs);
 };
 
-philomania.collisionDetected = function() {
-    console.log(`Collision with phil!`);
+philomania.collisionDetected = function(denchHead) {
+    console.log(`${denchHead.name} has collided with phil!`);
+    denchHead.element.style.transition = '100ms';
+    denchHead.element.style.transform = 'scale(1.5)';
+    setTimeout(function() {
+        denchHead.element.style.transform = 'scale(1)';
+    }, 150);
 };
 
 // Utility functions
