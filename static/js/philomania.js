@@ -2,11 +2,14 @@ class MovingSprite {
     constructor(index, type) {
         this.index = index;
         this.type = type;
+        this.hp = 100;
         this.isMoving = false;
         this.color = '';
         this.imageUrl = '';
-        this.name = `${type}_${index}`;
+        this.name = `${type}-${index}`;
+        this.hpBar = '';
         this.element = '';
+        this.isInvincible = false;
 
         this.initialX = 0;
         this.initialY = 0;
@@ -17,12 +20,12 @@ class MovingSprite {
         console.log(`${this.name} init()`);
 
         switch (this.type) {
-            case 'dench_head':
+            case 'dench-head':
                 this.color = 'red';
                 this.initialX = window.innerWidth;
                 this.initialY = window.innerHeight;
                 break;
-            case 'phil_head':
+            case 'phil-head':
                 this.color = 'blue';
                 break;
         }
@@ -43,8 +46,16 @@ class MovingSprite {
         containerDiv.style.backgroundColor = this.color;
         containerDiv.style.top = this.initialY - 100 + 'px';
         containerDiv.style.left = this.initialX - 100 + 'px';
+
+        var hpBar = document.createElement('progress');
+        hpBar.className = 'moving-sprite-hp-bar';
+        hpBar.setAttribute('id', `${this.name}-hp-bar`);
+        hpBar.setAttribute('max', `${this.hp}`);
+        hpBar.value = this.hp;
+        containerDiv.appendChild(hpBar);
         document.body.appendChild(containerDiv);
 
+        this.hpBar = document.getElementById(`${this.name}-hp-bar`);
         this.element = document.getElementById(this.name);
         this.element.addEventListener('transitionend', function(e) {
             var denchHead = philomania.getDenchHeadFromEvent(e);
@@ -76,7 +87,9 @@ var philomania = {
     'numDenchHeads'     : 2,
     'denchHeads'        : [],
     'eventLoopMs'       : 500,
-    'eventLoopTimer'    : undefined
+    'eventLoopTimer'    : undefined,
+    'hitStrengthHP'     : 20,
+    'invincibleTimeMs'  : 1000
 };
 
 philomania.init = function() {
@@ -87,7 +100,7 @@ philomania.init = function() {
 
 philomania.generatePhilHead = function() {
     console.log('philomania.generatePhilHead()');
-    philomania.philHead = new MovingSprite(0, 'phil_head');
+    philomania.philHead = new MovingSprite(0, 'phil-head');
 
     document.addEventListener('mousemove', function(e) {
         philomania.philHead.element.style.left = e.clientX + 'px';
@@ -112,7 +125,7 @@ philomania.generateDenchHeads = function() {
     }
 
     for (var j=0; j<philomania.numDenchHeads; j++) {
-        var denchHead = new MovingSprite(j, 'dench_head');
+        var denchHead = new MovingSprite(j, 'dench-head');
         philomania.denchHeads.push(denchHead);
     }
 };
@@ -136,7 +149,31 @@ philomania.startGameLoop = function() {
 };
 
 philomania.collisionDetected = function(denchHead) {
-    console.log(`${denchHead.name} has collided with phil!`);
+    if (philomania.philHead.isInvincible) {
+        console.log(`${denchHead.name} has collided with phil but phil is invincible!`);
+        return;
+    }
+
+    // Set brief invincibility period
+    philomania.philHead.isInvincible = true;
+    addClass(philomania.philHead.element, 'invincible');
+    setTimeout(function() {
+        philomania.philHead.isInvincible = false;
+        removeClass(philomania.philHead.element, 'invincible');
+    }, philomania.invincibleTimeMs);
+
+    // Subtract HP
+    philomania.philHead.hp -= philomania.hitStrengthHP;
+    philomania.philHead.hpBar.value = philomania.philHead.hp;
+    console.log(`${denchHead.name} has collided with phil! Current HP: ${philomania.philHead.hp}`);
+
+    // Check for death
+    if (philomania.philHead.hp <= 0) {
+        // Phil's DEAD
+        console.log(`${denchHead.name} KILLED phil`);
+        return;
+    }
+
     denchHead.element.style.transition = '100ms';
     denchHead.element.style.transform = 'scale(1.5)';
     setTimeout(function() {
