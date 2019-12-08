@@ -22,6 +22,28 @@
     <link rel="stylesheet" href="{% static 'css/philomania.css' %}">
 </head>
 <body>
+    <div class="game-ui-labels">
+        <div class="game-ui-label">
+            <p class="label">Round:</p>
+            <p id="round-value" class="value">1</p>
+        </div>
+
+        <div class="game-ui-label">
+            <p class="label">Points:</p>
+            <p id="points-value" class="value">0</p>
+        </div>
+
+        <div class="game-ui-label">
+            <p class="label">Time:</p>
+            <p id="seconds-remaining-value" class="value"></p>
+        </div>
+    </div>
+
+    <div id="modal">
+        <div class="modal-title"></div>
+        <div class="modal-body"></div>
+        <div class="modal-countdown"></div>
+    </div>
 
     <!-- JS -->
     <script type="text/javascript" src="{% static 'js/util.js' %}?timestamp={{ timestamp }}"></script>

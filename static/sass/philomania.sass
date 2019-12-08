@@ -22,4 +22,49 @@ html
     height: 0.8em
     width: 100%
 
-#phil-head-0
+.game-ui-labels
+  float: right
+
+  .game-ui-label
+    display: inline-block
+    margin: 0 .5em
+    p
+      display: inline-block
+      margin: 0
+      padding: 0
+      font-size: 1.1em
+
+    .label
+        font-weight: bold
+
+#modal
+  display: none
+  position: absolute
+  top: 50%
+  left: 50%
+  transform: translate(-50%, -50%)
+  min-width: 15em
+  text-align: center
+  background-color: rgba(0, 0, 0, 0.7)
+  color: white
+  border-radius: .5em
+  overflow: hidden
+  @extend %box-shadow
+  z-index: 2
+
+  .modal-title
+    background-color: rgba(0, 0, 0, 1.0)
+    font-weight: bold
+    font-size: 1.5em
+    padding: .5em 1em
+
+  .modal-body
+    width: 50%
+    margin: 1em auto
+    font-size: 1.1em
+
+  .modal-countdown
+    display: none
+    padding: .5em 1em
+    background-color: rgba(0, 0, 0, 1.0)
+    font-size: 1.3em
