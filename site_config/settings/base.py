@@ -124,6 +124,13 @@ AWS_DEFAULT_ACL = 'public-read'
 MEDIAFILES_LOCATION = MAIN_APP_NAME
 MEDIA_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+BASE_S3_URL = 'https://{}/{}'.format(AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
 
 # Misc site stuff
 PROJECTS_PER_PAGE = 2
+
+# Unsplash stuff
+UNSPLASH_ACCESS_KEY = PARAMETERS['unsplash_access_key']
+UNSPLASH_SECRET_KEY = PARAMETERS['unsplash_secret_key']
+UNSPLASH_API_URL = 'https://api.unsplash.com/'
+PHILOMANIA_BACKGROUNDS_COLLECTION_ID = 827743

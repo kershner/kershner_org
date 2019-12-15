@@ -4,7 +4,6 @@ class MovingSprite {
         this.type = type;
         this.hp = 100;
         this.isMoving = false;
-        this.color = '';
         this.imageUrl = '';
         this.name = `${type}-${index}`;
         this.hpBar = '';
@@ -21,12 +20,17 @@ class MovingSprite {
 
         switch (this.type) {
             case 'dench-head':
-                this.color = 'red';
                 this.initialX = window.innerWidth;
                 this.initialY = window.innerHeight;
+
+
+                if (philomania.denchHeadImgs.length === 0) {
+                    philomania.regenerateDenchHeadImgList();
+                }
+                this.imageUrl = philomania.denchHeadImgs.pop();
                 break;
             case 'phil-head':
-                this.color = 'blue';
+                this.imageUrl = `${philomania.baseS3Url}/phil_head_1.png`;
                 break;
         }
 
@@ -44,9 +48,9 @@ class MovingSprite {
         containerDiv.className = 'moving-sprite';
         containerDiv.setAttribute('id', this.name);
         containerDiv.setAttribute('index', this.index);
-        containerDiv.style.backgroundColor = this.color;
         containerDiv.style.top = this.initialY - 100 + 'px';
         containerDiv.style.left = this.initialX - 100 + 'px';
+        containerDiv.style.backgroundImage = `url(${this.imageUrl})`;
 
         var hpBar = document.createElement('progress');
         hpBar.className = 'moving-sprite-hp-bar';
@@ -84,6 +88,11 @@ class MovingSprite {
 }
 
 var philomania = {
+    'baseS3Url'             : '',
+    'backgroundUrlsMaster'  : [],
+    'backgroundUrls'        : [],
+    'numDenchHeadImgs'      : 9,  // Arbitrary num of images I've made and put on S3
+    'denchHeadImgs'         : [],
     'philHead'              : undefined,
     'numDenchHeads'         : 2,
     'denchHeads'            : [],
@@ -107,9 +116,26 @@ var philomania = {
 };
 
 philomania.init = function() {
+    philomania.updateGameBackground();
     philomania.generatePhilHead();
     philomania.generateDenchHeads();
     philomania.startGameLoop();
+};
+
+philomania.updateGameBackground = function() {
+    console.log('philomania.updateGameBackground()');
+
+    if (philomania.backgroundUrls.length === 0) {
+        console.log('Populating new game backgrounds list...');
+        for (var i=0; i<philomania.backgroundUrlsMaster.length; i++) {
+            philomania.backgroundUrls.push(philomania.backgroundUrlsMaster[i]);
+        }
+        shuffle(philomania.backgroundUrls)
+    }
+
+    var newGameBackground = philomania.backgroundUrls.pop();
+    document.body.style.background = `url(${newGameBackground}) no-repeat center center fixed`;
+    document.body.style.backgroundColor = randomColor();
 };
 
 philomania.generatePhilHead = function() {
@@ -197,6 +223,7 @@ philomania.startNextRound = function() {
     philomania.secondsRemainingLabel.innerHTML = philomania.roundMsRemaining / 1000;
     philomania.roundLabel.innerHTML = philomania.currentRound;
 
+    philomania.updateGameBackground();
     philomania.generatePhilHead();
     philomania.generateDenchHeads();
     philomania.presentModal('Great Job!', 'Next round in...', true);
@@ -291,4 +318,14 @@ philomania.updatePoints = function() {
 philomania.getDenchHeadFromEvent = function(event) {
     var headIndex = event.target.getAttribute('index');
     return philomania.denchHeads[headIndex];
+};
+
+philomania.regenerateDenchHeadImgList = function() {
+    console.log('philomania.regenerateDenchHeadImgList()');
+    philomania.denchHeadImgs = [];
+    for (var i=1; i<philomania.numDenchHeadImgs; i++) {
+        var nextDenchHeadImgUrl = `${philomania.baseS3Url}/dench_head_${i}.png`;
+        philomania.denchHeadImgs.push(nextDenchHeadImgUrl);
+    }
+    //shuffle(philomania.denchHeadImgs);  // Causes dupe heads to generate, unsure why
 };

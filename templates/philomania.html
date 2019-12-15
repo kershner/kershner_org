@@ -46,9 +46,12 @@
     </div>
 
     <!-- JS -->
+    <script type="text/javascript" src="{% static 'vendor/js/randomColor.min.js' %}?timestamp={{ timestamp }}"></script>
     <script type="text/javascript" src="{% static 'js/util.js' %}?timestamp={{ timestamp }}"></script>
     <script type="text/javascript" src="{% static 'js/philomania.js' %}?timestamp={{ timestamp }}"></script>
     <script type="text/javascript">
+        philomania.baseS3Url = '{{ base_s3_url }}';
+        philomania.backgroundUrls = {{ unsplash_photo_urls|safe }};
         window.onload = philomania.init();
     </script>
 </body>

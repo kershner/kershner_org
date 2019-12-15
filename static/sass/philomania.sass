@@ -4,13 +4,18 @@ html
   cursor: none !important
   overflow: hidden
 
+body
+  background-size: cover !important
+
 .moving-sprite
   position: absolute
-  width: 5em
-  height: 5em
+  width: 8em
+  height: 8em
   top: 0
   left: 0
-  @extend %box-shadow
+  background-repeat: no-repeat
+  background-size: contain
+  background-position: center
 
   &.invincible
     opacity: 0.5
