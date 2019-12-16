@@ -1,11 +1,15 @@
 @import 'misc'
 body,
 html
-  cursor: none !important
   overflow: hidden
+  font-family: 'Quicksand', sans-serif
 
 body
   background-size: cover !important
+  text-align: center
+
+$phil-green: #47d247
+$phil-green-darker: #2db92d
 
 .moving-sprite
   position: absolute
@@ -22,13 +26,29 @@ body
 
   .moving-sprite-hp-bar
     position: absolute
-    top: 0
+    top: -0.9em
+    margin: 0 auto
     left: 0
+    right: 0
     height: 0.8em
     width: 100%
+    border: none
+
+  &.dench-head
+    background-size: cover
+
+    .moving-sprite-hp-bar
+      display: none  // Hiding HP bars on dench heads for now
 
 .game-ui-labels
-  float: right
+  display: none
+  position: relative
+  padding: .6em .25em
+  background-color: rgba(0, 0, 0, 0.6)
+  color: white
+  border-radius: .3em
+  z-index: 2
+  @extend %box-shadow
 
   .game-ui-label
     display: inline-block
@@ -42,34 +62,77 @@ body
     .label
         font-weight: bold
 
-#modal
-  display: none
-  position: absolute
-  top: 50%
-  left: 50%
-  transform: translate(-50%, -50%)
-  min-width: 15em
-  text-align: center
-  background-color: rgba(0, 0, 0, 0.7)
+#phil-head-0
+  width: 8em
+  height: 12em
+
+.modal
+  position: relative
+  background-color: rgba(0, 0, 0, 0.6)
   color: white
-  border-radius: .5em
+  border-radius: .75em
+  text-align: center
+  max-width: 25em
+  margin: 5em auto
   overflow: hidden
-  @extend %box-shadow
   z-index: 2
+  @extend %box-shadow
+
+  hr
+    width: 80%
 
   .modal-title
-    background-color: rgba(0, 0, 0, 1.0)
     font-weight: bold
-    font-size: 1.5em
-    padding: .5em 1em
+    font-size: 2.5em
+    padding: .2em
+
+  .modal-subtitle
+    margin: 0 .25em
+    padding: 0 1em
+    font-size: 1.25em
 
   .modal-body
-    width: 50%
+    margin: 0 .25em
+    padding: 0 1em
+    padding-bottom: 1em
+    font-size: 1.5em
+
+    &.long-text
+      padding: 0 1em
+      font-size: 1em
+      text-align: left
+      font-weight: lighter
+
+  .modal-actions
     margin: 1em auto
-    font-size: 1.1em
+    text-align: center
+
+    .modal-action-btn
+      display: inline-block
+      padding: .5em 1em
+      margin: 0 1em
+      border-radius: .25em
+      cursor: pointer
+      background-color: $phil-green
+      @extend %box-shadow
+
+      &:hover
+        background-color: $phil-green-darker
 
   .modal-countdown
     display: none
-    padding: .5em 1em
-    background-color: rgba(0, 0, 0, 1.0)
-    font-size: 1.3em
+    padding: .2em
+    font-size: 2em
+
+
+.game-over-phil-zoom
+  z-index: 10
+  -webkit-animation: game-over-phil-zoom 5s forwards
+@keyframes game-over-phil-zoom
+  0%
+    -webkit-transform: scale(1)
+  50%
+    -webkit-transform: scale(20)
+  100%
+    -webkit-transform: scale(0)
+    display: none

@@ -16,13 +16,13 @@
     <meta name="theme-color" content="#ffffff">
 
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:800|Open+Sans" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Quicksand&display=swap" rel="stylesheet">
 
     <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/philomania.css' %}">
 </head>
 <body>
-    <div class="game-ui-labels">
+    <div class="game-ui-labels hidden">
         <div class="game-ui-label">
             <p class="label">Round:</p>
             <p id="round-value" class="value">1</p>
@@ -39,10 +39,24 @@
         </div>
     </div>
 
-    <div id="modal">
-        <div class="modal-title"></div>
-        <div class="modal-body"></div>
+    <div id="modal" class="modal">
+        <div class="modal-title">Phil-o-mania</div>
+        <div class="modal-subtitle">A Huge Waste of Time</div>
+        <hr>
+        <div class="modal-body long-text">
+            This internet program is an adaptation of the hit 2013 film <a target="_blank" href="https://en.wikipedia.org/wiki/Philomena_(film)">Philomena</a>.
+            <br><br>
+            Inspired by true events, Philomena tells the story of the evil witch Dame Judi Dench and her army of clones as they
+            attempt to capture the sweet innocent boy Phil for purposes unknown.
+            <br><br>
+            You'll take control of the boy Phil and attempt to evade the evil Dame's clutches for as long as you can!
+        </div>
         <div class="modal-countdown"></div>
+        <div class="modal-actions">
+            <div id="start-game-btn" class="modal-action-btn">
+                Start Game
+            </div>
+        </div>
     </div>
 
     <!-- JS -->

@@ -8,6 +8,7 @@ class MovingSprite {
         this.name = `${type}-${index}`;
         this.hpBar = '';
         this.element = '';
+        this.extraCssClassNames = '';
         this.isInvincible = false;
 
         this.initialX = 0;
@@ -22,12 +23,11 @@ class MovingSprite {
             case 'dench-head':
                 this.initialX = window.innerWidth;
                 this.initialY = window.innerHeight;
-
-
                 if (philomania.denchHeadImgs.length === 0) {
                     philomania.regenerateDenchHeadImgList();
                 }
                 this.imageUrl = philomania.denchHeadImgs.pop();
+                this.extraCssClassNames = 'dench-head';
                 break;
             case 'phil-head':
                 this.imageUrl = `${philomania.baseS3Url}/phil_head_1.png`;
@@ -45,7 +45,7 @@ class MovingSprite {
     generateHtml() {
         console.log(`${this.name} generateHtml()`);
         var containerDiv = document.createElement('div');
-        containerDiv.className = 'moving-sprite';
+        containerDiv.className = `moving-sprite ${this.extraCssClassNames}`;
         containerDiv.setAttribute('id', this.name);
         containerDiv.setAttribute('index', this.index);
         containerDiv.style.top = this.initialY - 100 + 'px';
@@ -110,16 +110,16 @@ var philomania = {
     'pointsLabel'           : document.getElementById('points-value'),
     'modal'                 : document.getElementById('modal'),
     'modalTitle'            : document.getElementsByClassName('modal-title')[0],
+    'modalSubTitle'         : document.getElementsByClassName('modal-subtitle')[0],
     'modalBody'             : document.getElementsByClassName('modal-body')[0],
+    'modalActions'          : document.getElementsByClassName('modal-actions')[0],
     'modalCountdown'        : document.getElementsByClassName('modal-countdown')[0]
 
 };
 
 philomania.init = function() {
     philomania.updateGameBackground();
-    philomania.generatePhilHead();
-    philomania.generateDenchHeads();
-    philomania.startGameLoop();
+    philomania.startGameBtn();
 };
 
 philomania.updateGameBackground = function() {
@@ -135,7 +135,19 @@ philomania.updateGameBackground = function() {
 
     var newGameBackground = philomania.backgroundUrls.pop();
     document.body.style.background = `url(${newGameBackground}) no-repeat center center fixed`;
-    document.body.style.backgroundColor = randomColor();
+    if (philomania.backgroundUrls.length === 0) {
+        document.body.style.backgroundColor = randomColor();
+    }
+};
+
+philomania.startGameBtn = function() {
+    document.getElementById('start-game-btn').onclick = function() {
+        document.getElementsByClassName('game-ui-labels')[0].style.display = 'inline-block';
+        philomania.dismissModal();
+        philomania.generatePhilHead();
+        philomania.generateDenchHeads();
+        philomania.startGameLoop();
+    }
 };
 
 philomania.generatePhilHead = function() {
@@ -229,10 +241,14 @@ philomania.startNextRound = function() {
     philomania.presentModal('Great Job!', 'Next round in...', true);
 };
 
-philomania.presentModal = function(title, body, startCountdown) {
+philomania.presentModal = function(title, body, startCountdown, subTitle) {
     philomania.modal.style.display = 'block';
     philomania.modalTitle.innerHTML = title;
     philomania.modalBody.innerHTML = body;
+    addClass(philomania.modal, 'big-pop-up');
+    setTimeout(function() {
+        removeClass(philomania.modal, 'big-pop-up');
+    }, 1000);
 
     if (startCountdown) {
         var secondsRemaining = 3;
@@ -248,19 +264,31 @@ philomania.presentModal = function(title, body, startCountdown) {
             }
         }, 1000);
     }
+
+    if (subTitle) {
+        philomania.modalSubTitle.innerHTML = subTitle;
+    }
 };
 
 philomania.dismissModal = function() {
     philomania.modal.style.display = 'none';
-    philomania.modalCountdown.style.display = 'none';
     philomania.modalTitle.innerHTML = '';
+    philomania.modalSubTitle.innerHTML = '';
     philomania.modalBody.innerHTML = '';
+    removeClass(philomania.modalBody, 'long-text');
     philomania.modalCountdown.innerHTML = '';
+    philomania.modalCountdown.style.display = 'none';
+    philomania.modalActions.style.display = 'none';
 };
 
 philomania.collisionDetected = function(denchHead) {
     if (philomania.philHead.isInvincible) {
         console.log(`${denchHead.name} has collided with phil but phil is invincible!`);
+        return;
+    }
+
+    if (philomania.philHead.hp <= 0) {
+        console.log(`${denchHead.name} has collided with phil but phil is already DEAD!`);
         return;
     }
 
@@ -305,7 +333,8 @@ philomania.collisionDetected = function(denchHead) {
 philomania.gameOver = function() {
     console.log('philomania.gameOver()');
     philomania.stopGameLoop();
-    philomania.presentModal('Game Over!', 'Reload the page to try again.', false);
+    philomania.presentModal('Game Over!', 'The boy Phil was captured by the evil Dame.<br><br>Reload the page to try again.', false);
+    addClass(philomania.philHead.element, 'game-over-phil-zoom');
 };
 
 philomania.updatePoints = function() {
