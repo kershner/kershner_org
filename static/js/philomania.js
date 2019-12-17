@@ -1,5 +1,5 @@
 class MovingSprite {
-    constructor(index, type) {
+    constructor(index, type, soundFilename) {
         this.index = index;
         this.type = type;
         this.hp = 100;
@@ -10,6 +10,8 @@ class MovingSprite {
         this.element = '';
         this.extraCssClassNames = '';
         this.isInvincible = false;
+        this.soundFilename = soundFilename;
+        this.sound = undefined;
 
         this.initialX = 0;
         this.initialY = 0;
@@ -17,7 +19,7 @@ class MovingSprite {
     }
 
     init() {
-        console.log(`${this.name} init()`);
+        //console.log(`${this.name} init()`);
 
         switch (this.type) {
             case 'dench-head':
@@ -28,9 +30,12 @@ class MovingSprite {
                 }
                 this.imageUrl = philomania.denchHeadImgs.pop();
                 this.extraCssClassNames = 'dench-head';
+
+                var mp3Url = `${philomania.baseS3Url}/audio/${this.soundFilename}`;
+                this.sound = new Audio(mp3Url);
                 break;
             case 'phil-head':
-                this.imageUrl = `${philomania.baseS3Url}/phil_head_1.png`;
+                this.imageUrl = `${philomania.baseS3Url}/img/phil_head_1.png`;
                 break;
         }
 
@@ -38,12 +43,12 @@ class MovingSprite {
     }
 
     deinit() {
-        console.log(`${this.name} deinit()`);
+        //console.log(`${this.name} deinit()`);
         this.element.parentNode.removeChild(this.element);
     }
 
     generateHtml() {
-        console.log(`${this.name} generateHtml()`);
+        //console.log(`${this.name} generateHtml()`);
         var containerDiv = document.createElement('div');
         containerDiv.className = `moving-sprite ${this.extraCssClassNames}`;
         containerDiv.setAttribute('id', this.name);
@@ -70,7 +75,7 @@ class MovingSprite {
 
     move() {
         if (!this.isMoving) {
-            console.log(`${this.name} move()`);
+            //console.log(`${this.name} move()`);
             this.isMoving = true;
             let windowHeight = window.innerHeight;
             let windowWidth = window.innerWidth;
@@ -91,7 +96,9 @@ var philomania = {
     'baseS3Url'             : '',
     'backgroundUrlsMaster'  : [],
     'backgroundUrls'        : [],
-    'numDenchHeadImgs'      : 9,  // Arbitrary num of images I've made and put on S3
+    'numDenchSounds'        : 7,
+    'denchSounds'           : [],
+    'numDenchHeadImgs'      : 10,
     'denchHeadImgs'         : [],
     'philHead'              : undefined,
     'numDenchHeads'         : 2,
@@ -118,15 +125,25 @@ var philomania = {
 };
 
 philomania.init = function() {
+    philomania.generateDenchSounds();
     philomania.updateGameBackground();
     philomania.startGameBtn();
 };
 
+philomania.generateDenchSounds = function() {
+    //console.log('philomania.generateDenchSounds()');
+    for (var i=1; i<=philomania.numDenchSounds; i++) {
+        let mp3Filename = `dench_${i}.mp3`;
+        philomania.denchSounds.push(mp3Filename);
+    }
+    shuffle(philomania.denchSounds);
+};
+
 philomania.updateGameBackground = function() {
-    console.log('philomania.updateGameBackground()');
+    //console.log('philomania.updateGameBackground()');
 
     if (philomania.backgroundUrls.length === 0) {
-        console.log('Populating new game backgrounds list...');
+        //console.log('Populating new game backgrounds list...');
         for (var i=0; i<philomania.backgroundUrlsMaster.length; i++) {
             philomania.backgroundUrls.push(philomania.backgroundUrlsMaster[i]);
         }
@@ -151,7 +168,7 @@ philomania.startGameBtn = function() {
 };
 
 philomania.generatePhilHead = function() {
-    console.log('philomania.generatePhilHead()');
+    //console.log('philomania.generatePhilHead()');
     if (philomania.philHead !== undefined) {
         philomania.philHead.deinit();
     }
@@ -173,7 +190,7 @@ philomania.generatePhilHead = function() {
 };
 
 philomania.generateDenchHeads = function() {
-    console.log('philomania.generateDenchHeads()');
+    //console.log('philomania.generateDenchHeads()');
     for (var i=0; i<philomania.denchHeads.length; i++) {
         let head = philomania.denchHeads[i];
         head.deinit();
@@ -181,13 +198,17 @@ philomania.generateDenchHeads = function() {
     philomania.denchHeads = [];
 
     for (var j=0; j<philomania.numDenchHeads; j++) {
-        var denchHead = new MovingSprite(j, 'dench-head');
+        if (philomania.denchSounds.length === 0) {
+            philomania.generateDenchSounds();
+        }
+        var denchSound = philomania.denchSounds.pop();
+        var denchHead = new MovingSprite(j, 'dench-head', denchSound);
         philomania.denchHeads.push(denchHead);
     }
 };
 
 philomania.startGameLoop = function() {
-    console.log('philomania.startGameLoop()');
+    //console.log('philomania.startGameLoop()');
 
     philomania.secondsRemainingLabel.innerHTML = philomania.roundMsRemaining / 1000;
     philomania.eventLoopTimer = setInterval(function() {
@@ -220,12 +241,12 @@ philomania.startGameLoop = function() {
 };
 
 philomania.stopGameLoop = function() {
-    console.log('philomania.stopGameLoop()');
+    //console.log('philomania.stopGameLoop()');
     clearInterval(philomania.eventLoopTimer);
 };
 
 philomania.startNextRound = function() {
-    console.log('philomania.startNextRound()');
+    //console.log('philomania.startNextRound()');
 
     philomania.roundMsRemaining = philomania.totalRoundMs;
     philomania.currentRound += 1;
@@ -283,18 +304,19 @@ philomania.dismissModal = function() {
 
 philomania.collisionDetected = function(denchHead) {
     if (philomania.philHead.isInvincible) {
-        console.log(`${denchHead.name} has collided with phil but phil is invincible!`);
+        //console.log(`${denchHead.name} has collided with phil but phil is invincible!`);
         return;
     }
 
     if (philomania.philHead.hp <= 0) {
-        console.log(`${denchHead.name} has collided with phil but phil is already DEAD!`);
+        //console.log(`${denchHead.name} has collided with phil but phil is already DEAD!`);
         return;
     }
 
     // Set brief invincibility period
     philomania.philHead.isInvincible = true;
     denchHead.isInvincible = true;
+    denchHead.sound.play();
     addClass(philomania.philHead.element, 'invincible');
     addClass(denchHead.element, 'invincible');
     setTimeout(function() {
@@ -306,19 +328,19 @@ philomania.collisionDetected = function(denchHead) {
     // Subtract HP
     philomania.philHead.hp -= philomania.hitStrengthHP;
     philomania.philHead.hpBar.value = philomania.philHead.hp;
-    console.log(`${denchHead.name} has collided with phil! Current HP: ${philomania.philHead.hp}`);
+    //console.log(`${denchHead.name} has collided with phil! Current HP: ${philomania.philHead.hp}`);
 
     denchHead.hp -= philomania.hitStrengthHP;
     denchHead.hpBar.value = denchHead.hp;
 
     // Check for death
     if (denchHead.hp <= 0) {
-        console.log(`${denchHead.name} is DEAD`);
+        //console.log(`${denchHead.name} is DEAD`);
         denchHead.deinit();
     }
     if (philomania.philHead.hp <= 0) {
         // Phil's DEAD
-        console.log(`${denchHead.name} KILLED phil`);
+        //console.log(`${denchHead.name} KILLED phil`);
         philomania.gameOver();
         return;
     }
@@ -331,14 +353,16 @@ philomania.collisionDetected = function(denchHead) {
 };
 
 philomania.gameOver = function() {
-    console.log('philomania.gameOver()');
+    //console.log('philomania.gameOver()');
     philomania.stopGameLoop();
-    philomania.presentModal('Game Over!', 'The boy Phil was captured by the evil Dame.<br><br>Reload the page to try again.', false);
+    philomania.presentModal('Game Over!', 'The boy Phil was captured by the evil Dame\'s army.<br><br>Reload the page to try again.', false);
     addClass(philomania.philHead.element, 'game-over-phil-zoom');
+    var mp3Url = `${philomania.baseS3Url}/audio/tim_allen_grunt.mp3`;
+    new Audio(mp3Url).play();
 };
 
 philomania.updatePoints = function() {
-    console.log('philomania.updatePoints()');
+    //console.log('philomania.updatePoints()');
     philomania.currentPoints += philomania.numPointsAwarded;
     philomania.pointsLabel.innerHTML = philomania.currentPoints;
 };
@@ -350,11 +374,11 @@ philomania.getDenchHeadFromEvent = function(event) {
 };
 
 philomania.regenerateDenchHeadImgList = function() {
-    console.log('philomania.regenerateDenchHeadImgList()');
+    //console.log('philomania.regenerateDenchHeadImgList()');
     philomania.denchHeadImgs = [];
     for (var i=1; i<philomania.numDenchHeadImgs; i++) {
-        var nextDenchHeadImgUrl = `${philomania.baseS3Url}/dench_head_${i}.png`;
+        var nextDenchHeadImgUrl = `${philomania.baseS3Url}/img/dench_head_${i}.png`;
         philomania.denchHeadImgs.push(nextDenchHeadImgUrl);
     }
-    //shuffle(philomania.denchHeadImgs);  // Causes dupe heads to generate, unsure why
+    shuffle(philomania.denchHeadImgs);
 };

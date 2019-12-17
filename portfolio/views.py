@@ -4,8 +4,6 @@ from project.models import Project
 from django.conf import settings
 from song.models import Song
 import requests
-import random
-import math
 import time
 import json
 
@@ -52,7 +50,7 @@ def bacon_redirect(request):
 
 
 def philomania(request):
-    base_s3_url = '{}/img/philomania'.format(settings.BASE_S3_URL)
+    base_s3_url = '{}/philomania'.format(settings.BASE_S3_URL)
     page_size = 30
 
     # Make request to Unsplash API for random photos from collection
@@ -64,7 +62,6 @@ def philomania(request):
     unsplash_photo_urls = []
     try:
         random_photos_response = requests.get(random_photos_url).json()
-        # Loop through photos, get reference to url
         for entry in random_photos_response:
             unsplash_photo_urls.append(entry['urls']['regular'])
     except Exception as e:
