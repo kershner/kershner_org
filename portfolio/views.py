@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from django.core import serializers
-from project.models import Project
+from apps.project.models import Project
 from django.conf import settings
-from song.models import Song
+from apps.song.models import Song
 import requests
 import time
 import json

@@ -20,8 +20,8 @@ SECRET_KEY = PARAMETERS['csrf_secret_key']
 
 # Application definition
 INSTALLED_APPS = [
-    'song',
-    'project',
+    'apps.song',
+    'apps.project',
     'storages',
     'django.contrib.admin',
     'django.contrib.auth',
