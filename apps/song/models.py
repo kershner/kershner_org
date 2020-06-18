@@ -1,16 +1,16 @@
 from django.contrib import admin
 from django.db import models
-import os
+from utility import util
 
 
 def song_upload(instance, filename):
     path = 'music/'
-    return os.path.join(path, filename)
+    return util.get_random_s3_key_for_upload(path, filename)
 
 
 def song_thumbnail_upload(instance, filename):
     path = 'music/thumbnails/'
-    return os.path.join(path, '{}_thumbnail.png'.format(instance.title))
+    return util.get_random_s3_key_for_upload(path, filename)
 
 
 class Song(models.Model):
@@ -57,6 +57,7 @@ class Song(models.Model):
 @admin.register(Song)
 class SongAdmin(admin.ModelAdmin):
     list_display = ('title', 'id', 'created_at', 'position', 'duration')
+    list_display_links = ('title', 'id', 'created_at', 'position', 'duration')
     list_filter = ('type', 'created_at', 'year')
     search_fields = ['name', 'id']
     show_full_result_count = True
