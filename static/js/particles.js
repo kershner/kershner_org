@@ -102,6 +102,6 @@ function particlesInit(color) {
                 }
             }
         },
-        "retina_detect": true
+        "retina_detect": false
     });    
 }
