@@ -141,6 +141,9 @@ input[type=range]
         line-height: 1.5em
         +animate(0.2s)
 
+        @media(max-width: $iphone5-breakpoint)
+          font-size: 1.5em
+
         &:hover
           color: $black
 
@@ -210,6 +213,9 @@ input[type=range]
               width: 20%
               align-items: center
               padding-right: 1em
+
+              @media (max-width: $iphone5-breakpoint)
+                display: block
 
               a
                 div
