@@ -90,5 +90,15 @@
 
         {% block extra_javascripts %}{% endblock %}
         {% endblock %}
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-TV5M97LEH7"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'G-TV5M97LEH7');
+        </script>
     </body>
 </html>
