@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.conf import settings
 from django.db import models
 from utility import util
 
@@ -50,6 +51,9 @@ class Song(models.Model):
 
     def __str__(self):
         return 'ID: %d | %s' % (self.id, self.title)
+
+    def thumbnail_url_cloudfront(self):
+        return '{}/{}'.format(settings.BASE_S3_URL, self.thumbnail)
 
 
 # Admin config for this model

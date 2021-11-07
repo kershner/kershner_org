@@ -1,4 +1,5 @@
-{% load staticfiles %}
+{% load portfolio_tags %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,14 +8,14 @@
     <title>Philomania</title>
 
     <!-- Favicon -->
-    <link rel="shortcut icon" href="{% static 'img/favicon/phil_favicon.ico' %}" type="image/x-icon">
-    <link rel="icon" href="{% static 'img/favicon/phil_favicon.ico' %}" type="image/x-icon">
+    <link rel="shortcut icon" href="{% settings_value "BASE_S3_URL" %}/img/favicon/phil_favicon.ico" type="image/x-icon">
+    <link rel="icon" href="{% settings_value "BASE_S3_URL" %}/img/favicon/phil_favicon.ico" type="image/x-icon">
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Quicksand&display=swap" rel="stylesheet">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="{% static 'css/philomania.css' %}">
+    <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/philomania.css">
 </head>
 <body>
     <div class="game-ui-labels hidden">
@@ -57,9 +58,9 @@
     </div>
 
     <!-- JS -->
-    <script type="text/javascript" src="{% static 'vendor/js/randomColor.min.js' %}?timestamp={{ timestamp }}"></script>
-    <script type="text/javascript" src="{% static 'js/util.js' %}?timestamp={{ timestamp }}"></script>
-    <script type="text/javascript" src="{% static 'js/philomania.js' %}?timestamp={{ timestamp }}"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/randomColor.min.js?timestamp={{ timestamp }}"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js?timestamp={{ timestamp }}"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/philomania.js?timestamp={{ timestamp }}"></script>
     <script type="text/javascript">
         philomania.baseS3Url = '{{ base_s3_url }}';
         philomania.backgroundUrls = {{ unsplash_photo_urls|safe }};

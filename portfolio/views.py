@@ -31,7 +31,7 @@ def music(request):
             'year': song.year,
             'type': song.type,
             'url': song.file.url,
-            'cover_art_url': song.thumbnail.url,
+            'cover_art_url': song.thumbnail_url_cloudfront(),
             'youtube_url': song.youtube_link,
             'duration': song.duration,
             'timestamp': time.time()

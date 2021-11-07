@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
-{% load staticfiles %}
 {% block content %}
+{% load portfolio_tags %}
 
 <div class="video-btn-wrapper">
     <div id="old-video-toggle" class="dynamic-color">Videos</div>
@@ -96,9 +96,9 @@
 {% endblock %}
 
 {% block extra_javascripts %}
-<script type="text/javascript" src="{% static 'vendor/js/amplitude.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'vendor/js/noSleep.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/music.js' %}"></script>
+<script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/amplitude.min.js"></script>
+<script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/noSleep.min.js"></script>
+<script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/music.js"></script>
 <script type="text/javascript">
     music.songs = {{ songs_json|safe }};
     music.init();
