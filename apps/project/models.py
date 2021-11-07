@@ -28,6 +28,7 @@ class Project(models.Model):
     image_1 = models.ImageField(upload_to=rename_upload)
     image_2 = models.ImageField(upload_to=rename_upload, blank=True)
     image_3 = models.ImageField(upload_to=rename_upload, blank=True)
+    drop_shadow = models.BooleanField(default=False, help_text='Apply drop shadow to images.')
     site_url = models.CharField(max_length=255)
     position = models.IntegerField(default=0)
     __original_position = None

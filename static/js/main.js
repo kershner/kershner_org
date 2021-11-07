@@ -137,7 +137,8 @@ portfolio.getNewProjectHtml = function(project) {
         animationClass = project.fields.position < 3 ? '' : portfolio.imgAnimationClass,
         firstImgClass = project.fields.image_1 === '' ? 'hidden' : '',
         secondImgClass = project.fields.image_2 === '' ? 'hidden' : '',
-        thirdImgClass = project.fields.image_3 === '' ? 'hidden' : '';
+        thirdImgClass = project.fields.image_3 === '' ? 'hidden' : '',
+        dropShadowClass = project.fields.drop_shadow === true ? 'drop-shadow' : '';
 
     var html =  `
                 <div id="${firstProjectId}" class="project-wrapper ${project.fields.image_orientation}" data-position="${project.fields.position}">
@@ -170,9 +171,9 @@ portfolio.getNewProjectHtml = function(project) {
         </div>
 
         <div class="right-content">
-            <div class="project-img-1 ${firstImgClass}"><img class="${animationClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}"></div>
-            <div class="project-img-2 ${secondImgClass}"><img class="${animationClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_2}"></div>
-            <div class="project-img-3 ${thirdImgClass}"><img class="${animationClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_3}"></div>
+            <div class="project-img-1 ${firstImgClass}"><img class="${animationClass} ${dropShadowClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}"></div>
+            <div class="project-img-2 ${secondImgClass}"><img class="${animationClass} ${dropShadowClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_2}"></div>
+            <div class="project-img-3 ${thirdImgClass}"><img class="${animationClass} ${dropShadowClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_3}"></div>
         </div>
     </div>
     `;
