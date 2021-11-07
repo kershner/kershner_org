@@ -171,9 +171,23 @@ portfolio.getNewProjectHtml = function(project) {
         </div>
 
         <div class="right-content">
-            <div class="project-img-1 ${firstImgClass}"><img class="${animationClass} ${dropShadowClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}"></div>
-            <div class="project-img-2 ${secondImgClass}"><img class="${animationClass} ${dropShadowClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_2}"></div>
-            <div class="project-img-3 ${thirdImgClass}"><img class="${animationClass} ${dropShadowClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_3}"></div>
+            <div class="project-img-1 ${firstImgClass}">
+                <a href="${portfolio.baseS3Url}/${project.fields.image_1}" target="_blank">
+                    <img class="${animationClass} ${dropShadowClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}">
+                </a>
+            </div>
+
+            <div class="project-img-2 ${secondImgClass}">
+                <a href="${portfolio.baseS3Url}/${project.fields.image_2}" target="_blank">
+                    <img class="${animationClass} ${dropShadowClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_2}">
+                </a>
+            </div>
+
+            <div class="project-img-3 ${thirdImgClass}">
+                <a href="${portfolio.baseS3Url}/${project.fields.image_3}" target="_blank">
+                    <img class="${animationClass} ${dropShadowClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_3}">
+                </a>
+            </div>
         </div>
     </div>
     `;
