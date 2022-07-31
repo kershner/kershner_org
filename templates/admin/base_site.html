@@ -1,0 +1,8 @@
+{% extends 'admin/base_site.html' %}
+{% load portfolio_tags %}
+{% load static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/admin.css?timestamp={{ timestamp }}">
+{% endblock %}

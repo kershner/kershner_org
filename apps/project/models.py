@@ -1,3 +1,4 @@
+from django.template.loader import render_to_string
 from django.contrib import admin
 from django.db import models
 from uuid import uuid4
@@ -31,21 +32,40 @@ class Project(models.Model):
     drop_shadow = models.BooleanField(default=False, help_text='Apply drop shadow to images.')
     site_url = models.CharField(max_length=255)
     position = models.IntegerField(default=0)
-    __original_position = None
 
     def __init__(self, *args, **kwargs):
         super(Project, self).__init__(*args, **kwargs)
         self.__original_position = self.position
 
-    def save(self, force_insert=False, force_update=False, *args, **kwargs):
-        if self.position != self.__original_position:
-            # Position has changed
-            old_project_with_position = Project.objects.filter(position=self.position)
-            if old_project_with_position:
-                old_project_with_position.update(position=self.__original_position)
+    @staticmethod
+    def get_new_position(total_projects, old_position, direction):
+        max_position = total_projects - 1
+        new_position = old_position
+        if direction == 'up':
+            new_position -= 1
+        elif direction == 'down':
+            new_position += 1
 
-        super(Project, self).save(force_insert, force_update, *args, **kwargs)
-        self.__original_position = self.position
+        if new_position > max_position:
+            new_position = max_position
+        if new_position < 0:
+            new_position = 0
+
+        return new_position
+
+    def move_position(self, direction):
+        all_projects = Project.objects.all()
+        total_projects = all_projects.count()
+        new_position = self.get_new_position(total_projects, self.position, direction)
+        project_at_position = Project.objects.filter(position=new_position).first()
+
+        # Swap positions with existing project at new_position
+        project_at_position.position = self.position
+        self.position = new_position
+
+        # Save both project objects
+        project_at_position.save()
+        self.save()
 
     def __str__(self):
         return 'ID: %d | %s' % (self.id, self.title)
@@ -55,7 +75,13 @@ class Project(models.Model):
 # https://docs.djangoproject.com/en/2.0/ref/contrib/admin/#django.contrib.admin.ModelAdmin
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('title', 'id', 'created_at', 'position')
+    list_display = ('title', 'id', 'created_at', 'position', 'change_position')
     list_filter = ('created_at',)
     search_fields = ['name', 'id']
     show_full_result_count = True
+    readonly_fields = ['position']
+
+    @staticmethod
+    def change_position(obj):
+        ctx = {'project': obj}
+        return render_to_string('admin/project_position_controls.html', context=ctx)
