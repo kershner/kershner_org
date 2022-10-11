@@ -19,7 +19,6 @@ var portfolio = {
         ['orange', '#FF613A'],
         ['green', '#04E762'],
         ['blue', '#0079F2'],
-        ['black', '#202020']
     ]
 };
 
