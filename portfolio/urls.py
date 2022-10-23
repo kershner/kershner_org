@@ -1,3 +1,4 @@
+from apps.whoosh import views as whoosh_views
 from . import views as portfolio_views
 from django.contrib import admin
 from django.urls import path
@@ -15,6 +16,15 @@ urlpatterns = [
     # Philomania
     path('phil/', portfolio_views.philomania),
     path('phil', portfolio_views.philomania),
+
+    # Ominous Whoosh-er
+    path('whoosh/', whoosh_views.WhooshHomeView.as_view(), name='whoosh'),
+    path('whoosh', whoosh_views.WhooshHomeView.as_view(), name='whoosh'),
+    path('whoosh/process/<whoosh_id>/', whoosh_views.ProcessWhooshView.as_view(), name='process-whoosh'),
+    path('whoosh/process/<whoosh_id>', whoosh_views.ProcessWhooshView.as_view(), name='process-whoosh'),
+    path('whoosh/view/<whoosh_id>/', whoosh_views.WhooshViewer.as_view(), name='view-whoosh'),
+    path('whoosh/view/<whoosh_id>', whoosh_views.WhooshViewer.as_view(), name='view-whoosh'),
+
 
     # Admin Stuff
     path('admin/move-project-position/<project_id>/<direction>',

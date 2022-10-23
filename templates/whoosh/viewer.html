@@ -1,0 +1,11 @@
+{% extends 'whoosh/base.html' %}
+
+{% block content %}
+<div class="whoosh-viewer">
+    <video controls="" autoplay="">
+        <source src="{{ whoosh.s3_object_url }}" type="video/mp4">
+    </video>
+</div>
+
+<a href="{%  url 'whoosh' %}">Back</a>
+{% endblock %}

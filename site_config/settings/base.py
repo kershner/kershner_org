@@ -22,6 +22,7 @@ SECRET_KEY = PARAMETERS['csrf_secret_key']
 INSTALLED_APPS = [
     'apps.song',
     'apps.project',
+    'apps.whoosh',
     'storages',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -98,7 +99,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/New_York'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
@@ -126,6 +127,7 @@ MEDIAFILES_LOCATION = MAIN_APP_NAME
 MEDIA_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 BASE_S3_URL = 'https://{}/{}'.format(CLOUDFRONT_DOMAIN, AWS_LOCATION)
+FILE_UPLOAD_HANDLERS = ['django.core.files.uploadhandler.TemporaryFileUploadHandler']
 
 # Misc site stuff
 PROJECTS_PER_PAGE = 2
