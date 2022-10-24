@@ -1,10 +1,26 @@
 {% extends 'whoosh/base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="header">{[ OMINOUS WHOOSH-ER ]}</div>
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
     <input type="submit" value="Submit">
 </form>
+
+{% if recent_whooshes %}
+<div class="recent-whooshes">
+    <div class="subtitle">[recent whooshes]</div>
+
+    <div class="recent-whoosh-container">
+        {% for whoosh in recent_whooshes %}
+        <a href="{% url 'view-whoosh' whoosh_id=whoosh.id %}">
+            <div class="recent-whoosh">
+                <img src="{{ whoosh.s3_thumbnail_url }}">
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 {% endblock %}

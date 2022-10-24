@@ -2,10 +2,43 @@
 
 {% block content %}
 <div class="whoosh-viewer">
+    {% if not whoosh.expired %}
     <video controls="" autoplay="">
         <source src="{{ whoosh.s3_object_url }}" type="video/mp4">
     </video>
+
+    <div class="expiration">
+        This Whoosh will disappear in 24 hours.
+    </div>
+
+    <div class="whoosh-info">
+        <div class="info">
+            <div class="info-stat">
+                <div class="info-stat-label">Video Size:</div>
+                <div class="info-stat-value">{{ whoosh.video_width }}x{{ whoosh.video_height }}</div>
+            </div>
+
+            <div class="info-stat">
+                <div class="info-stat-label">Credit Text:</div>
+                <div class="info-stat-value">{{ whoosh.credit_text }}</div>
+            </div>
+
+            <div class="info-stat">
+                <div class="info-stat-label">Uploaded:</div>
+                <div class="info-stat-value">{{ whoosh.created }}</div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="expiration">
+        This Whoosh has disappeared into the trees.
+    </div>
+    {% endif %}
 </div>
 
-<a href="{%  url 'whoosh' %}">Back</a>
+<a href="{%  url 'whoosh' %}">
+    <div class="back-link">
+        Back
+    </div>
+</a>
 {% endblock %}

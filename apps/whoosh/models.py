@@ -23,14 +23,14 @@ class Whoosh(models.Model):
     mute_original = models.BooleanField(default=False)
     processed = models.DateTimeField(null=True, blank=True)
     processed_video = models.FileField(null=True, blank=True, upload_to=whoosh_processed)
-
+    thumbnail = models.FileField(null=True, blank=True, upload_to=whoosh_processed)
     user_agent = models.TextField(null=True, blank=True)
     video_data = models.TextField(null=True, blank=True)
 
     @property
-    def created_formatted(self):
-        strftime_format = '%m/%d/%Y'
-        return self.created.strftime(strftime_format)
+    def expired(self):
+        time_since_processed = timezone.now() - self.processed
+        return time_since_processed.days == 1
 
     @property
     def uploaded_s3_key(self):
@@ -41,6 +41,10 @@ class Whoosh(models.Model):
         return 'static/{}'.format(str(self.processed_video))
 
     @property
+    def thumbnail_key(self):
+        return 'static/{}'.format(str(self.thumbnail))
+
+    @property
     def s3_upload_path(self):
         return 'whoosh/uploads/'
 
@@ -49,9 +53,17 @@ class Whoosh(models.Model):
         return 'whoosh/processed/'
 
     @property
-    def s3_object_url(self):
+    def base_s3_url(self):
         params = util.get_parameters()
-        return 'https://{}.s3.us-east-2.amazonaws.com/{}'.format(params['s3_bucket'], self.processed_s3_key)
+        return 'https://{}.s3.us-east-2.amazonaws.com/'.format(params['s3_bucket'])
+
+    @property
+    def s3_object_url(self):
+        return '{}{}'.format(self.base_s3_url, self.processed_s3_key)
+
+    @property
+    def s3_thumbnail_url(self):
+        return '{}{}'.format(self.base_s3_url, self.thumbnail_key)
 
     @property
     def video_height(self):
@@ -84,7 +96,7 @@ class Whoosh(models.Model):
         verbose_name_plural = 'Whooshes'
 
     def __str__(self):
-        return 'Whoosh ID: {}, created {}'.format(self.id, self.created_formatted)
+        return 'Whoosh ID: {}, created {}'.format(self.id, self.created)
 
 
 @receiver(pre_delete, sender=Whoosh)
@@ -92,3 +104,4 @@ def remove_s3_files(sender, instance, **kwargs):
     util.remove_key_from_s3(instance.uploaded_s3_key)
     if instance.processed:
         util.remove_key_from_s3(instance.processed_s3_key)
+        util.remove_key_from_s3(instance.thumbnail_key)

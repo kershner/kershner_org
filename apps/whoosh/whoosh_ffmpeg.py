@@ -43,6 +43,24 @@ def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
     return ffmpeg_result
 
 
+def run_whoosh_thumbnail_ffmpeg(video_filename, thumbnail_output_filename):
+    # Generate thumbnail
+    ffmpeg_thumbnail_command = 'ffmpeg ' \
+                               '-ss {} ' \
+                               '-i {} ' \
+                               '-vframes 1 ' \
+                               '-f mjpeg ' \
+                               '-vf ' \
+                               'scale=640:-2:force_original_aspect_ratio=decrease {}'.format(5,
+                                                                                             video_filename,
+                                                                                             thumbnail_output_filename)
+    ffmpeg_thumbnail_result = subprocess.run(ffmpeg_thumbnail_command,
+                                             stdout=subprocess.PIPE,
+                                             stderr=subprocess.PIPE,
+                                             universal_newlines=True)
+    return ffmpeg_thumbnail_result
+
+
 def get_complex_filter_str(whoosh):
     source_mix = 1.0
     if whoosh.mute_original:

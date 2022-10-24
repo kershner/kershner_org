@@ -20,5 +20,3 @@ site_config/__init__.py
 *.csr
 site_config/certs/
 apps/whoosh/migrations/
-static/audio/*
-static/img/whoosh/

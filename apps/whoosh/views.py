@@ -7,6 +7,7 @@ from django.shortcuts import redirect
 from django.utils import timezone
 from . import whoosh_ffmpeg
 from utility import util
+import datetime
 import tempfile
 import os
 
@@ -16,8 +17,11 @@ class WhooshHomeView(View):
     form = WhooshForm()
 
     def get(self, request):
+        one_day_ago = timezone.now() - datetime.timedelta(days=1)
+        recent_whooshes = Whoosh.objects.filter(processed__gte=one_day_ago).order_by('-processed').all()
         ctx = {
-            'form': self.form
+            'form': self.form,
+            'recent_whooshes': recent_whooshes
         }
         return TemplateResponse(request, self.template, ctx)
 
@@ -42,6 +46,7 @@ class ProcessWhooshView(View):
         with tempfile.NamedTemporaryFile(delete=False) as f:
             s3.download_fileobj(params['s3_bucket'], whoosh.uploaded_s3_key, f)
             output_filename = '{}.mp4'.format(f.name)
+            thumbnail_filename = '{}.jpeg'.format(f.name)
 
             # Get video details with FFProbe
             ffprobe_result = whoosh_ffmpeg.ffprobe(f.name)
@@ -51,15 +56,23 @@ class ProcessWhooshView(View):
             # Process video with FFMPEG
             whoosh_ffmpeg.run_whoosh_ffmpeg(whoosh, f.name, output_filename)
 
-            # Save processed video to model and upload to S3
+            # Generate thumbnail
+            whoosh_ffmpeg.run_whoosh_thumbnail_ffmpeg(output_filename, thumbnail_filename)
+
+            # Save video and thumbnail to model
+            whoosh.thumbnail.save(thumbnail_filename, File(open(thumbnail_filename, 'rb')))
             whoosh.processed_video.save(output_filename, File(open(output_filename, 'rb')))
+
             whoosh.processed = timezone.now()
+
+            # Video/thumbnail get uploaded to S3 on save()
             whoosh.save()
 
             # Cleanup local files
             f.close()
             os.unlink(f.name)
             os.unlink(output_filename)
+            os.unlink(thumbnail_filename)
 
             # Delete original uploaded file from S3
             util.remove_key_from_s3(whoosh.uploaded_s3_key)

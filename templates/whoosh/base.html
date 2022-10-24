@@ -1,24 +1,31 @@
 {% load portfolio_tags %}
+{% load static %}
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ominous Whoosher</title>
+    <title>Ominous Whoosh-er</title>
 
     <!-- Favicon -->
-    <link rel="shortcut icon" href="{% settings_value "BASE_S3_URL" %}/img/favicon/phil_favicon.ico" type="image/x-icon">
-    <link rel="icon" href="{% settings_value "BASE_S3_URL" %}/img/favicon/phil_favicon.ico" type="image/x-icon">
-
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css?family=Quicksand&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="{% settings_value "BASE_S3_URL" %}/img/favicon/whoosh_favicon.ico" type="image/x-icon">
+    <link rel="icon" href="{% settings_value "BASE_S3_URL" %}/img/favicon/whoosh_favicon.ico" type="image/x-icon">
 
     <!-- CSS -->
     <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/whoosh.css">
 </head>
 <body>
+    <div class="inside-a-dream">
+        <img src="{% static 'img/whoosh/live_inside_a_dream.png' %}">
+    </div>
+
     <div class="whoosh-wrapper">
+        <div class="subtitle">
+            <a href="{% url 'whoosh' %}">
+                [ominous whoosh-er]
+            </a>
+        </div>
         {% block content %}{% endblock %}
     </div>
 
