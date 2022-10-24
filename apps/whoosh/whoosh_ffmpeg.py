@@ -65,7 +65,7 @@ def get_complex_filter_str(whoosh):
     filter_str = ''
 
     if whoosh.black_and_white:
-        filter_str = '[0:v]format=gray;'
+        filter_str = '[0:v]format=gray[bw];'
 
     source_mix = 1.0
     if whoosh.mute_original:
@@ -75,7 +75,10 @@ def get_complex_filter_str(whoosh):
 
     drawtext_str = None
     if whoosh.credit_text:
-        drawtext_str = '[0]{}'.format(get_formatted_credit_text(whoosh))
+        vid_output_name = '[0]'
+        if whoosh.black_and_white:
+            vid_output_name = '[bw]'
+        drawtext_str = '{}{}'.format(vid_output_name, get_formatted_credit_text(whoosh))
 
     if drawtext_str:
         filter_str = '{};{}'.format(filter_str, drawtext_str)
@@ -112,18 +115,17 @@ def get_formatted_credit_text(whoosh):
 
 
 def get_credit_text_filter(text, video_width):
-    # font_size = "(w/14)"
-    font_size = "72"
+    font_size = '72'
     if video_width < 1600:
-        font_size = "62"
+        font_size = '62'
     if video_width < 1000:
-        font_size = "42"
+        font_size = '42'
     if video_width < 600:
-        font_size = "28"
+        font_size = '28'
     if video_width < 300:
-        font_size = "18"
+        font_size = '18'
 
-    return get_drawtext_filter(text, font_size=font_size, x="(w-text_w)/2", y="(h/1.75)")
+    return get_drawtext_filter(text, font_size=font_size, x='(w-text_w)/2', y='(h/1.75)')
 
 
 def get_drawtext_filter(text, font_size, x, y):

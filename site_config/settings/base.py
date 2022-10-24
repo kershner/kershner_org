@@ -139,3 +139,12 @@ UNSPLASH_API_URL = 'https://api.unsplash.com/'
 PHILOMANIA_BACKGROUNDS_COLLECTION_ID = 827743
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+# Redis config
+REDIS_HOST = PARAMETERS['redis_host']
+REDIS_PORT = PARAMETERS['redis_port']
+
+# Celery config
+BROKER_URL = 'redis://{}:{}'.format(PARAMETERS['redis_host'], PARAMETERS['redis_port'])
+CELERY_RESULT_BACKEND = 'redis://{}:{}'.format(PARAMETERS['redis_host'], PARAMETERS['redis_port'])
+BROKER_TRANSPORT = 'redis'

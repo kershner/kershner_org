@@ -20,8 +20,6 @@ urlpatterns = [
     # Ominous Whoosh-er
     path('whoosh/', whoosh_views.WhooshHomeView.as_view(), name='whoosh'),
     path('whoosh', whoosh_views.WhooshHomeView.as_view(), name='whoosh'),
-    path('whoosh/process/<whoosh_id>/', whoosh_views.ProcessWhooshView.as_view(), name='process-whoosh'),
-    path('whoosh/process/<whoosh_id>', whoosh_views.ProcessWhooshView.as_view(), name='process-whoosh'),
     path('whoosh/view/<whoosh_id>/', whoosh_views.WhooshViewer.as_view(), name='view-whoosh'),
     path('whoosh/view/<whoosh_id>', whoosh_views.WhooshViewer.as_view(), name='view-whoosh'),
 
