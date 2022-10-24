@@ -137,3 +137,5 @@ UNSPLASH_ACCESS_KEY = PARAMETERS['unsplash_access_key']
 UNSPLASH_SECRET_KEY = PARAMETERS['unsplash_secret_key']
 UNSPLASH_API_URL = 'https://api.unsplash.com/'
 PHILOMANIA_BACKGROUNDS_COLLECTION_ID = 827743
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
