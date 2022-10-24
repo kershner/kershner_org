@@ -62,11 +62,16 @@ def run_whoosh_thumbnail_ffmpeg(video_filename, thumbnail_output_filename):
 
 
 def get_complex_filter_str(whoosh):
+    filter_str = ''
+
+    if whoosh.black_and_white:
+        filter_str = '[0:v]format=gray;'
+
     source_mix = 1.0
     if whoosh.mute_original:
         source_mix = 0.0
 
-    filter_str = '[0:a]volume={}[vol];[vol][1:a]amerge[a]'.format(source_mix)
+    filter_str = '{}[0:a]volume={}[vol];[vol][1:a]amerge[a]'.format(filter_str, source_mix)
 
     drawtext_str = None
     if whoosh.credit_text:

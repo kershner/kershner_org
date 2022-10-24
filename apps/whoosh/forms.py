@@ -16,4 +16,4 @@ class WhooshForm(ModelForm):
     class Meta:
         model = Whoosh
         widgets = {'source_video': FileInput(attrs={'accept': 'video/mp4,video/quicktime'})}
-        fields = ['source_video', 'credit_text', 'mute_original', 'user_agent']
+        fields = ['source_video', 'credit_text', 'mute_original', 'black_and_white', 'user_agent']

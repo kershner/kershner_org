@@ -2,7 +2,7 @@ let whoosh = {
 };
 
 whoosh.init = function() {
-    whoosh.populateUserAgent();
+
 };
 
 

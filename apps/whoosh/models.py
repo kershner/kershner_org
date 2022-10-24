@@ -21,6 +21,7 @@ class Whoosh(models.Model):
                                     validators=[FileExtensionValidator(allowed_extensions=['mp4', 'mov'])])
     credit_text = models.CharField(null=True, blank=True, max_length=50)
     mute_original = models.BooleanField(default=False)
+    black_and_white = models.BooleanField(default=False)
     processed = models.DateTimeField(null=True, blank=True)
     processed_video = models.FileField(null=True, blank=True, upload_to=whoosh_processed)
     thumbnail = models.FileField(null=True, blank=True, upload_to=whoosh_processed)
