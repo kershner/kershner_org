@@ -1,6 +1,10 @@
 from django.contrib.staticfiles import finders
 import subprocess
+import logging
 import math
+
+
+logger = logging.getLogger('whoosh.whoosh_ffmpeg')
 
 
 def ffprobe(file_path):
@@ -73,22 +77,22 @@ def get_complex_filter_str(whoosh):
 
     filter_str = '{}[0:a]volume={}[vol];[vol][1:a]amerge[a]'.format(filter_str, source_mix)
 
-    drawtext_str = None
-    if whoosh.credit_text:
-        vid_output_name = '[0]'
-        if whoosh.black_and_white:
-            vid_output_name = '[bw]'
-        drawtext_str = '{}{}'.format(vid_output_name, get_formatted_credit_text(whoosh))
+    vid_output_name = '[0]'
+    if whoosh.black_and_white:
+        vid_output_name = '[bw]'
 
-    if drawtext_str:
-        filter_str = '{};{}'.format(filter_str, drawtext_str)
+    drawtext_str = '{}{}'.format(vid_output_name, get_formatted_credit_text(whoosh))
 
-    return filter_str
+    return '{};{}'.format(filter_str, drawtext_str)
 
 
 # Split the text into multiple lines if it's too long
 def get_formatted_credit_text(whoosh):
-    word_list = whoosh.credit_text.upper().split(' ')
+    if whoosh.credit_text:
+        word_list = whoosh.credit_text.upper().split(' ')
+    else:
+        word_list = [' ']
+
     num_words = len(word_list)
     word_limit = math.ceil(whoosh.video_width / (whoosh.video_width / 4))
     num_lines = math.ceil(num_words / word_limit)

@@ -54,3 +54,11 @@ def create_whoosh(whoosh_id):
 
         # Delete original uploaded file from S3
         util.remove_key_from_s3(whoosh.uploaded_s3_key)
+
+
+@app.task(name='delete-whoosh-media')
+def delete_whoosh_media(uploaded_s3_key, processed_s3_key, thumbnail_key):
+    logger.info('\n============ Running delete_whoosh_media as Celery task....')
+    util.remove_key_from_s3(uploaded_s3_key)
+    util.remove_key_from_s3(processed_s3_key)
+    util.remove_key_from_s3(thumbnail_key)

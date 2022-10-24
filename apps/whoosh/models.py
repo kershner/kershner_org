@@ -1,4 +1,5 @@
 from django.core.validators import FileExtensionValidator
+from portfolio.tasks import delete_whoosh_media
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
@@ -102,7 +103,4 @@ class Whoosh(models.Model):
 
 @receiver(pre_delete, sender=Whoosh)
 def remove_s3_files(sender, instance, **kwargs):
-    util.remove_key_from_s3(instance.uploaded_s3_key)
-    if instance.processed:
-        util.remove_key_from_s3(instance.processed_s3_key)
-        util.remove_key_from_s3(instance.thumbnail_key)
+    delete_whoosh_media.delay(instance.uploaded_s3_key, instance.processed_s3_key, instance.thumbnail_key)
