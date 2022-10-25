@@ -64,3 +64,49 @@ function detectCollision(htmlElementA, htmlElementB) {
         (aRect.left > (bRect.left + bRect.width))
     );
 }
+
+function fetchWrapper(endpoint, method, params, headers={}, callback) {
+    var callParams = {
+        headers     : headers,
+        method      : method,
+        credentials : 'include',
+        mode        : 'same-origin'
+    };
+    if (params instanceof FormData) {
+        callParams['body'] = params
+    } else {
+        if (method.toLowerCase() === 'post') {
+            callParams['body'] = JSON.stringify(params);
+        }
+    }
+
+    fetch(endpoint, callParams)
+    .then((response) => {
+        return response.text();
+    })
+    .then((data) => {
+        let response = JSON.parse(data);
+        callback(response);
+    })
+    .catch(function(ex) {
+        console.log(ex);
+    });
+}
+
+
+// JavaScript function to get cookie by name; retrieved from https://docs.djangoproject.com/en/3.2/ref/csrf/
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}

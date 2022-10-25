@@ -2,11 +2,18 @@
 {% load static %}
 
 {% block content %}
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Submit">
-</form>
+<div class="upload-form">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Submit">
+    </form>
+
+    <div class="upload-preview hidden">
+        <div class="instructions">Scrub the video to choose a starting time.</div>
+        <video id="upload-preview" controls=""></video>
+    </div>
+</div>
 
 {% if recent_whooshes %}
 <div class="recent-whooshes">
@@ -28,5 +35,6 @@
 {% block extra_js %}
 <script type="text/javascript">
     whoosh.populateUserAgent();
+    whoosh.uploadEditor();
 </script>
 {% endblock %}

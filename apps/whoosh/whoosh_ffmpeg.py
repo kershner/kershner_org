@@ -27,9 +27,12 @@ def ffprobe(file_path):
 
 
 def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
+    duration = 15  # seconds
     audio_path = finders.find('audio/laura_palmer_theme.mp3')
     ffmpeg_cmd = ['ffmpeg',
                   '-y',
+                  '-ss', '{}'.format(whoosh.start_time),
+                  '-t', '{}'.format(duration),
                   '-i', '{}'.format(downloaded_filename),
                   '-i', '{}'.format(audio_path),
                   '-filter_complex', get_complex_filter_str(whoosh),
@@ -55,7 +58,7 @@ def run_whoosh_thumbnail_ffmpeg(video_filename, thumbnail_output_filename):
                                '-vframes 1 ' \
                                '-f mjpeg ' \
                                '-vf ' \
-                               'scale=640:-2:force_original_aspect_ratio=decrease {}'.format(5,
+                               'scale=640:-2:force_original_aspect_ratio=decrease {}'.format(2,
                                                                                              video_filename,
                                                                                              thumbnail_output_filename)
     ffmpeg_thumbnail_result = subprocess.run(ffmpeg_thumbnail_command,
@@ -69,7 +72,7 @@ def get_complex_filter_str(whoosh):
     filter_str = ''
 
     if whoosh.black_and_white:
-        filter_str = '[0:v]format=gray[bw];'
+        filter_str = '[0:v]hue=s=0[bw];'
 
     source_mix = 1.0
     if whoosh.mute_original:
@@ -119,15 +122,15 @@ def get_formatted_credit_text(whoosh):
 
 
 def get_credit_text_filter(text, video_width):
-    font_size = '72'
+    font_size = '48'
     if video_width < 1600:
-        font_size = '62'
-    if video_width < 1000:
         font_size = '42'
+    if video_width < 1000:
+        font_size = '32'
     if video_width < 600:
-        font_size = '28'
+        font_size = '20'
     if video_width < 300:
-        font_size = '18'
+        font_size = '14'
 
     return get_drawtext_filter(text, font_size=font_size, x='(w-text_w)/2', y='(h/1.75)')
 
@@ -139,10 +142,11 @@ def get_drawtext_filter(text, font_size, x, y):
                       ':font=Arial' \
                       ':text={}' \
                       ':borderw=1:bordercolor=0x33cc33' \
-                      ':shadowx=0:shadowy=3' \
+                      ':shadowx=0:shadowy=2' \
                       ':fontcolor=0x663333' \
                       ':fontsize={}' \
                       ':x={}' \
+                      ':line_spacing=10' \
                       ':y={}' \
                       ':alpha={}'.format(text, font_size, x, y, fadeout_filter)
     return drawtext_filter

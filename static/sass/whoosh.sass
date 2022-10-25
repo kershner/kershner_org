@@ -6,6 +6,9 @@ $whoosh-red: #d80452
 $whoosh-border: 1px solid $whoosh-white
 $small-font-size: 0.75rem
 
+.hidden
+  display: none !important
+
 body
   font-family: Arial, Helvetica, sans-serif
   background-color: $whoosh-black
@@ -24,6 +27,13 @@ textarea[name="user_agent"],
 label[for="id_user_agent"]
   display: none
 
+
+@keyframes shimmer
+  from
+    opacity: 0.0
+  to
+    opacity: 1.0
+
 .inside-a-dream
   position: absolute
   top: 0
@@ -31,9 +41,13 @@ label[for="id_user_agent"]
   object-fit: cover
   pointer-events: none
   z-index: -1
-  opacity: 1
+  opacity: 0
   -webkit-mask-image: linear-gradient(to bottom, black 75%, transparent 100%)
   mask-image: linear-gradient(to bottom, black 75%, transparent 100%)
+  animation-name: shimmer
+  animation-iteration-count: infinite
+  animation-duration: 10s
+  animation-direction: alternate
 
   img
     width: 100%
@@ -53,31 +67,73 @@ label[for="id_user_agent"]
     letter-spacing: 0.1rem
     text-shadow: rgb(0, 0, 0) 3px 0 0, rgb(0, 0, 0) 2.83487px 0.981584px 0, rgb(0, 0, 0) 2.35766px 1.85511px 0, rgb(0, 0, 0) 1.62091px 2.52441px 0, rgb(0, 0, 0) 0.705713px 2.91581px 0, rgb(0, 0, 0) -0.287171px 2.98622px 0, rgb(0, 0, 0) -1.24844px 2.72789px 0, rgb(0, 0, 0) -2.07227px 2.16926px 0, rgb(0, 0, 0) -2.66798px 1.37182px 0, rgb(0, 0, 0) -2.96998px 0.42336px 0, rgb(0, 0, 0) -2.94502px -0.571704px 0, rgb(0, 0, 0) -2.59586px -1.50383px 0, rgb(0, 0, 0) -1.96093px -2.27041px 0, rgb(0, 0, 0) -1.11013px -2.78704px 0, rgb(0, 0, 0) -0.137119px -2.99686px 0, rgb(0, 0, 0) 0.850987px -2.87677px 0, rgb(0, 0, 0) 1.74541px -2.43999px 0, rgb(0, 0, 0) 2.44769px -1.73459px 0, rgb(0, 0, 0) 2.88051px -0.838247px 0
 
-  form
-    display: inline-flex
-    flex-direction: column
-    font-size: 1rem
-    border: $whoosh-border
-    padding: .75rem
+  .upload-form
+    display: flex
 
-    p
-      display: flex
+    form
+      margin: .25rem .5rem
+      margin-left: 0
+      display: inline-flex
       flex-direction: column
-      margin: 0.5rem 0
+      font-size: 1rem
+      border: $whoosh-border
+      padding: .75rem
+
+      p
+        display: flex
+        flex-direction: column
+        margin: 0
+
+        input
+          margin-bottom: 1rem
+          margin-left: 0
+          align-self: flex-start
 
       input
-        margin-left: 0
-        align-self: flex-start
+        &[type="text"]
+          max-width: 95%
+          width: 100%
+        &[type="submit"]
+          align-self: flex-start
+          cursor: pointer
+          font-size: 1rem
 
-    input
-      &[type="text"]
-        max-width: 95%
+      #id_start_time,
+      label[for="id_start_time"]
+        display: none
+
+    .upload-preview
+      display: inline-flex
+      position: relative
+      margin: .25rem .5rem
+      margin-left: 0
+      padding: .75rem
+      max-width: 20rem
+      font-size: 1rem
+      border: $whoosh-border
+      overflow: hidden
+
+      .instructions
+        position: absolute
+        padding: 0.25rem
+        top: 0
+        left: 0
+        text-align: center
+        text-shadow: 1px 1px 2px $whoosh-black
+        font-size: .8rem
+        background-color: rgba($whoosh-black, 0.5)
         width: 100%
-      &[type="submit"]
-        align-self: flex-start
-        margin-top: -0.5rem
-        cursor: pointer
-        font-size: 1rem
+
+      video
+        max-height: 18rem
+        width: 100%
+        object-fit: cover
+
+    @media (max-width: 600px)
+      max-height: initial
+      flex-direction: column
+      .upload-preview
+        max-width: 100%
 
   .recent-whooshes
     margin-top: 3rem

@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="whoosh-viewer">
-    {% if not whoosh.expired %}
+    {% if whoosh.processed and not whoosh.expired %}
     <video controls="" autoplay="">
         <source src="{{ whoosh.s3_object_url }}" type="video/mp4">
     </video>
@@ -29,10 +29,10 @@
             </div>
         </div>
     </div>
+    {% elif not whoosh.processed %}
+    <div class="processing">Whoosh processing.</div>
     {% else %}
-    <div class="expiration">
-        This Whoosh has disappeared into the trees.
-    </div>
+    <div class="expired">This Whoosh has disappeared into the trees.</div>
     {% endif %}
 </div>
 
@@ -41,4 +41,13 @@
         Back
     </div>
 </a>
+{% endblock %}
+
+{% block extra_js %}
+    {% if not whoosh.processed %}
+    <script type="text/javascript">
+        whoosh.whooshViewerUrl = '{% url 'view-whoosh' whoosh_id=whoosh.id %}';
+        whoosh.checkWhooshProcessed();
+    </script>
+    {% endif %}
 {% endblock %}
