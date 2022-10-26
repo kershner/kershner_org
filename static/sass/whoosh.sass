@@ -5,9 +5,15 @@ $whoosh-black: #0a0a0a
 $whoosh-red: #d80452
 $whoosh-border: 1px solid $whoosh-white
 $small-font-size: 0.75rem
+$whoosh-text-shadow: 1px 1px 2px $whoosh-black
 
 .hidden
   display: none !important
+
+.active
+  border-color: $whoosh-red !important
+  img
+    opacity: 0.6
 
 body
   font-family: Arial, Helvetica, sans-serif
@@ -26,7 +32,6 @@ a
 textarea[name="user_agent"],
 label[for="id_user_agent"]
   display: none
-
 
 @keyframes shimmer
   from
@@ -65,10 +70,24 @@ label[for="id_user_agent"]
     margin-bottom: 0.5rem
     font-size: 2rem
     letter-spacing: 0.1rem
-    text-shadow: rgb(0, 0, 0) 3px 0 0, rgb(0, 0, 0) 2.83487px 0.981584px 0, rgb(0, 0, 0) 2.35766px 1.85511px 0, rgb(0, 0, 0) 1.62091px 2.52441px 0, rgb(0, 0, 0) 0.705713px 2.91581px 0, rgb(0, 0, 0) -0.287171px 2.98622px 0, rgb(0, 0, 0) -1.24844px 2.72789px 0, rgb(0, 0, 0) -2.07227px 2.16926px 0, rgb(0, 0, 0) -2.66798px 1.37182px 0, rgb(0, 0, 0) -2.96998px 0.42336px 0, rgb(0, 0, 0) -2.94502px -0.571704px 0, rgb(0, 0, 0) -2.59586px -1.50383px 0, rgb(0, 0, 0) -1.96093px -2.27041px 0, rgb(0, 0, 0) -1.11013px -2.78704px 0, rgb(0, 0, 0) -0.137119px -2.99686px 0, rgb(0, 0, 0) 0.850987px -2.87677px 0, rgb(0, 0, 0) 1.74541px -2.43999px 0, rgb(0, 0, 0) 2.44769px -1.73459px 0, rgb(0, 0, 0) 2.88051px -0.838247px 0
+    text-shadow: $whoosh-text-shadow
 
   .upload-form
-    display: flex
+    display: inline-flex
+    position: relative
+    overflow: hidden
+
+    .upload-in-progress
+      display: flex
+      position: absolute
+      width: 100%
+      height: 100%
+      background-color: rgba($whoosh-black, 0.9)
+      z-index: 1
+      align-items: center
+      justify-content: center
+      font-size: 1.25rem
+      text-shadow: $whoosh-text-shadow
 
     form
       margin: .25rem .5rem
@@ -119,7 +138,7 @@ label[for="id_user_agent"]
         top: 0
         left: 0
         text-align: center
-        text-shadow: 1px 1px 2px $whoosh-black
+        text-shadow: $whoosh-text-shadow
         font-size: .8rem
         background-color: rgba($whoosh-black, 0.5)
         width: 100%
@@ -156,9 +175,7 @@ label[for="id_user_agent"]
           width: 100%
 
         &:hover
-          border-color: $whoosh-red
-          img
-            opacity: 0.6
+          @extend .active
 
 .whoosh-viewer
   font-size: 1rem

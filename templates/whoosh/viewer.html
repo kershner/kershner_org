@@ -1,40 +1,8 @@
 {% extends 'whoosh/base.html' %}
 
 {% block content %}
-<div class="whoosh-viewer">
-    {% if whoosh.processed and not whoosh.expired %}
-    <video controls="" autoplay="">
-        <source src="{{ whoosh.s3_object_url }}" type="video/mp4">
-    </video>
-
-    <div class="expiration">
-        This Whoosh will disappear in 24 hours.
-    </div>
-
-    <div class="whoosh-info">
-        <div class="info">
-            <div class="info-stat">
-                <div class="info-stat-label">Video Size:</div>
-                <div class="info-stat-value">{{ whoosh.video_width }}x{{ whoosh.video_height }}</div>
-            </div>
-
-            <div class="info-stat">
-                <div class="info-stat-label">Credit Text:</div>
-                <div class="info-stat-value">{{ whoosh.credit_text }}</div>
-            </div>
-
-            <div class="info-stat">
-                <div class="info-stat-label">Uploaded:</div>
-                <div class="info-stat-value">{{ whoosh.created }}</div>
-            </div>
-        </div>
-    </div>
-    {% elif not whoosh.processed %}
-    <div class="processing">Whoosh processing.</div>
-    {% else %}
-    <div class="expired">This Whoosh has disappeared into the trees.</div>
-    {% endif %}
-</div>
+    {% include 'whoosh/includes/whoosh_viewer.html' %}
+    {% include 'whoosh/includes/recent_whooshes.html' %}
 
 <a href="{%  url 'whoosh' %}">
     <div class="back-link">
@@ -44,9 +12,9 @@
 {% endblock %}
 
 {% block extra_js %}
-    {% if not whoosh.processed %}
+    {% if not selected_whoosh.processed %}
     <script type="text/javascript">
-        whoosh.whooshViewerUrl = '{% url 'view-whoosh' whoosh_id=whoosh.id %}';
+        whoosh.whooshViewerUrl = '{% url 'view-whoosh' whoosh_id=selected_whoosh.id %}';
         whoosh.checkWhooshProcessed();
     </script>
     {% endif %}

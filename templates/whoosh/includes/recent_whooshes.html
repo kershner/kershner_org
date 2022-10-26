@@ -1,0 +1,15 @@
+{% if recent_whooshes %}
+<div class="recent-whooshes">
+    <div class="subtitle">[recent whooshes]</div>
+
+    <div class="recent-whoosh-container">
+        {% for whoosh in recent_whooshes %}
+        <a href="{% url 'view-whoosh' whoosh_id=whoosh.id %}">
+            <div class="recent-whoosh {% if selected_whoosh.id == whoosh.id %}active{% endif %}">
+                <img src="{{ whoosh.cloudfront_thumbnail_url }}">
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

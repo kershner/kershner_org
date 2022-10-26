@@ -1,0 +1,16 @@
+<div class="upload-form">
+    <div class="upload-in-progress hidden">
+        <div>Uploading...</div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Submit">
+    </form>
+
+    <div class="upload-preview hidden">
+        <div class="instructions">Scrub the video to choose a starting time.</div>
+        <video id="upload-preview" controls=""></video>
+    </div>
+</div>

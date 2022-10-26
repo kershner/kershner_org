@@ -3,6 +3,7 @@ from portfolio.tasks import delete_whoosh_media
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
+from django.conf import settings
 from django.db import models
 from utility import util
 import json
@@ -38,15 +39,15 @@ class Whoosh(models.Model):
         return False
 
     @property
-    def uploaded_s3_key(self):
+    def uploaded_video_s3_key(self):
         return 'static/{}'.format(str(self.source_video))
 
     @property
-    def processed_s3_key(self):
+    def processed_video_s3_key(self):
         return 'static/{}'.format(str(self.processed_video))
 
     @property
-    def thumbnail_key(self):
+    def thumbnail_s3_key(self):
         return 'static/{}'.format(str(self.thumbnail))
 
     @property
@@ -58,17 +59,12 @@ class Whoosh(models.Model):
         return 'whoosh/processed/'
 
     @property
-    def base_s3_url(self):
-        params = util.get_parameters()
-        return 'https://{}.s3.us-east-2.amazonaws.com/'.format(params['s3_bucket'])
+    def cloudfront_video_url(self):
+        return 'https://{}/{}'.format(settings.CLOUDFRONT_DOMAIN, self.processed_video_s3_key)
 
     @property
-    def s3_object_url(self):
-        return '{}{}'.format(self.base_s3_url, self.processed_s3_key)
-
-    @property
-    def s3_thumbnail_url(self):
-        return '{}{}'.format(self.base_s3_url, self.thumbnail_key)
+    def cloudfront_thumbnail_url(self):
+        return 'https://{}/{}'.format(settings.CLOUDFRONT_DOMAIN, self.thumbnail_s3_key)
 
     @property
     def video_height(self):
@@ -106,4 +102,4 @@ class Whoosh(models.Model):
 
 @receiver(pre_delete, sender=Whoosh)
 def remove_s3_files(sender, instance, **kwargs):
-    delete_whoosh_media.delay(instance.uploaded_s3_key, instance.processed_s3_key, instance.thumbnail_key)
+    delete_whoosh_media.delay(instance.uploaded_video_s3_key, instance.processed_video_s3_key, instance.thumbnail_s3_key)
