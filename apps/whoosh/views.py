@@ -12,18 +12,22 @@ import datetime
 class WhooshHomeView(View):
     template = "whoosh/home.html"
     form = WhooshForm()
-    one_day_ago = timezone.now() - datetime.timedelta(days=1)
-    recent_whooshes = Whoosh.objects.filter(processed__gte=one_day_ago).order_by('-processed').all()
+    whoosh_limit = 60
 
     def get(self, request):
+        one_day_ago = timezone.now() - datetime.timedelta(days=1)
+        recent_whooshes = Whoosh.objects.filter(processed__gte=one_day_ago).order_by('-id').all()[:self.whoosh_limit]
         ctx = {
             'form': self.form,
-            'recent_whooshes': self.recent_whooshes
+            'recent_whooshes': recent_whooshes
         }
         return TemplateResponse(request, self.template, ctx)
 
     def post(self, request):
+        one_day_ago = timezone.now() - datetime.timedelta(days=1)
+        recent_whooshes = Whoosh.objects.filter(processed__gte=one_day_ago).order_by('-id').all()[:self.whoosh_limit]
         self.form = WhooshForm(request.POST, request.FILES)
+
         if self.form.is_valid():
             self.form.save()
             create_whoosh.delay(self.form.instance.id)
@@ -31,7 +35,7 @@ class WhooshHomeView(View):
 
         ctx = {
             'form': self.form,
-            'recent_whooshes': self.recent_whooshes
+            'recent_whooshes': recent_whooshes
         }
         return TemplateResponse(request, self.template, ctx)
 

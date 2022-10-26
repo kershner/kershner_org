@@ -46,6 +46,7 @@ def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
                                    universal_newlines=True)
+    print('\n\n\n\nffmpeg_cmd: {}\n\n\n\n'. format(ffmpeg_cmd))
     # print(ffmpeg_result)
     return ffmpeg_result
 
@@ -71,7 +72,9 @@ def run_whoosh_thumbnail_ffmpeg(video_filename, thumbnail_output_filename):
 def get_complex_filter_str(whoosh):
     filter_str = ''
 
+    vid_output_name = '[0]'
     if whoosh.black_and_white:
+        vid_output_name = '[bw]'
         filter_str = '[0:v]hue=s=0[bw];'
 
     source_mix = 1.0
@@ -80,62 +83,68 @@ def get_complex_filter_str(whoosh):
 
     filter_str = '{}[0:a]volume={}[vol];[vol][1:a]amerge[a]'.format(filter_str, source_mix)
 
-    vid_output_name = '[0]'
-    if whoosh.black_and_white:
-        vid_output_name = '[bw]'
-
-    drawtext_str = '{}{}'.format(vid_output_name, get_formatted_credit_text(whoosh))
+    formatted_text = get_formatted_credit_text(whoosh)
+    drawtext_str = '{}{}'.format(vid_output_name, get_drawtext_filter(formatted_text))
 
     return '{};{}'.format(filter_str, drawtext_str)
 
 
 # Split the text into multiple lines if it's too long
 def get_formatted_credit_text(whoosh):
+    word_list = [' ']
     if whoosh.credit_text:
         word_list = whoosh.credit_text.upper().split(' ')
-    else:
-        word_list = [' ']
 
+    split_lines, max_line_length = get_text_with_line_breaks(word_list)
+    padded_lines = get_padded_text_lines(split_lines, max_line_length)
+
+    return '\r'.join(padded_lines)
+
+
+# Split text into multiple lines based on arbitrary word_per_line limit
+# Returns list of lines and max_line_length, which is used to determine padding
+def get_text_with_line_breaks(word_list):
+    word_limit_per_line = 3
     num_words = len(word_list)
-    word_limit = math.ceil(whoosh.video_width / (whoosh.video_width / 4))
-    num_lines = math.ceil(num_words / word_limit)
-    lines = []
+    num_lines = math.ceil(num_words / word_limit_per_line)
     index_pointer = 0
-    first_line_length = 0
-    for index, line in enumerate(range(0, num_lines)):
-        new_line = ' '.join(word_list[index_pointer:index_pointer + word_limit])
-        if index == 0:
-            first_line_length = len(new_line)
-        else:
-            line_length = len(new_line)
-            line_diff = abs(first_line_length - line_length)
-            if line_diff % 2 != 0:
-                line_diff += 1
+    max_line_length = 0
+    split_lines = []
+    for num in enumerate(range(0, num_lines)):
+        new_line = ' '.join(word_list[index_pointer:index_pointer + word_limit_per_line])
 
-            padding = ' '.join([' ' for x in range(0, math.ceil(line_diff / 2) - 1)])
-            new_line = '{}{}{}'.format(padding, new_line, padding)
+        if len(new_line) > max_line_length:
+            max_line_length = len(new_line)
 
-        lines.append(new_line)
-        index_pointer += word_limit
+        split_lines.append(new_line)
+        index_pointer += word_limit_per_line
 
-    return get_credit_text_filter('\r'.join(lines), whoosh.video_width)
+    return split_lines, max_line_length
 
 
-def get_credit_text_filter(text, video_width):
-    font_size = '48'
-    if video_width < 1600:
-        font_size = '42'
-    if video_width < 1000:
-        font_size = '32'
-    if video_width < 600:
-        font_size = '20'
-    if video_width < 300:
-        font_size = '14'
+# Add padding (space character) to the start and end of lines that are less than max_line_length
+# This is a way to fake center-aligned text
+def get_padded_text_lines(split_lines, max_line_length):
+    padded_lines = []
+    for line in split_lines:
+        line_length = len(line)
 
-    return get_drawtext_filter(text, font_size=font_size, x='(w-text_w)/2', y='(h/1.75)')
+        line_diff = abs(max_line_length - line_length)
+        if line_diff % 2 != 0:
+            line_diff += 1
+
+        padding_len = math.floor(line_diff / 2)
+        padding = ' '.join([' ' for x in range(0, padding_len)])
+        if line_length == max_line_length:
+            padding = ''
+
+        new_line = '{}{}{}'.format(padding, line, padding)
+        padded_lines.append(new_line)
+
+    return padded_lines
 
 
-def get_drawtext_filter(text, font_size, x, y):
+def get_drawtext_filter(text):
     # At 2 seconds, fade in over 2 seconds, display text for 5 seconds, then fade out over 2 seconds
     fadeout_filter = comma_escape('if(lt(t,2),0,if(lt(t,4),(t-2)/2,if(lt(t,9),1,if(lt(t,11),(2-(t-9))/2,0))))')
     drawtext_filter = 'drawtext=' \
@@ -144,11 +153,11 @@ def get_drawtext_filter(text, font_size, x, y):
                       ':borderw=1:bordercolor=0x33cc33' \
                       ':shadowx=0:shadowy=2' \
                       ':fontcolor=0x663333' \
-                      ':fontsize={}' \
-                      ':x={}' \
+                      ':fontsize=w/20' \
+                      ':x=(w-text_w)/2' \
                       ':line_spacing=10' \
-                      ':y={}' \
-                      ':alpha={}'.format(text, font_size, x, y, fadeout_filter)
+                      ':y=(h/1.75)' \
+                      ':alpha={}'.format(text, fadeout_filter)
     return drawtext_filter
 
 
