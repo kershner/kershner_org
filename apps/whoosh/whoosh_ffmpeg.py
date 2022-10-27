@@ -27,26 +27,28 @@ def ffprobe(file_path):
 
 
 def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
-    duration = 15  # seconds
-    audio_path = finders.find('audio/laura_palmer_theme.mp3')
+    duration = '15'  # seconds
+    if whoosh.slow_motion:
+        duration = '13.5'  # shorten clip overall because slomo causes slight audio sync issue
+
+    audio_path = finders.find('audio/laura_palmer_theme_edit_2.mp3')
     ffmpeg_cmd = ['ffmpeg',
                   '-y',
                   '-ss', '{}'.format(whoosh.start_time),
-                  '-t', '{}'.format(duration),
                   '-i', '{}'.format(downloaded_filename),
                   '-i', '{}'.format(audio_path),
                   '-filter_complex', get_complex_filter_str(whoosh),
-                  '-map', '0:v',
+                  '-map', '[filtered_video]',
                   '-map', '[a]',
                   '-ac', '2',
                   '-crf', '17',
-                  '-t', '15', '{}'.format(output_filename)]
+                  '-t', '{}'.format(duration),
+                  '{}'.format(output_filename)]
 
     ffmpeg_result = subprocess.run(ffmpeg_cmd,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
                                    universal_newlines=True)
-    # print(ffmpeg_result)
     return ffmpeg_result
 
 
@@ -73,23 +75,53 @@ def run_whoosh_thumbnail_ffmpeg(video_filename, thumbnail_output_filename):
 
 
 def get_complex_filter_str(whoosh):
+    width = whoosh.video_width
+    height = whoosh.video_height
+
+    vid_output_name = '0'
     filter_str = ''
 
-    vid_output_name = '[0]'
-    if whoosh.black_and_white:
-        vid_output_name = '[bw]'
-        filter_str = '[0:v]hue=s=0[bw];'
+    # Cropping
+    if width and height and whoosh.crop_4_3:
+        aspect_ratio = [2, 3]
+        crop_w = height * aspect_ratio[0] / aspect_ratio[1]
+        if crop_w <= width:
+            crop_value = 'crop=ih/{}*{}:ih'.format(aspect_ratio[0], aspect_ratio[1])
+        else:
+            crop_value = 'crop=iw:iw*({}/{})'.format(aspect_ratio[0], aspect_ratio[1])
 
+        dar_value = 'setdar=dar={}/{}'.format(aspect_ratio[0], aspect_ratio[1])
+        filter_str = '[0:v]{}[cropped];[cropped]{}[{}];'.format(crop_value, dar_value, vid_output_name)
+
+    # Black and white
+    if whoosh.black_and_white:
+        new_vid_output = 'bw'
+        filter_str = '{}[{}]hue=s=0[{}];'.format(filter_str, vid_output_name, new_vid_output)
+        vid_output_name = new_vid_output
+
+    # Zoom/pan
+    if whoosh.slow_zoom:
+        new_vid_output = 'zoompan'
+        filter_str = "{}[{}]zoompan=z='min(max(zoom,pzoom)+0.0015,1.5)':d=0[{}];".format(filter_str, vid_output_name,
+                                                                                         new_vid_output)
+        vid_output_name = new_vid_output
+
+    # Slow mo
+    if whoosh.slow_motion:
+        new_vid_output = 'slomo'
+        filter_str = '{}[{}]setpts=3*PTS[{}];'.format(filter_str, vid_output_name, new_vid_output)
+        vid_output_name = new_vid_output
+
+    # Audio mixing
     source_mix = 1.0
     if whoosh.mute_original:
         source_mix = 0.0
 
-    filter_str = '{}[0:a]volume={}[vol];[vol][1:a]amerge[a]'.format(filter_str, source_mix)
-
+    filter_str = '[0:a]volume={}[vol];[vol][1:a]amerge[a];{}'.format(source_mix, filter_str)
     formatted_text = get_formatted_credit_text(whoosh)
-    drawtext_str = '{}{}'.format(vid_output_name, get_drawtext_filter(formatted_text))
+    drawtext_str = '[{}]{}'.format(vid_output_name, get_drawtext_filter(formatted_text))
 
-    return '{};{}'.format(filter_str, drawtext_str)
+    return '{}{}[filtered_video]'.format(filter_str, drawtext_str)
 
 
 # Split the text into multiple lines if it's too long

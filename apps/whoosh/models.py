@@ -24,6 +24,9 @@ class Whoosh(models.Model):
     credit_text = models.CharField(null=True, blank=True, max_length=50)
     mute_original = models.BooleanField(default=False)
     black_and_white = models.BooleanField(default=False)
+    crop_4_3 = models.BooleanField(default=False)
+    slow_motion = models.BooleanField(default=False)
+    slow_zoom = models.BooleanField(default=False)
     start_time = models.CharField(null=True, blank=True, max_length=8, default='00:00:00')
     processed = models.DateTimeField(null=True, blank=True)
     processed_video = models.FileField(null=True, blank=True, upload_to=whoosh_processed)
@@ -77,21 +80,34 @@ class Whoosh(models.Model):
             return self.video_dimensions['width']
 
     @property
+    def video_framerate(self):
+        framerate = 24
+        if self.video_stream_data:
+            fps = self.video_stream_data['r_frame_rate'].split('/')
+            framerate = float(fps[0]) / float(fps[1])
+        return framerate
+
+    @property
     def video_dimensions(self):
+        video_size = None
+        if self.video_stream_data:
+            video_size = {
+                'height': self.video_stream_data['height'],
+                'width': self.video_stream_data['width'],
+            }
+        return video_size
+
+    @property
+    def video_stream_data(self):
+        video_stream = None
         if self.video_data:
             streams = json.loads(self.video_data)['streams']
-            video_stream = None
             for stream in streams:
                 if stream['codec_type'] == 'video':
                     video_stream = stream
                     break
 
-            video_size = {
-                'height': video_stream['height'],
-                'width': video_stream['width'],
-            }
-            return video_size
-        return None
+        return video_stream
 
     class Meta:
         verbose_name_plural = 'Whooshes'
