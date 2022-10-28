@@ -14,7 +14,7 @@
 {% block extra_js %}
     {% if not selected_whoosh.processed %}
     <script type="text/javascript">
-        whoosh.whooshViewerUrl = '{% url 'view-whoosh' whoosh_id=selected_whoosh.id %}';
+        whoosh.whooshViewerUrl = '{% url 'view-whoosh' whoosh_id=selected_whoosh.uniq_id %}';
         whoosh.checkWhooshProcessed();
     </script>
     {% endif %}

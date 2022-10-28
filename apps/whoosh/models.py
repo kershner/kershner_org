@@ -1,11 +1,13 @@
+from django.db.models.signals import pre_delete, post_save
 from django.core.validators import FileExtensionValidator
 from portfolio.tasks import delete_whoosh_media
-from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
 from django.conf import settings
+from django.urls import reverse
 from django.db import models
 from utility import util
+from uuid import uuid4
 import json
 
 
@@ -18,6 +20,7 @@ def whoosh_processed(instance, filename):
 
 
 class Whoosh(models.Model):
+    uniq_id = models.CharField(null=True, max_length=100)
     created = models.DateTimeField(default=timezone.now)
     source_video = models.FileField(upload_to=whoosh_upload,
                                     validators=[FileExtensionValidator(allowed_extensions=['mp4', 'mov'])])
@@ -72,12 +75,12 @@ class Whoosh(models.Model):
     @property
     def video_height(self):
         if self.video_dimensions:
-            return self.video_dimensions['height']
+            return self.video_dimensions()['height']
 
     @property
     def video_width(self):
         if self.video_dimensions:
-            return self.video_dimensions['width']
+            return self.video_dimensions()['width']
 
     @property
     def can_be_cropped(self):
@@ -91,7 +94,6 @@ class Whoosh(models.Model):
             framerate = float(fps[0]) / float(fps[1])
         return framerate
 
-    @property
     def video_dimensions(self):
         video_size = None
         if self.video_stream_data:
@@ -113,11 +115,21 @@ class Whoosh(models.Model):
 
         return video_stream
 
+    def get_admin_url(self):
+        return reverse('admin:{}_{}_change'.format(self._meta.app_label, self._meta.model_name), args=(self.pk,))
+
     class Meta:
         verbose_name_plural = 'Whooshes'
 
     def __str__(self):
         return 'Whoosh ID: {}, created {}'.format(self.id, self.created)
+
+
+@receiver(post_save, sender=Whoosh)
+def generate_uniq_id(sender, instance, created, **kwargs):
+    if instance.id and not instance.uniq_id:
+        instance.uniq_id = uuid4().hex
+        instance.save()
 
 
 @receiver(pre_delete, sender=Whoosh)

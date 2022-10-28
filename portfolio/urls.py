@@ -22,6 +22,7 @@ urlpatterns = [
     path('whoosh', whoosh_views.WhooshHomeView.as_view(), name='whoosh'),
     path('whoosh/view/<whoosh_id>/', whoosh_views.WhooshViewer.as_view(), name='view-whoosh'),
     path('whoosh/view/<whoosh_id>', whoosh_views.WhooshViewer.as_view(), name='view-whoosh'),
+    path('whoosh/reprocess/<whoosh_id>', whoosh_views.reprocess_whoosh, name='reprocess-whoosh'),
 
 
     # Admin Stuff

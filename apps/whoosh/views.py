@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import user_passes_test
 from django.template.response import TemplateResponse
 from portfolio.tasks import create_whoosh
 from apps.whoosh.forms import WhooshForm
@@ -5,6 +6,7 @@ from django.views.generic import View
 from apps.whoosh.models import Whoosh
 from django.shortcuts import redirect
 from django.http import JsonResponse
+from django.contrib import messages
 from django.utils import timezone
 import datetime
 
@@ -26,7 +28,7 @@ class WhooshHomeView(View):
         if self.form.is_valid():
             self.form.save()
             create_whoosh.delay(self.form.instance.id)
-            return redirect('view-whoosh', whoosh_id=self.form.instance.id)
+            return redirect('view-whoosh', whoosh_id=self.form.instance.uniq_id)
 
         ctx = {
             'form': self.form,
@@ -40,18 +42,26 @@ class WhooshViewer(View):
 
     def get(self, request, whoosh_id):
         ctx = {
-            'selected_whoosh': Whoosh.objects.filter(id=whoosh_id).first(),
+            'selected_whoosh': Whoosh.objects.filter(uniq_id=whoosh_id).first(),
             'recent_whooshes': get_recent_whooshes()
         }
         return TemplateResponse(request, self.template, ctx)
 
     @staticmethod
     def post(request, whoosh_id):
-        whoosh = Whoosh.objects.filter(id=whoosh_id).first()
+        whoosh = Whoosh.objects.filter(uniq_id=whoosh_id).first()
         ctx = {
             'processed': whoosh.processed,
         }
         return JsonResponse(ctx)
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def reprocess_whoosh(request, whoosh_id):
+    whoosh = Whoosh.objects.filter(id=whoosh_id).first()
+    create_whoosh.delay(whoosh.id)
+    messages.success(request, 'Whoosh id: {} is being reprocessed...'.format(whoosh.id))
+    return redirect(whoosh.get_admin_url())
 
 
 def get_recent_whooshes():

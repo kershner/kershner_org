@@ -1,0 +1,22 @@
+{% extends "admin/change_form.html" %}
+
+{% block field_sets %}
+    {% if original %}
+    <div class="extra-admin-controls">
+        <a href="{% url 'reprocess-whoosh' whoosh_id=original.id %}"><div class="button inline-block">Re-process</div></a>
+    </div>
+
+    <div class="admin-img">
+        <a href="{% url 'view-whoosh' whoosh_id=original.uniq_id %}">
+            <img src="{{ original.cloudfront_thumbnail_url }}">
+        </a>
+    </div>
+    {% endif %}
+
+    {{ block.super }}
+{% endblock %}
+
+{% block after_field_sets %}
+    {{ block.super }}
+<h1>after field sets</h1>
+{% endblock %}
