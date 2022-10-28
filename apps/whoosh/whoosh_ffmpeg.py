@@ -28,10 +28,7 @@ def ffprobe(file_path):
 
 def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
     duration = '15'  # seconds
-    if whoosh.slow_motion:
-        duration = '13.5'  # shorten clip because slomo causes slight audio sync issue
-
-    audio_path = finders.find('audio/laura_palmer_theme.mp3')
+    audio_path = finders.find('audio/{}.mp3'.format(whoosh.get_whoosh_type_display()))
     ffmpeg_cmd = ['ffmpeg',
                   '-y',
                   '-ss', '{}'.format(whoosh.start_time),

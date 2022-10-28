@@ -24,6 +24,11 @@ class Whoosh(models.Model):
     created = models.DateTimeField(default=timezone.now)
     source_video = models.FileField(upload_to=whoosh_upload,
                                     validators=[FileExtensionValidator(allowed_extensions=['mp4', 'mov'])])
+    WHOOSH_TYPE_CHOICES = (
+        ('om', 'Ominous'),
+        ('et', 'Ethereal'),
+    )
+    whoosh_type = models.CharField(max_length=2, choices=WHOOSH_TYPE_CHOICES, default='om')
     credit_text = models.CharField(null=True, blank=True, max_length=50)
     mute_original = models.BooleanField(default=False)
     black_and_white = models.BooleanField(default=False)
