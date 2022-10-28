@@ -80,34 +80,31 @@ def run_whoosh_thumbnail_ffmpeg(video_filename, thumbnail_output_filename):
 
 def get_complex_filter_str(whoosh):
     final_w_or_h = 1200
-    vid_output_name = '0'
-    filter_str = '[0:v]scale={}:-2[{}];'.format(final_w_or_h, vid_output_name)
+    filter_str = '[0:v]'
+
+    # Zoom/pan
+    if whoosh.slow_zoom:
+        zoompan_filter = "zoompan=z='min(max(zoom,pzoom)+0.0015,1.5)':d=0,"
+        filter_str = '{}{}'.format(filter_str, zoompan_filter)
 
     # Cropping
     if whoosh.can_be_cropped and whoosh.portrait:
         ratio = 4/5
-        vid_output_name = 'cropped'
-        crop_and_scale_str = 'crop=in_h*{}:in_h,scale=-2:{}'.format(ratio, final_w_or_h)
-        filter_str = '[0:v]{}[{}];'.format(crop_and_scale_str, vid_output_name)
+        crop_and_scale_str = "crop=in_h*{}:in_h,scale=-2:{}".format(ratio, final_w_or_h)
+        filter_str = '{}{}'.format(filter_str, crop_and_scale_str)
+    else:
+        scale_str = 'scale={}:-2'.format(final_w_or_h)
+        filter_str = '{}{}'.format(filter_str, scale_str)
 
     # Black and white
     if whoosh.black_and_white:
-        new_vid_output = 'bw'
-        filter_str = '{}[{}]hue=s=0[{}];'.format(filter_str, vid_output_name, new_vid_output)
-        vid_output_name = new_vid_output
-
-    # Zoom/pan
-    if whoosh.slow_zoom:
-        new_vid_output = 'zoompan'
-        filter_str = "{}[{}]zoompan=z='min(max(zoom,pzoom)+0.0015,1.5)':d=0[{}];".format(filter_str, vid_output_name,
-                                                                                         new_vid_output)
-        vid_output_name = new_vid_output
+        bw_filter = 'hue=s=0'
+        filter_str = '{},{}'.format(filter_str, bw_filter)
 
     # Slow mo
     if whoosh.slow_motion:
-        new_vid_output = 'slomo'
-        filter_str = '{}[{}]setpts=3*PTS[{}];'.format(filter_str, vid_output_name, new_vid_output)
-        vid_output_name = new_vid_output
+        slomo_filter = 'setpts=3*PTS'
+        filter_str = '{},{}'.format(filter_str, slomo_filter)
 
     # Audio mixing
     source_mix = 1.0
@@ -116,9 +113,9 @@ def get_complex_filter_str(whoosh):
 
     filter_str = '[0:a]volume={}[vol];[vol][1:a]amerge[a];{}'.format(source_mix, filter_str)
     formatted_text = get_formatted_credit_text(whoosh)
-    drawtext_str = '[{}]{}'.format(vid_output_name, get_drawtext_filter(whoosh, formatted_text))
+    drawtext_str = '{}'.format(get_drawtext_filter(whoosh, formatted_text))
 
-    return '{}{}[filtered_video]'.format(filter_str, drawtext_str)
+    return '{},{}[filtered_video]'.format(filter_str, drawtext_str)
 
 
 # Split the text into multiple lines if it's too long
