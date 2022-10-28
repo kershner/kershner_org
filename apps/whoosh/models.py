@@ -24,7 +24,7 @@ class Whoosh(models.Model):
     credit_text = models.CharField(null=True, blank=True, max_length=50)
     mute_original = models.BooleanField(default=False)
     black_and_white = models.BooleanField(default=False)
-    crop_4_3 = models.BooleanField(default=False)
+    portrait = models.BooleanField(default=False)
     slow_motion = models.BooleanField(default=False)
     slow_zoom = models.BooleanField(default=False)
     start_time = models.CharField(null=True, blank=True, max_length=8, default='00:00:00')
@@ -78,6 +78,10 @@ class Whoosh(models.Model):
     def video_width(self):
         if self.video_dimensions:
             return self.video_dimensions['width']
+
+    @property
+    def can_be_cropped(self):
+        return self.video_width and self.video_height and self.video_width > self.video_height
 
     @property
     def video_framerate(self):
