@@ -1,3 +1,4 @@
+from django.conf import settings
 from uuid import uuid4
 import logging
 import boto3
@@ -42,5 +43,5 @@ def get_random_s3_key_for_upload(path, filename):
 
 
 def file_size_validation(value):
-    limit = 15 * 1024 * 1024  # 10 MB
+    limit = settings.FILE_UPLOAD_LIMIT_MB * 1024 * 1024  # 20 MB
     return value < limit

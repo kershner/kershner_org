@@ -87,7 +87,7 @@ def get_complex_filter_str(whoosh):
 
     # Cropping
     if whoosh.can_be_cropped and whoosh.portrait:
-        ratio = 4/5
+        ratio = 9/16
         crop_and_scale_str = "crop=in_h*{}:in_h,scale=-2:{}".format(ratio, final_w_or_h)
         filter_str = '{}{}'.format(filter_str, crop_and_scale_str)
     else:

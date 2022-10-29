@@ -1,6 +1,7 @@
 from django.forms import ModelForm, FileInput
 from utility.util import file_size_validation
 from apps.whoosh.models import Whoosh
+from django.conf import settings
 
 
 class WhooshForm(ModelForm):
@@ -15,6 +16,6 @@ class WhooshForm(ModelForm):
         source_video = cleaned_data.get('source_video')
 
         if not file_size_validation(source_video.size):
-            self.add_error('source_video', 'File too big! 15MB limit.')
+            self.add_error('source_video', 'File too big! {}MB limit.'.format(settings.FILE_UPLOAD_LIMIT_MB))
 
         return source_video

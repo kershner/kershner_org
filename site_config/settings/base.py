@@ -148,3 +148,5 @@ REDIS_PORT = PARAMETERS['redis_port']
 BROKER_URL = 'redis://{}:{}'.format(PARAMETERS['redis_host'], PARAMETERS['redis_port'])
 CELERY_RESULT_BACKEND = 'redis://{}:{}'.format(PARAMETERS['redis_host'], PARAMETERS['redis_port'])
 BROKER_TRANSPORT = 'redis'
+
+FILE_UPLOAD_LIMIT_MB = 20
