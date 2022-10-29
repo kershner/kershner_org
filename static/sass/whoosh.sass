@@ -21,6 +21,7 @@ body
   background-color: $whoosh-black
   color: $whoosh-white
   padding: 0.5rem
+  overflow-x: hidden
 
 a
   text-decoration: none
@@ -61,8 +62,8 @@ label[for="id_user_agent"]
 .upload-in-progress
     display: flex
     position: absolute
-    width: 90%
-    height: 90%
+    width: 99%
+    height: 98%
     background-color: rgba($whoosh-black, 0.9)
     z-index: 1
     align-items: center
@@ -95,7 +96,7 @@ label[for="id_user_agent"]
       margin-left: 0
       display: inline-flex
       flex-direction: column
-      max-width: 20rem
+      max-width: 15rem
       font-size: 1rem
       border: $whoosh-border
       padding: .75rem
@@ -109,19 +110,16 @@ label[for="id_user_agent"]
         .label
           display: flex
           align-items: center
-          .tooltip-icon
-            margin-left: 0.25rem
 
         input
           margin-left: 0
           align-self: flex-start
-        .helptext
-          border: 1px solid red
 
       input
         &[type="text"]
           max-width: 95%
           width: 100%
+
         &[type="submit"]
           align-self: flex-start
           cursor: pointer
@@ -168,6 +166,7 @@ label[for="id_user_agent"]
     @media (max-width: 600px)
       max-height: initial
       flex-direction: column
+
       .upload-preview
         max-width: 100%
 
@@ -220,10 +219,12 @@ label[for="id_user_agent"]
         align-items: center
         margin-bottom: 0.25rem
         font-size: $small-font-size
+
         .info-stat-label
           width: 6rem
           text-align: right
           font-weight: bold
+
         .info-stat-value
           margin-left: .5rem
 
@@ -232,31 +233,6 @@ label[for="id_user_agent"]
         justify-content: space-between
         flex-wrap: wrap
         flex-direction: row
+
         .info-stat
           flex-basis: 30%
-
-.tooltip
-  cursor: default
-  position: relative
-  box-shadow: $whoosh-box-shadow
-
-  &:hover:before,
-  &:hover:after,
-  &.active:after,
-  &.active:before
-    display: block
-
-  &:before
-    content: attr(data-tooltip)
-    position: absolute
-    width: max-content
-    top: -2.25rem
-    left: 0
-    padding: 10px
-    border-radius: 0.2rem
-    background: $whoosh-white
-    color: #000
-    text-align: center
-    display: none
-    font-size: .8rem
-    font-weight: normal

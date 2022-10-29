@@ -1,8 +1,7 @@
 <div class="form-input">
     {{ input.errors }}
-    <div class="label {% if input.help_text %}tooltip{% endif %}" data-tooltip="{{ input.help_text }}">
+    <div class="label">
         <label for="{{ input.id_for_label }}">{{ input.label }}</label>
-        {% if input.help_text %}<div class="tooltip-icon">&#x1F6C8;</div>{% endif %}
     </div>
     {{ input }}
 </div>

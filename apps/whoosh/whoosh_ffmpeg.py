@@ -105,7 +105,7 @@ def get_complex_filter_str(whoosh):
 
     # Audio mixing
     source_mix = 1.0
-    if whoosh.mute_original:
+    if whoosh.mute_source:
         source_mix = 0.0
 
     filter_str = '[0:a]volume={}[vol];[vol][1:a]amerge[a];{}'.format(source_mix, filter_str)

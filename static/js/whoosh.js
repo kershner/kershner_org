@@ -27,18 +27,6 @@ whoosh.uploadEditor = function() {
     let uploadPreview = document.getElementById('upload-preview');
     let uploadPreviewWrapper = document.querySelector('.upload-preview');
     let startTimeInput = document.getElementById('id_start_time');
-    let tooltips = document.querySelectorAll('.tooltip-icon');
-
-    tooltips.forEach((item) => {
-        item.addEventListener('click', (e) => {
-            const parentWithClass = e.target.closest('.label');
-            if (hasClass(parentWithClass, 'active')) {
-                removeClass(parentWithClass, 'active');
-                } else {
-                addClass(parentWithClass, 'active');
-            }
-        });
-    });
 
     uploadForm.addEventListener('submit', function(e) {
         removeClass(uploadProgressDiv, 'hidden');
