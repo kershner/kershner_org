@@ -81,7 +81,8 @@ def get_complex_filter_str(whoosh):
 
     # Zoom/pan
     if whoosh.slow_zoom:
-        zoompan_filter = "zoompan=z='min(max(zoom,pzoom)+0.0015,1.5)':d=0,"
+        zoompan_filter = "zoompan=z='min(max(zoom,pzoom)+0.0015,1.5)':d=0:s={}x{},".format(whoosh.video_width,
+                                                                                           whoosh.video_height)
         filter_str = '{}{}'.format(filter_str, zoompan_filter)
 
     # Cropping
