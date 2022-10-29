@@ -1,0 +1,68 @@
+<div class="whoosh-info">
+    <div class="info">
+        <!-- Video Size -->
+        <div class="info-stat">
+            <div class="info-stat-label">Video Size:</div>
+            <div class="info-stat-value">
+                {{ selected_whoosh.video_width }}x{{ selected_whoosh.video_height }}
+            </div>
+        </div>
+
+        <!-- Whoosh Type -->
+        <div class="info-stat">
+            <div class="info-stat-label">Whoosh Type:</div>
+            <div class="info-stat-value">{{ selected_whoosh.get_whoosh_type_display }}</div>
+        </div>
+
+        <!-- Credit Text -->
+        <div class="info-stat">
+            <div class="info-stat-label">Credit Text:</div>
+            <div class="info-stat-value">{{ selected_whoosh.credit_text }}</div>
+        </div>
+
+        <!-- Uploaded -->
+        <div class="info-stat">
+            <div class="info-stat-label">Uploaded:</div>
+            <div class="info-stat-value">{{ selected_whoosh.created }}</div>
+        </div>
+
+        <!-- Checkboxes -->
+        <div class="info-checkbox-wrapper">
+            <!-- Mute Original -->
+            <div class="info-stat">
+                <div class="info-stat-label">Mute Original:</div>
+                <div class="info-stat-value">{% if selected_whoosh.mute_original %}&#9989;&#xfe0e;{% else %}&#10006;&#xfe0e;{% endif %}</div>
+            </div>
+
+            <!-- Black and White -->
+            <div class="info-stat">
+                <div class="info-stat-label">Black & White:</div>
+                <div class="info-stat-value">{% if selected_whoosh.black_and_white %}&#9989;&#xfe0e;{% else %}&#10006;&#xfe0e;{% endif %}</div>
+            </div>
+
+            <!-- Portrait -->
+            <div class="info-stat">
+                <div class="info-stat-label">Portrait:</div>
+                <div class="info-stat-value">{% if selected_whoosh.portrait %}&#9989;&#xfe0e;{% else %}&#10006;&#xfe0e;{% endif %}</div>
+            </div>
+
+            <!-- Slow Motion -->
+            <div class="info-stat">
+                <div class="info-stat-label">Slow Motion:</div>
+                <div class="info-stat-value">{% if selected_whoosh.slow_motion %}&#9989;&#xfe0e;{% else %}&#10006;&#xfe0e;{% endif %}</div>
+            </div>
+
+            <!-- Slow Zoom -->
+            <div class="info-stat">
+                <div class="info-stat-label">Slow Zoom:</div>
+                <div class="info-stat-value">{% if selected_whoosh.slow_zoom %}&#9989;&#xfe0e;{% else %}&#10006;&#xfe0e;{% endif %}</div>
+            </div>
+        </div>
+
+        <!-- Processed -->
+        <div class="info-stat">
+            <div class="info-stat-label">Processed:</div>
+            <div class="info-stat-value">{{ selected_whoosh.processed}}</div>
+        </div>
+    </div>
+</div>

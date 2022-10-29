@@ -8,26 +8,8 @@
         This Whoosh will disappear in 24 hours.
     </div>
 
-    <div class="whoosh-info">
-        <div class="info">
-            <div class="info-stat">
-                <div class="info-stat-label">Video Size:</div>
-                <div class="info-stat-value">
-                    {{ selected_whoosh.video_width }}x{{ selected_whoosh.video_height }}
-                </div>
-            </div>
+    {% include 'whoosh/includes/whoosh_info.html' %}
 
-            <div class="info-stat">
-                <div class="info-stat-label">Credit Text:</div>
-                <div class="info-stat-value">{{ selected_whoosh.credit_text }}</div>
-            </div>
-
-            <div class="info-stat">
-                <div class="info-stat-label">Uploaded:</div>
-                <div class="info-stat-value">{{ selected_whoosh.created }}</div>
-            </div>
-        </div>
-    </div>
     {% elif not selected_whoosh.processed %}
     <div class="processing">Whoosh processing.</div>
     {% else %}

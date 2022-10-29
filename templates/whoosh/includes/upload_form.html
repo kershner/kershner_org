@@ -1,11 +1,26 @@
 <div class="upload-form">
-    <div class="upload-in-progress hidden">
-        <div>Uploading...</div>
-    </div>
-
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.as_p }}
+
+        {{ form.non_field_errors }}
+        {% include 'whoosh/includes/form_input.html' with input=form.source_video %}
+
+        <div class="extra-options">
+            {% include 'whoosh/includes/form_input.html' with input=form.whoosh_type %}
+            {% include 'whoosh/includes/form_input.html' with input=form.credit_text %}
+
+            <div class="checkboxes">
+                {% include 'whoosh/includes/form_input.html' with input=form.mute_original %}
+                {% include 'whoosh/includes/form_input.html' with input=form.black_and_white %}
+                {% include 'whoosh/includes/form_input.html' with input=form.portrait %}
+                {% include 'whoosh/includes/form_input.html' with input=form.slow_motion %}
+                {% include 'whoosh/includes/form_input.html' with input=form.slow_zoom %}
+            </div>
+
+            {{ form.user_agent }}
+            {{ form.start_time}}
+        </div>
+
         <input type="submit" value="Submit">
     </form>
 

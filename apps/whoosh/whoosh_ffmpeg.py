@@ -187,6 +187,8 @@ def get_drawtext_filter(whoosh, formatted_text):
     # At 2 seconds, fade in over 2 seconds, display text for 5 seconds, then fade out over 2 seconds
     alpha_fadeout_filter = comma_escape('if(lt(t,2),0,if(lt(t,4),(t-2)/2,if(lt(t,9),1,if(lt(t,11),(2-(t-9))/2,0))))')
     font_size_denom = '15' if whoosh.portrait else '20'
+    formatted_text = formatted_text.replace("'", '')
+
     drawtext_filter = 'drawtext=' \
                       ':font=Arial' \
                       ':text={formatted_text}' \

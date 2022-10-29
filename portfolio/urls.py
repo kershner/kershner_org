@@ -24,7 +24,6 @@ urlpatterns = [
     path('whoosh/view/<whoosh_id>', whoosh_views.WhooshViewer.as_view(), name='view-whoosh'),
     path('whoosh/reprocess/<whoosh_id>', whoosh_views.reprocess_whoosh, name='reprocess-whoosh'),
 
-
     # Admin Stuff
     path('admin/move-project-position/<project_id>/<direction>',
          admin_views.MoveProjectPositionView.as_view(),

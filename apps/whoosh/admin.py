@@ -8,9 +8,11 @@ from django.urls import reverse
 class WhooshAdmin(admin.ModelAdmin):
     change_form_template = 'admin/whoosh/change_form.html'
     save_on_top = True
-    list_display = ['id', 'created', 'viewer', 'credit_text', 'mute_original', 'processed']
+    list_display = ['id', 'created', 'thumbnail_preview', 'credit_text', 'processed']
     readonly_fields = ['uniq_id']
 
     @staticmethod
-    def viewer(obj):
-        return format_html('<a href="{}">View</a>'.format(reverse('view-whoosh', kwargs={'whoosh_id': obj.uniq_id})))
+    def thumbnail_preview(obj):
+        change_link = reverse('admin:{}_{}_change'.format(obj._meta.app_label, obj._meta.model_name), args=(obj.id,))
+        html = '<a class="admin-img" href="{}"><img src={}></a>'.format(change_link, obj.cloudfront_thumbnail_url)
+        return format_html(html)
