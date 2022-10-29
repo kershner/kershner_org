@@ -40,9 +40,14 @@ class WhooshHomeView(View):
 class WhooshViewer(View):
     template = 'whoosh/viewer.html'
 
-    def get(self, request, whoosh_id):
+    def get(self, request, whoosh_id=None):
+        whoosh = Whoosh.objects.filter(uniq_id=whoosh_id).first()
+        if not whoosh:
+            ctx = {'recent_whooshes': get_recent_whooshes()}
+            return TemplateResponse(request, 'whoosh/404.html', ctx)
+
         ctx = {
-            'selected_whoosh': Whoosh.objects.filter(uniq_id=whoosh_id).first(),
+            'selected_whoosh': whoosh,
             'recent_whooshes': get_recent_whooshes()
         }
         return TemplateResponse(request, self.template, ctx)

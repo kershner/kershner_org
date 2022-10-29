@@ -3,12 +3,7 @@
 {% block content %}
     {% include 'whoosh/includes/whoosh_viewer.html' %}
     {% include 'whoosh/includes/recent_whooshes.html' %}
-
-<a href="{%  url 'whoosh' %}">
-    <div class="back-link">
-        Home
-    </div>
-</a>
+    {% include 'whoosh/includes/back_link.html' %}
 {% endblock %}
 
 {% block extra_js %}
