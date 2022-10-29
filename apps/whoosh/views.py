@@ -61,6 +61,16 @@ class WhooshViewer(View):
         return JsonResponse(ctx)
 
 
+class AboutWhoosh(View):
+    template = 'whoosh/about.html'
+
+    def get(self, request):
+        ctx = {
+            'recent_whooshes': get_recent_whooshes()
+        }
+        return TemplateResponse(request, self.template, ctx)
+
+
 @user_passes_test(lambda u: u.is_superuser)
 def reprocess_whoosh(request, whoosh_id):
     whoosh = Whoosh.objects.filter(id=whoosh_id).first()

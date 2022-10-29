@@ -1,0 +1,19 @@
+{% extends 'whoosh/base.html' %}
+{% load static %}
+
+{% block content %}
+    <h3>Big bada boom</h3>
+    <p>
+        Pellentesque molestie magna sed nisl eleifend, id cursus mauris cursus. Nunc efficitur, magna vel finibus posuere, magna urna aliquet diam, a commodo magna diam vitae purus. Fusce luctus, velit sed viverra ullamcorper, felis magna consequat enim, vitae laoreet sem nisi a erat. Curabitur et vulputate ante. Etiam at aliquet orci. Nam tortor neque, mollis non sapien at, laoreet pharetra augue.
+    </p>
+
+    <p>
+        Maecenas diam mi, rutrum vitae orci quis, cursus scelerisque dolor. Cras rutrum finibus sem, bibendum rhoncus elit. Donec pulvinar at odio ut gravida. Nullam fringilla, massa non venenatis aliquam,
+    </p>
+
+    <a href="" class="underline">Code Link 1</a>
+    <a href="" class="underline">Code Link 2</a>
+
+    {% include 'whoosh/includes/recent_whooshes.html' %}
+    {% include 'whoosh/includes/back_link.html' %}
+{% endblock %}
