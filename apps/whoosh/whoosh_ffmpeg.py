@@ -1,10 +1,17 @@
 from django.contrib.staticfiles import finders
+from django.conf import settings
 import subprocess
 import logging
-import math
 
 
 logger = logging.getLogger('whoosh.whoosh_ffmpeg')
+
+FONT_SIZE_DIVISOR = 12
+PORTRAIT_FONT_SIZE_DIVISOR = 10
+LINE_CHARACTER_LIMIT = 15
+PORTRAIT_LINE_CHARACTER_LIMIT = 15
+PORTRAIT_RATIO = 9/16
+FINAL_W_OR_H = 1200
 
 
 def ffprobe(file_path):
@@ -46,10 +53,12 @@ def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
                                    universal_newlines=True)
-    print(' '.join(ffmpeg_cmd))
-    subprocess.run("clip", universal_newlines=True, input=' '.join(ffmpeg_cmd))
-    print("==============================")
-    print(ffmpeg_result)
+    if settings.DEBUG:
+        print(' '.join(ffmpeg_cmd))
+        subprocess.run("clip", universal_newlines=True, input=' '.join(ffmpeg_cmd))
+        print("==============================")
+        print(ffmpeg_result)
+
     return ffmpeg_result
 
 
@@ -76,7 +85,6 @@ def run_whoosh_thumbnail_ffmpeg(video_filename, thumbnail_output_filename):
 
 
 def get_complex_filter_str(whoosh):
-    final_w_or_h = 1200
     filter_str = '[0:v]'
 
     # Zoom/pan
@@ -87,11 +95,10 @@ def get_complex_filter_str(whoosh):
 
     # Cropping
     if whoosh.can_be_cropped and whoosh.portrait:
-        ratio = 9/16
-        crop_and_scale_str = "crop=in_h*{}:in_h,scale=-2:{}".format(ratio, final_w_or_h)
+        crop_and_scale_str = "crop=in_h*{}:in_h,scale=-2:{}".format(PORTRAIT_RATIO, FINAL_W_OR_H)
         filter_str = '{}{}'.format(filter_str, crop_and_scale_str)
     else:
-        scale_str = 'scale={}:-2'.format(final_w_or_h)
+        scale_str = 'scale={}:-2'.format(FINAL_W_OR_H)
         filter_str = '{}{}'.format(filter_str, scale_str)
 
     # Black and white
@@ -120,89 +127,51 @@ def get_complex_filter_str(whoosh):
 def get_formatted_credit_text(whoosh):
     word_list = [' ']
     if whoosh.credit_text:
-        word_list = whoosh.credit_text.upper().split(' ')
+        word_list = whoosh.credit_text.replace("'", '').upper().split(' ')
 
-    split_lines, max_line_length = get_text_with_line_breaks(whoosh, word_list)
-    padded_lines = get_padded_text_lines(split_lines, max_line_length)
+    line_limit = PORTRAIT_LINE_CHARACTER_LIMIT if whoosh.portrait else LINE_CHARACTER_LIMIT
+    current_line = []
+    final_line_list = []
+    for index, word in enumerate(word_list):
+        current_line_length = len(' '.join(current_line))
+        line_len_with_word = current_line_length + len(word)
 
-    return '\r'.join(padded_lines)
+        if line_len_with_word > line_limit:
+            final_line_list.append(' '.join(current_line))
+            current_line = [word]
+        else:
+            current_line.append(word)
 
+    if len(current_line):
+        final_line_list.append(' '.join(current_line))
 
-# Split text into multiple lines based on arbitrary word_per_line limit
-# Returns list of lines and max_line_length, which is used to determine padding
-def get_text_with_line_breaks(whoosh, word_list):
-    word_limit_per_line = 3
-    portrait_character_limit = 25
-    num_words = len(word_list)
-    num_lines = math.ceil(num_words / word_limit_per_line)
-    index_pointer = 0
-    max_line_length = 0
-
-    # Check if we need to reduce the word_per_line value for portrait videos
-    if whoosh.portrait:
-        for num in range(0, num_lines):
-            new_line = ' '.join(word_list[index_pointer:index_pointer + word_limit_per_line])
-            if len(new_line) > portrait_character_limit:
-                word_limit_per_line = 2
-                break
-
-            index_pointer += word_limit_per_line
-
-    index_pointer = 0
-    split_lines = []
-    for num in range(0, num_lines):
-        new_line = ' '.join(word_list[index_pointer:index_pointer + word_limit_per_line])
-
-        if len(new_line) > max_line_length:
-            max_line_length = len(new_line)
-
-        split_lines.append(new_line)
-        index_pointer += word_limit_per_line
-
-    return split_lines, max_line_length
-
-
-# Add padding (space character) to the start and end of lines that are less than max_line_length
-# This is a way to fake center-aligned text
-def get_padded_text_lines(split_lines, max_line_length):
-    padded_lines = []
-    for line in split_lines:
-        line_length = len(line)
-
-        line_diff = abs(max_line_length - line_length)
-        if line_diff % 2 != 0:
-            line_diff += 1
-
-        padding_len = math.floor(line_diff / 2)
-        padding = ' '.join([' ' for x in range(0, padding_len)])
-        if line_length == max_line_length:
-            padding = ''
-
-        new_line = '{}{}{}'.format(padding, line, padding)
-        padded_lines.append(new_line)
-
-    return padded_lines
+    return '\r'.join(final_line_list)
 
 
 def get_drawtext_filter(whoosh, formatted_text):
     # At 2 seconds, fade in over 2 seconds, display text for 5 seconds, then fade out over 2 seconds
     alpha_fadeout_filter = comma_escape('if(lt(t,2),0,if(lt(t,4),(t-2)/2,if(lt(t,9),1,if(lt(t,11),(2-(t-9))/2,0))))')
-    font_size_denom = '15' if whoosh.portrait else '20'
-    formatted_text = formatted_text.replace("'", '')
+
+    new_width = FINAL_W_OR_H
+    font_size_divisor = FONT_SIZE_DIVISOR
+    if whoosh.portrait:
+        new_width = int(FINAL_W_OR_H * PORTRAIT_RATIO)
+        font_size_divisor = PORTRAIT_FONT_SIZE_DIVISOR
 
     drawtext_filter = 'drawtext=' \
                       ':font=Arial' \
                       ':text={formatted_text}' \
-                      ':borderw=2:bordercolor=0x33cc33' \
-                      ':shadowx=0:shadowy=2' \
+                      ':borderw=3:bordercolor=0x33cc33' \
+                      ':shadowx=0:shadowy=6' \
                       ':fontcolor=0x663333' \
-                      ':fontsize=w/{font_size_denom}' \
+                      ':fontsize={new_width}/{font_size_divisor}' \
                       ':x=(w-text_w)/2' \
                       ':line_spacing=10' \
                       ':y=(h/1.75)' \
                       ':alpha={fadeout_filter}'.format(formatted_text=formatted_text,
                                                        fadeout_filter=alpha_fadeout_filter,
-                                                       font_size_denom=font_size_denom)
+                                                       new_width=new_width,
+                                                       font_size_divisor=font_size_divisor)
     return drawtext_filter
 
 

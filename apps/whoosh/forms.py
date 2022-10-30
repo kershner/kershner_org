@@ -6,7 +6,7 @@ import re
 
 
 hh_mm_ss_pattern = re.compile('^(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)$')
-two_digit_followed_by_colon_pattern = '\d{2}:\d{2}'
+two_digit_followed_by_colon_pattern = '\d{2}:\d{2}:\d{2}'
 
 
 class WhooshForm(ModelForm):
