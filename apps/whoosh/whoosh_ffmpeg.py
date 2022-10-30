@@ -6,10 +6,10 @@ import logging
 
 logger = logging.getLogger('whoosh.whoosh_ffmpeg')
 
-FONT_SIZE_DIVISOR = 12
+FONT_SIZE_DIVISOR = 15
 PORTRAIT_FONT_SIZE_DIVISOR = 10
-LINE_CHARACTER_LIMIT = 15
-PORTRAIT_LINE_CHARACTER_LIMIT = 15
+LINE_CHARACTER_LIMIT = 20
+PORTRAIT_LINE_CHARACTER_LIMIT = 14
 PORTRAIT_RATIO = 9/16
 FINAL_W_OR_H = 1200
 
@@ -136,7 +136,7 @@ def get_formatted_credit_text(whoosh):
         current_line_length = len(' '.join(current_line))
         line_len_with_word = current_line_length + len(word)
 
-        if line_len_with_word > line_limit:
+        if line_len_with_word >= line_limit:
             final_line_list.append(' '.join(current_line))
             current_line = [word]
         else:

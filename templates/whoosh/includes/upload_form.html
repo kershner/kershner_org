@@ -5,7 +5,7 @@
         {{ form.non_field_errors }}
         {% include 'whoosh/includes/form_input.html' with input=form.source_video %}
 
-        <div class="extra-options">
+        <div class="extra-options hidden">
             {% include 'whoosh/includes/form_input.html' with input=form.whoosh_type %}
             {% include 'whoosh/includes/form_input.html' with input=form.credit_text %}
             {% include 'whoosh/includes/form_input.html' with input=form.start_time %}
@@ -21,7 +21,7 @@
             {{ form.user_agent }}
         </div>
 
-        <input type="submit" value="Submit">
+        <input class="hidden" type="submit" value="Submit">
     </form>
 
     <div class="upload-preview hidden">

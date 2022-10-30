@@ -27,6 +27,8 @@ whoosh.uploadEditor = function() {
     let uploadPreview = document.getElementById('upload-preview');
     let uploadPreviewWrapper = document.querySelector('.upload-preview');
     let startTimeInput = document.getElementById('id_start_time');
+    let extraOptions = document.querySelector('.extra-options');
+    let submitBtn = document.querySelector('input[value="Submit"]');
 
     uploadForm.addEventListener('submit', function(e) {
         removeClass(uploadProgressDiv, 'hidden');
@@ -36,6 +38,8 @@ whoosh.uploadEditor = function() {
         let videoSrc = `${URL.createObjectURL(e.target.files[0])}`;
         uploadPreview.setAttribute('src', videoSrc);
         removeClass(uploadPreviewWrapper, 'hidden');
+        removeClass(extraOptions, 'hidden');
+        removeClass(submitBtn, 'hidden');
 
         uploadPreview.addEventListener('timeupdate', function(e) {
             startTimeInput.value = new Date(Number(uploadPreview.currentTime * 1000)).toISOString().substring(11, 19);
