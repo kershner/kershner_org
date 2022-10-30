@@ -46,6 +46,7 @@ def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
                   '-map', '[a]',
                   '-ac', '2',
                   '-crf', '17',
+                  '-shortest',
                   '-t', '{}'.format(duration),
                   '{}'.format(output_filename)]
 
@@ -116,7 +117,7 @@ def get_complex_filter_str(whoosh):
     if whoosh.mute_source:
         source_mix = 0.0
 
-    filter_str = '[0:a]volume={}[vol];[vol][1:a]amerge[a];{}'.format(source_mix, filter_str)
+    filter_str = '[0:a]volume={},apad[vol];[vol][1:a]amerge[a];{}'.format(source_mix, filter_str)
     formatted_text = get_formatted_credit_text(whoosh)
     drawtext_str = '{}'.format(get_drawtext_filter(whoosh, formatted_text))
 
@@ -127,7 +128,7 @@ def get_complex_filter_str(whoosh):
 def get_formatted_credit_text(whoosh):
     word_list = [' ']
     if whoosh.credit_text:
-        word_list = whoosh.credit_text.replace("'", '').upper().split(' ')
+        word_list = comma_escape(whoosh.credit_text.replace("'", '').upper()).split(' ')
 
     line_limit = PORTRAIT_LINE_CHARACTER_LIMIT if whoosh.portrait else LINE_CHARACTER_LIMIT
     current_line = []

@@ -74,9 +74,6 @@ def create_whoosh(whoosh_id):
         except Exception as e:
             logger.info(e)
 
-        # Delete original uploaded file from S3
-        util.remove_key_from_s3(whoosh.uploaded_video_s3_key)
-
 
 @app.task(name='delete-whoosh-media')
 def delete_whoosh_media(uploaded_s3_key, processed_s3_key, thumbnail_key):
