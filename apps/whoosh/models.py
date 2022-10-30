@@ -41,6 +41,7 @@ class Whoosh(models.Model):
     thumbnail = models.FileField(null=True, blank=True, upload_to=whoosh_processed)
     user_agent = models.TextField(null=True, blank=True)
     video_data = models.TextField(null=True, blank=True)
+    error = models.TextField(null=True, blank=True)
 
     @property
     def expired(self):

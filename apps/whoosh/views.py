@@ -56,6 +56,7 @@ class WhooshViewer(View):
     def post(request, whoosh_id):
         whoosh = Whoosh.objects.filter(uniq_id=whoosh_id).first()
         ctx = {
+            'error': whoosh.error,
             'processed': whoosh.processed,
         }
         return JsonResponse(ctx)

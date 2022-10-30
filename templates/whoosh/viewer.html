@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block extra_js %}
-    {% if not selected_whoosh.processed %}
+    {% if not selected_whoosh.error and not selected_whoosh.processed %}
     <script type="text/javascript">
         whoosh.whooshViewerUrl = '{% url 'view-whoosh' whoosh_id=selected_whoosh.uniq_id %}';
         whoosh.checkWhooshProcessed();

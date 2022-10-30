@@ -53,12 +53,26 @@ def create_whoosh(whoosh_id):
             whoosh.save()
         except Exception as e:
             logger.info(e)
+            whoosh.error = e
+            whoosh.save()
+
+        f.close()
 
         # Cleanup local files
-        f.close()
-        os.unlink(f.name)
-        os.unlink(output_filename)
-        os.unlink(thumbnail_filename)
+        try:
+            os.unlink(f.name)
+        except Exception as e:
+            logger.info(e)
+
+        try:
+            os.unlink(output_filename)
+        except Exception as e:
+            logger.info(e)
+
+        try:
+            os.unlink(thumbnail_filename)
+        except Exception as e:
+            logger.info(e)
 
         # Delete original uploaded file from S3
         util.remove_key_from_s3(whoosh.uploaded_video_s3_key)

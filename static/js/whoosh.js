@@ -13,7 +13,7 @@ whoosh.checkWhooshProcessed = function() {
             'X-CSRFToken': getCookie('csrftoken')
         };
         fetchWrapper(whoosh.whooshViewerUrl, 'post', {}, headers, function(data) {
-            if (data['processed']) {
+            if (data['processed'] || data['error']) {
                 location.reload();
             }
         });

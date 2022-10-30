@@ -11,7 +11,11 @@
     {% include 'whoosh/includes/whoosh_info.html' %}
 
     {% elif not selected_whoosh.processed %}
-    <div class="processing">Whoosh processing.  The page will automatically refresh.</div>
+        {% if selected_whoosh.error %}
+            <div class="processing">Unfortunately, something went wrong rendering this Whoosh.</div>
+        {% else %}
+            <div class="processing">Whoosh processing.  The page will automatically refresh.</div>
+        {% endif %}
     {% else %}
     <div class="expired">This Whoosh has disappeared into the trees.</div>
     {% endif %}

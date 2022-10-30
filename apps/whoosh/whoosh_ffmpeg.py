@@ -53,11 +53,11 @@ def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
                                    universal_newlines=True)
-    if settings.DEBUG:
-        print(' '.join(ffmpeg_cmd))
-        subprocess.run("clip", universal_newlines=True, input=' '.join(ffmpeg_cmd))
-        print("==============================")
-        print(ffmpeg_result)
+    # if settings.DEBUG:
+    print(' '.join(ffmpeg_cmd))
+    subprocess.run("clip", universal_newlines=True, input=' '.join(ffmpeg_cmd))
+    print("==============================")
+    print(ffmpeg_result)
 
     return ffmpeg_result
 
@@ -85,7 +85,7 @@ def run_whoosh_thumbnail_ffmpeg(video_filename, thumbnail_output_filename):
 
 
 def get_complex_filter_str(whoosh):
-    filter_str = '[0:v]'
+    filter_str = '[0]'
 
     # Zoom/pan
     if whoosh.slow_zoom:
