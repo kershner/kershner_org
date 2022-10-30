@@ -22,6 +22,8 @@ body
   background-color: $whoosh-black
   color: $whoosh-white
   padding: 0.5rem
+  padding-top: 0
+  margin-top: 0
   overflow-x: hidden
 
 a
@@ -67,14 +69,23 @@ label[for="id_user_agent"]
 .upload-in-progress
     display: flex
     position: absolute
-    width: 99%
-    height: 98%
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
     background-color: rgba($whoosh-black, 0.9)
     z-index: 1
     align-items: center
     justify-content: center
     font-size: 1.25rem
+    background-image: url('../img/whoosh/live_inside_a_dream.png')
+    background-repeat: no-repeat
+    background-size: cover
+    background-position: center
     text-shadow: $whoosh-text-shadow
+    animation-name: shimmer
+    animation-iteration-count: 1
+    animation-duration: 0.5s
 
 .whoosh-wrapper
   max-width: 50rem
@@ -92,6 +103,8 @@ label[for="id_user_agent"]
     font-size: 2rem
     letter-spacing: 0.1rem
     text-shadow: $whoosh-text-shadow
+    &:first-of-type
+      margin-top: 1rem
 
   .upload-form
     display: inline-flex
@@ -251,7 +264,6 @@ label[for="id_user_agent"]
 
   .about-temp
     display: inline-block
-    margin-top: 5rem
     height: 5rem
     width: 5rem
     border: 1px solid $whoosh-white

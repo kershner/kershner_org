@@ -193,7 +193,7 @@ def get_drawtext_filter(whoosh, formatted_text):
     drawtext_filter = 'drawtext=' \
                       ':font=Arial' \
                       ':text={formatted_text}' \
-                      ':borderw=1:bordercolor=0x33cc33' \
+                      ':borderw=2:bordercolor=0x33cc33' \
                       ':shadowx=0:shadowy=2' \
                       ':fontcolor=0x663333' \
                       ':fontsize=w/{font_size_denom}' \
