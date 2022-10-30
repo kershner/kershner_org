@@ -8,6 +8,7 @@
         <div class="extra-options">
             {% include 'whoosh/includes/form_input.html' with input=form.whoosh_type %}
             {% include 'whoosh/includes/form_input.html' with input=form.credit_text %}
+            {% include 'whoosh/includes/form_input.html' with input=form.start_time %}
 
             <div class="checkboxes">
                 {% include 'whoosh/includes/form_input.html' with input=form.mute_source %}
@@ -18,7 +19,6 @@
             </div>
 
             {{ form.user_agent }}
-            {{ form.start_time}}
         </div>
 
         <input type="submit" value="Submit">

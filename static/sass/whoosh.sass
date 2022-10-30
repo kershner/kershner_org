@@ -90,7 +90,7 @@ label[for="id_user_agent"]
 .whoosh-wrapper
   max-width: 50rem
 
-  .back-link
+  .link-btn
     padding: .5rem 1rem
     border: $whoosh-border
     margin-top: 3rem
@@ -122,10 +122,9 @@ label[for="id_user_agent"]
       padding: .75rem
 
       .form-input
-        display: flex
         flex-direction: column
         margin: 0
-        margin-bottom: 1rem
+        margin-bottom: 0.5rem
 
         .label
           display: flex
@@ -135,11 +134,12 @@ label[for="id_user_agent"]
           margin-left: 0
           align-self: flex-start
 
-      input
-        &[type="text"]
-          max-width: 95%
-          width: 100%
+      #id_credit_text
+        width: 95%
+      #id_start_time
+        width: 5rem
 
+      input
         &[type="submit"]
           align-self: flex-start
           cursor: pointer
@@ -147,10 +147,6 @@ label[for="id_user_agent"]
 
           &[value="Submit"]
             width: 100%
-
-      #id_start_time,
-      label[for="id_start_time"]
-        display: none
 
       @media (max-width: $mobile-breakpoint)
         max-width: 100%
@@ -216,7 +212,6 @@ label[for="id_user_agent"]
           @extend .active
 
 .whoosh-viewer
-  font-size: 1rem
   video
     max-width: 100%
     max-height: 40rem
@@ -258,14 +253,3 @@ label[for="id_user_agent"]
 
         .info-stat
           flex-basis: 30%
-
-.whoosh-footer
-  text-align: center
-
-  .about-temp
-    display: inline-block
-    height: 5rem
-    width: 5rem
-    border: 1px solid $whoosh-white
-    &:hover
-      @extend .active
