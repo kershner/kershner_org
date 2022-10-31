@@ -23,9 +23,10 @@ urlpatterns = [
     path('whoosh/view/', whoosh_views.WhooshViewer.as_view(), name='view-whoosh'),
     path('whoosh/view/<whoosh_id>/', whoosh_views.WhooshViewer.as_view(), name='view-whoosh'),
     path('whoosh/view/<whoosh_id>', whoosh_views.WhooshViewer.as_view(), name='view-whoosh'),
-    path('whoosh/reprocess/<whoosh_id>', whoosh_views.reprocess_whoosh, name='reprocess-whoosh'),
+    path('whoosh/doppelganger/<whoosh_id>/', whoosh_views.DoppelgangerSubmit.as_view(), name='create-doppelganger'),
     path('whoosh/about', whoosh_views.AboutWhoosh.as_view(), name='about-whoosh'),
     path('whoosh/about/', whoosh_views.AboutWhoosh.as_view(), name='about-whoosh'),
+    path('whoosh/reprocess/<whoosh_id>', whoosh_views.reprocess_whoosh, name='reprocess-whoosh'),
 
     # Admin Stuff
     path('admin/move-project-position/<project_id>/<direction>',

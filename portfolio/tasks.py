@@ -29,6 +29,8 @@ def create_whoosh(whoosh_id):
             ffprobe_result = whoosh_ffmpeg.ffprobe(f.name)
             whoosh.video_data = ffprobe_result['json']
             whoosh.processed = None
+            whoosh.error = None
+            whoosh.settings_hash = util.hash_data_structure(whoosh.doppelganger_settings())
             whoosh.save()
 
             # Process video with FFMPEG

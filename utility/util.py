@@ -1,6 +1,7 @@
 from django.conf import settings
 from uuid import uuid4
 import logging
+import hashlib
 import boto3
 import json
 import os
@@ -45,3 +46,7 @@ def get_random_s3_key_for_upload(path, filename):
 def file_size_validation(value):
     limit = settings.FILE_UPLOAD_LIMIT_MB * 1024 * 1024  # 20 MB
     return value < limit
+
+
+def hash_data_structure(data):
+    return hashlib.md5(json.dumps(data, sort_keys=True).encode('utf-8')).hexdigest()

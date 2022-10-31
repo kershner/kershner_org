@@ -9,18 +9,12 @@ hh_mm_ss_pattern = re.compile('^(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)
 two_digit_followed_by_colon_pattern = '\d{2}:\d{2}:\d{2}'
 
 
-class WhooshForm(ModelForm):
+class WhooshFormBase(ModelForm):
     start_time = CharField(max_length=8, widget=TextInput(attrs={
         'pattern': two_digit_followed_by_colon_pattern,
         'placeholder': 'HH:MM:SS',
         'value': '00:00:00'
     }))
-
-    class Meta:
-        model = Whoosh
-        widgets = {'source_video': FileInput(attrs={'accept': 'video/mp4,video/quicktime'})}
-        fields = ['source_video', 'whoosh_type', 'credit_text', 'mute_source', 'black_and_white', 'portrait',
-                  'slow_motion', 'slow_zoom', 'start_time', 'user_agent']
 
     def clean_source_video(self):
         cleaned_data = self.clean()
@@ -39,3 +33,18 @@ class WhooshForm(ModelForm):
             self.add_error('start_time', 'Invalid format.  Must be HH:MM:SS.')
 
         return start_time
+
+
+class WhooshForm(WhooshFormBase):
+    class Meta:
+        widgets = {'source_video': FileInput(attrs={'accept': 'video/mp4,video/quicktime', 'required': 'required'})}
+        model = Whoosh
+        fields = ['source_video', 'whoosh_type', 'credit_text', 'mute_source', 'black_and_white', 'portrait',
+                  'slow_motion', 'slow_zoom', 'start_time', 'user_agent']
+
+
+class DoppelgangerForm(WhooshFormBase):
+    class Meta:
+        model = Whoosh
+        fields = ['whoosh_type', 'credit_text', 'mute_source', 'black_and_white', 'portrait',
+                  'slow_motion', 'slow_zoom', 'start_time', 'user_agent']

@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.db import models
 from utility import util
 from uuid import uuid4
+import hashlib
 import json
 
 
@@ -22,8 +23,9 @@ def whoosh_processed(instance, filename):
 class Whoosh(models.Model):
     uniq_id = models.CharField(null=True, max_length=100)
     created = models.DateTimeField(default=timezone.now)
-    source_video = models.FileField(upload_to=whoosh_upload,
-                                    validators=[FileExtensionValidator(allowed_extensions=['mp4', 'mov'])])
+    source_video = models.FileField(upload_to=whoosh_upload, null=True, blank=True, validators=[
+        FileExtensionValidator(allowed_extensions=['mp4', 'mov'])
+    ])
     WHOOSH_TYPE_CHOICES = (
         ('om', 'Ominous'),
         ('et', 'Ethereal'),
@@ -42,6 +44,8 @@ class Whoosh(models.Model):
     user_agent = models.TextField(null=True, blank=True)
     video_data = models.TextField(null=True, blank=True)
     error = models.TextField(null=True, blank=True)
+    doppelganger = models.ForeignKey('whoosh.Whoosh', null=True, blank=True, on_delete=models.DO_NOTHING)
+    settings_hash = models.CharField(max_length=200, null=True, blank=True)
 
     @property
     def expired(self):
@@ -120,6 +124,22 @@ class Whoosh(models.Model):
                     break
 
         return video_stream
+
+    # Maintain a dict of the editable settings here, so Whooshes can be queried by them
+    def doppelganger_settings(self):
+        return {
+            'whoosh_type': self.whoosh_type,
+            'credit_text': self.credit_text,
+            'mute_source': self.mute_source,
+            'black_and_white': self.black_and_white,
+            'portrait': self.portrait,
+            'slow_motion': self.slow_motion,
+            'slow_zoom': self.slow_zoom
+        }
+
+    @property
+    def doppleganger_settings_hash(self):
+        return util.hash_data_structure(self.doppelganger_settings())
 
     def get_admin_url(self):
         return reverse('admin:{}_{}_change'.format(self._meta.app_label, self._meta.model_name), args=(self.pk,))

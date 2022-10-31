@@ -1,0 +1,25 @@
+<div class="upload-form">
+    <form method="post" enctype="multipart/form-data" action="{% url 'create-doppelganger' whoosh_id=selected_whoosh.uniq_id %}">
+        {% csrf_token %}
+
+        {{ doppelganger_form.non_field_errors }}
+
+        <div class="extra-options">
+            {% include 'whoosh/includes/form_input.html' with input=doppelganger_form.whoosh_type %}
+            {% include 'whoosh/includes/form_input.html' with input=doppelganger_form.credit_text %}
+            {% include 'whoosh/includes/form_input.html' with input=doppelganger_form.start_time %}
+
+            <div class="checkboxes">
+                {% include 'whoosh/includes/form_input.html' with input=doppelganger_form.mute_source %}
+                {% include 'whoosh/includes/form_input.html' with input=doppelganger_form.black_and_white %}
+                {% include 'whoosh/includes/form_input.html' with input=doppelganger_form.portrait %}
+                {% include 'whoosh/includes/form_input.html' with input=doppelganger_form.slow_motion %}
+                {% include 'whoosh/includes/form_input.html' with input=doppelganger_form.slow_zoom %}
+            </div>
+
+            {{ doppelganger_form.user_agent }}
+        </div>
+
+        <input type="submit" value="Submit">
+    </form>
+</div>
