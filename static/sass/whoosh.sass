@@ -100,6 +100,11 @@ a.underline
     animation-iteration-count: 1
     animation-duration: 0.5s
 
+.instructions
+  text-shadow: $whoosh-text-shadow
+  font-size: $small-font-size
+  width: 100%
+
 .whoosh-wrapper
   max-width: 50rem
 
@@ -175,6 +180,8 @@ a.underline
         width: 95%
       .field_start_time input
         width: 5rem
+      .field_source_video
+        margin-top: 1rem
 
       input
         &[type="submit"]
@@ -193,6 +200,9 @@ a.underline
       .field_start_time
         display: none
 
+    .extra-options
+      margin-top: 1rem
+
     .checkboxes
         display: flex
         justify-content: space-between
@@ -210,13 +220,7 @@ a.underline
       padding: .75rem
       font-size: 1rem
       overflow: hidden
-
-      .instructions
-        padding: 0.25rem
-        text-align: center
-        text-shadow: $whoosh-text-shadow
-        font-size: .8rem
-        width: 100%
+      text-align: center
 
       video
         max-height: 18rem
@@ -239,9 +243,6 @@ a.underline
     max-width: 100%
     max-height: 40rem
     font-size: 1rem
-
-  .expiration
-      font-size: $small-font-size
 
   .whoosh-info
     display: inline-block
