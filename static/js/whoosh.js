@@ -40,9 +40,25 @@ whoosh.uploadEditor = function() {
         removeClass(uploadPreviewWrapper, 'hidden');
         removeClass(extraOptions, 'hidden');
         removeClass(submitBtn, 'hidden');
+        addClass(uploadForm, 'form-active');
 
         uploadPreview.addEventListener('timeupdate', function(e) {
             startTimeInput.value = new Date(Number(uploadPreview.currentTime * 1000)).toISOString().substring(11, 19);
         });
+    });
+};
+
+
+whoosh.toggleDoppelgangerForm = function() {
+    let doppelgangerBtn = document.getElementById('doppelganger-btn');
+    let doppelgangerForm = document.getElementById('doppelganger-form');
+    doppelgangerBtn.addEventListener('click', function() {
+        if (hasClass(doppelgangerBtn, 'active')) {
+            removeClass(doppelgangerBtn, 'active');
+            addClass(doppelgangerForm, 'hidden');
+        } else {
+            addClass(doppelgangerBtn, 'active');
+            removeClass(doppelgangerForm, 'hidden');
+        }
     });
 };

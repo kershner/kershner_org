@@ -1,0 +1,7 @@
+{% if doppelgangers %}
+<div class="recent-whooshes">
+    <div class="subtitle">[doppelgängers]</div>
+
+    {% include 'whoosh/widgets/includes/whoosh_widget.html' with widget_whooshes=doppelgangers %}
+</div>
+{% endif %}

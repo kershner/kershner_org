@@ -5,10 +5,10 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.conf import settings
 from django.urls import reverse
+from django.db.models import Q
 from django.db import models
 from utility import util
 from uuid import uuid4
-import hashlib
 import json
 
 
@@ -140,6 +140,11 @@ class Whoosh(models.Model):
     @property
     def doppleganger_settings_hash(self):
         return util.hash_data_structure(self.doppelganger_settings())
+
+    def get_doppelgangers(self):
+        return Whoosh.objects.filter(Q(doppelganger_id=self.doppelganger_id) |
+                                     Q(doppelganger_id=self.id) |
+                                     Q(id=self.doppelganger_id)).exclude(id=self.id).all().order_by('-id')
 
     def get_admin_url(self):
         return reverse('admin:{}_{}_change'.format(self._meta.app_label, self._meta.model_name), args=(self.pk,))

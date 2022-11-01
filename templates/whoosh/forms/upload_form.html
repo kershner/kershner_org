@@ -1,0 +1,31 @@
+<div class="form">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+        {% include 'whoosh/forms/includes/form_input.html' with input=form.source_video %}
+
+        <div class="extra-options hidden">
+            {% include 'whoosh/forms/includes/form_input.html' with input=form.whoosh_type %}
+            {% include 'whoosh/forms/includes/form_input.html' with input=form.credit_text %}
+            {% include 'whoosh/forms/includes/form_input.html' with input=form.start_time %}
+
+            <div class="checkboxes">
+                {% include 'whoosh/forms/includes/form_input.html' with input=form.mute_source %}
+                {% include 'whoosh/forms/includes/form_input.html' with input=form.black_and_white %}
+                {% include 'whoosh/forms/includes/form_input.html' with input=form.portrait %}
+                {% include 'whoosh/forms/includes/form_input.html' with input=form.slow_motion %}
+                {% include 'whoosh/forms/includes/form_input.html' with input=form.slow_zoom %}
+            </div>
+
+            {{ form.user_agent }}
+        </div>
+
+        <input class="hidden" type="submit" value="Submit">
+    </form>
+
+    <div class="upload-preview hidden">
+        <div class="instructions">Scrub the video to choose a starting time.</div>
+        <video id="upload-preview" controls=""></video>
+    </div>
+</div>

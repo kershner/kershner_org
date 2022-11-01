@@ -1,0 +1,9 @@
+<div class="whoosh-widget">
+    {% for whoosh in widget_whooshes %}
+    <a href="{% url 'view-whoosh' whoosh_id=whoosh.uniq_id %}">
+        <div class="whoosh {% if selected_whoosh.id == whoosh.id %}active{% endif %}">
+            <img src="{{ whoosh.cloudfront_thumbnail_url }}">
+        </div>
+    </a>
+    {% endfor %}
+</div>

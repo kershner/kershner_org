@@ -2,16 +2,19 @@
 
 {% block content %}
     {% include 'whoosh/includes/whoosh_viewer.html' %}
-    {% include 'whoosh/includes/doppelgangers.html' %}
-    {% include 'whoosh/includes/recent_whooshes.html' %}
+    {% include 'whoosh/widgets/doppelgangers.html' %}
+    {% include 'whoosh/widgets/recent_whooshes.html' %}
     {% include 'whoosh/includes/back_link.html' %}
 {% endblock %}
 
 {% block extra_js %}
-    {% if not selected_whoosh.error and not selected_whoosh.processed %}
     <script type="text/javascript">
+        {% if not selected_whoosh.error and not selected_whoosh.processed %}
         whoosh.whooshViewerUrl = '{% url 'view-whoosh' whoosh_id=selected_whoosh.uniq_id %}';
         whoosh.checkWhooshProcessed();
+        {% endif %}
+
+        whoosh.populateUserAgent();
+        whoosh.toggleDoppelgangerForm();
     </script>
-    {% endif %}
 {% endblock %}

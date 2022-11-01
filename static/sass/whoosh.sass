@@ -39,8 +39,7 @@ a
 a.underline
   text-decoration: underline
 
-textarea[name="user_agent"],
-label[for="id_user_agent"]
+#id_user_agent
   display: none
 
 @keyframes shimmer
@@ -91,6 +90,26 @@ label[for="id_user_agent"]
 .whoosh-wrapper
   max-width: 50rem
 
+  .whoosh-widget
+    display: flex
+    flex-wrap: wrap
+
+    .whoosh
+      display: inline-flex
+      margin: 0
+      margin-right: .5rem
+      margin-bottom: .5rem
+      border: $whoosh-border
+      width: 100px
+      height: 100px
+
+      img
+        object-fit: cover
+        width: 100%
+
+      &:hover
+        @extend .active
+
   .link-btn
     padding: .5rem 1rem
     border: $whoosh-border
@@ -108,7 +127,7 @@ label[for="id_user_agent"]
     &:first-of-type
       margin-top: 1rem
 
-  .upload-form
+  .form
     display: inline-flex
     position: relative
     overflow: hidden
@@ -120,8 +139,10 @@ label[for="id_user_agent"]
       flex-direction: column
       max-width: 15rem
       font-size: 1rem
-      border: $whoosh-border
       padding: .75rem
+      &.form-active
+        border: $whoosh-border
+        border-color: $whoosh-red
 
       .form-input
         flex-direction: column
@@ -136,9 +157,9 @@ label[for="id_user_agent"]
           margin-left: 0
           align-self: flex-start
 
-      #id_credit_text
+      .field_credit_text
         width: 95%
-      #id_start_time
+      .field_start_time
         width: 5rem
 
       input
@@ -152,6 +173,12 @@ label[for="id_user_agent"]
 
       @media (max-width: $mobile-breakpoint)
         max-width: 100%
+
+    #doppelganger-form
+      border: $whoosh-border
+      border-color: $whoosh-red
+      .field_start_time
+        display: none
 
     .checkboxes
         display: flex
@@ -192,26 +219,6 @@ label[for="id_user_agent"]
 
   .recent-whooshes
     margin-top: 3rem
-
-    .recent-whoosh-container
-      display: flex
-      flex-wrap: wrap
-
-      .recent-whoosh
-        display: inline-flex
-        margin: 0
-        margin-right: .5rem
-        margin-bottom: .5rem
-        border: $whoosh-border
-        width: 100px
-        height: 100px
-
-        img
-          object-fit: cover
-          width: 100%
-
-        &:hover
-          @extend .active
 
 .whoosh-viewer
   video

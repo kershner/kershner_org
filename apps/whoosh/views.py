@@ -51,7 +51,7 @@ class WhooshViewer(View):
 
         ctx = {
             'doppelganger_form': doppelganger_form,
-            'doppelgangers': Whoosh.objects.filter(doppelganger_id=whoosh.id).order_by('-id').all(),
+            'doppelgangers': whoosh.get_doppelgangers(),
             'selected_whoosh': whoosh,
             'recent_whooshes': get_recent_whooshes()
         }
@@ -83,18 +83,19 @@ class DoppelgangerSubmit(View):
                 'slow_motion': doppelganger_form.cleaned_data['slow_motion'],
                 'slow_zoom': doppelganger_form.cleaned_data['slow_zoom']
             }
+
+            # Check if a doppelganger already exists with these settings
             new_doppelganger_settings_hash = util.hash_data_structure(new_doppleganger_settings)
             existing_doppelganger = Whoosh.objects.filter(settings_hash=new_doppelganger_settings_hash).first()
             if not existing_doppelganger:
                 new_doppelganger = Whoosh(**doppelganger_form.cleaned_data)
                 new_doppelganger.source_video.name = whoosh.source_video.name
-                new_doppelganger.doppelganger = whoosh
+                new_doppelganger.doppelganger = whoosh.doppelganger if whoosh.doppelganger else whoosh
                 new_doppelganger.save()
 
                 create_whoosh.delay(new_doppelganger.id)
                 return redirect('view-whoosh', whoosh_id=new_doppelganger.uniq_id)
 
-            # flash message that a doppelganger already existed
             return redirect('view-whoosh', whoosh_id=existing_doppelganger.uniq_id)
 
 
