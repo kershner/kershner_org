@@ -1,5 +1,7 @@
 @import 'misc'
 
+$whoosh-grey-lite: #e6e6e6
+$whoosh-grey: #cccccc
 $whoosh-white: #f7f7f7
 $whoosh-black: #0a0a0a
 $whoosh-red: #d80452
@@ -9,6 +11,9 @@ $whoosh-text-shadow: 1px 1px 2px $whoosh-black
 $whoosh-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1)
 $mobile-breakpoint: 600px
 
+hr
+  width: 100%
+
 .hidden
   display: none !important
 
@@ -17,6 +22,14 @@ $mobile-breakpoint: 600px
   color: $whoosh-red
   img
     opacity: 0.6
+
+.disabled
+  pointer-events: none
+  opacity: 0.3
+
+  input
+    color: $whoosh-grey
+    opacity: 1
 
 body
   font-family: Arial, Helvetica, sans-serif
@@ -140,9 +153,7 @@ a.underline
       max-width: 15rem
       font-size: 1rem
       padding: .75rem
-      &.form-active
-        border: $whoosh-border
-        border-color: $whoosh-red
+      border: $whoosh-border
 
       .form-input
         flex-direction: column
@@ -217,8 +228,9 @@ a.underline
       .upload-preview
         max-width: 100%
 
-  .recent-whooshes
-    margin-top: 3rem
+  .recent-whooshes,
+  .doppelgangers
+    margin-top: 1rem
 
 .whoosh-viewer
   video

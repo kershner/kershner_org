@@ -38,9 +38,8 @@ whoosh.uploadEditor = function() {
         let videoSrc = `${URL.createObjectURL(e.target.files[0])}`;
         uploadPreview.setAttribute('src', videoSrc);
         removeClass(uploadPreviewWrapper, 'hidden');
-        removeClass(extraOptions, 'hidden');
+        removeClass(extraOptions, 'disabled');
         removeClass(submitBtn, 'hidden');
-        addClass(uploadForm, 'form-active');
 
         uploadPreview.addEventListener('timeupdate', function(e) {
             startTimeInput.value = new Date(Number(uploadPreview.currentTime * 1000)).toISOString().substring(11, 19);

@@ -142,9 +142,15 @@ class Whoosh(models.Model):
         return util.hash_data_structure(self.doppelganger_settings())
 
     def get_doppelgangers(self):
-        return Whoosh.objects.filter(Q(doppelganger_id=self.doppelganger_id) |
-                                     Q(doppelganger_id=self.id) |
-                                     Q(id=self.doppelganger_id)).exclude(id=self.id).all().order_by('-id')
+        if not self.doppelganger:
+            doppel_children = Whoosh.objects.filter(doppelganger_id=self.id)
+            doppelgangers = doppel_children
+        else:
+            q_filters = Q(doppelganger_id=self.doppelganger_id) | Q(id=self.doppelganger_id)
+            doppelgangers = Whoosh.objects.filter(q_filters).exclude(doppelganger_id=None)
+            doppelgangers = doppelgangers | Whoosh.objects.filter(id=self.doppelganger_id)
+
+        return doppelgangers.exclude(id=self.id).all().order_by('-id')
 
     def get_admin_url(self):
         return reverse('admin:{}_{}_change'.format(self._meta.app_label, self._meta.model_name), args=(self.pk,))
