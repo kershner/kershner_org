@@ -14,7 +14,9 @@
         whoosh.checkWhooshProcessed();
         {% endif %}
 
+        {% if selected_whoosh.processed and not selected_whoosh.expired %}
         whoosh.populateUserAgent();
         whoosh.toggleDoppelgangerForm();
+        {% endif %}
     </script>
 {% endblock %}
