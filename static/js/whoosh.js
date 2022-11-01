@@ -1,15 +1,15 @@
-let whoosh = {
+const whoosh = {
     'whooshViewerUrl': ''
 };
 
 whoosh.populateUserAgent = function() {
-    let userAgentInput = document.getElementById('id_user_agent');
+    const userAgentInput = document.getElementById('id_user_agent');
     userAgentInput.value = window.navigator.userAgent;
 };
 
 whoosh.checkWhooshProcessed = function() {
     window.checkWhooshProcessedTimer = setInterval(function() {
-        let headers = {
+        const headers = {
             'X-CSRFToken': getCookie('csrftoken')
         };
         fetchWrapper(whoosh.whooshViewerUrl, 'post', {}, headers, function(data) {
@@ -21,22 +21,24 @@ whoosh.checkWhooshProcessed = function() {
 };
 
 whoosh.uploadEditor = function() {
-    let uploadForm = document.getElementsByTagName('form')[0];
-    let uploadProgressDiv = document.getElementsByClassName('upload-in-progress')[0];
-    let sourceVideoInput = document.getElementById('id_source_video');
-    let uploadPreview = document.getElementById('upload-preview');
-    let uploadPreviewWrapper = document.querySelector('.upload-preview');
-    let startTimeInput = document.getElementById('id_start_time');
-    let extraOptions = document.querySelector('.extra-options');
-    let submitBtn = document.querySelector('input[value="Submit"]');
+    const uploadForm = document.getElementsByTagName('form')[0];
+    const uploadProgressDiv = document.getElementsByClassName('upload-in-progress')[0];
+    const sourceVideoInput = document.getElementById('id_source_video');
+    const uploadPreview = document.getElementById('upload-preview');
+    const uploadPreviewWrapper = document.querySelector('.upload-preview');
+    const startTimeInput = document.getElementById('id_start_time');
+    const extraOptions = document.querySelector('.extra-options');
+    const submitBtn = document.querySelector('input[value="Submit"]');
 
     uploadForm.addEventListener('submit', function(e) {
         removeClass(uploadProgressDiv, 'hidden');
     });
 
     sourceVideoInput.addEventListener('change', function(e) {
-        let videoSrc = `${URL.createObjectURL(e.target.files[0])}`;
+        const videoSrc = `${URL.createObjectURL(e.target.files[0])}`;
+
         uploadPreview.setAttribute('src', videoSrc);
+        
         removeClass(uploadPreviewWrapper, 'hidden');
         removeClass(extraOptions, 'disabled');
         removeClass(submitBtn, 'hidden');
@@ -49,15 +51,13 @@ whoosh.uploadEditor = function() {
 
 
 whoosh.toggleDoppelgangerForm = function() {
-    let doppelgangerBtn = document.getElementById('doppelganger-btn');
-    let doppelgangerForm = document.getElementById('doppelganger-form');
+    const doppelgangerBtn = document.getElementById('doppelganger-btn');
+    const doppelgangerForm = document.getElementById('doppelganger-form');
     doppelgangerBtn.addEventListener('click', function() {
-        if (hasClass(doppelgangerBtn, 'active')) {
-            removeClass(doppelgangerBtn, 'active');
-            addClass(doppelgangerForm, 'hidden');
-        } else {
-            addClass(doppelgangerBtn, 'active');
+        if (hasClass(doppelgangerForm, 'hidden')) {
             removeClass(doppelgangerForm, 'hidden');
+        } else {
+            addClass(doppelgangerForm, 'hidden');
         }
     });
 };
