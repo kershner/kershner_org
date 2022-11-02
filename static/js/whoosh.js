@@ -55,8 +55,10 @@ whoosh.toggleDoppelgangerForm = function() {
     const doppelgangerForm = document.getElementById('doppelganger-form');
     doppelgangerBtn.addEventListener('click', function() {
         if (hasClass(doppelgangerForm, 'hidden')) {
+            addClass(doppelgangerBtn, 'active');
             removeClass(doppelgangerForm, 'hidden');
         } else {
+            removeClass(doppelgangerBtn, 'active');
             addClass(doppelgangerForm, 'hidden');
         }
     });

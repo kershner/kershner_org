@@ -1,8 +1,10 @@
 <div class="form">
     <form id="doppelganger-form" class="hidden" method="post" enctype="multipart/form-data" action="{% url 'create-doppelganger' whoosh_id=selected_whoosh.uniq_id %}">
-        <div class="instructions">
+        <div class="instructions small-font-size">
             Manufacture a paranormal counterpart to this Whoosh using altered settings.
         </div>
+
+        <hr>
 
         {% csrf_token %}
 

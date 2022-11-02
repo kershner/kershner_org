@@ -6,6 +6,8 @@ $whoosh-white: #f7f7f7
 $whoosh-black: #0a0a0a
 $whoosh-red: #d80452
 $whoosh-border: 1px solid $whoosh-white
+$large-font-size: 2rem
+$medium-font-size: 0.9rem
 $small-font-size: 0.75rem
 $whoosh-text-shadow: 1px 1px 2px $whoosh-black
 $whoosh-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1)
@@ -13,6 +15,10 @@ $mobile-breakpoint: 600px
 
 hr
   width: 100%
+  border-color: $whoosh-red
+
+.small-font-size
+  font-size: $small-font-size !important
 
 .hidden
   display: none !important
@@ -89,7 +95,7 @@ a.underline
     z-index: 1
     align-items: center
     justify-content: center
-    font-size: 1.25rem
+    font-size: $large-font-size
     background-image: url('../img/whoosh/live_inside_a_dream.png')
     background-repeat: no-repeat
     background-size: cover
@@ -101,7 +107,7 @@ a.underline
 
 .instructions
   text-shadow: $whoosh-text-shadow
-  font-size: $small-font-size
+  font-size: $medium-font-size
   width: 100%
 
 .whoosh-wrapper
@@ -145,7 +151,7 @@ a.underline
       margin-top: 1rem
 
   .header
-    font-size: 2.5rem
+    font-size: $large-font-size
 
   .form
     display: inline-flex
@@ -162,14 +168,23 @@ a.underline
       padding: .75rem
       border: $whoosh-border
 
+      .errorlist
+        margin: 0.25rem auto
+        padding: 0
+        padding-left: 1.5rem
+
       .form-input
         flex-direction: column
-        margin: 0
-        margin-bottom: 0.5rem
+        margin: 0.5rem 0
 
         .label
           display: flex
           align-items: center
+          font-size: $medium-font-size
+
+        input,
+        select
+          padding: .15rem .25rem
 
         input
           margin-left: 0
@@ -180,27 +195,44 @@ a.underline
       .field_start_time input
         width: 5rem
       .field_source_video
-        margin-top: 1rem
+        margin-top: 0
+
+      select
+        cursor: pointer
+        background: none
+        border: $whoosh-border
+        color: $whoosh-white
+      option
+        background-color: $whoosh-red
 
       input
+        &[type="file"]
+          padding-left: 0
+
+        &[type="text"]
+          background: none
+          border: $whoosh-border
+          color: $whoosh-white
+
         &[type="submit"]
           align-self: flex-start
           cursor: pointer
           font-size: 1rem
 
-          &[value="Submit"]
-            width: 100%
+        &[value="Submit"]
+          width: 100%
+          background: none
+          color: $whoosh-white
+          @extend .link-btn
 
       @media (max-width: $mobile-breakpoint)
         max-width: 100%
 
     #doppelganger-form
-      border: $whoosh-border
       .field_start_time
         display: none
-
-    .extra-options
-      margin-top: 1rem
+      .field_whoosh_type
+        margin: 0
 
     .checkboxes
       display: flex
@@ -208,7 +240,12 @@ a.underline
       flex-wrap: wrap
       flex-direction: row
       .form-input
+        margin: 0
+        margin-bottom: 0.25rem
         flex-basis: 50%
+      input
+        cursor: pointer
+        accent-color: $whoosh-red
 
     .upload-preview
       display: inline-flex
@@ -217,7 +254,6 @@ a.underline
       margin: .25rem .5rem
       margin-left: 0
       padding: .75rem
-      font-size: 1rem
       overflow: hidden
       text-align: center
 
@@ -233,9 +269,12 @@ a.underline
       .upload-preview
         max-width: 100%
 
-  .recent-whooshes,
-  .doppelgangers
+  .whoosh-widget-wrapper
     margin-top: 1rem
+    &.tall
+      .whoosh
+        width: 100px
+        height: 200px
 
 .whoosh-viewer
   video
@@ -252,7 +291,6 @@ a.underline
 
     .info
       width: 20rem
-      font-size: 1rem
 
       .info-stat
         display: flex
@@ -276,3 +314,8 @@ a.underline
 
         .info-stat
           flex-basis: 30%
+        .info-stat-value
+          color: $whoosh-grey
+          &.checked
+            color: $whoosh-red
+            font-weight: bold

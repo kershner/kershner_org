@@ -1,0 +1,7 @@
+{% if saved_whooshes %}
+<div class="whoosh-widget-wrapper tall">
+    <div class="subtitle">[saved]</div>
+
+    {% include 'whoosh/widgets/includes/whoosh_widget.html' with widget_whooshes=saved_whooshes %}
+</div>
+{% endif %}

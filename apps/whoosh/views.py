@@ -19,6 +19,7 @@ class WhooshHomeView(View):
     def get(self, request):
         ctx = {
             'form': self.form,
+            'saved_whooshes': get_saved_whooshes(),
             'recent_whooshes': get_recent_whooshes()
         }
         return TemplateResponse(request, self.template, ctx)
@@ -33,6 +34,7 @@ class WhooshHomeView(View):
 
         ctx = {
             'form': self.form,
+            'saved_whooshes': get_saved_whooshes(),
             'recent_whooshes': get_recent_whooshes()
         }
         return TemplateResponse(request, self.template, ctx)
@@ -44,7 +46,10 @@ class WhooshViewer(View):
     def get(self, request, whoosh_id=None):
         whoosh = Whoosh.objects.filter(uniq_id=whoosh_id).first()
         if not whoosh:
-            ctx = {'recent_whooshes': get_recent_whooshes()}
+            ctx = {
+                'saved_whooshes': get_saved_whooshes(),
+                'recent_whooshes': get_recent_whooshes()
+            }
             return TemplateResponse(request, 'whoosh/404.html', ctx)
 
         doppelganger_form = DoppelgangerForm(instance=whoosh)
@@ -53,6 +58,7 @@ class WhooshViewer(View):
             'doppelganger_form': doppelganger_form,
             'doppelgangers': whoosh.get_doppelgangers(),
             'selected_whoosh': whoosh,
+            'saved_whooshes': get_saved_whooshes(),
             'recent_whooshes': get_recent_whooshes()
         }
         return TemplateResponse(request, self.template, ctx)
@@ -120,3 +126,7 @@ def get_recent_whooshes():
     one_day_ago = timezone.now() - datetime.timedelta(days=1)
     whoosh_limit = 60
     return Whoosh.objects.filter(processed__gte=one_day_ago).order_by('-id').all()[:whoosh_limit]
+
+
+def get_saved_whooshes():
+    return Whoosh.objects.filter(saved=True, processed__isnull=False).order_by('-id').all()[:20]

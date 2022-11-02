@@ -2,14 +2,12 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <div class="instructions">
-            Create a damn fine clip from a video file.
-        </div>
+        Create a damn fine clip from a video file.
+
+        <hr>
 
         {{ form.non_field_errors }}
         {% include 'whoosh/forms/includes/form_input.html' with input=form.source_video %}
-
-        <hr>
 
         <div class="extra-options disabled">
             {% include 'whoosh/forms/includes/form_input.html' with input=form.whoosh_type %}

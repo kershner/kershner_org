@@ -31,31 +31,31 @@
             <!-- Mute Source -->
             <div class="info-stat">
                 <div class="info-stat-label">Mute Source:</div>
-                <div class="info-stat-value">{% if selected_whoosh.mute_source %}&#9989;&#xfe0e;{% else %}&#10006;&#xfe0e;{% endif %}</div>
+                <div class="info-stat-value {% if selected_whoosh.mute_source %}checked{% endif %}">{% if selected_whoosh.mute_source %}&#10004;&#xfe0e;{% else %}&#10006;&#xfe0e;{% endif %}</div>
             </div>
 
             <!-- Black and White -->
             <div class="info-stat">
                 <div class="info-stat-label">Black & White:</div>
-                <div class="info-stat-value">{% if selected_whoosh.black_and_white %}&#9989;&#xfe0e;{% else %}&#10006;&#xfe0e;{% endif %}</div>
+                <div class="info-stat-value {% if selected_whoosh.black_and_white %}checked{% endif %}">{% if selected_whoosh.black_and_white %}&#10004;&#xfe0e;{% else %}&#10006;&#xfe0e;{% endif %}</div>
             </div>
 
             <!-- Portrait -->
             <div class="info-stat">
                 <div class="info-stat-label">Portrait:</div>
-                <div class="info-stat-value">{% if selected_whoosh.portrait %}&#9989;&#xfe0e;{% else %}&#10006;&#xfe0e;{% endif %}</div>
+                <div class="info-stat-value {% if selected_whoosh.portrait %}checked{% endif %}">{% if selected_whoosh.portrait %}&#10004;&#xfe0e;{% else %}&#10006;&#xfe0e;{% endif %}</div>
             </div>
 
             <!-- Slow Motion -->
             <div class="info-stat">
                 <div class="info-stat-label">Slow Motion:</div>
-                <div class="info-stat-value">{% if selected_whoosh.slow_motion %}&#9989;&#xfe0e;{% else %}&#10006;&#xfe0e;{% endif %}</div>
+                <div class="info-stat-value {% if selected_whoosh.slow_motion %}checked{% endif %}">{% if selected_whoosh.slow_motion %}&#10004;&#xfe0e;{% else %}&#10006;&#xfe0e;{% endif %}</div>
             </div>
 
             <!-- Slow Zoom -->
             <div class="info-stat">
                 <div class="info-stat-label">Slow Zoom:</div>
-                <div class="info-stat-value">{% if selected_whoosh.slow_zoom %}&#9989;&#xfe0e;{% else %}&#10006;&#xfe0e;{% endif %}</div>
+                <div class="info-stat-value {% if selected_whoosh.slow_zoom %}checked{% endif %}">{% if selected_whoosh.slow_zoom %}&#10004;&#xfe0e;{% else %}&#10006;&#xfe0e;{% endif %}</div>
             </div>
         </div>
 
