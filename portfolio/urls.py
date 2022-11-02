@@ -25,6 +25,7 @@ urlpatterns = [
     path('whoosh/view/<whoosh_id>', whoosh_views.WhooshViewer.as_view(), name='view-whoosh'),
     path('whoosh/doppelganger/<whoosh_id>/', whoosh_views.DoppelgangerSubmit.as_view(), name='create-doppelganger'),
     path('whoosh/reprocess/<whoosh_id>', whoosh_views.reprocess_whoosh, name='reprocess-whoosh'),
+    path('whoosh/save/<whoosh_id>', whoosh_views.save_whoosh, name='save-whoosh'),
 
     # Admin Stuff
     path('admin/move-project-position/<project_id>/<direction>',

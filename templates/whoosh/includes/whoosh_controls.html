@@ -2,6 +2,26 @@
     <div id="doppelganger-btn" class="link-btn">
         Create Doppelgänger
     </div>
-    <br>
-    {% include 'whoosh/forms/doppelganger_form.html' %}
+
+    {% if request.user.is_superuser  %}
+    <a href="{{ selected_whoosh.get_admin_url }}">
+        <div class="link-btn">
+            Admin Page
+        </div>
+    </a>
+
+    {% if not selected_whoosh.saved %}
+    <a href="{% url 'save-whoosh' whoosh_id=selected_whoosh.id %}">
+        <div class="link-btn">
+            Save
+        </div>
+    </a>
+    {% else %}
+    <div class="link-btn active">
+        Saved
+    </div>
+    {% endif %}
+    {% endif %}
 </div>
+
+{% include 'whoosh/forms/doppelganger_form.html' %}

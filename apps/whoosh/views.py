@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import user_passes_test
 from apps.whoosh.forms import WhooshForm, DoppelgangerForm
 from django.template.response import TemplateResponse
-from portfolio.tasks import create_whoosh
+from portfolio.tasks import process_whoosh
 from django.views.generic import View
 from apps.whoosh.models import Whoosh
 from django.shortcuts import redirect
@@ -28,7 +28,7 @@ class WhooshHomeView(View):
 
         if self.form.is_valid():
             self.form.save()
-            create_whoosh.delay(self.form.instance.id)
+            process_whoosh.delay(self.form.instance.id)
             return redirect('view-whoosh', whoosh_id=self.form.instance.uniq_id)
 
         ctx = {
@@ -93,7 +93,7 @@ class DoppelgangerSubmit(View):
                 new_doppelganger.doppelganger = whoosh.doppelganger if whoosh.doppelganger else whoosh
                 new_doppelganger.save()
 
-                create_whoosh.delay(new_doppelganger.id)
+                process_whoosh.delay(new_doppelganger.id)
                 return redirect('view-whoosh', whoosh_id=new_doppelganger.uniq_id)
 
             return redirect('view-whoosh', whoosh_id=existing_doppelganger.uniq_id)
@@ -102,9 +102,18 @@ class DoppelgangerSubmit(View):
 @user_passes_test(lambda u: u.is_superuser)
 def reprocess_whoosh(request, whoosh_id):
     whoosh = Whoosh.objects.filter(id=whoosh_id).first()
-    create_whoosh.delay(whoosh.id)
+    process_whoosh.delay(whoosh.id)
     messages.success(request, 'Whoosh id: {} is being reprocessed...'.format(whoosh.id))
     return redirect(whoosh.get_admin_url())
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def save_whoosh(request, whoosh_id):
+    whoosh = Whoosh.objects.filter(id=whoosh_id).first()
+    whoosh.saved = True
+    whoosh.save()
+    messages.success(request, 'Whoosh id: {} has been saved.'.format(whoosh.id))
+    return redirect(reprocess_whoosh, whoosh_id=whoosh_id)
 
 
 def get_recent_whooshes():

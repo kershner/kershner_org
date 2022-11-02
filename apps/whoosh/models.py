@@ -13,11 +13,15 @@ import json
 
 
 def whoosh_upload(instance, filename):
-    return util.get_random_s3_key_for_upload(instance.s3_upload_path, filename)
+    return util.get_random_s3_key_for_upload(instance.s3_upload_path, filename, instance.uniq_id)
 
 
 def whoosh_processed(instance, filename):
-    return util.get_random_s3_key_for_upload(instance.s3_processed_path, filename)
+    return util.get_random_s3_key_for_upload(instance.s3_processed_path, filename, instance.uniq_id)
+
+
+def whoosh_saved(instance, filename):
+    return util.get_random_s3_key_for_upload(instance.s3_saved_path, filename, instance.uniq_id)
 
 
 class Whoosh(models.Model):
@@ -46,6 +50,9 @@ class Whoosh(models.Model):
     error = models.TextField(null=True, blank=True)
     doppelganger = models.ForeignKey('whoosh.Whoosh', null=True, blank=True, on_delete=models.DO_NOTHING)
     settings_hash = models.CharField(max_length=200, null=True, blank=True)
+    saved = models.BooleanField(default=False)
+    saved_video = models.FileField(null=True, blank=True, upload_to=whoosh_saved)
+    saved_thumbnail = models.FileField(null=True, blank=True, upload_to=whoosh_saved)
 
     @property
     def expired(self):
@@ -63,24 +70,42 @@ class Whoosh(models.Model):
         return 'static/{}'.format(str(self.processed_video))
 
     @property
+    def saved_video_s3_key(self):
+        return 'static/{}'.format(str(self.saved_video))
+
+    @property
     def thumbnail_s3_key(self):
         return 'static/{}'.format(str(self.thumbnail))
 
     @property
+    def saved_thumbnail_s3_key(self):
+        return 'static/{}'.format(str(self.saved_thumbnail))
+
+    @property
     def s3_upload_path(self):
-        return 'whoosh/uploads/'
+        return 'whoosh/expiring/uploads/'
 
     @property
     def s3_processed_path(self):
-        return 'whoosh/processed/'
+        return 'whoosh/expiring/processed/'
+
+    @property
+    def s3_saved_path(self):
+        return 'whoosh/saved/'
 
     @property
     def cloudfront_video_url(self):
-        return 'https://{}/{}'.format(settings.CLOUDFRONT_DOMAIN, self.processed_video_s3_key)
+        s3_key = self.processed_video_s3_key
+        if self.saved:
+            s3_key = self.saved_video_s3_key
+        return 'https://{}/{}'.format(settings.CLOUDFRONT_DOMAIN, s3_key)
 
     @property
     def cloudfront_thumbnail_url(self):
-        return 'https://{}/{}'.format(settings.CLOUDFRONT_DOMAIN, self.thumbnail_s3_key)
+        s3_key = self.thumbnail_s3_key
+        if self.saved:
+            s3_key = self.saved_thumbnail_s3_key
+        return 'https://{}/{}'.format(settings.CLOUDFRONT_DOMAIN, s3_key)
 
     @property
     def video_height(self):
@@ -171,4 +196,8 @@ def generate_uniq_id(sender, instance, created, **kwargs):
 
 @receiver(pre_delete, sender=Whoosh)
 def remove_s3_files(sender, instance, **kwargs):
-    delete_whoosh_media.delay(instance.uploaded_video_s3_key, instance.processed_video_s3_key, instance.thumbnail_s3_key)
+    delete_whoosh_media.delay(instance.uploaded_video_s3_key, instance.processed_video_s3_key,
+                              instance.thumbnail_s3_key)
+    if instance.saved:
+        delete_whoosh_media.delay(instance.saved_video_s3_key, instance.processed_video_s3_key,
+                                  instance.saved_thumbnail_s3_key)

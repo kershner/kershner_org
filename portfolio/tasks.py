@@ -11,8 +11,8 @@ import os
 logger = logging.getLogger('portfolio.tasks')
 
 
-@app.task(name='create-whoosh')
-def create_whoosh(whoosh_id):
+@app.task(name='process-whoosh')
+def process_whoosh(whoosh_id):
     from apps.whoosh.models import Whoosh
     logger.info('\n============ Running create_whoosh as Celery task....')
     whoosh = Whoosh.objects.filter(id=whoosh_id).first()
@@ -44,6 +44,11 @@ def create_whoosh(whoosh_id):
             # Save video and thumbnail to model
             whoosh.thumbnail.save(thumbnail_filename, File(open(thumbnail_filename, 'rb')))
             whoosh.processed_video.save(output_filename, File(open(output_filename, 'rb')))
+
+            # Store the processed files in the /saved directory if not already
+            if whoosh.saved and not whoosh.saved_video:
+                whoosh.saved_thumbnail.save(thumbnail_filename, File(open(thumbnail_filename, 'rb')))
+                whoosh.saved_video.save(output_filename, File(open(output_filename, 'rb')))
 
             whoosh.processed = timezone.now()
 

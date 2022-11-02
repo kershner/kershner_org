@@ -9,9 +9,8 @@ class WhooshAdmin(admin.ModelAdmin):
     change_form_template = 'admin/whoosh/change_form.html'
     save_on_top = True
     list_display = ['id', 'created', 'thumbnail_preview', 'credit_text', 'processed']
-    readonly_fields = ['uniq_id', 'user_agent', 'created', 'processed', 'source_video', 'processed_video', 'thumbnail']
-    search_fields = ['doppelganger']
-    autocomplete_fields = ['doppelganger']
+    readonly_fields = ['doppelganger', 'uniq_id', 'user_agent', 'created', 'processed', 'source_video',
+                       'processed_video', 'thumbnail', 'saved_video', 'saved_thumbnail', 'settings_hash', 'saved']
 
     @staticmethod
     def thumbnail_preview(obj):
