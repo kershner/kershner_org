@@ -34,6 +34,15 @@ class WhooshFormBase(ModelForm):
 
         return start_time
 
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # Enable mute_source anytime slow motion is enabled
+        if cleaned_data.get('slow_motion') and not cleaned_data.get('mute_source'):
+            self.cleaned_data['mute_source'] = True
+
+        return cleaned_data
+
 
 class WhooshForm(WhooshFormBase):
     class Meta:

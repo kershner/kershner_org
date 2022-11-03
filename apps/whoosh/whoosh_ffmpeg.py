@@ -86,40 +86,40 @@ def run_whoosh_thumbnail_ffmpeg(video_filename, thumbnail_output_filename):
 
 
 def get_complex_filter_str(whoosh):
-    filter_str = '[0]'
+    video_filter = []
 
     # Zoom/pan
     if whoosh.slow_zoom:
-        zoompan_filter = "zoompan=z='min(max(zoom,pzoom)+0.0015,1.5)':d=0:s={}x{},".format(whoosh.video_width,
-                                                                                           whoosh.video_height)
-        filter_str = '{}{}'.format(filter_str, zoompan_filter)
+        zoompan_filter = "zoompan=z='min(max(zoom,pzoom)+0.0015,1.5)':d=0:s={}x{}".format(whoosh.video_width,
+                                                                                          whoosh.video_height)
+        video_filter.append(zoompan_filter)
 
     # Cropping
+    crop_or_scale_str = 'scale={}:-2'.format(FINAL_W_OR_H)
     if whoosh.can_be_cropped and whoosh.portrait:
-        crop_and_scale_str = "crop=in_h*{}:in_h,scale=-2:{}".format(PORTRAIT_RATIO, FINAL_W_OR_H)
-        filter_str = '{}{}'.format(filter_str, crop_and_scale_str)
-    else:
-        scale_str = 'scale={}:-2'.format(FINAL_W_OR_H)
-        filter_str = '{}{}'.format(filter_str, scale_str)
+        crop_or_scale_str = "crop=in_h*{}:in_h,scale=-2:{}".format(PORTRAIT_RATIO, FINAL_W_OR_H)
+
+    video_filter.append(crop_or_scale_str)
 
     # Black and white
     if whoosh.black_and_white:
         bw_filter = 'hue=s=0'
-        filter_str = '{},{}'.format(filter_str, bw_filter)
+        video_filter.append(bw_filter)
 
     # Slow mo
     if whoosh.slow_motion:
         slomo_filter = 'setpts=3*PTS'
-        filter_str = '{},{}'.format(filter_str, slomo_filter)
+        video_filter.append(slomo_filter)
 
     # Audio mixing
     source_mix = 1.0
     if whoosh.mute_source:
         source_mix = 0.0
 
-    filter_str = '[0:a]volume={},apad[vol];[vol][1:a]amerge[a];{}'.format(source_mix, filter_str)
+    video_filter_str = '[0]{}'.format(','.join(video_filter))
+    filter_str = '[0:a]volume={},apad[vol];[vol][1:a]amerge[a];{}'.format(source_mix, video_filter_str)
     formatted_text = get_formatted_credit_text(whoosh)
-    drawtext_str = '{}'.format(get_drawtext_filter(whoosh, formatted_text))
+    drawtext_str = get_drawtext_filter(whoosh, formatted_text)
 
     return '{},{}[filtered_video]'.format(filter_str, drawtext_str)
 

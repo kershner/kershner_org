@@ -74,28 +74,29 @@ class WhooshViewer(View):
 
 
 class DoppelgangerSubmit(View):
-    @staticmethod
-    def post(request, whoosh_id=None):
-        whoosh = Whoosh.objects.filter(uniq_id=whoosh_id).first()
-        doppelganger_form = DoppelgangerForm(request.POST)
+    form = DoppelgangerForm()
 
-        if doppelganger_form.is_valid():
+    def post(self, request, whoosh_id=None):
+        whoosh = Whoosh.objects.filter(uniq_id=whoosh_id).first()
+        self.form = DoppelgangerForm(request.POST)
+
+        if self.form.is_valid():
             new_doppleganger_settings = {
                 'id': whoosh.id,
-                'whoosh_type': doppelganger_form.cleaned_data['whoosh_type'],
-                'credit_text': doppelganger_form.cleaned_data['credit_text'],
-                'mute_source': doppelganger_form.cleaned_data['mute_source'],
-                'black_and_white': doppelganger_form.cleaned_data['black_and_white'],
-                'portrait': doppelganger_form.cleaned_data['portrait'],
-                'slow_motion': doppelganger_form.cleaned_data['slow_motion'],
-                'slow_zoom': doppelganger_form.cleaned_data['slow_zoom']
+                'whoosh_type': self.form.cleaned_data['whoosh_type'],
+                'credit_text': self.form.cleaned_data['credit_text'],
+                'mute_source': self.form.cleaned_data['mute_source'],
+                'black_and_white': self.form.cleaned_data['black_and_white'],
+                'portrait': self.form.cleaned_data['portrait'],
+                'slow_motion': self.form.cleaned_data['slow_motion'],
+                'slow_zoom': self.form.cleaned_data['slow_zoom']
             }
 
             # Check if a doppelganger already exists with these settings
             new_doppelganger_settings_hash = util.hash_data_structure(new_doppleganger_settings)
             existing_doppelganger = Whoosh.objects.filter(settings_hash=new_doppelganger_settings_hash).first()
             if not existing_doppelganger:
-                new_doppelganger = Whoosh(**doppelganger_form.cleaned_data)
+                new_doppelganger = Whoosh(**self.form.cleaned_data)
                 new_doppelganger.source_video.name = whoosh.source_video.name
                 new_doppelganger.doppelganger = whoosh.doppelganger if whoosh.doppelganger else whoosh
                 new_doppelganger.save()
@@ -104,6 +105,8 @@ class DoppelgangerSubmit(View):
                 return redirect('view-whoosh', whoosh_id=new_doppelganger.uniq_id)
 
             return redirect('view-whoosh', whoosh_id=existing_doppelganger.uniq_id)
+
+        return redirect('view-whoosh', whoosh_id=whoosh.uniq_id)
 
 
 @user_passes_test(lambda u: u.is_superuser)
