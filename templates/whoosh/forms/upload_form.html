@@ -1,3 +1,5 @@
+{% load portfolio_tags %}
+
 <div class="form">
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
@@ -7,7 +9,11 @@
         <hr>
 
         {{ form.non_field_errors }}
+
+        {% settings_value 'DEBUG' as DEBUG %}
+        {% if not DEBUG %}
         {{ form.captcha }}
+        {% endif %}
 
         {% include 'whoosh/forms/includes/form_input.html' with input=form.source_video %}
 

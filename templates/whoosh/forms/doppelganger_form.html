@@ -1,3 +1,6 @@
+{% load portfolio_tags %}
+
+
 <div class="form">
     <form id="doppelganger-form" class="hidden" method="post" enctype="multipart/form-data" action="{% url 'create-doppelganger' whoosh_id=selected_whoosh.uniq_id %}">
         <div class="instructions medium-font-size">
@@ -9,7 +12,11 @@
         {% csrf_token %}
 
         {{ doppelganger_form.non_field_errors }}
+
+        {% settings_value 'DEBUG' as DEBUG %}
+        {% if not DEBUG %}
         {{ doppelganger_form.captcha }}
+        {% endif %}
 
         <div class="extra-options">
             {% include 'whoosh/forms/includes/form_input.html' with input=doppelganger_form.whoosh_type %}
