@@ -81,6 +81,7 @@ class DoppelgangerSubmit(View):
 
         if doppelganger_form.is_valid():
             new_doppleganger_settings = {
+                'id': whoosh.id,
                 'whoosh_type': doppelganger_form.cleaned_data['whoosh_type'],
                 'credit_text': doppelganger_form.cleaned_data['credit_text'],
                 'mute_source': doppelganger_form.cleaned_data['mute_source'],
@@ -125,7 +126,7 @@ def save_whoosh(request, whoosh_id):
 def get_recent_whooshes():
     one_day_ago = timezone.now() - datetime.timedelta(days=1)
     whoosh_limit = 60
-    return Whoosh.objects.filter(processed__gte=one_day_ago).order_by('-id').all()[:whoosh_limit]
+    return Whoosh.objects.filter(processed__gte=one_day_ago, saved=False).order_by('-id').all()[:whoosh_limit]
 
 
 def get_saved_whooshes():

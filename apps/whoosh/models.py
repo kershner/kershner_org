@@ -48,7 +48,7 @@ class Whoosh(models.Model):
     user_agent = models.TextField(null=True, blank=True)
     video_data = models.TextField(null=True, blank=True)
     error = models.TextField(null=True, blank=True)
-    doppelganger = models.ForeignKey('whoosh.Whoosh', null=True, blank=True, on_delete=models.DO_NOTHING)
+    doppelganger = models.ForeignKey('whoosh.Whoosh', null=True, blank=True, on_delete=models.SET_NULL)
     settings_hash = models.CharField(max_length=200, null=True, blank=True)
     saved = models.BooleanField(default=False)
     saved_video = models.FileField(null=True, blank=True, upload_to=whoosh_saved)
@@ -126,7 +126,7 @@ class Whoosh(models.Model):
         framerate = 24
         if self.video_stream_data:
             fps = self.video_stream_data['r_frame_rate'].split('/')
-            framerate = float(fps[0]) / float(fps[1])
+            framerate = int(float(fps[0]) / float(fps[1]))
         return framerate
 
     def video_dimensions(self):
@@ -164,7 +164,9 @@ class Whoosh(models.Model):
 
     @property
     def doppleganger_settings_hash(self):
-        return util.hash_data_structure(self.doppelganger_settings())
+        doppelganger_settings = self.doppelganger_settings()
+        doppelganger_settings['id'] = self.id
+        return util.hash_data_structure(doppelganger_settings)
 
     def get_doppelgangers(self):
         if not self.doppelganger:

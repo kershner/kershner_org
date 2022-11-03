@@ -11,6 +11,7 @@ class WhooshAdmin(admin.ModelAdmin):
     list_display = ['id', 'created', 'thumbnail_preview', 'credit_text', 'processed']
     readonly_fields = ['doppelganger', 'uniq_id', 'user_agent', 'created', 'processed', 'source_video',
                        'processed_video', 'thumbnail', 'saved_video', 'saved_thumbnail', 'settings_hash', 'saved']
+    list_filter = ['saved']
 
     @staticmethod
     def thumbnail_preview(obj):

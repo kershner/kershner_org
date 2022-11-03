@@ -3,3 +3,11 @@
         Home
     </div>
 </a>
+
+{% if request.user.is_superuser %}
+<a href="{% url 'admin:whoosh_whoosh_changelist' %}">
+    <div class="link-btn">
+        Admin
+    </div>
+</a>
+{% endif %}
