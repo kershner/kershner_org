@@ -7,6 +7,8 @@
         <hr>
 
         {{ form.non_field_errors }}
+        {{ form.captcha }}
+
         {% include 'whoosh/forms/includes/form_input.html' with input=form.source_video %}
 
         <div class="extra-options disabled">

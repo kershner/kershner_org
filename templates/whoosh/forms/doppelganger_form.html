@@ -9,6 +9,7 @@
         {% csrf_token %}
 
         {{ doppelganger_form.non_field_errors }}
+        {{ doppelganger_form.captcha }}
 
         <div class="extra-options">
             {% include 'whoosh/forms/includes/form_input.html' with input=doppelganger_form.whoosh_type %}

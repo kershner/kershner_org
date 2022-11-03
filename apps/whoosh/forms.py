@@ -1,5 +1,7 @@
 from django.forms import ModelForm, FileInput, CharField, TextInput
+from captcha.widgets import ReCaptchaV2Invisible
 from utility.util import file_size_validation
+from captcha.fields import ReCaptchaField
 from apps.whoosh.models import Whoosh
 from django.conf import settings
 import re
@@ -10,6 +12,8 @@ two_digit_followed_by_colon_pattern = '\d{2}:\d{2}:\d{2}'
 
 
 class WhooshFormBase(ModelForm):
+    captcha = ReCaptchaField(widget=ReCaptchaV2Invisible)
+
     start_time = CharField(max_length=8, widget=TextInput(attrs={
         'pattern': two_digit_followed_by_colon_pattern,
         'placeholder': 'HH:MM:SS',
@@ -48,12 +52,12 @@ class WhooshForm(WhooshFormBase):
     class Meta:
         widgets = {'source_video': FileInput(attrs={'accept': 'video/mp4,video/quicktime', 'required': 'required'})}
         model = Whoosh
-        fields = ['source_video', 'whoosh_type', 'credit_text', 'mute_source', 'black_and_white', 'portrait',
-                  'slow_motion', 'slow_zoom', 'start_time', 'user_agent']
+        fields = ['captcha', 'source_video', 'whoosh_type', 'credit_text', 'mute_source', 'black_and_white',
+                  'portrait', 'slow_motion', 'slow_zoom', 'start_time', 'user_agent']
 
 
 class DoppelgangerForm(WhooshFormBase):
     class Meta:
         model = Whoosh
-        fields = ['whoosh_type', 'credit_text', 'mute_source', 'black_and_white', 'portrait',
+        fields = ['captcha', 'whoosh_type', 'credit_text', 'mute_source', 'black_and_white', 'portrait',
                   'slow_motion', 'slow_zoom', 'start_time', 'user_agent']

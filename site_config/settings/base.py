@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'captcha'
 ]
 
 MIDDLEWARE = [
@@ -150,3 +151,7 @@ CELERY_RESULT_BACKEND = 'redis://{}:{}'.format(PARAMETERS['redis_host'], PARAMET
 BROKER_TRANSPORT = 'redis'
 
 FILE_UPLOAD_LIMIT_MB = 20
+
+# Google reCaptcha
+RECAPTCHA_PUBLIC_KEY = PARAMETERS['recaptcha_site']
+RECAPTCHA_PRIVATE_KEY = PARAMETERS['recaptcha_secret']
