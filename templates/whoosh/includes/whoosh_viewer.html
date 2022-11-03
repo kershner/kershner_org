@@ -1,5 +1,5 @@
 <div class="whoosh-viewer">
-    {% if selected_whoosh.processed and not selected_whoosh.expired %}
+    {% if selected_whoosh.processed and not selected_whoosh.expired or selected_whoosh.saved %}
     <video controls="" autoplay="">
         <source src="{{ selected_whoosh.cloudfront_video_url }}" type="video/mp4">
     </video>

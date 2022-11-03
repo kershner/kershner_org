@@ -1,7 +1,9 @@
 <div class="whoosh-controls">
+    {% if not selected_whoosh.saved %}
     <div id="doppelganger-btn" class="link-btn">
         Doppelgänger
     </div>
+    {% endif %}
 
     {% if request.user.is_superuser  %}
     <a href="{{ selected_whoosh.get_admin_url }}">

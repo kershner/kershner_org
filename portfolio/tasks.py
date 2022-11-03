@@ -19,67 +19,72 @@ def process_whoosh(whoosh_id):
 
     s3 = util.get_s3_client()
     params = util.get_parameters()
-    with tempfile.NamedTemporaryFile(delete=False) as f:
-        s3.download_fileobj(params['s3_bucket'], whoosh.uploaded_video_s3_key, f)
-        output_filename = '{}.mp4'.format(f.name)
-        thumbnail_filename = '{}.jpeg'.format(f.name)
+    try:
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            s3.download_fileobj(params['s3_bucket'], whoosh.uploaded_video_s3_key, f)
+            output_filename = '{}.mp4'.format(f.name)
+            thumbnail_filename = '{}.jpeg'.format(f.name)
 
-        try:
-            # Get video details with FFProbe
-            ffprobe_result = whoosh_ffmpeg.ffprobe(f.name)
-            whoosh.video_data = ffprobe_result['json']
-            whoosh.processed = None
-            whoosh.error = None
-            whoosh.settings_hash = util.hash_data_structure(whoosh.doppelganger_settings())
-            whoosh.save()
+            try:
+                # Get video details with FFProbe
+                ffprobe_result = whoosh_ffmpeg.ffprobe(f.name)
+                whoosh.video_data = ffprobe_result['json']
+                whoosh.processed = None
+                whoosh.error = None
+                whoosh.settings_hash = util.hash_data_structure(whoosh.doppelganger_settings())
+                whoosh.save()
 
-            # Process video with FFMPEG
-            create_video_output = whoosh_ffmpeg.run_whoosh_ffmpeg(whoosh, f.name, output_filename)
-            logger.info('create_video_output: {}'.format(create_video_output))
+                # Process video with FFMPEG
+                create_video_output = whoosh_ffmpeg.run_whoosh_ffmpeg(whoosh, f.name, output_filename)
+                logger.info('create_video_output: {}'.format(create_video_output))
 
-            # Generate thumbnail
-            create_thumbnail_output = whoosh_ffmpeg.run_whoosh_thumbnail_ffmpeg(output_filename, thumbnail_filename)
-            logger.info('create_thumbnail_output: {}'.format(create_thumbnail_output))
+                # Generate thumbnail
+                create_thumbnail_output = whoosh_ffmpeg.run_whoosh_thumbnail_ffmpeg(output_filename, thumbnail_filename)
+                logger.info('create_thumbnail_output: {}'.format(create_thumbnail_output))
 
-            # Save video and thumbnail to model
-            whoosh.thumbnail.save(thumbnail_filename, File(open(thumbnail_filename, 'rb')))
-            whoosh.processed_video.save(output_filename, File(open(output_filename, 'rb')))
+                # Save video and thumbnail to model
+                whoosh.thumbnail.save(thumbnail_filename, File(open(thumbnail_filename, 'rb')))
+                whoosh.processed_video.save(output_filename, File(open(output_filename, 'rb')))
 
-            # Store the processed files in the /saved directory if not already
-            if whoosh.saved and not whoosh.saved_video:
-                whoosh.saved_thumbnail.save(thumbnail_filename, File(open(thumbnail_filename, 'rb')))
-                whoosh.saved_video.save(output_filename, File(open(output_filename, 'rb')))
+                # Store the processed files in the /saved directory if not already
+                if whoosh.saved and not whoosh.saved_video:
+                    whoosh.saved_thumbnail.save(thumbnail_filename, File(open(thumbnail_filename, 'rb')))
+                    whoosh.saved_video.save(output_filename, File(open(output_filename, 'rb')))
 
-            whoosh.processed = timezone.now()
+                whoosh.processed = timezone.now()
 
-            # Refresh ffprobe data
-            ffprobe_result = whoosh_ffmpeg.ffprobe(output_filename)
-            whoosh.video_data = ffprobe_result['json']
+                # Refresh ffprobe data
+                ffprobe_result = whoosh_ffmpeg.ffprobe(output_filename)
+                whoosh.video_data = ffprobe_result['json']
 
-            # Video/thumbnail get uploaded to S3 on save()
-            whoosh.save()
-        except Exception as e:
-            logger.info(e)
-            whoosh.error = e
-            whoosh.save()
+                # Video/thumbnail get uploaded to S3 on save()
+                whoosh.save()
+            except Exception as e:
+                logger.info(e)
+                whoosh.error = e
+                whoosh.save()
 
-        f.close()
+            f.close()
 
-        # Cleanup local files
-        try:
-            os.unlink(f.name)
-        except Exception as e:
-            logger.info(e)
+            # Cleanup local files
+            try:
+                os.unlink(f.name)
+            except Exception as e:
+                logger.info(e)
 
-        try:
-            os.unlink(output_filename)
-        except Exception as e:
-            logger.info(e)
+            try:
+                os.unlink(output_filename)
+            except Exception as e:
+                logger.info(e)
 
-        try:
-            os.unlink(thumbnail_filename)
-        except Exception as e:
-            logger.info(e)
+            try:
+                os.unlink(thumbnail_filename)
+            except Exception as e:
+                logger.info(e)
+    except Exception as e:
+        logger.info(e)
+        whoosh.error = e
+        whoosh.save()
 
 
 @app.task(name='delete-whoosh-media')
