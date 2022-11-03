@@ -64,7 +64,7 @@ def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
 
 
 def run_whoosh_thumbnail_ffmpeg(video_filename, thumbnail_output_filename):
-    starting_seconds = 2
+    starting_seconds = 4
     thumb_width = 320
 
     # Generate thumbnail
@@ -128,7 +128,7 @@ def get_complex_filter_str(whoosh):
 def get_formatted_credit_text(whoosh):
     word_list = [' ']
     if whoosh.credit_text:
-        word_list = comma_escape(whoosh.credit_text.replace("'", '').upper()).split(' ')
+        word_list = comma_escape(whoosh.credit_text.replace("'", "\'").upper()).split(' ')
 
     line_limit = PORTRAIT_LINE_CHARACTER_LIMIT if whoosh.portrait else LINE_CHARACTER_LIMIT
     current_line = []

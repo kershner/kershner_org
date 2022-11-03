@@ -54,6 +54,11 @@ class Whoosh(models.Model):
     saved_video = models.FileField(null=True, blank=True, upload_to=whoosh_saved)
     saved_thumbnail = models.FileField(null=True, blank=True, upload_to=whoosh_saved)
 
+    def save(self, *args, **kwargs):
+        if not self.uniq_id:
+            self.uniq_id = uuid4().hex
+        super().save(*args, **kwargs)
+
     @property
     def expired(self):
         if self.processed:
@@ -152,7 +157,8 @@ class Whoosh(models.Model):
 
     # Maintain a dict of the editable settings here, so Whooshes can be queried by them
     def doppelganger_settings(self):
-        return {
+        doppel_settings = {
+            'uniq_id': self.uniq_id,
             'whoosh_type': self.whoosh_type,
             'credit_text': self.credit_text,
             'mute_source': self.mute_source,
@@ -161,12 +167,14 @@ class Whoosh(models.Model):
             'slow_motion': self.slow_motion,
             'slow_zoom': self.slow_zoom
         }
+        if self.doppelganger:
+            doppel_settings['uniq_id'] = self.doppelganger.uniq_id
+
+        return doppel_settings
 
     @property
     def doppleganger_settings_hash(self):
-        doppelganger_settings = self.doppelganger_settings()
-        doppelganger_settings['id'] = self.id
-        return util.hash_data_structure(doppelganger_settings)
+        return util.hash_data_structure(self.doppelganger_settings())
 
     def get_doppelgangers(self):
         if not self.doppelganger:
@@ -187,13 +195,6 @@ class Whoosh(models.Model):
 
     def __str__(self):
         return 'Whoosh ID: {}, created {}'.format(self.id, self.created)
-
-
-@receiver(post_save, sender=Whoosh)
-def generate_uniq_id(sender, instance, created, **kwargs):
-    if instance.id and not instance.uniq_id:
-        instance.uniq_id = uuid4().hex
-        instance.save()
 
 
 @receiver(pre_delete, sender=Whoosh)

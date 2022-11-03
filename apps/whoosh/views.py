@@ -8,7 +8,6 @@ from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.contrib import messages
 from django.utils import timezone
-from utility import util
 import datetime
 
 
@@ -81,22 +80,14 @@ class DoppelgangerSubmit(View):
         self.form = DoppelgangerForm(request.POST)
 
         if self.form.is_valid():
-            new_doppleganger_settings = {
-                'id': whoosh.id,
-                'whoosh_type': self.form.cleaned_data['whoosh_type'],
-                'credit_text': self.form.cleaned_data['credit_text'],
-                'mute_source': self.form.cleaned_data['mute_source'],
-                'black_and_white': self.form.cleaned_data['black_and_white'],
-                'portrait': self.form.cleaned_data['portrait'],
-                'slow_motion': self.form.cleaned_data['slow_motion'],
-                'slow_zoom': self.form.cleaned_data['slow_zoom']
-            }
+            parent_doppelganger = whoosh.doppelganger if whoosh.doppelganger else whoosh
 
             # Check if a doppelganger already exists with these settings
-            new_doppelganger_settings_hash = util.hash_data_structure(new_doppleganger_settings)
-            existing_doppelganger = Whoosh.objects.filter(settings_hash=new_doppelganger_settings_hash).first()
+            new_doppelganger = Whoosh(**self.form.cleaned_data)
+            new_doppelganger.doppelganger = parent_doppelganger
+            existing_doppelganger = Whoosh.objects.filter(settings_hash=new_doppelganger.doppleganger_settings_hash).first()
+
             if not existing_doppelganger:
-                new_doppelganger = Whoosh(**self.form.cleaned_data)
                 new_doppelganger.source_video.name = whoosh.source_video.name
                 new_doppelganger.doppelganger = whoosh.doppelganger if whoosh.doppelganger else whoosh
                 new_doppelganger.save()
