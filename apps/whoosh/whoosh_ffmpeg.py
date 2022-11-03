@@ -128,7 +128,7 @@ def get_complex_filter_str(whoosh):
 def get_formatted_credit_text(whoosh):
     word_list = [' ']
     if whoosh.credit_text:
-        word_list = comma_escape(whoosh.credit_text.replace("'", "\'").upper()).split(' ')
+        word_list = escape_str_for_ffmpeg(whoosh.credit_text.upper()).split(' ')
 
     line_limit = PORTRAIT_LINE_CHARACTER_LIMIT if whoosh.portrait else LINE_CHARACTER_LIMIT
     current_line = []
@@ -151,7 +151,7 @@ def get_formatted_credit_text(whoosh):
 
 def get_drawtext_filter(whoosh, formatted_text):
     # At 2 seconds, fade in over 2 seconds, display text for 5 seconds, then fade out over 2 seconds
-    alpha_fadeout_filter = comma_escape('if(lt(t,2),0,if(lt(t,4),(t-2)/2,if(lt(t,9),1,if(lt(t,11),(2-(t-9))/2,0))))')
+    alpha_fadeout_filter = escape_str_for_ffmpeg('if(lt(t,2),0,if(lt(t,4),(t-2)/2,if(lt(t,9),1,if(lt(t,11),(2-(t-9))/2,0))))')
 
     new_width = FINAL_W_OR_H
     font_size_divisor = FONT_SIZE_DIVISOR
@@ -176,6 +176,6 @@ def get_drawtext_filter(whoosh, formatted_text):
     return drawtext_filter
 
 
-def comma_escape(string):
-    escaped_str = string.replace(',', '\,')
+def escape_str_for_ffmpeg(string):
+    escaped_str = string.replace(',', '\,').replace("'", '').replace(":", '')
     return escaped_str
