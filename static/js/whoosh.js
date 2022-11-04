@@ -32,6 +32,7 @@ whoosh.uploadEditor = function() {
 
     uploadForm.addEventListener('submit', function(e) {
         removeClass(uploadProgressDiv, 'hidden');
+        document.body.style.overflow = 'hidden';
     });
 
     sourceVideoInput.addEventListener('change', function(e) {
@@ -48,7 +49,6 @@ whoosh.uploadEditor = function() {
         });
     });
 };
-
 
 whoosh.toggleDoppelgangerForm = function() {
     const doppelgangerBtn = document.getElementById('doppelganger-btn');
