@@ -3,8 +3,9 @@
 ####################################
 # Place this file in /usr/local/sbin
 ####################################
-DJANGODIR=/home/ubuntu/portfolio/portfolio
-VENVDIR=/home/ubuntu/portfolio/venv
+BASEDIR=/home/ubuntu/portfolio
+DJANGODIR=$BASEDIR/portfolio
+VENVDIR=$BASEDIR/venv
 PIP="$VENVDIR/bin/pip"
 PYTHON="$VENVDIR/bin/python"
 PROD_SETTINGS="--settings=site_config.settings.prod"
@@ -22,7 +23,7 @@ git pull origin master
 echo ''
 
 echo '==========[ Installing Python requirements ]=========='
-$PIP install -r $DJANGODIR/requirements.txt --no-cache-dir
+$PIP install -r $BASEDIR/requirements.txt --no-cache-dir
 echo ''
 
 echo '==========[ Migrating DB ]=========='
