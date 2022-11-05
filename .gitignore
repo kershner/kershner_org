@@ -20,3 +20,4 @@ site_config/__init__.py
 *.csr
 site_config/certs/
 apps/whoosh/migrations/
+venv2/
