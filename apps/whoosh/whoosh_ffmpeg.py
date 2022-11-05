@@ -1,5 +1,4 @@
 from django.contrib.staticfiles import finders
-from django.conf import settings
 import subprocess
 import logging
 
@@ -113,6 +112,8 @@ def get_complex_filter_str(whoosh):
 
     # Audio mixing
     source_mix = 1.0
+    if whoosh.whoosh_type == 'om':
+        source_mix = 0.7
     if whoosh.mute_source:
         source_mix = 0.0
 

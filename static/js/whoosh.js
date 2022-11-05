@@ -53,13 +53,15 @@ whoosh.uploadEditor = function() {
 whoosh.toggleDoppelgangerForm = function() {
     const doppelgangerBtn = document.getElementById('doppelganger-btn');
     const doppelgangerForm = document.getElementById('doppelganger-form');
-    doppelgangerBtn.addEventListener('click', function() {
-        if (hasClass(doppelgangerForm, 'hidden')) {
-            addClass(doppelgangerBtn, 'active');
-            removeClass(doppelgangerForm, 'hidden');
-        } else {
-            removeClass(doppelgangerBtn, 'active');
-            addClass(doppelgangerForm, 'hidden');
-        }
-    });
+        if (doppelgangerBtn) {
+            doppelgangerBtn.addEventListener('click', function() {
+            if (hasClass(doppelgangerForm, 'hidden')) {
+                addClass(doppelgangerBtn, 'active');
+                removeClass(doppelgangerForm, 'hidden');
+            } else {
+                removeClass(doppelgangerBtn, 'active');
+                addClass(doppelgangerForm, 'hidden');
+            }
+        });
+    }
 };
