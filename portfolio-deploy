@@ -13,6 +13,10 @@ PROD_SETTINGS="--settings=site_config.settings.prod"
 echo '==========[ DEPLOYING KERSHNER.ORG ]=========='
 echo ''
 
+echo '==========[ Stopping supervisor ]=========='
+sudo sudo service supervisor stop
+echo ''
+
 echo '==========[ Reverting repo to HEAD (git checkout .) ]=========='
 cd $DJANGODIR
 git checkout .
@@ -29,6 +33,13 @@ echo ''
 echo '==========[ Migrating DB ]=========='
 $PYTHON $BASEDIR/manage.py makemigrations $PROD_SETTINGS
 $PYTHON $BASEDIR/manage.py migrate $PROD_SETTINGS
+echo ''
+
+echo '==========[ Restarting supervisor ]=========='
+sudo sudo service supervisor restart
+echo ''
+
+echo '==========[ Web server should be back online now... ]=========='
 echo ''
 
 echo '==========[ Collecting static files ]=========='
