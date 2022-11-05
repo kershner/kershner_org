@@ -27,12 +27,12 @@ $PIP install -r $BASEDIR/requirements.txt --no-cache-dir
 echo ''
 
 echo '==========[ Migrating DB ]=========='
-$PYTHON manage.py makemigrations $PROD_SETTINGS
-$PYTHON manage.py migrate $PROD_SETTINGS
+$PYTHON $BASEDIR/manage.py makemigrations $PROD_SETTINGS
+$PYTHON $BASEDIR/manage.py migrate $PROD_SETTINGS
 echo ''
 
 echo '==========[ Collecting static files ]=========='
-$PYTHON manage.py collectstatic $PROD_SETTINGS --noinput
+$PYTHON $BASEDIR/manage.py collectstatic $PROD_SETTINGS --noinput
 echo ''
 
 echo '==========[ Deploy Complete! ]=========='
