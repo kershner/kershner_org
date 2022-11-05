@@ -1,8 +1,8 @@
 #!/bin/bash
 
 NAME="kershner"                                                 # Name of the application
-DJANGODIR=/home/portfolio/portfolio                             # Django project directory
-SOCKFILE=/home/portfolio/venv/run/gunicorn.sock                 # we will communicate using this unix socket
+DJANGODIR=/home/ubuntu/portfolio/portfolio                      # Django project directory
+SOCKFILE=/home/ubuntu/portfolio/venv/run/gunicorn.sock          # we will communicate using this unix socket
 USER=ubuntu                                                     # the user to run as
 GROUP=ubuntu                                                    # the group to run as
 NUM_WORKERS=3                                                   # how many worker processes should Gunicorn spawn

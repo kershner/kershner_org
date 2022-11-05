@@ -3,8 +3,8 @@
 ####################################
 # Place this file in /usr/local/sbin
 ####################################
-DJANGODIR=/home/portfolio/portfolio
-VENVDIR=/home/portfolio/venv
+DJANGODIR=/home/ubuntu/portfolio/portfolio
+VENVDIR=/home/ubuntu/portfolio/venv
 PIP="$VENVDIR/bin/pip"
 PYTHON="$VENVDIR/bin/python"
 PROD_SETTINGS="--settings=site_config.settings.prod"
