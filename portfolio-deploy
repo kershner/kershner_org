@@ -18,11 +18,11 @@ git checkout .
 echo ''
 
 echo '==========[ git pull ]=========='
-git pull
+git pull origin master
 echo ''
 
 echo '==========[ Installing Python requirements ]=========='
-$PIP install -r requirements.txt --no-cache-dir
+$PIP install -r $DJANGODIR/requirements.txt --no-cache-dir
 echo ''
 
 echo '==========[ Migrating DB ]=========='
