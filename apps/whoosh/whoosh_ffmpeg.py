@@ -1,9 +1,12 @@
 import subprocess
 import logging
+import os
 
 
 logger = logging.getLogger('whoosh.whoosh_ffmpeg')
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+AUDIO_PATH = os.path.join(os.path.join(BASE_DIR, 'static'), 'audio')
 FONT_SIZE_DIVISOR = 15
 PORTRAIT_FONT_SIZE_DIVISOR = 10
 LINE_CHARACTER_LIMIT = 20
@@ -33,7 +36,8 @@ def ffprobe(file_path):
 
 def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
     duration = '15'  # seconds
-    audio_path = '../../static/audio/{}.mp3'.format(whoosh.get_whoosh_type_display().lower())
+    audio_path = '{}/{}.mp3'.format(AUDIO_PATH, whoosh.get_whoosh_type_display().lower())
+    print(audio_path)
     ffmpeg_cmd = ['ffmpeg',
                   '-y',
                   '-ss', '{}'.format(whoosh.start_time),
