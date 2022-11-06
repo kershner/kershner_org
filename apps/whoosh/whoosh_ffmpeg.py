@@ -1,4 +1,3 @@
-from django.contrib.staticfiles import finders
 import subprocess
 import logging
 
@@ -34,7 +33,7 @@ def ffprobe(file_path):
 
 def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
     duration = '15'  # seconds
-    audio_path = finders.find('audio/{}.mp3'.format(whoosh.get_whoosh_type_display()))
+    audio_path = '../../static/audio/{}.mp3'.format(whoosh.get_whoosh_type_display().lower())
     ffmpeg_cmd = ['ffmpeg',
                   '-y',
                   '-ss', '{}'.format(whoosh.start_time),
