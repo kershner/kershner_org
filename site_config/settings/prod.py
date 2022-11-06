@@ -10,6 +10,7 @@ DEBUG = False
 STATIC_URL = 'https://%s/%s/static/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -18,7 +19,7 @@ LOGGING = {
         "file": {
             "level": "INFO",
             "class": "logging.FileHandler",
-            "filename": "/var/log/django.log",
+            "filename": "/var/log/django/django.log",
             "formatter": "app",
         },
     },
@@ -27,6 +28,15 @@ LOGGING = {
             "handlers": ["file"],
             "level": "INFO",
             "propagate": True
+        },
+    },
+    "formatters": {
+        "app": {
+            "format": (
+                "%(asctime)s [%(levelname)-8s] "
+                "(%(module)s.%(funcName)s) %(message)s"
+            ),
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     },
 }
