@@ -6,7 +6,7 @@ import multiprocessing
 wsgi_app = "portfolio.wsgi:application"
 
 # The number of worker processes for handling requests
-workers = multiprocessing.cpu_count() * 2 + 1
+workers = 2
 
 # The socket to bind
 bind = "0.0.0.0:8000"
@@ -21,5 +21,5 @@ capture_output = True
 # PID file so you can easily fetch process ID
 pidfile = "/var/run/gunicorn/prod.pid"
 
-# Daemonize the Gunicorn process (detach & enter background)
-daemon = True
+# Don't daemonize, as we are monitoring Gunicorn with supervisor
+daemon = False
