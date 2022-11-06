@@ -21,3 +21,4 @@ site_config/__init__.py
 site_config/certs/
 apps/whoosh/migrations/
 venv2/
+linux-venv/
