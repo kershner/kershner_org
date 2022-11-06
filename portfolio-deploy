@@ -14,7 +14,7 @@ echo '==========[ DEPLOYING KERSHNER.ORG ]=========='
 echo ''
 
 echo '==========[ Stopping supervisor ]=========='
-sudo sudo service supervisor stop
+sudo service supervisor stop
 echo ''
 
 echo '==========[ Reverting repo to HEAD (git checkout .) ]=========='
@@ -36,7 +36,7 @@ $PYTHON $BASEDIR/manage.py migrate $PROD_SETTINGS
 echo ''
 
 echo '==========[ Restarting supervisor ]=========='
-sudo sudo service supervisor restart
+sudo service supervisor restart
 echo ''
 
 echo '==========[ Web server should be back online now... ]=========='
