@@ -83,6 +83,7 @@ class DoppelgangerSubmit(View):
             parent_doppelganger = whoosh.doppelganger if whoosh.doppelganger else whoosh
 
             # Check if a doppelganger already exists with these settings
+            del self.form.cleaned_data['captcha']
             new_doppelganger = Whoosh(**self.form.cleaned_data)
             new_doppelganger.doppelganger = parent_doppelganger
             existing_doppelganger = Whoosh.objects.filter(settings_hash=new_doppelganger.doppleganger_settings_hash).first()

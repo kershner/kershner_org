@@ -155,5 +155,6 @@ FILE_UPLOAD_LIMIT_MB = 20
 # Google reCaptcha
 RECAPTCHA_PUBLIC_KEY = PARAMETERS['recaptcha_site']
 RECAPTCHA_PRIVATE_KEY = PARAMETERS['recaptcha_secret']
+SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error']
 
 EC2_IP = PARAMETERS['ec2_elastic_ip']
