@@ -2,7 +2,8 @@ from .base import *
 
 ALLOWED_HOSTS = [
     'www.kershner.org',
-    'kershner.org'
+    'kershner.org',
+    EC2_IP
 ]
 
 DEBUG = False
