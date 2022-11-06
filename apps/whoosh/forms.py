@@ -49,8 +49,6 @@ class WhooshFormBase(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if settings.DEBUG:
-            del self.fields['captcha']
 
 
 class WhooshForm(WhooshFormBase):

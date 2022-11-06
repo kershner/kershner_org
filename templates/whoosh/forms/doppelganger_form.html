@@ -13,10 +13,7 @@
 
         {{ doppelganger_form.non_field_errors }}
 
-        {% settings_value 'DEBUG' as DEBUG %}
-        {% if not DEBUG %}
         {{ doppelganger_form.captcha }}
-        {% endif %}
 
         <div class="extra-options">
             {% include 'whoosh/forms/includes/form_input.html' with input=doppelganger_form.whoosh_type %}
