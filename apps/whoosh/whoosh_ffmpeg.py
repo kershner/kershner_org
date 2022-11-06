@@ -54,10 +54,10 @@ def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
                                    stderr=subprocess.PIPE,
                                    universal_newlines=True)
     # if settings.DEBUG:
-    print(' '.join(ffmpeg_cmd))
-    subprocess.run("clip", universal_newlines=True, input=' '.join(ffmpeg_cmd))
-    print("==============================")
-    print(ffmpeg_result)
+    # print(' '.join(ffmpeg_cmd))
+    # subprocess.run("clip", universal_newlines=True, input=' '.join(ffmpeg_cmd))
+    # print("==============================")
+    # print(ffmpeg_result)
 
     return ffmpeg_result
 
