@@ -62,7 +62,7 @@ def process_whoosh(whoosh_id):
         ffprobe_result = whoosh_ffmpeg.ffprobe(output_filename)
         whoosh.video_data = ffprobe_result['json']
 
-        whoosh.error = ','.join(error)
+        whoosh.error = ','.join([str(e) for e in error])
 
         # Video/thumbnail get uploaded to S3 on save()
         whoosh.save()
