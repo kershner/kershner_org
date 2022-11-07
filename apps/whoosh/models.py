@@ -1,6 +1,6 @@
-from django.db.models.signals import pre_delete, post_save
 from django.core.validators import FileExtensionValidator
-from portfolio.tasks import delete_whoosh_media
+from apps.whoosh.tasks import delete_whoosh_media
+from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
 from django.conf import settings

@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import user_passes_test
 from apps.whoosh.forms import WhooshForm, DoppelgangerForm
 from django.template.response import TemplateResponse
-from portfolio.tasks import process_whoosh
+from apps.whoosh.tasks import process_whoosh
 from django.views.generic import View
 from apps.whoosh.models import Whoosh
 from django.shortcuts import redirect
