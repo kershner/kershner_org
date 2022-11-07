@@ -4,7 +4,9 @@
         <div class="info-stat">
             <div class="info-stat-label">Video Size:</div>
             <div class="info-stat-value">
+                {% if selected_whoosh.video_width and selected_whoosh.video_height %}
                 {{ selected_whoosh.video_width }}x{{ selected_whoosh.video_height }}
+                {% endif %}
             </div>
         </div>
 

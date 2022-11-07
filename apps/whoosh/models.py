@@ -114,12 +114,12 @@ class Whoosh(models.Model):
 
     @property
     def video_height(self):
-        if self.video_dimensions:
+        if self.video_dimensions():
             return self.video_dimensions()['height']
 
     @property
     def video_width(self):
-        if self.video_dimensions:
+        if self.video_dimensions():
             return self.video_dimensions()['width']
 
     @property
@@ -137,6 +137,7 @@ class Whoosh(models.Model):
     def video_dimensions(self):
         video_size = None
         if self.video_stream_data:
+            print('self.video_stream_data {}'.format(self.video_stream_data))
             video_size = {
                 'height': self.video_stream_data['height'],
                 'width': self.video_stream_data['width'],
@@ -146,7 +147,7 @@ class Whoosh(models.Model):
     @property
     def video_stream_data(self):
         video_stream = None
-        if self.video_data:
+        if self.video_data and 'streams' in self.video_data:
             streams = json.loads(self.video_data)['streams']
             for stream in streams:
                 if stream['codec_type'] == 'video':

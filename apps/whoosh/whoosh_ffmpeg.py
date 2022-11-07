@@ -170,9 +170,9 @@ def get_drawtext_filter(whoosh, formatted_text):
                       ':shadowx=0:shadowy=6' \
                       ':fontcolor=0x663333' \
                       ':fontsize={new_width}/{font_size_divisor}' \
-                      ':x="(w-text_w)"/2' \
+                      ':x=(w-text_w)/2' \
                       ':line_spacing=10' \
-                      ':y="(h/1.75)"' \
+                      ':y=(h/1.75)' \
                       ':alpha={fadeout_filter}'.format(formatted_text=formatted_text,
                                                        fadeout_filter=alpha_fadeout_filter,
                                                        new_width=new_width,
