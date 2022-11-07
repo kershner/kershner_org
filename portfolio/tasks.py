@@ -52,7 +52,6 @@ def process_whoosh(whoosh_id):
             except Exception as e:
                 error.append(e)
 
-
             # Store the processed files in the /saved directory if not already
             if whoosh.saved and not whoosh.saved_video:
                 whoosh.saved_thumbnail.save(thumbnail_filename, File(open(thumbnail_filename, 'rb')))
