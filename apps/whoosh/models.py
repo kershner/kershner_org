@@ -137,7 +137,6 @@ class Whoosh(models.Model):
     def video_dimensions(self):
         video_size = None
         if self.video_stream_data:
-            print('self.video_stream_data {}'.format(self.video_stream_data))
             video_size = {
                 'height': self.video_stream_data['height'],
                 'width': self.video_stream_data['width'],

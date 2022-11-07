@@ -1,7 +1,7 @@
-from apps.whoosh import views as whoosh_views
+from apps.whoosh.urls import whoosh_patterns
 from . import views as portfolio_views
+from django.urls import include, path
 from django.contrib import admin
-from django.urls import path
 from . import admin_views
 
 urlpatterns = [
@@ -11,21 +11,12 @@ urlpatterns = [
 
     # Bacon redirect
     path('bacon/', portfolio_views.bacon_redirect),
-    path('bacon', portfolio_views.bacon_redirect),
 
     # Philomania
     path('phil/', portfolio_views.philomania),
-    path('phil', portfolio_views.philomania),
 
-    # Ominous Whoosh-er
-    path('whoosh/', whoosh_views.WhooshHomeView.as_view(), name='whoosh'),
-    path('whoosh', whoosh_views.WhooshHomeView.as_view(), name='whoosh'),
-    path('whoosh/view/', whoosh_views.WhooshViewer.as_view(), name='view-whoosh'),
-    path('whoosh/view/<whoosh_id>/', whoosh_views.WhooshViewer.as_view(), name='view-whoosh'),
-    path('whoosh/view/<whoosh_id>', whoosh_views.WhooshViewer.as_view(), name='view-whoosh'),
-    path('whoosh/doppelganger/<whoosh_id>/', whoosh_views.DoppelgangerSubmit.as_view(), name='create-doppelganger'),
-    path('whoosh/reprocess/<whoosh_id>', whoosh_views.reprocess_whoosh, name='reprocess-whoosh'),
-    path('whoosh/save/<whoosh_id>', whoosh_views.save_whoosh, name='save-whoosh'),
+    # [ominous whoosh-er]
+    path('whoosh/', include(whoosh_patterns)),
 
     # Admin Stuff
     path('admin/move-project-position/<project_id>/<direction>',
