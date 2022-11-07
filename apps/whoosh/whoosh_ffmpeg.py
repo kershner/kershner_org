@@ -92,7 +92,7 @@ def get_complex_filter_str(whoosh):
 
     # Zoom/pan
     if whoosh.slow_zoom:
-        zoompan_filter = 'zoompan=z=min(max(zoom,pzoom)+0.0015,1.5):d=0:s={}x{}'.format(whoosh.video_width,
+        zoompan_filter = 'zoompan=z=\'min(max(zoom,pzoom)+0.0015,1.5)\':d=0:s={}x{}'.format(whoosh.video_width,
                                                                                           whoosh.video_height)
         video_filter.append(zoompan_filter)
 
