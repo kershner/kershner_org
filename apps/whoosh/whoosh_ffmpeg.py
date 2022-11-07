@@ -51,12 +51,13 @@ def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
                   '-t', '{}'.format(duration),
                   '{}'.format(output_filename)]
 
+    print(' '.join(ffmpeg_cmd))
+
     ffmpeg_result = subprocess.run(ffmpeg_cmd,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
                                    universal_newlines=True)
     # if settings.DEBUG:
-    # print(' '.join(ffmpeg_cmd))
     # subprocess.run("clip", universal_newlines=True, input=' '.join(ffmpeg_cmd))
     # print("==============================")
     # print(ffmpeg_result)
@@ -91,7 +92,7 @@ def get_complex_filter_str(whoosh):
 
     # Zoom/pan
     if whoosh.slow_zoom:
-        zoompan_filter = "zoompan=z='min(max(zoom,pzoom)+0.0015,1.5)':d=0:s={}x{}".format(whoosh.video_width,
+        zoompan_filter = 'zoompan=z="min(max(zoom,pzoom)+0.0015,1.5)":d=0:s={}x{}'.format(whoosh.video_width,
                                                                                           whoosh.video_height)
         video_filter.append(zoompan_filter)
 
@@ -154,7 +155,7 @@ def get_formatted_credit_text(whoosh):
 
 def get_drawtext_filter(whoosh, formatted_text):
     # At 2 seconds, fade in over 2 seconds, display text for 5 seconds, then fade out over 2 seconds
-    alpha_fadeout_filter = escape_str_for_ffmpeg('if(lt(t,2),0,if(lt(t,4),(t-2)/2,if(lt(t,9),1,if(lt(t,11),(2-(t-9))/2,0))))')
+    alpha_fadeout_filter = escape_str_for_ffmpeg('"if(lt(t,2),0,if(lt(t,4),(t-2)/2,if(lt(t,9),1,if(lt(t,11),(2-(t-9))/2,0))))"')
 
     new_width = FINAL_W_OR_H
     font_size_divisor = FONT_SIZE_DIVISOR
@@ -169,9 +170,9 @@ def get_drawtext_filter(whoosh, formatted_text):
                       ':shadowx=0:shadowy=6' \
                       ':fontcolor=0x663333' \
                       ':fontsize={new_width}/{font_size_divisor}' \
-                      ':x=(w-text_w)/2' \
+                      ':x="(w-text_w)"/2' \
                       ':line_spacing=10' \
-                      ':y=(h/1.75)' \
+                      ':y="(h/1.75)"' \
                       ':alpha={fadeout_filter}'.format(formatted_text=formatted_text,
                                                        fadeout_filter=alpha_fadeout_filter,
                                                        new_width=new_width,
