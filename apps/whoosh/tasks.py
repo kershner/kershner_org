@@ -34,25 +34,21 @@ def process_whoosh(whoosh_id):
         error = []
 
         try:
-            # Process video with FFMPEG
-            create_video_output = whoosh_ffmpeg.run_whoosh_ffmpeg(whoosh, f.name, output_filename, thumbnail_filename)
+            # Process video
+            create_video_output = whoosh_ffmpeg.run_whoosh_ffmpeg(whoosh, f.name, output_filename)
             logger.info('create_video_output: {}'.format(create_video_output))
-            # whoosh.processed_video.save(output_filename, File(open(output_filename, 'rb')))
+            whoosh.processed_video.save(output_filename, File(open(output_filename, 'rb')))
         except Exception as e:
             error.append(e)
 
-        # try:
-        #     # Generate thumbnail
-        #     # TODO - something about this is failing on the EC2
-        #     create_thumbnail_output = whoosh_ffmpeg.run_whoosh_thumbnail_ffmpeg(output_filename, thumbnail_filename)
-        #     logger.info('create_thumbnail_output: {}'.format(create_thumbnail_output))
-        #     # Save video and thumbnail to model
-        #     # whoosh.thumbnail.save(thumbnail_filename, File(open(thumbnail_filename, 'rb')))
-        # except Exception as e:
-        #     error.append(e)
-
-        whoosh.processed_video.save(output_filename, File(open(output_filename, 'rb')))
-        whoosh.thumbnail.save(thumbnail_filename, File(open(thumbnail_filename, 'rb')))
+        try:
+            # Generate thumbnail
+            create_thumbnail_output = whoosh_ffmpeg.run_whoosh_thumbnail_ffmpeg(output_filename, thumbnail_filename)
+            logger.info('create_thumbnail_output: {}'.format(create_thumbnail_output))
+            # Save video and thumbnail to model
+            whoosh.thumbnail.save(thumbnail_filename, File(open(thumbnail_filename, 'rb')))
+        except Exception as e:
+            error.append(e)
 
         # Store the processed files in the /saved directory if not already
         if whoosh.saved and not whoosh.saved_video:

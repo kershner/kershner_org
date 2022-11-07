@@ -34,7 +34,7 @@ def ffprobe(file_path):
     }
 
 
-def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename, thumbnail_filename):
+def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
     duration = '15'  # seconds
     audio_path = '{}/{}.mp3'.format(AUDIO_PATH, whoosh.get_whoosh_type_display().lower())
     ffmpeg_cmd = ['ffmpeg',
@@ -51,8 +51,6 @@ def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename, thumbnail_fi
                   '-t', '{}'.format(duration),
                   '{}'.format(output_filename)]
 
-    # print(' '.join(ffmpeg_cmd))
-
     ffmpeg_result = subprocess.run(ffmpeg_cmd,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
@@ -62,48 +60,27 @@ def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename, thumbnail_fi
     # print("==============================")
     # print(ffmpeg_result)
 
+    return ffmpeg_result
+
+
+def run_whoosh_thumbnail_ffmpeg(video_filename, thumbnail_output_filename):
     starting_seconds = 4
     thumb_width = 320
 
     # Generate thumbnail
-    ffmpeg_thumbnail_command = 'ffmpeg ' \
-                               '-ss {} ' \
-                               '-i {} ' \
-                               '-vframes 1 ' \
-                               '-f mjpeg ' \
-                               '-vf ' \
-                               'scale={}:-2:force_original_aspect_ratio=decrease {}'.format(starting_seconds,
-                                                                                            output_filename,
-                                                                                            thumb_width,
-                                                                                            thumbnail_filename)
-    ffmpeg_thumbnail_result = subprocess.run(ffmpeg_thumbnail_command,
+    vf_str = 'scale={}:-2:force_original_aspect_ratio=decrease'.format(thumb_width)
+    ffmpeg_command = ['ffmpeg',
+                      '-ss', '{}'.format(starting_seconds),
+                      '-i', '{}'.format(video_filename),
+                      '-vframes', '1',
+                      '-f', 'mjpeg',
+                      '-vf', vf_str,
+                      thumbnail_output_filename]
+    ffmpeg_thumbnail_result = subprocess.run(ffmpeg_command,
                                              stdout=subprocess.PIPE,
                                              stderr=subprocess.PIPE,
                                              universal_newlines=True)
-
-    return ffmpeg_result
-
-
-# def run_whoosh_thumbnail_ffmpeg(video_filename, thumbnail_output_filename):
-#     starting_seconds = 4
-#     thumb_width = 320
-#
-#     # Generate thumbnail
-#     ffmpeg_thumbnail_command = 'ffmpeg ' \
-#                                '-ss {} ' \
-#                                '-i {} ' \
-#                                '-vframes 1 ' \
-#                                '-f mjpeg ' \
-#                                '-vf ' \
-#                                'scale={}:-2:force_original_aspect_ratio=decrease {}'.format(starting_seconds,
-#                                                                                             video_filename,
-#                                                                                             thumb_width,
-#                                                                                             thumbnail_output_filename)
-#     ffmpeg_thumbnail_result = subprocess.run(ffmpeg_thumbnail_command,
-#                                              stdout=subprocess.PIPE,
-#                                              stderr=subprocess.PIPE,
-#                                              universal_newlines=True)
-#     return ffmpeg_thumbnail_result
+    return ffmpeg_thumbnail_result
 
 
 def get_complex_filter_str(whoosh):
