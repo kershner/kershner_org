@@ -42,7 +42,7 @@ def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
                   '-ss', '{}'.format(whoosh.start_time),
                   '-i', '{}'.format(downloaded_filename),
                   '-i', '{}'.format(audio_path),
-                  '-filter_complex', "'{}'".format(get_complex_filter_str(whoosh)),
+                  '-filter_complex', get_complex_filter_str(whoosh),
                   '-map', '[filtered_video]',
                   '-map', '[a]',
                   '-ac', '2',
