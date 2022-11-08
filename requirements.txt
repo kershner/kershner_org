@@ -16,6 +16,7 @@ click-repl==0.2.0
 colorama==0.4.6
 Deprecated==1.2.13
 Django==3.2.16
+django-hosts==5.1
 django-ordered-model==3.1.1
 django-recaptcha==3.0.0
 django-storages==1.12.3

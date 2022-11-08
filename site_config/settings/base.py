@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'apps.song',
     'apps.project',
     'apps.whoosh',
+    'django_hosts',
     'storages',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -34,6 +35,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'django_hosts.middleware.HostsRequestMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -41,9 +43,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_hosts.middleware.HostsResponseMiddleware'
 ]
 
+
+ROOT_HOSTCONF = 'portfolio.hosts'
 ROOT_URLCONF = 'portfolio.urls'
+DEFAULT_HOST = 'www'
 
 TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates')
 TEMPLATES = [
