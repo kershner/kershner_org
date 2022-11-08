@@ -3,8 +3,8 @@ from .base import *
 ALLOWED_HOSTS = [
     'www.kershner.org',
     'kershner.org',
-    EC2_IP
 ]
+ALLOWED_HOSTS += EC2_IPS
 
 DEBUG = False
 STATIC_URL = 'https://%s/%s/static/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
