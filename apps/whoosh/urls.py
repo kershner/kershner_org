@@ -1,8 +1,7 @@
 import apps.whoosh.views as whoosh_views
 from django.urls import path
 
-
-urlpatterns = [
+whoosh_patterns = [
     path('', whoosh_views.WhooshHomeView.as_view(), name='whoosh'),
     path('view/', whoosh_views.WhooshViewer.as_view(), name='view-whoosh'),
     path('view/<whoosh_id>/', whoosh_views.WhooshViewer.as_view(), name='view-whoosh'),
