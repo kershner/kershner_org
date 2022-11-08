@@ -18,6 +18,9 @@ urlpatterns = [
     # [ominous whoosh-er]
     path('whoosh/', include(whoosh_patterns)),
 
+    # ScreenBloom landing page
+    path('screenbloom/', portfolio_views.screenbloom_landing),
+
     # Admin Stuff
     path('admin/move-project-position/<project_id>/<direction>',
          admin_views.MoveProjectPositionView.as_view(),
