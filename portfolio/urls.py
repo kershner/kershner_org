@@ -1,6 +1,8 @@
+from apps.screenbloom.views import screenbloom_landing
 from apps.whoosh.urls import whoosh_patterns
 from . import views as portfolio_views
 from django.urls import include, path
+from apps.bacon.views import bacon
 from django.contrib import admin
 from . import admin_views
 
@@ -9,9 +11,6 @@ urlpatterns = [
     path('music/', portfolio_views.music, name='music'),
     path('admin/', admin.site.urls),
 
-    # Bacon redirect
-    path('bacon/', portfolio_views.bacon_redirect),
-
     # Philomania
     path('phil/', portfolio_views.philomania),
 
@@ -19,7 +18,10 @@ urlpatterns = [
     path('whoosh/', include(whoosh_patterns)),
 
     # ScreenBloom landing page
-    path('screenbloom/', portfolio_views.screenbloom_landing),
+    path('screenbloom/', screenbloom_landing),
+
+    # Page for Bacon
+    path('bacon/', bacon),
 
     # Admin Stuff
     path('admin/move-project-position/<project_id>/<direction>',

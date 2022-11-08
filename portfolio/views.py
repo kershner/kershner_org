@@ -45,10 +45,6 @@ def music(request):
     return render(request, 'music.html', template_vars)
 
 
-def bacon_redirect(request):
-    return redirect('http://old.kershner.org/bacon')
-
-
 def philomania(request):
     base_s3_url = '{}/philomania'.format(settings.BASE_S3_URL)
     page_size = 30
@@ -73,9 +69,3 @@ def philomania(request):
         'unsplash_photo_urls': unsplash_photo_urls
     }
     return render(request, 'philomania.html', template_vars)
-
-
-def screenbloom_landing(request):
-    base_s3_url = 'https://kershner-misc.s3.us-west-2.amazonaws.com/screenbloom_com'
-    ctx = {'base_s3_url': base_s3_url}
-    return render(request, 'screenbloom/landing.html', ctx)

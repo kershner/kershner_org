@@ -1,0 +1,78 @@
+{% load portfolio_tags %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Our best friend, Bacon</title>
+
+    <!-- CSS -->
+    <link type="text/css" rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/bacon.css"/>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Archivo+Black|Tenor+Sans|Open+Sans" rel="stylesheet">
+</head>
+
+<body class="animate-background-color">
+    <div class="site-wrapper">
+        <div id="top" class="vide-wrapper">
+            <div class="vide">
+                <div class="vide-inner">
+                    <video autoplay muted loop src="https://s3.us-east-2.amazonaws.com/baconthedog/bacon-hero-vid.webm"></video>
+                </div>
+
+            </div>
+            <div class="bg-pattern"></div>
+
+            <div class="hero-text-wrapper">
+                <div class="huge-bacon-name archivo">
+                    <span class="colorwave animate-color">B</span>
+                    <span class="colorwave animate-color">A</span>
+                    <span class="colorwave animate-color">C</span>
+                    <span class="colorwave animate-color">O</span>
+                    <span class="colorwave animate-color">N</span>
+                </div>
+                <div class="smaller-text tenor">was our friend for ten years</div>
+                <div class="even-smaller-text lifetime tenor">2007 - 2017</div>
+            </div>
+
+            <div class="send-photo-wrapper open-sans">
+                <p>Did you know Bacon?  Have a photo of him you don't see here?</p>
+                <p class="smallest-text">I'd love to <a href="mailto:tylerkershner@gmail.com?subject=Bacon" class="bold">hear from you</a>!</p>
+            </div>
+        </div>
+
+        <div class="images-wrapper"></div>
+
+        <div class="footer-links hidden">
+            <img class="first-photo" src="{{ base_s3_url }}/first_photo.jpg">
+            <span class="footer-lifetime tenor">2007 - 2017</span>
+            <a target="_blank" href="https://github.com/kershner/baconthedog.online"><div class="tenor animate-background-color">Code</div></a>
+            <a href="#top"><div class="top tenor animate-background-color">Top</div></a>
+        </div>
+    </div>
+
+    <!-- JavaScripts -->
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/randomColor.min.js"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/bacon.js"></script>
+
+    <script type="text/javascript">
+        bacon.s3BaseUrl = '{{ base_s3_url }}';
+        bacon.s3Keys = {{ s3_keys|safe }};
+        window.onload = bacon.init();
+    </script>
+
+    <!-- Google Analytics -->
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-101472311-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+</body>
+</html>
