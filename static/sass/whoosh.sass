@@ -45,9 +45,11 @@ body
   padding-top: 0
   margin-top: 0
   overflow-x: hidden
-  animation-name: shimmer
-  animation-iteration-count: 1
-  animation-duration: 0.2s
+
+  &.animate-body
+    animation-name: shimmer
+    animation-iteration-count: 1
+    animation-duration: 0.1s
 
 a
   color: $whoosh-white
