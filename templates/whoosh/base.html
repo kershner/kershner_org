@@ -24,14 +24,13 @@
         <img src="{% static 'img/whoosh/live_inside_a_dream.png' %}">
     </div>
 
-    <div class="whoosh-wrapper">
-        <div class="header subtitle">
-            <a href="{% url 'whoosh' %}">
-                [ominous whoosh-er]
-            </a>
-        </div>
-        {% block content %}{% endblock %}
+    <div class="header subtitle">
+        <a href="{% url 'whoosh' %}">
+            [ominous whoosh-er]
+        </a>
     </div>
+
+    {% block content %}{% endblock %}
 
     <!-- JS -->
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
