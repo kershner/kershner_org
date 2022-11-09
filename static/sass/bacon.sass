@@ -130,20 +130,24 @@ body
 .send-photo-wrapper a:visited
   color: #1b95af
 
-.images-wrapper
+.images-wrapper span
+  display: flex
+  justify-content: center
+  flex-wrap: wrap
   margin: 0 auto
   padding-top: 1em
-  text-align: center
+  columns: 3
+  column-gap: 1rem
 
-.img
-  display: inline-block
-  margin: .25em
-  max-width: 25em
-  img
-    width: 100%
-    object-fit: cover
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.46)
-    border-radius: .2em
+  .img
+    max-width: 27rem
+    margin: 1rem
+    display: inline-block
+    img
+      width: 100%
+      object-fit: cover
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.46)
+      border-radius: .2em
 
 .loader
   margin: 0 auto
@@ -206,7 +210,3 @@ body
 
   .smallest-text
     font-size: 1.25em
-
-  .img img
-    width: 15rem
-    height: 15rem
