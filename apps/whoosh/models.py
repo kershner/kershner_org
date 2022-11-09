@@ -63,7 +63,7 @@ class Whoosh(models.Model):
     def expired(self):
         if self.processed:
             time_since_processed = timezone.now() - self.processed
-            return time_since_processed.days == 1
+            return time_since_processed.days == settings.WHOOSH_EXPIRATION_DAYS
         return False
 
     @property

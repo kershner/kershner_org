@@ -58,6 +58,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'portfolio_tags': 'portfolio.templatetags'
+            }
         },
     },
 ]
@@ -160,3 +163,5 @@ RECAPTCHA_PRIVATE_KEY = PARAMETERS['recaptcha_secret']
 SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error']
 
 EC2_IPS = PARAMETERS['ec2_ips'].split(',')
+
+WHOOSH_EXPIRATION_DAYS = 14

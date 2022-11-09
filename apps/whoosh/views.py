@@ -8,6 +8,7 @@ from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.contrib import messages
 from django.utils import timezone
+from django.conf import settings
 import datetime
 
 
