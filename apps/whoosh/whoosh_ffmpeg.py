@@ -94,7 +94,7 @@ def get_complex_filter_str(whoosh):
 
     # Cropping
     crop_or_scale_str = 'scale={}:-2'.format(FINAL_W_OR_H)
-    if whoosh.can_be_cropped and whoosh.portrait:
+    if whoosh.can_be_cropped and whoosh.portrait or whoosh.video_height > whoosh.video_width:
         crop_or_scale_str = "crop=in_h*{}:in_h,scale=-2:{}".format(PORTRAIT_RATIO, FINAL_W_OR_H)
 
     video_filter.append(crop_or_scale_str)
