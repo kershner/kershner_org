@@ -120,9 +120,9 @@ def save_whoosh(request, whoosh_id):
 
 
 def get_recent_whooshes():
-    one_day_ago = timezone.now() - datetime.timedelta(days=1)
+    whoosh_expiration = timezone.now() - datetime.timedelta(days=settings.WHOOSH_EXPIRATION_DAYS)
     whoosh_limit = 60
-    return Whoosh.objects.filter(processed__gte=one_day_ago, saved=False).order_by('-id').all()[:whoosh_limit]
+    return Whoosh.objects.filter(processed__gte=whoosh_expiration, saved=False).order_by('-id').all()[:whoosh_limit]
 
 
 def get_saved_whooshes():
