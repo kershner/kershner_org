@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tyler Kershner - Whoops!</title>
+
+    <style>
+        body {
+            background-color: #202020;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            overflow: hidden;
+        }
+        a {
+            color: #F2006D;
+        }
+        .color {
+            transition: color 0.5s;
+        }
+        h1 {
+            font-size: 10em;
+            margin: 0;
+            display: flex;
+            transform: rotate(354deg);
+        }
+        hr {
+            max-width: 80%;
+        }
+        h2 {
+            font-size: 2rem;
+            line-height: 4.75rem;
+            margin: 0;
+        }
+        h3 {
+            font-size: 1.4rem;
+            font-weight: 100;
+            margin: 0;
+        }
+        p, a {
+            margin: 0.5rem 0
+        }
+        @media (min-width: 800px) {
+            h2 {
+                font-size: 4rem;
+                margin-bottom: 2rem;
+            }
+            h3 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+
+</head>
+<body>
+    <h1>
+        <span class="color">O</span>
+        <span class="color">o</span>
+        <span class="color">p</span>
+        <span class="color">s</span>
+        <span class="color">!</span>
+    </h1>
+    <hr>
+    <h2>Were you looking for a website?</h2>
+    <h3>I'm sure I saw one around here somewhere...</h3>
+    <p>Hang tight for a sec, <a href="https://www.kershner.org"><b>kershner.org</b></a> will be right back.</p>
+    <a href="https://github.com/kershner">https://github.com/kershner</a>
+
+    <script src="https://djfdm802jwooz.cloudfront.net/static/vendor/js/randomColor.min.js"></script>
+    <script type="text/javascript">
+        let errorPage = {
+            colorTimer: undefined,
+            colorInterval: 1500,
+            reloadTimer: undefined,
+            reloadInterval: 10000
+        };
+
+        errorPage.init = function() {
+          errorPage.colorElements();
+
+            errorPage.reloadTimer = setInterval(function() {
+                location.reload();
+            }, errorPage.reloadInterval);
+
+            errorPage.colorTimer = setInterval(function() {
+                errorPage.colorElements();
+            }, errorPage.colorInterval);
+        };
+
+        errorPage.colorElements = function() {
+            document.querySelectorAll('.color').forEach((span) => {
+                span.style.color = randomColor();
+            })
+        };
+
+        errorPage.init();
+    </script>
+</body>
+</html>
