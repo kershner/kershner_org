@@ -54,12 +54,16 @@ class WhooshViewer(View):
 
         doppelganger_form = DoppelgangerForm(instance=whoosh)
 
+        whoosh_expiration = whoosh.created + datetime.timedelta(days=settings.WHOOSH_EXPIRATION_DAYS)
+        expiration_days = abs((timezone.now() - whoosh_expiration).days)
+
         ctx = {
             'doppelganger_form': doppelganger_form,
             'doppelgangers': whoosh.get_doppelgangers(),
             'selected_whoosh': whoosh,
             'saved_whooshes': get_saved_whooshes(),
-            'recent_whooshes': get_recent_whooshes()
+            'recent_whooshes': get_recent_whooshes(),
+            'expiration_days': expiration_days
         }
         return TemplateResponse(request, self.template, ctx)
 

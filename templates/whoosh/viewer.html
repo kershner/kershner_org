@@ -1,4 +1,5 @@
 {% extends 'whoosh/base.html' %}
+{% load portfolio_tags %}
 
 {% block content %}
     {% include 'whoosh/includes/whoosh_viewer.html' %}
@@ -13,6 +14,7 @@
     <script type="text/javascript">
         {% if not selected_whoosh.error and not selected_whoosh.processed %}
         whoosh.whooshViewerUrl = '{% url 'view-whoosh' whoosh_id=selected_whoosh.uniq_id %}';
+        whoosh.uploadFileSizeLimit = {% settings_value 'FILE_UPLOAD_LIMIT_MB' %};
         whoosh.checkWhooshProcessed();
         {% endif %}
 

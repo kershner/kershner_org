@@ -1,5 +1,6 @@
 {% extends 'whoosh/base.html' %}
 {% load static %}
+{% load portfolio_tags %}
 
 {% block content %}
     {% include 'whoosh/forms/upload_form.html' %}
@@ -9,6 +10,7 @@
 
 {% block extra_js %}
 <script type="text/javascript">
+    whoosh.uploadFileSizeLimit = {% settings_value 'FILE_UPLOAD_LIMIT_MB' %};
     whoosh.populateUserAgent();
     whoosh.uploadEditor();
 </script>

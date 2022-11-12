@@ -1,5 +1,6 @@
 const whoosh = {
-    'whooshViewerUrl': ''
+    'whooshViewerUrl': '',
+    'uploadFileSizeLimit': ''
 };
 
 whoosh.populateUserAgent = function() {
@@ -36,8 +37,14 @@ whoosh.uploadEditor = function() {
     });
 
     sourceVideoInput.addEventListener('change', function(e) {
-        const videoSrc = `${URL.createObjectURL(e.target.files[0])}`;
+        const fileSize = e.target.files[0].size;
+        const fileSizeLimit = whoosh.uploadFileSizeLimit * 1024 * 1024;
+        if (fileSize > fileSizeLimit) {
+            alert(`File too large! ${whoosh.uploadFileSizeLimit} Mb limit.`);
+            location.reload();
+        }
 
+        const videoSrc = `${URL.createObjectURL(e.target.files[0])}`;
         uploadPreview.setAttribute('src', videoSrc);
         
         removeClass(uploadPreviewWrapper, 'hidden');

@@ -53,6 +53,7 @@ class Whoosh(models.Model):
     saved = models.BooleanField(default=False)
     saved_video = models.FileField(null=True, blank=True, upload_to=whoosh_saved)
     saved_thumbnail = models.FileField(null=True, blank=True, upload_to=whoosh_saved)
+    hidden = models.CharField(max_length=200, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.uniq_id:

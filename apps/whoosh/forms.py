@@ -1,7 +1,5 @@
 from django.forms import ModelForm, FileInput, CharField, TextInput
-from captcha.widgets import ReCaptchaV2Invisible
 from utility.util import file_size_validation
-from captcha.fields import ReCaptchaField
 from apps.whoosh.models import Whoosh
 from django.conf import settings
 import re
@@ -12,8 +10,6 @@ two_digit_followed_by_colon_pattern = '\d{2}:\d{2}:\d{2}'
 
 
 class WhooshFormBase(ModelForm):
-    captcha = ReCaptchaField(widget=ReCaptchaV2Invisible)
-
     start_time = CharField(max_length=8, widget=TextInput(attrs={
         'pattern': two_digit_followed_by_colon_pattern,
         'placeholder': 'HH:MM:SS',
@@ -21,8 +17,7 @@ class WhooshFormBase(ModelForm):
     }))
 
     def clean_source_video(self):
-        cleaned_data = self.clean()
-        source_video = cleaned_data.get('source_video')
+        source_video = self.cleaned_data.get('source_video')
 
         if not file_size_validation(source_video.size):
             self.add_error('source_video', 'File too big! {}MB limit.'.format(settings.FILE_UPLOAD_LIMIT_MB))
@@ -30,13 +25,19 @@ class WhooshFormBase(ModelForm):
         return source_video
 
     def clean_start_time(self):
-        cleaned_data = self.clean()
-        start_time = cleaned_data.get('start_time')
+        start_time = self.cleaned_data.get('start_time')
 
         if not re.match(hh_mm_ss_pattern, start_time):
             self.add_error('start_time', 'Invalid format.  Must be HH:MM:SS.')
 
         return start_time
+
+    def clean_hidden(self):
+        hidden = self.cleaned_data.get('hidden')
+        if hidden:
+            self.add_error('hidden', 'Humans only!')
+
+        return hidden
 
     def clean(self):
         cleaned_data = super().clean()
@@ -55,12 +56,12 @@ class WhooshForm(WhooshFormBase):
     class Meta:
         widgets = {'source_video': FileInput(attrs={'accept': 'video/mp4,video/quicktime', 'required': 'required'})}
         model = Whoosh
-        fields = ['captcha', 'source_video', 'whoosh_type', 'credit_text', 'mute_source', 'black_and_white',
-                  'portrait', 'slow_motion', 'slow_zoom', 'start_time', 'user_agent']
+        fields = ['source_video', 'whoosh_type', 'credit_text', 'mute_source', 'black_and_white',
+                  'portrait', 'slow_motion', 'slow_zoom', 'start_time', 'user_agent', 'hidden']
 
 
 class DoppelgangerForm(WhooshFormBase):
     class Meta:
         model = Whoosh
-        fields = ['captcha', 'whoosh_type', 'credit_text', 'mute_source', 'black_and_white', 'portrait',
-                  'slow_motion', 'slow_zoom', 'start_time', 'user_agent']
+        fields = ['whoosh_type', 'credit_text', 'mute_source', 'black_and_white', 'portrait',
+                  'slow_motion', 'slow_zoom', 'start_time', 'user_agent', 'hidden']
