@@ -29,7 +29,7 @@ whoosh.uploadEditor = function() {
     const uploadPreviewWrapper = document.querySelector('.upload-preview');
     const startTimeInput = document.getElementById('id_start_time');
     const extraOptions = document.querySelector('.extra-options');
-    const submitBtn = document.querySelector('input[value="Submit"]');
+    const submitWrapper = document.querySelector('.submit-wrapper');
 
     uploadForm.addEventListener('submit', function(e) {
         removeClass(uploadProgressDiv, 'hidden');
@@ -49,7 +49,7 @@ whoosh.uploadEditor = function() {
         
         removeClass(uploadPreviewWrapper, 'hidden');
         removeClass(extraOptions, 'disabled');
-        removeClass(submitBtn, 'hidden');
+        removeClass(submitWrapper, 'hidden');
 
         uploadPreview.addEventListener('timeupdate', function(e) {
             startTimeInput.value = new Date(Number(uploadPreview.currentTime * 1000)).toISOString().substring(11, 19);

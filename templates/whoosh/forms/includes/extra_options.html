@@ -1,0 +1,16 @@
+<div class="extra-options {{ extra_class }}">
+    {% include 'whoosh/forms/includes/form_input.html' with input=form.whoosh_type %}
+    {% include 'whoosh/forms/includes/form_input.html' with input=form.credit_text %}
+    {% include 'whoosh/forms/includes/form_input.html' with input=form.start_time %}
+
+    <div class="checkboxes">
+        {% include 'whoosh/forms/includes/form_input.html' with input=form.mute_source %}
+        {% include 'whoosh/forms/includes/form_input.html' with input=form.black_and_white %}
+        {% include 'whoosh/forms/includes/form_input.html' with input=form.portrait %}
+        {% include 'whoosh/forms/includes/form_input.html' with input=form.slow_motion %}
+        {% include 'whoosh/forms/includes/form_input.html' with input=form.slow_zoom %}
+        {% include 'whoosh/forms/includes/form_input.html' with input=form.hidden %}
+    </div>
+
+    {{ form.user_agent }}
+</div>

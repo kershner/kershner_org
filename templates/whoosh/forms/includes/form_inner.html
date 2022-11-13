@@ -1,0 +1,8 @@
+<hr>
+
+{% csrf_token %}
+{{ form.non_field_errors }}
+
+{% include 'whoosh/forms/includes/extra_options.html' %}
+
+{% include 'whoosh/forms/includes/submit_btn.html' %}

@@ -3,35 +3,16 @@
 
 <div class="form">
     <form id="doppelganger-form" class="hidden" method="post" enctype="multipart/form-data" action="{% url 'create-doppelganger' whoosh_id=selected_whoosh.uniq_id %}">
-        <div class="instructions medium-font-size">
-            Manufacture a paranormal counterpart to this Whoosh using altered settings.
-        </div>
+        {% csrf_token %}
+
+        Manufacture a paranormal counterpart to this Whoosh using altered settings.
 
         <hr>
 
-        {% csrf_token %}
+        {{ form.non_field_errors }}
 
-        {{ doppelganger_form.non_field_errors }}
+        {% include 'whoosh/forms/includes/extra_options.html' %}
 
-        {{ doppelganger_form.captcha }}
-
-        <div class="extra-options">
-            {% include 'whoosh/forms/includes/form_input.html' with input=doppelganger_form.whoosh_type %}
-            {% include 'whoosh/forms/includes/form_input.html' with input=doppelganger_form.credit_text %}
-            {% include 'whoosh/forms/includes/form_input.html' with input=doppelganger_form.start_time %}
-
-            <div class="checkboxes">
-                {% include 'whoosh/forms/includes/form_input.html' with input=doppelganger_form.mute_source %}
-                {% include 'whoosh/forms/includes/form_input.html' with input=doppelganger_form.black_and_white %}
-                {% include 'whoosh/forms/includes/form_input.html' with input=doppelganger_form.portrait %}
-                {% include 'whoosh/forms/includes/form_input.html' with input=doppelganger_form.slow_motion %}
-                {% include 'whoosh/forms/includes/form_input.html' with input=doppelganger_form.slow_zoom %}
-                {% include 'whoosh/forms/includes/form_input.html' with input=doppelganger_form.hidden %}
-            </div>
-
-            {{ doppelganger_form.user_agent }}
-        </div>
-
-        <input type="submit" value="Submit">
+        {% include 'whoosh/forms/includes/submit_btn.html' %}
     </form>
 </div>

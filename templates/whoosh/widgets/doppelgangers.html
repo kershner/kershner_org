@@ -1,7 +1,7 @@
-{% if doppelgangers %}
+{% if selected_whoosh.get_doppelgangers %}
 <div class="whoosh-widget-wrapper">
     <div class="subtitle">[doppelgängers]</div>
 
-    {% include 'whoosh/widgets/includes/whoosh_widget.html' with widget_whooshes=doppelgangers %}
+    {% include 'whoosh/widgets/includes/whoosh_widget.html' with widget_whooshes=selected_whoosh.get_doppelgangers %}
 </div>
 {% endif %}

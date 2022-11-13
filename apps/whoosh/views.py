@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import user_passes_test
 from apps.whoosh.forms import WhooshForm, DoppelgangerForm
 from django.template.response import TemplateResponse
+from django.views.generic.base import ContextMixin
 from apps.whoosh.tasks import process_whoosh
 from django.views.generic import View
 from apps.whoosh.models import Whoosh
@@ -13,17 +14,56 @@ from utility import util
 import datetime
 
 
-class WhooshHomeView(View):
-    template = "whoosh/home.html"
+class WhooshContentMixin(ContextMixin):
+    whoosh_limit = 60
+
+    def get_context_data(self, **kwargs):
+        ctx = super(WhooshContentMixin, self).get_context_data(**kwargs)
+        ctx['recent_whooshes'] = self.get_recent_whooshes()
+        ctx['saved_whooshes'] = self.get_saved_whooshes()
+        return ctx
+
+    def get_recent_whooshes(self):
+        expiration = timezone.now() - datetime.timedelta(days=settings.WHOOSH_EXPIRATION_DAYS)
+        return Whoosh.objects.filter(processed__gte=expiration, saved=False).order_by('-id').all()[:self.whoosh_limit]
+
+
+    def get_saved_whooshes(self):
+        return Whoosh.objects.filter(saved=True, processed__isnull=False).order_by('-id').all()[:self.whoosh_limit]
+
+
+class WhooshesRemainingMixin(ContextMixin):
+    def get_context_data(self, **kwargs):
+        ctx = super(WhooshesRemainingMixin, self).get_context_data(**kwargs)
+
+        one_hour_ago = timezone.now() - datetime.timedelta(hours=1)
+        user_ip = util.get_client_ip(self.request)
+        whooshes_by_user = Whoosh.objects.filter(ip=user_ip, created__gte=one_hour_ago).count()
+
+        whooshes_remaining = 0
+        if whooshes_by_user < settings.WHOOSH_LIMIT_PER_HOUR:
+            whooshes_remaining = settings.WHOOSH_LIMIT_PER_HOUR - whooshes_by_user
+
+        ctx['whooshes_per_hour'] = settings.WHOOSH_LIMIT_PER_HOUR
+        ctx['whooshes_remaining'] = whooshes_remaining
+        return ctx
+
+class BaseWhooshView(WhooshesRemainingMixin, WhooshContentMixin, View):
+    not_found_template = 'whoosh/404.html'
+    form = WhooshForm()
+
+    def get_context_data(self, **kwargs):
+        ctx = super(BaseWhooshView, self).get_context_data(**kwargs)
+        ctx['form'] = self.form
+        return ctx
+
+
+class WhooshHomeView(BaseWhooshView):
+    template = 'whoosh/home.html'
     form = WhooshForm()
 
     def get(self, request):
-        ctx = {
-            'form': self.form,
-            'saved_whooshes': get_saved_whooshes(),
-            'recent_whooshes': get_recent_whooshes()
-        }
-        return TemplateResponse(request, self.template, ctx)
+        return TemplateResponse(request, self.template, self.get_context_data())
 
     def post(self, request):
         self.form = WhooshForm(request.POST, request.FILES)
@@ -36,39 +76,26 @@ class WhooshHomeView(View):
             process_whoosh.delay(new_whoosh.id)
             return redirect('view-whoosh', whoosh_id=new_whoosh.uniq_id)
 
-        ctx = {
-            'form': self.form,
-            'saved_whooshes': get_saved_whooshes(),
-            'recent_whooshes': get_recent_whooshes()
-        }
-        return TemplateResponse(request, self.template, ctx)
+        return TemplateResponse(request, self.template, self.get_context_data())
 
 
-class WhooshViewer(View):
+class WhooshViewer(BaseWhooshView):
     template = 'whoosh/viewer.html'
+    form = DoppelgangerForm()
 
     def get(self, request, whoosh_id=None):
         whoosh = Whoosh.objects.filter(uniq_id=whoosh_id).first()
         if not whoosh:
-            ctx = {
-                'saved_whooshes': get_saved_whooshes(),
-                'recent_whooshes': get_recent_whooshes()
-            }
-            return TemplateResponse(request, 'whoosh/404.html', ctx)
+            return TemplateResponse(request, self.not_found_template, self.get_context_data())
 
-        doppelganger_form = DoppelgangerForm(instance=whoosh)
+        self.form = DoppelgangerForm(instance=whoosh)
 
         whoosh_expiration = whoosh.created + datetime.timedelta(days=settings.WHOOSH_EXPIRATION_DAYS)
         expiration_days = abs((timezone.now() - whoosh_expiration).days)
 
-        ctx = {
-            'doppelganger_form': doppelganger_form,
-            'doppelgangers': whoosh.get_doppelgangers(),
-            'selected_whoosh': whoosh,
-            'saved_whooshes': get_saved_whooshes(),
-            'recent_whooshes': get_recent_whooshes(),
-            'expiration_days': expiration_days
-        }
+        ctx = self.get_context_data()
+        ctx['selected_whoosh'] = whoosh
+        ctx['expiration_days'] = expiration_days
         return TemplateResponse(request, self.template, ctx)
 
     @staticmethod
@@ -125,13 +152,3 @@ def save_whoosh(request, whoosh_id):
     whoosh.save()
     messages.success(request, 'Whoosh id: {} has been saved.'.format(whoosh.id))
     return redirect(reprocess_whoosh, whoosh_id=whoosh_id)
-
-
-def get_recent_whooshes():
-    whoosh_expiration = timezone.now() - datetime.timedelta(days=settings.WHOOSH_EXPIRATION_DAYS)
-    whoosh_limit = 60
-    return Whoosh.objects.filter(processed__gte=whoosh_expiration, saved=False).order_by('-id').all()[:whoosh_limit]
-
-
-def get_saved_whooshes():
-    return Whoosh.objects.filter(saved=True, processed__isnull=False).order_by('-id').all()[:20]
