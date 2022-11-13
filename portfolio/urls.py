@@ -6,6 +6,11 @@ from apps.bacon.views import bacon
 from django.contrib import admin
 from . import admin_views
 
+handler404 = 'portfolio.views.custom_page_not_found_view'
+handler500 = 'portfolio.views.custom_error_view'
+handler403 = 'portfolio.views.custom_permission_denied_view'
+handler400 = 'portfolio.views.custom_bad_request_view'
+
 urlpatterns = [
     path('', portfolio_views.home, name='home'),
     path('music/', portfolio_views.music, name='music'),
