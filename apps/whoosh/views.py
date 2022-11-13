@@ -90,7 +90,7 @@ class WhooshViewer(BaseWhooshView):
 
         self.form = DoppelgangerForm(instance=whoosh)
         earliest_doppel = whoosh.get_doppelgangers().last()
-        if earliest_doppel.expired:
+        if earliest_doppel and earliest_doppel.expired:
             self.form = None
 
         whoosh_expiration = whoosh.created + datetime.timedelta(days=settings.WHOOSH_EXPIRATION_DAYS)
