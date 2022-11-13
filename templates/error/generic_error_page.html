@@ -30,24 +30,38 @@
         }
         h2 {
             font-size: 2rem;
-            line-height: 4.75rem;
+            line-height: 2rem;
             margin: 0;
-        }
-        h3 {
-            font-size: 1.4rem;
-            font-weight: 100;
-            margin: 0;
+            font-family: 'Georgia', sans-serif;
         }
         p, a {
-            margin: 0.5rem 0
+            margin: 0.5rem 0;
+            font-size: 1.25rem;
+        }
+        .contact {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        .contact a {
+            display: flex;
+            margin: 0 1rem;
+            border: 1px solid #FFF;
+            align-items: center;
+            justify-content: center;
+            width: 5rem;
+            height: 2.5rem;
+            color: #FFF;
+            text-decoration: none;
+        }
+        .contact a:hover {
+            background-color: #F2006D !important;
         }
         @media (min-width: 800px) {
             h2 {
                 font-size: 4rem;
-                margin-bottom: 2rem;
-            }
-            h3 {
-                font-size: 2rem;
+                line-height: 4.75rem;
+                margin: 1rem auto;
             }
         }
     </style>
@@ -63,9 +77,18 @@
     </h1>
     <hr>
     <h2>Were you looking for a website?</h2>
-    <h3>I'm sure I saw one around here somewhere...</h3>
     <p>Hang tight for a sec, <a href="https://www.kershner.org"><b>kershner.org</b></a> will be right back.</p>
-    <a href="https://github.com/kershner">https://github.com/kershner</a>
+
+    <div class="contact">
+        <a href="https://github.com/kershner">
+            <div>Github</div>
+        </a>
+
+        <a href="mailto:tylerkershner@gmail.com">
+            <div>Email</div>
+        </a>
+    </div>
+
 
     <script src="https://djfdm802jwooz.cloudfront.net/static/vendor/js/randomColor.min.js"></script>
     <script type="text/javascript">
@@ -89,8 +112,8 @@
         };
 
         errorPage.colorElements = function() {
-            document.querySelectorAll('.color').forEach((span) => {
-                span.style.color = randomColor();
+            document.querySelectorAll('.color').forEach((el) => {
+                el.style.color = randomColor();
             })
         };
 
