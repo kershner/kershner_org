@@ -126,8 +126,6 @@ AWS_S3_CUSTOM_DOMAIN = '{}/{}'.format(AWS_REGION, AWS_STORAGE_BUCKET_NAME)
 AWS_LOCATION = 'static'
 AWS_DEFAULT_ACL = 'public-read'
 CLOUDFRONT_DOMAIN = PARAMETERS['cloudfront_domain']
-
-
 MEDIAFILES_LOCATION = MAIN_APP_NAME
 MEDIA_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
@@ -136,14 +134,15 @@ FILE_UPLOAD_HANDLERS = ['django.core.files.uploadhandler.TemporaryFileUploadHand
 
 # Misc site stuff
 PROJECTS_PER_PAGE = 2
+FILE_UPLOAD_LIMIT_MB = 15
+EC2_IPS = PARAMETERS['ec2_ips'].split(',')
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Unsplash stuff
 UNSPLASH_ACCESS_KEY = PARAMETERS['unsplash_access_key']
 UNSPLASH_SECRET_KEY = PARAMETERS['unsplash_secret_key']
 UNSPLASH_API_URL = 'https://api.unsplash.com/'
 PHILOMANIA_BACKGROUNDS_COLLECTION_ID = 827743
-
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Redis config
 REDIS_HOST = PARAMETERS['redis_host']
@@ -154,9 +153,6 @@ BROKER_URL = 'redis://{}:{}'.format(PARAMETERS['redis_host'], PARAMETERS['redis_
 CELERY_RESULT_BACKEND = 'redis://{}:{}'.format(PARAMETERS['redis_host'], PARAMETERS['redis_port'])
 BROKER_TRANSPORT = 'redis'
 
-FILE_UPLOAD_LIMIT_MB = 20
-
-EC2_IPS = PARAMETERS['ec2_ips'].split(',')
-
+# [ominous whoosh-er]
 WHOOSH_EXPIRATION_DAYS = 14
 WHOOSH_LIMIT_PER_HOUR = 5
