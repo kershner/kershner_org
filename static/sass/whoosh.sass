@@ -81,11 +81,8 @@ a
     color: $whoosh-white
   &:hover
     color: $whoosh-red
-    span
-      transition: none
-
-a.underline
-  text-decoration: underline
+  &.underline
+    text-decoration: underline
 
 #id_user_agent,
 .field_hidden
@@ -177,6 +174,9 @@ a.underline
 .header
   margin-top: 0.5rem
   font-size: $large-font-size
+
+  a
+    color: unset !important
 
 .form
   display: inline-flex
