@@ -3,7 +3,7 @@ import logging
 import os
 
 
-logger = logging.getLogger('portfolio.tasks')
+logger = logging.getLogger('kershner.tasks')
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 AUDIO_PATH = os.path.join(os.path.join(BASE_DIR, 'static'), 'audio')

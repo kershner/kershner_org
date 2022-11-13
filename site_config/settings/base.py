@@ -11,7 +11,7 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PARAMETERS = util.get_parameters()
-MAIN_APP_NAME = 'portfolio'
+MAIN_APP_NAME = 'kershner'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -42,7 +42,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'portfolio.urls'
+ROOT_URLCONF = 'kershner.urls'
 
 TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates')
 TEMPLATES = [
@@ -58,13 +58,13 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             ],
             'libraries': {
-                'portfolio_tags': 'portfolio.templatetags'
+                'kershner_tags': 'kershner.templatetags'
             }
         },
     },
 ]
 
-WSGI_APPLICATION = 'portfolio.wsgi.application'
+WSGI_APPLICATION = 'kershner.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases

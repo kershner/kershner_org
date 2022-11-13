@@ -1,7 +1,7 @@
 """Gunicorn *production* config file"""
 
 # Django WSGI application path in pattern MODULE_NAME:VARIABLE_NAME
-wsgi_app = "portfolio.wsgi:application"
+wsgi_app = "kershner.wsgi:application"
 
 # The number of worker processes for handling requests
 workers = 2

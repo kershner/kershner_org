@@ -71,14 +71,5 @@ def philomania(request):
     return render(request, 'philomania.html', template_vars)
 
 
-def custom_page_not_found_view(request, exception):
-    return render(request, 'error/generic_error_page.html', {})
-
 def custom_error_view(request, exception=None):
-    return render(request, 'error/generic_error_page.html', {})
-
-def custom_permission_denied_view(request, exception=None):
-    return render(request, 'error/generic_error_page.html', {})
-
-def custom_bad_request_view(request, exception=None):
     return render(request, 'error/generic_error_page.html', {})

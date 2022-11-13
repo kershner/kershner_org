@@ -1,14 +1,14 @@
 from django.core.files.base import File
 from apps.whoosh import whoosh_ffmpeg
 from django.utils import timezone
-from portfolio.celery import app
+from kershner.celery import app
 from utility import util
 import tempfile
 import logging
 import os
 
 
-logger = logging.getLogger('portfolio.tasks')
+logger = logging.getLogger('kershner.tasks')
 
 
 @app.task(name='process-whoosh')

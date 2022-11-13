@@ -3,8 +3,8 @@
 ####################################
 # Place this file in /usr/local/sbin
 ####################################
-BASEDIR=/home/ubuntu/portfolio
-DJANGODIR=$BASEDIR/portfolio
+BASEDIR=/home/ubuntu/kershner
+DJANGODIR=$BASEDIR/kershner
 VENVDIR=$BASEDIR/venv
 PIP="$VENVDIR/bin/pip"
 PYTHON="$VENVDIR/bin/python"
