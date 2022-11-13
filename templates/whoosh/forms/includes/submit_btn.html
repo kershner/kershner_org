@@ -1,12 +1,9 @@
 <div class="submit-wrapper {{ extra_class }}">
-    {% if whooshes_remaining or request.user.is_superuser %}
     <div class="whooshes-remaining">
         {{ whooshes_remaining }} Whoosh{% if whooshes_remaining != 1 %}es{% endif %} remaining {% include 'whoosh/forms/includes/remaining_tooltip.html' %}
     </div>
+
+    {% if whooshes_remaining or request.user.is_superuser %}
     <input type="submit" value="Submit">
-    {% else %}
-    <div class="whooshes-remaining">
-        No Whooshes remaining {% include 'whoosh/forms/includes/remaining_tooltip.html' %}
-    </div>
     {% endif %}
 </div>

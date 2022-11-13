@@ -57,6 +57,10 @@ def process_whoosh(whoosh_id):
 
         whoosh.processed = timezone.now()
 
+        # Refresh ffprobe data
+        ffprobe_result = whoosh_ffmpeg.ffprobe(output_filename)
+        whoosh.video_data = ffprobe_result['json']
+
         whoosh.error = ','.join([str(e) for e in error])
 
         # Video/thumbnail get uploaded to S3 on save()

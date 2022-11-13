@@ -134,7 +134,7 @@ FILE_UPLOAD_HANDLERS = ['django.core.files.uploadhandler.TemporaryFileUploadHand
 
 # Misc site stuff
 PROJECTS_PER_PAGE = 2
-FILE_UPLOAD_LIMIT_MB = 15
+FILE_UPLOAD_LIMIT_MB = 20
 EC2_IPS = PARAMETERS['ec2_ips'].split(',')
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 

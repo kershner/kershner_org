@@ -12,7 +12,9 @@ PORTRAIT_FONT_SIZE_DIVISOR = 10
 LINE_CHARACTER_LIMIT = 20
 PORTRAIT_LINE_CHARACTER_LIMIT = 14
 PORTRAIT_RATIO = 9/16
-FINAL_W_OR_H = 1200
+FINAL_VIDEO_W_OR_H = 600
+THUMB_WIDTH = 160
+THUMB_STARTING_SECONDS = 4
 
 
 def ffprobe(file_path):
@@ -21,6 +23,7 @@ def ffprobe(file_path):
                    '-print_format', 'json',
                    '-show_format',
                    '-show_streams',
+                   '-show_error',
                    file_path]
 
     result = subprocess.run(ffprobe_cmd,
@@ -64,13 +67,10 @@ def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
 
 
 def run_whoosh_thumbnail_ffmpeg(video_filename, thumbnail_output_filename):
-    starting_seconds = 4
-    thumb_width = 320
-
     # Generate thumbnail
-    vf_str = 'scale={}:-2:force_original_aspect_ratio=decrease'.format(thumb_width)
+    vf_str = 'scale={}:-2:force_original_aspect_ratio=decrease'.format(THUMB_WIDTH)
     ffmpeg_command = ['ffmpeg',
-                      '-ss', '{}'.format(starting_seconds),
+                      '-ss', '{}'.format(THUMB_STARTING_SECONDS),
                       '-i', '{}'.format(video_filename),
                       '-vframes', '1',
                       '-f', 'mjpeg',
@@ -93,9 +93,9 @@ def get_complex_filter_str(whoosh):
         video_filter.append(zoompan_filter)
 
     # Cropping
-    crop_or_scale_str = 'scale={}:-2'.format(FINAL_W_OR_H)
+    crop_or_scale_str = 'scale={}:-2'.format(FINAL_VIDEO_W_OR_H)
     if whoosh.can_be_cropped and whoosh.portrait or whoosh.video_height > whoosh.video_width:
-        crop_or_scale_str = "crop=in_h*{}:in_h,scale=-2:{}".format(PORTRAIT_RATIO, FINAL_W_OR_H)
+        crop_or_scale_str = "crop=in_h*{}:in_h,scale=-2:{}".format(PORTRAIT_RATIO, FINAL_VIDEO_W_OR_H)
 
     video_filter.append(crop_or_scale_str)
 
@@ -153,10 +153,10 @@ def get_drawtext_filter(whoosh, formatted_text):
     # At 2 seconds, fade in over 2 seconds, display text for 5 seconds, then fade out over 2 seconds
     alpha_fadeout_filter = escape_str_for_ffmpeg('if(lt(t,2),0,if(lt(t,4),(t-2)/2,if(lt(t,9),1,if(lt(t,11),(2-(t-9))/2,0))))')
 
-    new_width = FINAL_W_OR_H
+    new_width = FINAL_VIDEO_W_OR_H
     font_size_divisor = FONT_SIZE_DIVISOR
     if whoosh.portrait:
-        new_width = int(FINAL_W_OR_H * PORTRAIT_RATIO)
+        new_width = int(FINAL_VIDEO_W_OR_H * PORTRAIT_RATIO)
         font_size_divisor = PORTRAIT_FONT_SIZE_DIVISOR
 
     drawtext_filter = 'drawtext=' \
