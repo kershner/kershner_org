@@ -89,6 +89,9 @@ class WhooshViewer(BaseWhooshView):
             return TemplateResponse(request, self.not_found_template, self.get_context_data())
 
         self.form = DoppelgangerForm(instance=whoosh)
+        earliest_doppel = whoosh.get_doppelgangers().last()
+        if earliest_doppel.expired:
+            self.form = None
 
         whoosh_expiration = whoosh.created + datetime.timedelta(days=settings.WHOOSH_EXPIRATION_DAYS)
         expiration_days = abs((timezone.now() - whoosh_expiration).days)
