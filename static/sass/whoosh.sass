@@ -23,6 +23,13 @@ hr
 .hidden
   display: none !important
 
+.wave
+  transition: color 0.3s
+  transition-timing-function: cubic-bezier(0.2, -2, 0.8, 2)
+
+  &.red
+    color: $whoosh-red
+
 .active
   border-color: $whoosh-red !important
   color: $whoosh-red
@@ -74,6 +81,8 @@ a
     color: $whoosh-white
   &:hover
     color: $whoosh-red
+    span
+      transition: none
 
 a.underline
   text-decoration: underline

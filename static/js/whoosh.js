@@ -1,6 +1,44 @@
 const whoosh = {
     'whooshViewerUrl': '',
-    'uploadFileSizeLimit': ''
+    'uploadFileSizeLimit': '',
+    'colorTimer': undefined,
+    'colorInterval': 15000
+};
+
+whoosh.init = function() {
+    whoosh.colorInit();
+};
+
+whoosh.colorInit = function() {
+    const header = document.querySelector('.header a');
+    let headerText = header.innerHTML.trim().split('');
+    let html = '';
+    for (let i=0; i<headerText.length; i++) {
+        html += `<span class="wave">${headerText[i]}</span>`;
+    }
+    header.innerHTML = html;
+
+    let colorElements = document.querySelectorAll('.wave');
+    whoosh.colorElements(colorElements);
+    whoosh.colorTimer = setInterval(function() {
+        whoosh.colorElements(colorElements);
+    }, whoosh.colorInterval);
+};
+
+whoosh.colorElements = function(elements) {
+    let timerPointer = 0.0;
+    let increment = 100;
+    for (let i=0; i<elements.length; i++) {
+        let colorElement = elements[i];
+        colorElement.addEventListener('transitionend', () => {
+            removeClass(colorElement, 'red');
+        });
+
+        setTimeout(function() {
+            addClass(colorElement, 'red');
+        }, timerPointer);
+        timerPointer += increment;
+    }
 };
 
 whoosh.populateUserAgent = function() {

@@ -35,6 +35,9 @@
     <!-- JS -->
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/whoosh.js"></script>
+    <script type="text/javascript">
+        whoosh.init();
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
