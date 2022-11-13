@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.contrib import messages
 from django.utils import timezone
 from django.conf import settings
+from utility import util
 import datetime
 
 
@@ -28,9 +29,12 @@ class WhooshHomeView(View):
         self.form = WhooshForm(request.POST, request.FILES)
 
         if self.form.is_valid():
-            self.form.save()
-            process_whoosh.delay(self.form.instance.id)
-            return redirect('view-whoosh', whoosh_id=self.form.instance.uniq_id)
+            new_whoosh = self.form.save(commit=False)
+            new_whoosh.ip = util.get_client_ip(request)
+            new_whoosh.save()
+
+            process_whoosh.delay(new_whoosh.id)
+            return redirect('view-whoosh', whoosh_id=new_whoosh.uniq_id)
 
         ctx = {
             'form': self.form,
@@ -95,6 +99,7 @@ class DoppelgangerSubmit(View):
             if not existing_doppelganger:
                 new_doppelganger.source_video.name = whoosh.source_video.name
                 new_doppelganger.doppelganger = whoosh.doppelganger if whoosh.doppelganger else whoosh
+                new_doppelganger.ip = util.get_client_ip(request)
                 new_doppelganger.save()
 
                 process_whoosh.delay(new_doppelganger.id)

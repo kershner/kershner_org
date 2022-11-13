@@ -1,11 +1,11 @@
 from django.core.validators import FileExtensionValidator
+from django.db.models import Q, GenericIPAddressField
 from apps.whoosh.tasks import delete_whoosh_media
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
 from django.conf import settings
 from django.urls import reverse
-from django.db.models import Q
 from django.db import models
 from utility import util
 from uuid import uuid4
@@ -54,6 +54,7 @@ class Whoosh(models.Model):
     saved_video = models.FileField(null=True, blank=True, upload_to=whoosh_saved)
     saved_thumbnail = models.FileField(null=True, blank=True, upload_to=whoosh_saved)
     hidden = models.CharField(max_length=200, null=True, blank=True)
+    ip = GenericIPAddressField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.uniq_id:

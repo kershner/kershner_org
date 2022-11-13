@@ -51,3 +51,12 @@ def file_size_validation(value):
 
 def hash_data_structure(data):
     return hashlib.md5(json.dumps(data, sort_keys=True).encode('utf-8')).hexdigest()
+
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
