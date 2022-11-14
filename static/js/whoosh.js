@@ -34,6 +34,7 @@ whoosh.colorElements = function(elements) {
             removeClass(colorElement, 'red');
         });
 
+        removeClass(colorElement, 'red');
         setTimeout(function() {
             addClass(colorElement, 'red');
         }, timerPointer);
