@@ -25,8 +25,7 @@ class WhooshContentMixin(ContextMixin):
 
     def get_recent_whooshes(self):
         expiration = timezone.now() - datetime.timedelta(days=settings.WHOOSH_EXPIRATION_DAYS)
-        return Whoosh.objects.filter(processed__gte=expiration, saved=False).order_by('-id').all()[:self.whoosh_limit]
-
+        return Whoosh.objects.filter(processed__gte=expiration, saved=False, doppelganger=None).order_by('-id').all()[:self.whoosh_limit]
 
     def get_saved_whooshes(self):
         return Whoosh.objects.filter(saved=True, processed__isnull=False).order_by('-id').all()[:self.whoosh_limit]
@@ -47,6 +46,7 @@ class WhooshesRemainingMixin(ContextMixin):
         ctx['whooshes_per_hour'] = settings.WHOOSH_LIMIT_PER_HOUR
         ctx['whooshes_remaining'] = whooshes_remaining
         return ctx
+
 
 class BaseWhooshView(WhooshesRemainingMixin, WhooshContentMixin, View):
     not_found_template = 'whoosh/404.html'
