@@ -159,11 +159,13 @@ def get_drawtext_filter(whoosh, formatted_text):
         new_width = int(FINAL_VIDEO_W_OR_H * PORTRAIT_RATIO)
         font_size_divisor = PORTRAIT_FONT_SIZE_DIVISOR
 
+    border_w = 1.5
+    shadow_y = 3.9
     drawtext_filter = 'drawtext=' \
                       ':font=Arial' \
                       ':text={formatted_text}' \
-                      ':borderw=3:bordercolor=0x33cc33' \
-                      ':shadowx=0:shadowy=6' \
+                      ':borderw={border_w}:bordercolor=0x33cc33' \
+                      ':shadowx=0:shadowy={shadow_y}' \
                       ':fontcolor=0x663333' \
                       ':fontsize={new_width}/{font_size_divisor}' \
                       ':x=(w-text_w)/2' \
@@ -172,7 +174,9 @@ def get_drawtext_filter(whoosh, formatted_text):
                       ':alpha={fadeout_filter}'.format(formatted_text=formatted_text,
                                                        fadeout_filter=alpha_fadeout_filter,
                                                        new_width=new_width,
-                                                       font_size_divisor=font_size_divisor)
+                                                       font_size_divisor=font_size_divisor,
+                                                       border_w=border_w,
+                                                       shadow_y=shadow_y)
     return drawtext_filter
 
 
