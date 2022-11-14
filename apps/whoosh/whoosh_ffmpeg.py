@@ -150,8 +150,8 @@ def get_formatted_credit_text(whoosh):
 
 
 def get_drawtext_filter(whoosh, formatted_text):
-    # At 2 seconds, fade in over 2 seconds, display text for 5 seconds, then fade out over 2 seconds
-    alpha_fadeout_filter = escape_str_for_ffmpeg('if(lt(t,2),0,if(lt(t,4),(t-2)/2,if(lt(t,9),1,if(lt(t,11),(2-(t-9))/2,0))))')
+    # At 2 seconds, fade in over 1 second, display text for 5 seconds, then fade out over 2 seconds
+    alpha_anim = escape_str_for_ffmpeg('if(lt(t,2),0,if(lt(t,3),(t-2)/1,if(lt(t,8),1,if(lt(t,10),(2-(t-8))/2,0))))')
 
     new_width = FINAL_VIDEO_W_OR_H
     font_size_divisor = FONT_SIZE_DIVISOR
@@ -172,7 +172,7 @@ def get_drawtext_filter(whoosh, formatted_text):
                       ':line_spacing=10' \
                       ':y=(h/1.75)' \
                       ':alpha={fadeout_filter}'.format(formatted_text=formatted_text,
-                                                       fadeout_filter=alpha_fadeout_filter,
+                                                       fadeout_filter=alpha_anim,
                                                        new_width=new_width,
                                                        font_size_divisor=font_size_divisor,
                                                        border_w=border_w,
