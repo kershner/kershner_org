@@ -71,7 +71,7 @@ WSGI_APPLICATION = 'kershner.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'portfolio.db'),
+        'NAME': os.path.join(BASE_DIR, 'kershner.db'),
     }
 }
 
