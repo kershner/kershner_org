@@ -65,7 +65,7 @@ music.init = function() {
             containerDiv.innerHTML = `
                 <div amplitude-playlist=${playlistString} amplitude-song-index=${i} class="song-info amplitude-play-pause">
                     <div class="song-thumbnail">
-                        <img data-src="${song.cover_art_url}">
+                        <img src="${song.cover_art_url}">
                         <div class="activity dynamic-color ${currentColor}">
                         </div>
                     </div>
@@ -99,7 +99,6 @@ music.init = function() {
             'volume' : 100
         };
         Amplitude.init(amplitudeOptions);
-        portfolio.deferImages();
         music.metaDataContainer.style.backgroundImage = 'url('+ Amplitude.getActiveSongMetadata().cover_art_url +')';
     }
 
