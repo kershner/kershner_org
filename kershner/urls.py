@@ -1,10 +1,11 @@
 from apps.screenbloom.views import screenbloom_landing
+from apps.project import views as project_views
 from apps.whoosh.urls import whoosh_patterns
+import apps.philomania.views as phil_views
 from . import views as kersh_views
 from django.urls import include, path
 from apps.bacon.views import bacon
 from django.contrib import admin
-from . import admin_views
 
 handler404 = 'kershner.views.custom_error_view'
 handler500 = 'kershner.views.custom_error_view'
@@ -14,10 +15,9 @@ handler400 = 'kershner.views.custom_error_view'
 urlpatterns = [
     path('', kersh_views.home, name='home'),
     path('music/', kersh_views.music, name='music'),
-    path('admin/', admin.site.urls),
 
     # Philomania
-    path('phil/', kersh_views.philomania),
+    path('phil/', phil_views.philomania),
 
     # [ominous whoosher]
     path('whoosh/', include(whoosh_patterns)),
@@ -30,6 +30,7 @@ urlpatterns = [
 
     # Admin Stuff
     path('admin/move-project-position/<project_id>/<direction>',
-         admin_views.MoveProjectPositionView.as_view(),
-         name='move_project_position')
+         project_views.MoveProjectPositionView.as_view(),
+         name='move_project_position'),
+    path('admin/', admin.site.urls),
 ]

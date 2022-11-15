@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.decorators import login_required
 from apps.project.models import Project
 from django.shortcuts import redirect
@@ -8,6 +9,7 @@ from django.views import View
 class MoveProjectPositionView(View):
     @staticmethod
     @login_required()
+    @user_passes_test(lambda u: u.is_superuser)
     def get(request, project_id, direction):
         try:
             project = Project.objects.get(id=project_id)

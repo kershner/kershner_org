@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'portfolio/base.html' %}
 
 {% block content %}
 <div class="welcome-wrapper">
@@ -47,7 +47,8 @@
         portfolio.projectsPerPage = {{ projects_per_page }};
         portfolio.currentProjectIndex = {{ projects_per_page }};
         portfolio.moreProjectsBtn.addEventListener('click', portfolio.moreProjectsClickEvent);
-        portfolio.projects = {{ projects_json|safe }};
+        portfolio.projectsHtml = {{ projects_html|safe }};
+
         portfolio.addProjects(0);
         portfolio.cubeClick();
     </script>

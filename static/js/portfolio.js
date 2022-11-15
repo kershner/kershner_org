@@ -2,7 +2,7 @@ var portfolio = {
     'initialLoad'           : true,
     'baseS3Url'             : '',
     'projectsPerPage'       : 0,
-    'projects'              : [],
+    'projectsHtml'          : [],
     'colorIndex'            : 0,
     'colorChangeInterval'   : 10000,  // 10 seconds,
     'projectsWrapper'       : document.getElementsByClassName('projects-wrapper')[0],
@@ -12,13 +12,12 @@ var portfolio = {
     'cubeGrid'              : document.getElementsByClassName('cube-grid')[0],
     'moreProjectsBtn'       : document.getElementById('more-projects-btn'),
     'imgAnimationClass'     : 'pop-up',
-    'oldProjectsUrl'        : 'http://old.kershner.org/projects',
     'colors'                : [
         ['purple', '#8c53c6'],
         ['pink', '#F2006D'],
         ['orange', '#FF613A'],
         ['green', '#04E762'],
-        ['blue', '#0079F2'],
+        ['blue', '#0079F2']
     ]
 };
 
@@ -102,95 +101,34 @@ portfolio.moreProjectsClickEvent = function() {
 };
 
 portfolio.addProjects = function(startingIndex) {
+    let indexToAdd = startingIndex;
     for (var i=0; i<portfolio.projectsPerPage; i++) {
-        var newIndex = startingIndex += i;
-        portfolio.addProject(newIndex);
+        portfolio.addProject(indexToAdd);
+        indexToAdd += 1;
     }
 };
 
 portfolio.addProject = function(projectIndex) {
-    var totalProjects = portfolio.projects.length,
-        numProjectWrappers = portfolio.projectWrappers.length,
-        project = portfolio.projects[projectIndex];
+    var totalProjects = portfolio.projectsHtml.length,
+        numProjectWrappers = portfolio.projectWrappers.length;
 
     removeClass(portfolio.moreProjectsBtn, 'hidden');
 
     if (numProjectWrappers < totalProjects) {
-        portfolio.projectsWrapper.innerHTML += portfolio.getNewProjectHtml(project);
+        let tempDiv = document.createElement('div');
+        tempDiv.innerHTML = portfolio.projectsHtml[projectIndex];
+        let dynamicColorElements = tempDiv.getElementsByClassName('dynamic-color');
+        let currentColor = portfolio.colors[portfolio.colorIndex][0];
+        for (let i=0; i<dynamicColorElements.length; i++) {
+            addClass(dynamicColorElements[i], currentColor);
+        }
+        portfolio.projectsWrapper.innerHTML += tempDiv.innerHTML;
         portfolio.deferImages();
     }
 
     if (numProjectWrappers === totalProjects - 1) {
-        portfolio.moreProjectsBtn.innerHTML = 'Old Site';
-        portfolio.moreProjectsBtn.removeEventListener('click', portfolio.moreProjectsClickEvent);
-        portfolio.moreProjectsBtn.addEventListener('click', function() {
-            window.open(portfolio.oldProjectsUrl, '_blank');
-        });
-        return false;
+        portfolio.moreProjectsBtn.style.display = 'none';
     }
-};
-
-portfolio.getNewProjectHtml = function(project) {
-    var currentColor = portfolio.colors[portfolio.colorIndex][0],
-        firstProjectId = project.fields.position === 1 ? 'first-project' : '',
-        animationClass = project.fields.position < 3 ? '' : portfolio.imgAnimationClass,
-        firstImgClass = project.fields.image_1 === '' ? 'hidden' : '',
-        secondImgClass = project.fields.image_2 === '' ? 'hidden' : '',
-        thirdImgClass = project.fields.image_3 === '' ? 'hidden' : '',
-        dropShadowClass = project.fields.drop_shadow === true ? 'drop-shadow' : '';
-
-    var html =  `
-                <div id="${firstProjectId}" class="project-wrapper ${project.fields.image_orientation}" data-position="${project.fields.position}">
-                    <div class="left-content">
-                        <div class="project-icon">
-                            <img src="" class="${animationClass}" data-src="${portfolio.baseS3Url}/${project.fields.icon}">
-                        </div>
-
-                        <div class="project-title">${project.fields.title}</div>
-                        <div class="project-blurb">${project.fields.blurb}</div>
-
-                        <hr align="left" class="dynamic-color ${currentColor}">
-
-                        <div class="project-info"><div class="project-info-title">Technologies:</div>
-                            <div class="project-info-value">${project.fields.technologies}</div>
-                        </div>
-                        `;
-
-    var moreInfoHtml = `<div class="project-info">
-                            <div class="project-info-title">More:</div>
-                            <div class="project-info-value">${project.fields.extra_notes}</div>
-                        </div>`;
-    if (project.fields.extra_notes !== '') {
-        html += moreInfoHtml;
-    }
-
-    html += `<a href="${project.fields.site_url}" target="_blank">
-                <div class="project-link-btn dynamic-color ${currentColor}">Visit Site →</div>
-            </a>
-        </div>
-
-        <div class="right-content">
-            <div class="project-img-1 ${firstImgClass}">
-                <a href="${portfolio.baseS3Url}/${project.fields.image_1}" target="_blank">
-                    <img class="${animationClass} ${dropShadowClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_1}">
-                </a>
-            </div>
-
-            <div class="project-img-2 ${secondImgClass}">
-                <a href="${portfolio.baseS3Url}/${project.fields.image_2}" target="_blank">
-                    <img class="${animationClass} ${dropShadowClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_2}">
-                </a>
-            </div>
-
-            <div class="project-img-3 ${thirdImgClass}">
-                <a href="${portfolio.baseS3Url}/${project.fields.image_3}" target="_blank">
-                    <img class="${animationClass} ${dropShadowClass}" src="" data-src="${portfolio.baseS3Url}/${project.fields.image_3}">
-                </a>
-            </div>
-        </div>
-    </div>
-    `;
-    return html;
 };
 
 portfolio.changeColors = function() {
