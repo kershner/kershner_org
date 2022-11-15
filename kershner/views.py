@@ -16,7 +16,6 @@ def home(request):
     ]
 
     template_vars = {
-        'base_s3_url': settings.BASE_S3_URL,
         'projects_per_page': settings.PROJECTS_PER_PAGE,
         'projects_html': projects_html
     }

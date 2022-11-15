@@ -1,7 +1,9 @@
+{% load kershner_tags %}
+
 <div id="{% if project.position == 0 %}first-project{% endif %}" class="project-wrapper {{ project.image_orientation }}" data-position="{{ project.position }}">
     <div class="left-content">
         <div class="project-icon">
-            <img src="" class="{% if project.position > 3 %}pop-up{% endif %}" data-src="{{ base_s3_url }}/{{ project.icon }}">
+            <img src="" class="{% if project.position > 3 %}pop-up{% endif %}" data-src="{% settings_value "BASE_S3_URL" %}/{{ project.icon }}">
         </div>
     
         <div class="project-title">{{ project.title }}</div>
@@ -26,21 +28,21 @@
     </div>
     
     <div class="right-content">
-        <div class="project-img-1 {% if not project.fields.image_1 %}hidden{% endif %}">
-            <a href={{ base_s3_url }}/{{ project.image_1 }}" target="_blank">
-                <img class="{% if project.position > 3 %}pop-up{% endif %} {{ project.drop_shadow }}" src="" data-src={{ base_s3_url }}/{{ project.image_1 }}">
+        <div class="project-img-1 {% if not project.image_1 %}hidden{% endif %}">
+            <a href="{% settings_value "BASE_S3_URL" %}/{{ project.image_1 }}" target="_blank">
+                <img class="{% if project.position > 3 %}pop-up{% endif %} {{ project.drop_shadow }}" src="" data-src="{% settings_value "BASE_S3_URL" %}/{{ project.image_1 }}">
             </a>
         </div>
 
-        <div class="project-img-2 {% if not project.fields.image_2 %}hidden{% endif %}">
-            <a href={{ base_s3_url }}/{{ project.image_2 }}" target="_blank">
-                <img class="{% if project.position > 3 %}pop-up{% endif %} {{ project.drop_shadow }}" src="" data-src={{ base_s3_url }}/{{ project.image_2 }}">
+        <div class="project-img-2 {% if not project.image_2 %}hidden{% endif %}">
+            <a href="{% settings_value "BASE_S3_URL" %}/{{ project.image_2 }}" target="_blank">
+                <img class="{% if project.position > 3 %}pop-up{% endif %} {{ project.drop_shadow }}" src="" data-src="{% settings_value "BASE_S3_URL" %}/{{ project.image_2 }}">
             </a>
         </div>
 
-        <div class="project-img-3 {% if not project.fields.image_3 %}hidden{% endif %}">
-            <a href={{ base_s3_url }}/{{ project.image_3 }}" target="_blank">
-                <img class="{% if project.position > 3 %}pop-up{% endif %} {{ project.drop_shadow }}" src="" data-src={{ base_s3_url }}/{{ project.image_3 }}">
+        <div class="project-img-3 {% if not project.image_3 %}hidden{% endif %}">
+            <a href="{% settings_value "BASE_S3_URL" %}/{{ project.image_3 }}" target="_blank">
+                <img class="{% if project.position > 3 %}pop-up{% endif %} {{ project.drop_shadow }}" src="" data-src="{% settings_value "BASE_S3_URL" %}/{{ project.image_3 }}">
             </a>
         </div>
     </div>
