@@ -106,7 +106,8 @@ portfolio.addProject = function(projectIndex) {
         for (let i=0; i<dynamicColorElements.length; i++) {
             addClass(dynamicColorElements[i], currentColor);
         }
-        portfolio.projectsWrapper.innerHTML += tempDiv.innerHTML;
+        
+        portfolio.projectsWrapper.insertAdjacentHTML('beforeend', tempDiv.innerHTML);
     }
 
     if (numProjectWrappers === totalProjects - 1) {
