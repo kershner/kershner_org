@@ -19,7 +19,7 @@ urlpatterns = [
     # Philomania
     path('phil/', kersh_views.philomania),
 
-    # [ominous whoosh-er]
+    # [ominous whoosher]
     path('whoosh/', include(whoosh_patterns)),
 
     # ScreenBloom landing page

@@ -153,6 +153,6 @@ BROKER_URL = 'redis://{}:{}'.format(PARAMETERS['redis_host'], PARAMETERS['redis_
 CELERY_RESULT_BACKEND = 'redis://{}:{}'.format(PARAMETERS['redis_host'], PARAMETERS['redis_port'])
 BROKER_TRANSPORT = 'redis'
 
-# [ominous whoosh-er]
+# [ominous whoosher]
 WHOOSH_EXPIRATION_DAYS = 14
 WHOOSH_LIMIT_PER_HOUR = 5
