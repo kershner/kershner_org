@@ -11,7 +11,6 @@ var portfolio = {
     'bigCallToAction'       : document.getElementsByClassName('big-call-to-action')[0],
     'cubeGrid'              : document.getElementsByClassName('cube-grid')[0],
     'moreProjectsBtn'       : document.getElementById('more-projects-btn'),
-    'imgAnimationClass'     : 'pop-up',
     'colors'                : [
         ['purple', '#8c53c6'],
         ['pink', '#F2006D'],
@@ -22,7 +21,6 @@ var portfolio = {
 };
 
 portfolio.init = function() {
-    portfolio.deferImages();
     portfolio.rotateColors();
     portfolio.scrollEvents();
 };
@@ -33,26 +31,12 @@ portfolio.scrollEvents = function() {
         if (!window.scrollY > (portfolio.cubeGrid.offsetTop + portfolio.cubeGrid.offsetHeight)) {
             removeClass(portfolio.cubeGrid, 'hidden');
         }
+
+        if (portfolio.initialLoad) {
+            portfolio.addProjects(0);
+            portfolio.initialLoad = false;
+        }
     });
-};
-
-portfolio.deferImages = function() {
-    var images = document.getElementsByTagName('img');
-    for (var i=0; i<images.length; i++) {
-        if (images[i].getAttribute('data-src')) {
-            images[i].setAttribute('src', images[i].getAttribute('data-src'));
-        }
-    }
-    portfolio.removeImgAnimationClass();
-};
-
-portfolio.removeImgAnimationClass = function() {
-    setTimeout(function() {
-        var images = document.getElementsByTagName('img');
-        for (var i=0; i<images.length; i++) {
-            removeClass(images[i], portfolio.imgAnimationClass);
-        }
-    }, 1000);
 };
 
 portfolio.rotateColors = function() {
@@ -123,7 +107,6 @@ portfolio.addProject = function(projectIndex) {
             addClass(dynamicColorElements[i], currentColor);
         }
         portfolio.projectsWrapper.innerHTML += tempDiv.innerHTML;
-        portfolio.deferImages();
     }
 
     if (numProjectWrappers === totalProjects - 1) {
