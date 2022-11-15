@@ -30,7 +30,7 @@ bacon.populateImages = function() {
         let imageContainer = document.createElement('span');
         for (let key in nextKeys) {
             let fullS3Url = `${bacon.s3BaseUrl}/${nextKeys[key]}`;
-            imageContainer.innerHTML += `<a class="img" href='${fullS3Url}'><img src="${fullS3Url}"></a>`;
+            imageContainer.insertAdjacentHTML('beforeend', `<a class="img" href='${fullS3Url}'><img src="${fullS3Url}"></a>`);
         }
 
         let fragment = document.createDocumentFragment();
