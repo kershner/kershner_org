@@ -10,19 +10,26 @@ whoosh.init = function() {
 };
 
 whoosh.colorInit = function() {
-    const header = document.querySelector('.header a');
-    let headerText = header.innerHTML.trim().split('');
-    let html = '';
-    for (let i=0; i<headerText.length; i++) {
-        html += `<span class="wave">${headerText[i]}</span>`;
-    }
-    header.innerHTML = html;
+    whoosh.wavePrep(document.querySelector('.header a'));
+    const subtitlesArr = [...document.querySelectorAll('.subtitle')];
+    subtitlesArr.forEach(el => {
+        whoosh.wavePrep(el);
+    });
 
     let colorElements = document.querySelectorAll('.wave');
     whoosh.colorElements(colorElements);
-    whoosh.colorTimer = setInterval(function() {
+    window.setInterval(function() {
         whoosh.colorElements(colorElements);
     }, whoosh.colorInterval);
+};
+
+whoosh.wavePrep = function(element) {
+    let elementText = element.innerHTML.trim().split('');
+    let html = '';
+    for (let i=0; i<elementText.length; i++) {
+        html += `<span class="wave">${elementText[i]}</span>`;
+    }
+    element.innerHTML = html;
 };
 
 whoosh.colorElements = function(elements) {
