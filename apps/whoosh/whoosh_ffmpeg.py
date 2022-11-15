@@ -116,8 +116,22 @@ def get_complex_filter_str(whoosh):
     if whoosh.mute_source:
         source_mix = 0.0
 
-    video_filter_str = '[0]{}'.format(','.join(video_filter))
-    filter_str = '[0:a]volume={},apad[vol];[vol][1:a]amerge[a];{}'.format(source_mix, video_filter_str)
+    video_filter_str = ','.join(video_filter)
+
+    final_filter_str = []
+
+    # Reverse
+    areverse_str = ''
+    if whoosh.reverse:
+        areverse_str = 'areverse,'
+        final_filter_str.append('[0:v]reverse[v]')
+
+    final_filter_str += [
+        '[0:a]{areverse_str}volume={source_mix},apad[vol]'.format(areverse_str=areverse_str, source_mix=source_mix),
+        '[vol][1:a]amerge[a];[v]{video_filter_str}'.format(video_filter_str=video_filter_str)
+    ]
+
+    filter_str = ';'.join(final_filter_str)
     formatted_text = get_formatted_credit_text(whoosh)
     drawtext_str = get_drawtext_filter(whoosh, formatted_text)
 

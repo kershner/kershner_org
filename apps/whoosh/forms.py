@@ -9,12 +9,19 @@ hh_mm_ss_pattern = re.compile('^(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)
 two_digit_followed_by_colon_pattern = '\d{2}:\d{2}:\d{2}'
 
 
-class WhooshFormBase(ModelForm):
+class WhooshForm(ModelForm):
     start_time = CharField(max_length=8, widget=TextInput(attrs={
         'pattern': two_digit_followed_by_colon_pattern,
         'placeholder': 'HH:MM:SS',
         'value': '00:00:00'
     }))
+
+    class Meta:
+        model = Whoosh
+        fields = ['source_video', 'whoosh_type', 'credit_text', 'mute_source', 'black_and_white', 'portrait',
+                  'slow_motion', 'slow_zoom', 'reverse', 'start_time', 'user_agent', 'hidden']
+
+        widgets = {'source_video': FileInput(attrs={'accept': 'video/mp4,video/quicktime', 'required': 'required'})}
 
     def clean_source_video(self):
         source_video = self.cleaned_data.get('source_video')
@@ -52,16 +59,8 @@ class WhooshFormBase(ModelForm):
         super().__init__(*args, **kwargs)
 
 
-class WhooshForm(WhooshFormBase):
-    class Meta:
-        widgets = {'source_video': FileInput(attrs={'accept': 'video/mp4,video/quicktime', 'required': 'required'})}
-        model = Whoosh
-        fields = ['source_video', 'whoosh_type', 'credit_text', 'mute_source', 'black_and_white',
-                  'portrait', 'slow_motion', 'slow_zoom', 'start_time', 'user_agent', 'hidden']
 
-
-class DoppelgangerForm(WhooshFormBase):
-    class Meta:
-        model = Whoosh
-        fields = ['whoosh_type', 'credit_text', 'mute_source', 'black_and_white', 'portrait',
-                  'slow_motion', 'slow_zoom', 'start_time', 'user_agent', 'hidden']
+class DoppelgangerForm(WhooshForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        del self.fields['source_video']

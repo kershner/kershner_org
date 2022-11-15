@@ -41,6 +41,7 @@ class Whoosh(models.Model):
     portrait = models.BooleanField(default=False)
     slow_motion = models.BooleanField(default=False)
     slow_zoom = models.BooleanField(default=False)
+    reverse = models.BooleanField(default=False)
     start_time = models.CharField(null=True, blank=True, max_length=8, default='00:00:00')
     processed = models.DateTimeField(null=True, blank=True)
     processed_video = models.FileField(null=True, blank=True, upload_to=whoosh_processed)
@@ -167,7 +168,8 @@ class Whoosh(models.Model):
             'black_and_white': self.black_and_white,
             'portrait': self.portrait,
             'slow_motion': self.slow_motion,
-            'slow_zoom': self.slow_zoom
+            'slow_zoom': self.slow_zoom,
+            'reverse': self.reverse
         }
         if self.doppelganger:
             doppel_settings['uniq_id'] = self.doppelganger.uniq_id
