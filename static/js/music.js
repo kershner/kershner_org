@@ -183,14 +183,19 @@ music.init = function() {
     }
 
     function deferVideoLoad() {
-        var oldVideoIfr = document.getElementById('old-music-video-ifr'),
-            videoWrapper = document.getElementsByClassName('outer-music-video-wrapper')[0];
+        let videoWrapper = document.getElementsByClassName('outer-music-video-wrapper')[0];
+        let innerWrapper = document.getElementsByClassName('music-video-wrapper')[0];
 
         music.oldVideoToggle.onclick = function() {
+            let newIframe = document.createElement('iframe');
+            newIframe.setAttribute('src', music.oldVideoUrl);
+            newIframe.setAttribute('allowfullscreen', '');
+            newIframe.setAttribute('frameborder', '0');
+
+
+            innerWrapper.appendChild(newIframe);
             addClass(this, 'hidden');
             removeClass(videoWrapper, 'hidden');
-            addClassWithDelay(videoWrapper, 'pop-up');
-            oldVideoIfr.src = music.oldVideoUrl
         };
     }
 
