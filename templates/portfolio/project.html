@@ -22,10 +22,10 @@
                 {% for tech in project.project_technologies %}
                     {% if tech.link %}
                     <a href="{{ tech.link }}" target="_blank">
-                        <div class="tech-tag dynamic-color">{{ tech.title }}</div>
+                        <div class="tech-tag">{{ tech.title }}</div>
                     </a>
                     {% else %}
-                        <div class="tech-tag dynamic-color">{{ tech.title }}</div>
+                        <div class="tech-tag">{{ tech.title }}</div>
                     {% endif %}
                 {% endfor %}
             </div>

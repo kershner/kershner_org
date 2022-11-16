@@ -1,9 +1,16 @@
 @import 'reset'
 @import 'misc'
 
+$small-breakpoint: 480px
+$med-breakpoint: 600px
+$large-breakpoint: 1000px
+
+$light-black: lighten($black, 10%)
+$lighter-black: lighten($black, 78%)
+
 body
   font-family: $primary-font
-  color: $black
+  color: $light-black
   overflow-x: hidden
   +animation-prefix(background-color, 0.5s)
 
@@ -24,17 +31,19 @@ a
   position: relative
   cursor: pointer
   z-index: 1
+  padding: 0.5rem 1.5rem 0.25rem 0
+
   &:hover
     .tip-text
       visibility: visible
 
   svg
-    height: 14px
-    width: 14px
+    height: 16px
+    width: 16px
 
   .tip-text
     visibility: hidden
-    background-color: $black
+    background-color: $light-black
     border: 1px solid $white
     color: $white
     padding: 0.5rem
@@ -135,16 +144,6 @@ a
     bottom: 0
     cursor: pointer
 
-// Breakpoints
-@media(min-width: 700px)
-  .welcome-wrapper
-    section
-      &.welcome
-        margin: auto 0
-        max-width: 50em
-      h1
-        font-size: 4em
-
 // Project
 .projects-wrapper
   min-height: 25em
@@ -159,7 +158,7 @@ a
   padding-left: 1em
   max-width: 1280px
 
-  @media(min-width: 700px)
+  @media(min-width: $med-breakpoint)
     padding: 0 1em
     margin-bottom: 15em
 
@@ -208,26 +207,30 @@ a
         z-index: 1
         position: relative
         display: flex
-        margin-top: 0.3rem
+        margin-top: 0.5rem
 
         .tech-tag
-          @extend %dynamic-text-color
-          @extend %dynamic-border-color
-          background-color: transparent
           margin-right: .25rem
-          padding: .25rem .5rem
+          padding: .3rem .75rem
           border-radius: 0.9rem
           font-size: 0.8rem
           line-height: 0.8rem
+          color: $light-black
+          background-color: $lighter-black
+
+          &:hover
+            filter: brightness(90%)
 
     a
       text-decoration: none
 
       .project-link-btn
         @extend %generic-btn
-        margin-top: 30px
-        margin-bottom: 30px
-        margin-left: -10px
+        display: block !important
+        margin: 0
+        margin-top: 3rem
+        @media (min-width: $med-breakpoint)
+          display: inline-block !important
 
   .right-content
     display: none
@@ -248,7 +251,7 @@ a
         margin-left: -1.5em
         margin-right: -1.5em
 
-        @media(min-width: 800px)
+        @media(min-width: $med-breakpoint)
           display: inline-block
 
       img
@@ -268,7 +271,7 @@ a
       justify-content: center
       flex-wrap: wrap
 
-      @media(min-width: 800px)
+      @media(min-width: $med-breakpoint)
         height: 80%
 
       div
@@ -285,16 +288,24 @@ a
       div.project-img-3
         display: none
 
-        @media(min-width: 800px)
+        @media(min-width: $med-breakpoint)
           display: inline-block
           align-self: center
 
 // Project Breakpoints /////////////////////////////////////////////////////////////////////////////////////////////////
-@media(min-width: 480px)
+@media(min-width: $small-breakpoint)
   .project-wrapper
     padding-left: 1.5em
 
-@media(min-width: 600px)
+@media(min-width: $med-breakpoint)
+  .welcome-wrapper
+    section
+      &.welcome
+        margin: auto 0
+        max-width: 50em
+      h1
+        font-size: 4em
+
   .project-wrapper
     .right-content
       display: flex
@@ -307,8 +318,6 @@ a
     .left-content
         width: 33.33%
 
-@media(min-width: 700px)
-  .project-wrapper
     &.portrait
       .right-content
         div
@@ -316,7 +325,7 @@ a
             img
               display: block
 
-@media(min-width: 1000px)
+@media(min-width: $large-breakpoint)
   .project-wrapper
     .right-content
       div
@@ -395,7 +404,7 @@ a
       display: inline-block
       margin: 0 .5em
 
-      @media(min-width: 700px)
+      @media(min-width: $med-breakpoint)
         margin: 0 3em
 
       &:active
@@ -404,11 +413,8 @@ a
       a
         text-decoration: none
         font-family: $secondary-font
-        font-size: 1.25em
-        color: $black
-
-        @media(min-width: 700px)
-          font-size: 2em
+        font-size: 2em
+        color: $light-black
 
 // Dark mode
 body.dark-mode
@@ -416,4 +422,8 @@ body.dark-mode
   background-color: $black
 
   .footer a
+    color: $white !important
+
+  .tech-tag
+    background-color: $light-black !important
     color: $white !important
