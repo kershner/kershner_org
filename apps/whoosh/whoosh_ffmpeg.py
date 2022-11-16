@@ -15,6 +15,7 @@ PORTRAIT_RATIO = 9/16
 FINAL_VIDEO_W_OR_H = 600
 THUMB_WIDTH = 160
 THUMB_STARTING_SECONDS = 4
+WHOOSH_DURATION = 15
 
 
 def ffprobe(file_path):
@@ -38,7 +39,6 @@ def ffprobe(file_path):
 
 
 def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
-    duration = '15'  # seconds
     audio_path = '{}/{}.mp3'.format(AUDIO_PATH, whoosh.get_whoosh_type_display().lower())
     ffmpeg_cmd = ['ffmpeg',
                   '-y',
@@ -51,7 +51,7 @@ def run_whoosh_ffmpeg(whoosh, downloaded_filename, output_filename):
                   '-ac', '2',
                   '-crf', '17',
                   '-shortest',
-                  '-t', '{}'.format(duration),
+                  '-t', '{}'.format(WHOOSH_DURATION),
                   '{}'.format(output_filename)]
 
     ffmpeg_result = subprocess.run(ffmpeg_cmd,
@@ -124,7 +124,7 @@ def get_complex_filter_str(whoosh):
     areverse_str = ''
     if whoosh.reverse:
         areverse_str = 'areverse,'
-        final_filter_str.append('[0:v]reverse[v]')
+        final_filter_str.append('[0:v]trim=start={}:duration={},reverse[v]'.format(whoosh.start_time, WHOOSH_DURATION))
 
     final_filter_str += [
         '[0:a]{areverse_str}volume={source_mix},apad[vol]'.format(areverse_str=areverse_str, source_mix=source_mix),
