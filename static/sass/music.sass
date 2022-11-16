@@ -182,40 +182,37 @@ input[type=range]
           font-weight: bold
 
         &.amplitude-active-song-container
-          &.dynamic-color
-            .song-info
-              .song-thumbnail
-                .activity
-                  +animation-prefix(background-image, 0.2s)
-                  position: absolute
-                  top: 50%
-                  left: 50%
-                  transform: translate(-50%, -50%)
-                  height: 80%
-                  width: 80%
-                  -webkit-mask-size: 100%
-                  mask-size: 100%
-                  -webkit-mask-repeat: no-repeat
-                  mask-repeat: no-repeat
-                  background-color: rgba(0, 0, 0, 0.0)
+          .song-info
+            .song-thumbnail
+              .activity
+                +animation-prefix(background-image, 0.2s)
+                position: absolute
+                top: 50%
+                left: 50%
+                transform: translate(-50%, -50%)
+                height: 80%
+                width: 80%
+                -webkit-mask-size: 100%
+                mask-size: 100%
+                -webkit-mask-repeat: no-repeat
+                mask-repeat: no-repeat
+                background-color: rgba(0, 0, 0, 0.0)
 
-            .song-spacer
-              width: 80%
+          .song-spacer
+            width: 80%
 
-            .song-extras
-              display: flex
-              justify-content: flex-end
-              width: 20%
-              align-items: center
-              padding-right: 1em
+          .song-extras
+            display: flex
+            justify-content: flex-end
+            align-items: center
+            padding-right: 1em
+            @media (max-width: $iphone5-breakpoint)
+              display: block
 
-              @media (max-width: $iphone5-breakpoint)
-                display: block
-
-              a
-                div
-                  margin: auto .35em
-                  +icon-size(25px)
+            a
+              div
+                margin: auto .35em
+                +icon-size(25px)
 
         .song-info
           display: flex
@@ -268,12 +265,10 @@ input[type=range]
         .player-meta-container-song
           .now-playing-name
             display: block
-            color: $white
             font-family: $secondary-font
             font-size: 1.2em
 
           .now-playing-artist
-            color: $white
             font-size: 1.1em
             opacity: 0.7
 
