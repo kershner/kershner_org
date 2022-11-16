@@ -24,16 +24,28 @@
   &.pink
     color: $pink
 
+%dynamic-border-color
+  &.purple
+    border: 1px solid $purple
+  &.green
+    border: 1px solid $green
+  &.orange
+    border: 1px solid $orange
+  &.blue
+    border: 1px solid $blue
+  &.pink
+    border: 1px solid $pink
+
 =dynamic-icon($icon-name)
   @extend %dynamic-background-color
   +icon-mask($icon-name)
 
 // Dynamic color stuff
 .dynamic-color
-  -webkit-transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
-  -moz-transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
-  -o-transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
-  transition: color 1s ease-in-out, background-color 1s ease-in-out, background 1s ease-in-out, background-image 1s ease-in-out
+  -webkit-transition: color .25s ease-in-out, background-color .25s ease-in-out, background .25s ease-in-out, background-image .25s ease-in-out
+  -moz-transition: color .25s ease-in-out, background-color .25s ease-in-out, background .25s ease-in-out, background-image .25s ease-in-out
+  -o-transition: color .25s ease-in-out, background-color .25s ease-in-out, background .25s ease-in-out, background-image .25s ease-in-out
+  transition: color .25s ease-in-out, background-color .25s ease-in-out, background .25s ease-in-out, background-image .25s ease-in-out
   @extend %dynamic-background-color
 
 h1

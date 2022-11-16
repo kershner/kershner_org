@@ -20,6 +20,33 @@ a
   &:hover
     color: $darker-purple
 
+.tooltip
+  position: relative
+  cursor: pointer
+  z-index: 1
+  &:hover
+    .tip-text
+      visibility: visible
+
+  svg
+    height: 14px
+    width: 14px
+
+  .tip-text
+    visibility: hidden
+    background-color: $black
+    border: 1px solid $white
+    color: $white
+    padding: 0.5rem
+    position: absolute
+    bottom: 100%
+    left: 50%
+    margin-left: -60px
+    z-index: 1
+    font-size: 0.8rem
+    width: 7rem
+    border-radius: 0.3rem
+
 .big-name,
 .big-call-to-action
   display: inline-block
@@ -136,6 +163,28 @@ a
       .project-info-value
         display: inline-block
         color: $grey
+
+      .project-technologies
+        z-index: 1
+        position: relative
+        display: flex
+        margin-top: 0.3rem
+
+        .tech-tag
+          @extend %dynamic-text-color
+          @extend %dynamic-border-color
+          background-color: $black
+          margin-right: .25rem
+          padding: .25rem .5rem
+          border-radius: 0.9rem
+          font-size: 0.8rem
+          line-height: 0.8rem
+
+        a .tech-tag:hover
+          transition: unset
+          filter: brightness(90%)
+          color: $white
+          border-color: $white
 
     a
       text-decoration: none

@@ -11,20 +11,38 @@
     
         <hr align="left" class="dynamic-color ${currentColor}">
     
-        <div class="project-info"><div class="project-info-title">Technologies:</div>
-            <div class="project-info-value">{{ project.technologies }}</div>
+        <div class="project-info">
+            <div class="project-info-title">
+                Technologies
+                {% if project.tech_has_links %}
+                    {% include 'portfolio/includes/tooltip.html' with tip_text='Click to view the code' %}
+                {% endif %}
+            </div>
+            <div class="project-technologies">
+                {% for tech in project.project_technologies %}
+                    {% if tech.link %}
+                    <a href="{{ tech.link }}" target="_blank">
+                        <div class="tech-tag dynamic-color">{{ tech.title }}</div>
+                    </a>
+                    {% else %}
+                        <div class="tech-tag dynamic-color">{{ tech.title }}</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
         </div>
         
         {% if project.extra_notes %}
         <div class="project-info">
-            <div class="project-info-title">More:</div>
+            <div class="project-info-title">More</div>
             <div class="project-info-value">{{ project.extra_notes }}</div>
         </div>
         {% endif %}
         
+        {% if project.site_url %}
         <a href="{{ project.site_url }}" target="_blank">
-            <div class="project-link-btn dynamic-color">Visit Site →</div>
+            <div class="project-link-btn dynamic-color">View →</div>
         </a>
+        {% endif %}
     </div>
     
     <div class="right-content">
