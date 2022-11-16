@@ -1,5 +1,6 @@
 from django.template.loader import render_to_string
 from apps.project.models import Project
+from django.http import JsonResponse
 from django.shortcuts import render
 from apps.song.models import Song
 from django.conf import settings
@@ -15,11 +16,21 @@ def home(request):
         for project in projects
     ]
 
+    if 'theme' not in request.session:
+        request.session['theme'] = 'dark-mode'
+
     template_vars = {
         'projects_per_page': settings.PROJECTS_PER_PAGE,
         'projects_html': projects_html
     }
     return render(request, 'portfolio/home.html', template_vars)
+
+
+def update_theme(request):
+    body = json.loads(request.body)
+    theme = body['theme']
+    request.session['theme'] = theme
+    return JsonResponse({'success': True}, status=200)
 
 
 def music(request):

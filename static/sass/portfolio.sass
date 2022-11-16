@@ -3,9 +3,9 @@
 
 body
   font-family: $primary-font
-  color: $white
+  color: $black
   overflow-x: hidden
-  background-color: $black
+  +animation-prefix(background-color, 0.5s)
 
 .hidden
   display: none !important
@@ -57,6 +57,50 @@ a
     top: 0
     left: 0
     z-index: 0
+
+  .theme-switch
+    position: absolute
+    top: 1.5rem
+    right: 1.5rem
+    z-index: 1
+    cursor: pointer
+    width: 70px
+    height: 30px
+    border-radius: 50px
+    background: transparent
+    @extend %dynamic-border-color
+    border-width: 2px !important
+
+    .switch
+      width: 24px
+      height: 24px
+      border-radius: 100%
+      position: absolute
+      top: 3px
+      left: 4px
+      transition: 0.5s all ease
+
+      .theme-icon
+        display: flex
+        padding: 0.25rem
+
+        svg
+          width: 100%
+          height: 100%
+          color: $white
+
+      .moon
+        display: none
+      .sun
+        display: block
+
+    &.active
+      .switch
+        transform: translateX(37px)
+        .sun
+          display: none
+        .moon
+          display: block
 
 // Welcome section
 .welcome-wrapper
@@ -137,11 +181,9 @@ a
     .project-title
       margin-bottom: .5em
       font-family: $secondary-font
-      color: $white
       font-size: 2.5em
 
     .project-blurb
-      color: $white
       font-size: 1.4em
       line-height: 1.4em
 
@@ -158,11 +200,9 @@ a
       .project-info-title
         display: inline-block
         font-weight: bold
-        color: $white
 
       .project-info-value
         display: inline-block
-        color: $grey
 
       .project-technologies
         z-index: 1
@@ -173,18 +213,12 @@ a
         .tech-tag
           @extend %dynamic-text-color
           @extend %dynamic-border-color
-          background-color: $black
+          background-color: transparent
           margin-right: .25rem
           padding: .25rem .5rem
           border-radius: 0.9rem
           font-size: 0.8rem
           line-height: 0.8rem
-
-        a .tech-tag:hover
-          transition: unset
-          filter: brightness(90%)
-          color: $white
-          border-color: $white
 
     a
       text-decoration: none
@@ -371,7 +405,15 @@ a
         text-decoration: none
         font-family: $secondary-font
         font-size: 1.25em
-        color: $white
+        color: $black
 
         @media(min-width: 700px)
           font-size: 2em
+
+// Dark mode
+body.dark-mode
+  color: $white
+  background-color: $black
+
+  .footer a
+    color: $white !important

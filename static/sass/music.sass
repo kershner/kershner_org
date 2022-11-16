@@ -18,6 +18,7 @@
   position: relative
   z-index: 1
   margin: 1em auto
+  margin-top: 5rem
   max-width: 60em
 
 .music-video-wrapper
@@ -144,9 +145,6 @@ input[type=range]
         @media(max-width: $iphone5-breakpoint)
           font-size: 1.5em
 
-        &:hover
-          color: $white
-
         &.old-songs-select
           cursor: pointer
           margin: 0 auto
@@ -175,7 +173,6 @@ input[type=range]
         cursor: pointer
         padding: 0.5em 0
         padding-right: 1em
-        color: $grey
         line-height: 1em
         border-bottom: 1px solid $grey
         @extend %ripple
@@ -183,8 +180,6 @@ input[type=range]
         &:hover,
         &.amplitude-active-song-container
           font-weight: bold
-        &:hover
-          color: $white
 
         &.amplitude-active-song-container
           &.dynamic-color

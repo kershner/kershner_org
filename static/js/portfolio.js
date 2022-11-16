@@ -11,6 +11,7 @@ var portfolio = {
     'bigCallToAction'       : document.getElementsByClassName('big-call-to-action')[0],
     'cubeGrid'              : document.getElementsByClassName('cube-grid')[0],
     'moreProjectsBtn'       : document.getElementById('more-projects-btn'),
+    'darkModeClass'         : 'dark-mode',
     'colors'                : [
         ['purple', '#8c53c6'],
         ['pink', '#F2006D'],
@@ -23,6 +24,7 @@ var portfolio = {
 portfolio.init = function() {
     portfolio.rotateColors();
     portfolio.scrollEvents();
+    portfolio.themeToggle();
 };
 
 portfolio.scrollEvents = function() {
@@ -135,4 +137,28 @@ portfolio.changeColors = function() {
     }
 
     particlesInit(portfolio.colors[portfolio.colorIndex][1]);
+};
+
+portfolio.themeToggle = function() {
+    let toggle = document.getElementsByClassName('theme-switch')[0];
+    toggle.addEventListener('click', function() {
+        let currentTheme = '';
+        if (hasClass(toggle, 'active')) {
+            removeClass(toggle, 'active');
+            removeClass(document.body, portfolio.darkModeClass);
+        } else {
+            addClass(toggle, 'active');
+            addClass(document.body, portfolio.darkModeClass);
+            currentTheme = 'dark-mode'
+        }
+
+        const headers = {
+            'X-CSRFToken': getCookie('csrftoken')
+        };
+        fetchWrapper(portfolio.updateThemeUrl, 'post', {'theme': currentTheme}, headers, function(data) {
+            if (data['processed'] || data['error']) {
+                location.reload();
+            }
+        });
+    });
 };
