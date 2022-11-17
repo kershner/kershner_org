@@ -211,15 +211,20 @@ a
 
         .tech-tag
           margin-right: .25rem
-          padding: .3rem .75rem
+          padding: .4rem .75rem
           border-radius: 0.9rem
           font-size: 0.8rem
           line-height: 0.8rem
           color: $light-black
           background-color: $lighter-black
 
-          &:hover
-            filter: brightness(90%)
+          svg
+            float: right
+            width: 0.9rem
+            margin-left: 0.1rem
+
+        a .tech-tag:hover
+          filter: brightness(90%)
 
     a
       text-decoration: none
