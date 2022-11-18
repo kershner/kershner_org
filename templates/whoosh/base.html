@@ -37,7 +37,11 @@
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/colorWave.js"></script>
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/whoosh.js"></script>
     <script type="text/javascript">
-        whoosh.init();
+        if (document.readyState === 'complete') {
+            whoosh.init();
+        } else {
+            document.addEventListener('DOMContentLoaded', whoosh.init);
+        }
     </script>
     {% block extra_js %}{% endblock %}
 </body>

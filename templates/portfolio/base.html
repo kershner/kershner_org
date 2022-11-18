@@ -114,7 +114,11 @@
         {% block javascripts %}
         <script type="text/javascript">
             portfolio.updateThemeUrl = '{% url 'update-theme' %}';
-            window.onload = portfolio.init();
+            if (document.readyState === 'complete') {
+                portfolio.init();
+            } else {
+                document.addEventListener('DOMContentLoaded', portfolio.init);
+            }
         </script>
 
         {% block extra_javascripts %}{% endblock %}
