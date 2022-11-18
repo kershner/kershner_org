@@ -41,9 +41,57 @@ portfolio.scrollEvents = function() {
     });
 };
 
+portfolio.cubeClick = function() {
+    portfolio.cubeGrid.onclick = function() {
+        portfolio.projectsWrapper.scrollIntoView();
+    }
+};
+
+portfolio.moreProjectsClickEvent = function() {
+    portfolio.projectWrappers = document.getElementsByClassName('project-wrapper');
+    portfolio.addProjects(portfolio.projectWrappers.length);
+};
+
+portfolio.addProjects = function(startingIndex) {
+    let indexToAdd = startingIndex;
+
+    for (let i=0; i<portfolio.projectsPerPage; i++) {
+        portfolio.addProject(indexToAdd);
+        indexToAdd += 1;
+    }
+
+    // hit em with the colorwave on the first page
+    if (indexToAdd === portfolio.projectsPerPage) {
+        colorWave.color = portfolio.colors[portfolio.colorIndex][1];
+        colorWave.init();
+    }
+};
+
+portfolio.addProject = function(projectIndex) {
+    var totalProjects = portfolio.projectsHtml.length,
+        numProjectWrappers = portfolio.projectWrappers.length;
+
+    removeClass(portfolio.moreProjectsBtn, 'hidden');
+
+    if (numProjectWrappers < totalProjects) {
+        let tempDiv = document.createElement('div');
+        tempDiv.innerHTML = portfolio.projectsHtml[projectIndex];
+        let dynamicColorElements = tempDiv.getElementsByClassName('dynamic-color');
+        let currentColor = portfolio.colors[portfolio.colorIndex][0];
+        for (let i=0; i<dynamicColorElements.length; i++) {
+            addClass(dynamicColorElements[i], currentColor);
+        }
+        
+        portfolio.projectsWrapper.insertAdjacentHTML('beforeend', tempDiv.innerHTML);
+    }
+
+    if (numProjectWrappers === totalProjects - 1) {
+        portfolio.moreProjectsBtn.style.display = 'none';
+    }
+};
+
 portfolio.rotateColors = function() {
     var particlesCanvas = 'particles-js-canvas-el';
-
     shuffle(portfolio.colors);
     portfolio.changeColors();
     setInterval(function() {
@@ -75,48 +123,6 @@ portfolio.rotateColors = function() {
     }
 };
 
-portfolio.cubeClick = function() {
-    portfolio.cubeGrid.onclick = function() {
-        portfolio.projectsWrapper.scrollIntoView();
-    }
-};
-
-portfolio.moreProjectsClickEvent = function() {
-    portfolio.projectWrappers = document.getElementsByClassName('project-wrapper');
-    portfolio.addProjects(portfolio.projectWrappers.length);
-};
-
-portfolio.addProjects = function(startingIndex) {
-    let indexToAdd = startingIndex;
-    for (var i=0; i<portfolio.projectsPerPage; i++) {
-        portfolio.addProject(indexToAdd);
-        indexToAdd += 1;
-    }
-};
-
-portfolio.addProject = function(projectIndex) {
-    var totalProjects = portfolio.projectsHtml.length,
-        numProjectWrappers = portfolio.projectWrappers.length;
-
-    removeClass(portfolio.moreProjectsBtn, 'hidden');
-
-    if (numProjectWrappers < totalProjects) {
-        let tempDiv = document.createElement('div');
-        tempDiv.innerHTML = portfolio.projectsHtml[projectIndex];
-        let dynamicColorElements = tempDiv.getElementsByClassName('dynamic-color');
-        let currentColor = portfolio.colors[portfolio.colorIndex][0];
-        for (let i=0; i<dynamicColorElements.length; i++) {
-            addClass(dynamicColorElements[i], currentColor);
-        }
-        
-        portfolio.projectsWrapper.insertAdjacentHTML('beforeend', tempDiv.innerHTML);
-    }
-
-    if (numProjectWrappers === totalProjects - 1) {
-        portfolio.moreProjectsBtn.style.display = 'none';
-    }
-};
-
 portfolio.changeColors = function() {
     var dynamicElements = document.getElementsByClassName('dynamic-color'),
         currentColor = portfolio.colors[portfolio.colorIndex];
@@ -137,6 +143,9 @@ portfolio.changeColors = function() {
     }
 
     particlesInit(portfolio.colors[portfolio.colorIndex][1]);
+
+    colorWave.color = portfolio.colors[portfolio.colorIndex][1];
+    colorWave.init();
 };
 
 portfolio.themeToggle = function() {

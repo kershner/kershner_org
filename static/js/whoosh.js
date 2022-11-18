@@ -6,48 +6,16 @@ const whoosh = {
 };
 
 whoosh.init = function() {
-    whoosh.colorInit();
-};
+    colorWave.selectors = ['.subtitle', '.header a'];
+    colorWave.color = 'red';
 
-whoosh.colorInit = function() {
-    whoosh.wavePrep(document.querySelector('.header a'));
-    const subtitlesArr = [...document.querySelectorAll('.subtitle')];
-    subtitlesArr.forEach(el => {
-        whoosh.wavePrep(el);
-    });
+    colorWave.init();
 
-    let colorElements = document.querySelectorAll('.wave');
-    whoosh.colorElements(colorElements);
-    window.setInterval(function() {
-        whoosh.colorElements(colorElements);
+    whoosh.colorTimer = setInterval(function() {
+        colorWave.init();
     }, whoosh.colorInterval);
 };
 
-whoosh.wavePrep = function(element) {
-    let elementText = element.innerHTML.trim().split('');
-    let html = '';
-    for (let i=0; i<elementText.length; i++) {
-        html += `<span class="wave">${elementText[i]}</span>`;
-    }
-    element.innerHTML = html;
-};
-
-whoosh.colorElements = function(elements) {
-    let timerPointer = 0.0;
-    let increment = 100;
-    for (let i=0; i<elements.length; i++) {
-        let colorElement = elements[i];
-        colorElement.addEventListener('transitionend', () => {
-            removeClass(colorElement, 'red');
-        });
-
-        removeClass(colorElement, 'red');
-        setTimeout(function() {
-            addClass(colorElement, 'red');
-        }, timerPointer);
-        timerPointer += increment;
-    }
-};
 
 whoosh.populateUserAgent = function() {
     const userAgentInput = document.getElementById('id_user_agent');
