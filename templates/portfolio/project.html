@@ -39,7 +39,7 @@
         {% endif %}
     </div>
     
-    <div class="right-content">
+    <div class="right-content {% if project.drop_shadow %}drop-shadow{% endif %}">
         <div class="project-img-1 {% if not project.image_1 %}hidden{% endif %}">
             <a href="{% settings_value "BASE_S3_URL" %}/{{ project.image_1 }}" target="_blank">
                 <img src="{% settings_value "BASE_S3_URL" %}/{{ project.image_1 }}">
