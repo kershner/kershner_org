@@ -1,6 +1,7 @@
 ###  This is ancient code from ~2014.  I like the project and want it to remain accessible so I've put the bare
 ###  minimum effort in to clean it up and port it to this Django project.
 ###  Original code here: https://github.com/kershner/steamtime
+from django.views.decorators.csrf import csrf_exempt
 from django.template import Context, Template
 from apps.steamtime import st_functions
 from django.http import HttpResponse
@@ -23,6 +24,7 @@ def steamtime(request):
     return render_steamtime_template('home.html', {})
 
 
+@csrf_exempt
 def results(request):
     ctx = {}
 
