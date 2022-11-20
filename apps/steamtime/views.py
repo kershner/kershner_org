@@ -4,7 +4,6 @@
 from django.template import Context, Template
 from apps.steamtime import st_functions
 from django.http import HttpResponse
-from django.shortcuts import render
 from django.conf import settings
 import requests
 
@@ -21,7 +20,7 @@ playtime_2weeks = 'playtime_2weeks'
 
 
 def steamtime(request):
-    return render(request, 'steamtime/home.html')
+    return render_steamtime_template('home.html', {})
 
 
 def results(request):
@@ -31,7 +30,7 @@ def results(request):
         steam_id, display_name = st_functions.test_user_input(request.POST.get('steamid', None))
         if not steam_id:
             ctx['message'] = 'Please enter a Steam ID'
-            return render(request, 'steamtime/home.html', ctx)
+            return render_steamtime_template('home.html', ctx)
 
         try:  # Performing the two main API calls
             main_url = '%s' % url_format % (API_URL, API_KEY, steam_id)
@@ -44,7 +43,7 @@ def results(request):
 
             if not data_all['response']:
                 ctx['message'] = 'This profile is either private or inactive, please try another SteamID.'
-                return render(request, 'steamtime/home.html', ctx)
+                return render_steamtime_template('home.html', ctx)
 
             # Parsing API calls into organized lists
             two_weeks = st_functions.parse_data(data_2weeks, playtime_2weeks, 'all', 1, steam_id)
@@ -93,11 +92,11 @@ def results(request):
         except (KeyError, IndexError) as e:
                 print(e)
                 ctx['message'] = 'Invalid profile name or SteamID, please try again'
-                return render(request, 'steamtime/home.html', ctx)
+                return render_steamtime_template('home.html', ctx)
 
         except requests.ConnectionError:
                 ctx['message'] = 'The API request took too long and has timed out, please try again.'
-                return render(request, 'steamtime/home.html', ctx)
+                return render_steamtime_template('home.html', ctx)
 
         ctx = {
             'shame_list': shame_list,
@@ -126,8 +125,12 @@ def results(request):
             'title': 'Results'
         }
 
-        template_url = f'{settings.BASE_CLOUDFRONT_URL}steamtime/html/results.html'
-        template_response = requests.get(template_url)
-        template = Template(template_response.text)
-        context = Context(ctx)
-        return HttpResponse(template.render(context))
+        return render_steamtime_template('results.html', ctx)
+
+
+def render_steamtime_template(template, ctx):
+    template_url = f'{settings.BASE_CLOUDFRONT_URL}steamtime/html/{template}'
+    template_response = requests.get(template_url)
+    template = Template(template_response.text)
+    context = Context(ctx)
+    return HttpResponse(template.render(context))
