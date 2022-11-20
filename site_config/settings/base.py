@@ -131,6 +131,7 @@ MEDIA_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 BASE_S3_URL = 'https://{}/{}'.format(CLOUDFRONT_DOMAIN, AWS_LOCATION)
 FILE_UPLOAD_HANDLERS = ['django.core.files.uploadhandler.TemporaryFileUploadHandler']
+BASE_CLOUDFRONT_URL = f'https://{CLOUDFRONT_DOMAIN}/{AWS_LOCATION}/'
 
 # Misc site stuff
 PROJECTS_PER_PAGE = 3

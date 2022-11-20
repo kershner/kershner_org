@@ -1,7 +1,9 @@
 ###  This is ancient code from ~2014.  I like the project and want it to remain accessible so I've put the bare
 ###  minimum effort in to clean it up and port it to this Django project.
 ###  Original code here: https://github.com/kershner/steamtime
+from django.template import Context, Template
 from apps.steamtime import st_functions
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.conf import settings
 import requests
@@ -123,4 +125,9 @@ def results(request):
             'distinctions': distinctions,
             'title': 'Results'
         }
-        return render(request, 'steamtime/results.html', ctx)
+
+        template_url = f'{settings.BASE_CLOUDFRONT_URL}steamtime/html/results.html'
+        template_response = requests.get(template_url)
+        template = Template(template_response.text)
+        context = Context(ctx)
+        return HttpResponse(template.render(context))
