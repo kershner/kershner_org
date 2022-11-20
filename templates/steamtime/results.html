@@ -1,0 +1,420 @@
+{% extends "steamtime/base.html" %}
+
+{% block content %}
+    <div id="hidden-menu" class="blue-gradient-circular">
+        <a href="{{ profile_url }}"><img src="{{ user_image_icon }}" class="animate glow"></a>
+        <p class="green shadow">{{ display_name }}</p>
+
+        <div id="back-to-top">
+            <a href="{% url 'steamtime' %}"><h2 id="hidden-logo"><span class="white">Steam</span><span class="dark-blue no-shadow">Time</span></h2></a>
+            <a href="#" id="top"><i class="fa fa-arrow-circle-up fa-2x shadow animate"></i></a>
+        </div>
+    </div>
+
+    <!-- Container div for all results -->
+    <div id="results-container">
+        <div id="results-container-inner">
+            <div id="search-select" class="animate hidden">
+                <p>New Search</p> <i class="fa fa-search"></i>
+            </div>
+
+            <div id="new-search" class="hidden">
+                {% include 'steamtime/includes/hidden-form.html' %}
+            </div> <br><br>
+
+            <!-- User Info Div -->
+            <div id="user-info" class="hidden">
+                <div id="tab-selectors">
+                    <div id="stats-tab" class="tab animate">
+                        <i class="fa fa-clipboard fa-lg"></i><span id="stats-tab-text" class="tab-text">Stats</span>
+                    </div>
+
+                    {% if friends != "private" %}
+                    <div id="friends-tab" class="tab animate">
+                        <i class="fa fa-users fa-lg"></i><span id="friends-tab-text" class="tab-text">Friends</span>
+                    </div>
+                    {% endif %}
+
+                    <div id="shame-tab" class="tab animate">
+                        <i class="fa fa-university fa-lg"></i><span id="shame-tab-text" class="tab-text">Hall of Shame</span>
+                    </div>
+                </div>
+
+                <a href="{{ profile_url }}"><h1 id="text-name" class="animate">{{ display_name }}</h1></a>
+
+                <a href="{{ profile_url }}"><img id="user-image" class="animate glow" src="{{ user_image }}"></a>
+
+                <div id="asterisk-explanation" class="hidden">
+                    <i id="asterisk-close" class="fa fa-times"></i>
+                    <p>Steam began tracking total playtime in early 2009.</p>
+                </div>
+
+                <!-- 'Readout' title divs -->
+                {% include 'steamtime/includes/readout_title.html' with readout_id='stats' readout_title='Statistics' %}
+                {% include 'steamtime/includes/readout_title.html' with readout_id='shame' readout_title='Hall of Shame' %}
+
+                {% if friends != "private" %}
+                    {% include 'steamtime/includes/readout_title.html' with readout_id='friends' readout_title='Friends' %}
+                {% endif %}
+
+                {% if two_weeks != "privacy" %}
+                    {% include 'steamtime/includes/readout_with_stat.html' with readout_id='2weeks' data=two_weeks %}
+                {% endif %}
+
+                {% include 'steamtime/includes/readout_with_stat.html' with readout_id='10' data=all_10 game_num=10 %}
+                {% include 'steamtime/includes/readout_with_stat.html' with readout_id='20' data=all_20 game_num=20 %}
+                {% include 'steamtime/includes/readout_with_stat.html' with readout_id='all' data=all_all %}
+
+                <!-- Chart selectors -->
+                <div id="options">
+                    <!-- Icon Tooltips -->
+                    <div id="list-tip" class="tooltip hidden">
+                        <p class="shadow">List</p>
+                        <i class="fa fa-caret-down"></i>
+                    </div>
+
+                    <div id="donut-tip" class="tooltip hidden">
+                        <p class="shadow">Donut Chart</p>
+                        <i class="fa fa-caret-down"></i>
+                    </div>
+
+                    <div id="bar-tip" class="tooltip hidden">
+                        <p class="shadow">Bar Chart</p>
+                        <i class="fa fa-caret-down"></i>
+                    </div>
+
+                    <!-- Selector Icons -->
+                    <i id="list-selector" class="fa fa-list-ul fa-2x dark-blue animate options-selected"></i>
+                    <i id="donut-selector" class="fa fa-circle-o-notch fa-2x dark-blue animate"></i>
+                    <i id="bar-selector" class="fa fa-bar-chart fa-2x dark-blue animate"></i>
+                </div>
+            </div>
+
+            <div class="result-template dark-blue-gradient hidden">
+                <br><br>
+
+                <!-- Statistics div -->
+                <div id="stats" class="hidden">
+                    <div id="general-stats-container">
+                        <h1 id="stats-title-general" class="stats-title">General</h1>
+                        <hr><br>
+
+                        <!-- General -->
+                        <div id="general-stats" class="blue-gradient-circular left">
+                            <div id="general-stats-left">
+                                <p>
+                                    Total Games:<br><br>
+                                    Unplayed Games:<br><br>
+                                    Total Hours:<br>
+                                    <span class="small-text extra">All Time</span><br>
+                                    {% if not two_weeks == "privacy" %}
+                                        Total Hours:<br>
+                                        <span class="small-text">Two Weeks</span><br>
+                                    {% endif %}
+                                    Avg. Time Per Game<span id="avg-asterisk">*</span> :<br>
+                                </p>
+                            </div>
+
+                            <div id="general-stats-right">
+                                <p>
+                                    {{ stats.0.total_games_all }}<br><br>
+                                    {{ stats.0.total_games_unplayed }} ({{ stats.0.unplayed_percent }}%)<br><br>
+                                    {{ stats.0.total_hours_all|floatformat:1 }}<br><br>
+                                    {% if two_weeks != "privacy" %}
+                                        {{ stats.0.total_hours_2weeks|floatformat:1 }}<br><br>
+                                    {% endif %}
+                                    {{ stats.0.avg_game_time|floatformat:1 }} hours
+                                </p>
+                            </div>
+                        </div>
+
+                        <div id="general-pie-charts">
+                            <div id="played-legend">
+                                <div id="played-legend-labels" class="right">
+                                    <span class="played-label">Played Games</span>
+                                    <span class="played-label">Unplayed Games</span>
+                                </div>
+
+                                <div id="played-legend-colors" class="left">
+                                    <div style="background-color: {{ stats.1.1.0 }}" class="played-label-color"></div>
+                                    <div style="background-color: {{ stats.1.1.1 }}" class="played-label-color"></div>
+                                </div>
+                            </div>
+
+                            <div class="canvas-container">
+                                {% include 'steamtime/includes/canvas.html' with id="gen_stat_charts1" width="400" height="145" %}
+                            </div>
+
+                            <div id="hours-legend">
+                                <div id="hours-legend-labels" class="right">
+                                    <span class="played-label">{{ stats.0.most_played.0 }}</span>
+                                    <span class="played-label">Total Hours</span>
+                                </div>
+
+                                <div id="hours-legend-colors" class="left">
+                                    <div style="background-color: {{ stats.1.1.2 }}" class="played-label-color"></div>
+                                    <div style="background-color: {{ stats.1.1.3 }}" class="played-label-color"></div>
+                                </div>
+                            </div>
+
+                            <div class="canvas-container">
+                                {% include 'steamtime/includes/canvas.html' with id="gen_stat_charts2" width="400" height="145" %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hours Breakdown -->
+                    <div id="breakdown-container">
+                        <h1 id="breakdown-title" class="stats-title">Hours Breakdown</h1>
+                        <hr>
+
+                        <div id="hours-breakdown-legend" class="blue-gradient-circular shadow">
+                            <span id="breakdown-legend-title" class="yellow">Games With Hours</span>
+                            <div id="breakdown-legend-labels">
+                                <p>
+                                    0.1 - 5:<br>
+                                    5 - 10:<br>
+                                    10 - 20:<br>
+                                    20 - 50:<br>
+                                    50 - 100:<br>
+                                    Over 100:
+                                </p>
+                            </div>
+
+                            <div id="breakdown-legend-values">
+                                <p>
+                                    {{ stats.0.breakdown.less_than_5 }}<br>
+                                    {{ stats.0.breakdown.five_and_ten }}<br>
+                                    {{ stats.0.breakdown.ten_and_twenty }}<br>
+                                    {{ stats.0.breakdown.twenty_and_fifty }}<br>
+                                    {{ stats.0.breakdown.fifty_and_hundred }}<br>
+                                    {{ stats.0.breakdown.more_than_hundred }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="canvas-container">
+                            {% include 'steamtime/includes/canvas.html' with id="breakdown_chart" width="400" height="400" %}
+                        </div>
+                    </div>
+
+                    {% if distinctions %}
+                        <!-- Distinctions -->
+                        <div id="distinctions-container">
+                            <h1 class="stats-title">Distinctions</h1>
+                            <hr>
+
+                            <div id="distinctions-grid">
+                                {% if distinctions.completionist %}
+                                    {% include 'steamtime/includes/distinction.html' with title="Completionist" desc="20% or Less Unplayed Games" text=distinctions.completionist closing="%" %}
+                                {% endif %}
+
+                                {% if distinctions.dedication %}
+                                    {% include 'steamtime/includes/distinction.html' with title="Dedication" desc="Avg Game Time > 10 Hours" text=distinctions.dedication closing=" hours" %}
+                                {% endif %}
+
+                                {% if not two_weeks == 'privacy' %}
+                                    {% if distinctions.diverse %}
+                                        {% include 'steamtime/includes/distinction.html' with title="Diverse Gamer" desc="4+ Games in Last Two Weeks" text=distinctions.diverse closing=" games" %}
+                                    {% endif %}
+
+                                    {% if distinctions.focused %}
+                                        {% include 'steamtime/includes/distinction.html' with title="Focused Gamer" desc="1 Game in the Last Two Weeks" text=distinctions.focused closing=" game" %}
+                                    {% endif %}
+                                {% endif %}
+
+                                {% if distinctions.hyper_nerd_alert %}
+                                    {% include 'steamtime/includes/distinction.html' with title="Basement Lord" desc="Games with Over 500 hours" game_data=distinctions.hyper_nerd_alert %}
+                                {% endif %}
+
+                                {% if distinctions.super_nerd_alert %}
+                                    {% include 'steamtime/includes/distinction.html' with title="Junior Neckbeard" desc="Games with Over 100 hours" game_data=distinctions.super_nerd_alert %}
+                                {% endif %}
+
+                                {% if distinctions.nerd_alert %}
+                                    {% include 'steamtime/includes/distinction.html' with title="Nerd Alert" desc="Games with Over 50 hours" game_data=distinctions.nerd_alert %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Games -->
+                    <div id="game-stats-container">
+                        <h1 id="stats-title-games" class="stats-title">Games</h1>
+                        <hr>
+
+                        <div class="game-stats-row">
+                            <div id="most" class="game-stats-div left blue-gradient-circular">
+                                <span class="game-stats-div-title">Most Played Game</span>
+
+                                <br><br>
+
+                                <a href="{{ stats.0.most_played.3 }}"><img src="{{ stats.0.most_played.2 }}" class="animate glow"></a><br>
+                                <span class="game-stats-div-name">{{ stats.0.most_played.0 }}</span>
+                                <p>{{ stats.0.most_played.1 }} hours played</p>
+                            </div>
+
+                            {% if not stats.0.least_played.3 == 'N/A' %}
+                                <div id="least" class="game-stats-div right blue-gradient-circular">
+                                    <span class="game-stats-div-title">Least Played Game</span>
+
+                                    <br><br>
+
+                                    <a href="{{ stats.0.least_played.3 }}"><img src="{{ stats.0.least_played.2 }}" class="animate glow"></a><br>
+                                    <span class="game-stats-div-name">{{ stats.0.least_played.0 }}</span>
+                                    <p>{{ stats.0.least_played.1 }} hours played</p>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {% if two_weeks != "privacy" %}
+                        <div class="game-stats-row">
+                            <div class="game-stats-div left blue-gradient-circular">
+                                <span class="game-stats-div-title">Most Played Game</span>
+                                <span class="smaller-title">Last Two Weeks</span>
+
+                                <br><br>
+
+                                <a href="{{ stats.0.most_played_current.3 }}"><img src="{{ stats.0.most_played_current.2 }}" class="animate glow"></a><br>
+                                <span class="game-stats-div-name">{{ stats.0.most_played_current.0 }}</span>
+                                <p>{{ stats.0.most_played_current.1 }} hours played</p>
+                            </div>
+
+                            {% if not stats.0.most_played_current == stats.0.least_played_current %}
+                                <div class="game-stats-div right blue-gradient-circular">
+                                    <span class="game-stats-div-title">Least Played Game</span>
+                                    <span class="smaller-title">Last Two Weeks</span>
+
+                                    <br><br>
+
+                                    <a href="{{ stats.0.least_played_current.3 }}"><img src="{{ stats.0.least_played_current.2 }}" class="animate glow"></a><br>
+                                    <span class="game-stats-div-name">{{ stats.0.least_played_current.0 }}</span>
+                                    <p>{{ stats.0.least_played_current.1 }} hours played</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Hall of Shame Div -->
+                <div id="hall-of-shame-content" class="hidden">
+                    <h1 class="white">Gaze Upon Your Shame</h1>
+                    <span class="shame-total dark-blue">{{ shame_total }} total</span>
+
+                    <ul id="shame-grid" class="rig columns-3">
+                        {% for entry in shame_list %}
+                            <li class="shame animate">
+                                <a href="{{ entry.3 }}"><img src="{{ entry.2 }}" class="animate glow"></a>
+                                <a href="{{ entry.3 }}"><span class="grid-name animate">{{ entry.0 }}</span></a><br>
+                                <span class="grid-hours">{{ entry.1 }}.0 hours played</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                    <br><br>
+                </div>
+
+                <!-- Friends Div -->
+                {% if friends != "private" %}
+                <div id="friends" class="hidden">
+                    <h1 class="white shadow"><span class="green">{{ display_name }}'s</span> Friends</h1>
+                    <span class="shame-total dark-blue">{{ friends.1 }} total</span>
+                    <p>Click to view SteamTime profile</p>
+
+                    <ul id="friends-grid" class="rig columns-4">
+                        {% for entry in friends.0 %}
+                        <li class="friends glow animate blue-gradient-circular">
+                            <img class="friend-avatar" alt="{{ entry.0 }}" src="{{ entry.2 }}">
+                            <br>
+                            <span class="friend-name">{{ entry.1 }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <br>
+                </div>
+                {% endif %}
+
+                <!-- List of Results -->
+                {% if two_weeks != "privacy" %}
+                    {% include 'steamtime/includes/list_div.html' with id="list_2weeks" entry=two_weeks show_initially=1 %}
+                {% endif %}
+                {% include 'steamtime/includes/list_div.html' with id="list_10" entry=all_10 %}
+                {% include 'steamtime/includes/list_div.html' with id="list_20" entry=all_20 %}
+                {% include 'steamtime/includes/list_div.html' with id="list_all" entry=all_all %}
+
+                <!-- Chart divs -->
+                {% if two_weeks != "privacy" %}
+                    {% include 'steamtime/includes/donut_div.html' with id="donut_2weeks" data=two_weeks donut_data=donut_data_2weeks %}
+                {% endif %}
+                {% include 'steamtime/includes/donut_div.html' with id="donut_10" data=all_10 donut_data=donut_data_10 %}
+                {% include 'steamtime/includes/donut_div.html' with id="donut_20" data=all_20 donut_data=donut_data_20 %}
+
+                {% if two_weeks != "privacy" %}
+                    {% include 'steamtime/includes/bar_div.html' with id="2weeks" canvas_id="bar-chart_2weeks" %}
+                {% endif %}
+                {% include 'steamtime/includes/bar_div.html' with id="10" canvas_id="bar-chart_10" %}
+                {% include 'steamtime/includes/bar_div.html' with id="20" canvas_id="bar-chart_20" %}
+                <br>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading/Privacy notifications -->
+    {% include 'steamtime/includes/loading.html' %}
+
+    <div id="privacy-dimmer" class="dimmer hidden">
+        <div id="privacy-alert" class="blue-gradient-circular">
+            <i id="close-privacy" class="fa fa-times fa-2x"></i>
+            <p id="privacy-p">
+                <span class="green">{{ display_name }}</span>'s current privacy settings prevent access to their recently played and/or friends data.
+            </p>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var donutData_2weeks = 0;
+            var lineData_2weeks = 0;
+            var barData_2weeks = 0;
+
+            {% if two_weeks != "privacy" %}
+            donutData_2weeks = {{ donut_data_2weeks.0|safe }};
+            lineData_2weeks = {{ line_data_2weeks|safe }};
+            barData_2weeks = {{ bar_data_2weeks|safe }};
+            {% endif %}
+
+            var donutData_10 = {{ donut_data_10.0|safe }};
+            var lineData_10 = {{ line_data_10|safe }};
+            var barData_10 = {{ bar_data_10|safe }};
+
+            var donutData_20 = {{ donut_data_20.0|safe }};
+            var lineData_20 = {{ line_data_20|safe }};
+            var barData_20 = {{ bar_data_20|safe }};
+
+            var gen_stat_charts1 = {{ stats.1.0.0|safe }};
+            var gen_stat_charts2 = {{ stats.1.0.1|safe }};
+            var breakdown_chart = {{ stats.0.breakdown.chart_data|safe }};
+            showStats(gen_stat_charts1, gen_stat_charts2, breakdown_chart);
+
+            var parameters = [
+                donutData_2weeks, donutData_10, donutData_20,
+                lineData_2weeks, lineData_10, lineData_20, barData_2weeks,
+                barData_10, barData_20
+            ];
+
+            {% if two_weeks == "privacy" or friends == "private" %}
+                privacyNotice();
+            {% endif %}
+
+            if (donutData_2weeks === 0) {
+                steamtimeResults(parameters, "privacy");
+            } else {
+                steamtimeResults(parameters);
+            }
+            steamtime();
+        });
+    </script>
+{% endblock %}

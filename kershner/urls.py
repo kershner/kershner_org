@@ -1,4 +1,5 @@
 from apps.screenbloom.views import screenbloom_landing
+from apps.steamtime.urls import steamtime_patterns
 from apps.project import views as project_views
 from apps.whoosh.urls import whoosh_patterns
 import apps.philomania.views as phil_views
@@ -28,6 +29,9 @@ urlpatterns = [
 
     # Page for Bacon
     path('bacon/', bacon),
+
+    # SteamTime
+    path('steamtime/', include(steamtime_patterns)),
 
     # Admin Stuff
     path('admin/move-project-position/<project_id>/<direction>',

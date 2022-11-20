@@ -1,0 +1,16 @@
+<div id="bar_{{ id }}" class="hidden">
+    <div class="range-selection">
+        <p>
+            <span class="select_bar_2weeks animate"> Past Two Weeks</span>|
+            <span class="select_bar_10 animate">10</span>|
+            <span class="select_bar_20 animate">20</span>
+        </p>
+    </div>
+
+    <br><br>
+
+    <div class="canvas-container">
+        {% include 'steamtime/includes/canvas.html' with id=canvas_id height="450" width="450" %}
+    </div>
+    <br>
+</div>

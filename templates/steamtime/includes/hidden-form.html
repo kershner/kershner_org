@@ -1,0 +1,5 @@
+<form action="{% url 'steamtime-results' %}" method="POST">
+    {% csrf_token %}
+    <input class="animate" id="steamid" name="steamid" placeholder="SteamID" required="" type="text" value="">
+    <input type="submit" class="submit header-submit animate" value="Go!">
+</form>

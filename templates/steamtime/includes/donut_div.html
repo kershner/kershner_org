@@ -1,0 +1,31 @@
+<div id="{{ id }}" class="hidden">
+    <div class="range-selection">
+        <p>
+            <span class="select_donut_2weeks animate">Past Two Weeks</span>|
+            <span class="select_donut_10 animate">10</span>|
+            <span class="select_donut_20 animate">20</span>
+        </p>
+    </div>
+
+    <span class="legend-toggle animate">Legend</span>
+
+    <div class="legend hidden">
+        <div class="legend-left left">
+            {% for entry in data.0 %}
+                <img src="{{ entry.3 }}">
+            {% endfor %}
+        </div>
+
+        <div class="legend-right right">
+            {% for entry in donut_data.1 %}
+                <div class="legend-color" style="background-color: {{ entry }}"></div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="canvas-container">
+        {% include "steamtime/includes/canvas.html" with id=id width="450" height="450" %}
+    </div>
+
+    <br>
+</div>

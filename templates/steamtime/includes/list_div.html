@@ -1,0 +1,46 @@
+<div id="{{ id }}" class="data {% if not show_initially %}hidden{% endif %}">
+    <div class="range-selection">
+        <p>
+            {% if two_weeks != "privacy" %}
+            <span class="select_data_2weeks animate">Past Two Weeks</span>|
+            {% endif %}
+            <span class="select_data_10 animate">10</span>|
+            <span class="select_data_20 animate">20</span>|
+            <span class="select_data_all animate">All</span>
+        </p>
+    </div>
+
+    {% for entry in entry.0 %}
+    <div class="entry animate">
+        <img src="{{ entry.3 }}">
+
+        <div class="extra-links">
+            <a href="{{ entry.5 }}" class="shadow animate">Store Page</a>
+            <span class="shadow"> | </span>
+            <a href="{{ entry.4 }}" class="shadow animate">Profile Stats</a>
+        </div>
+
+        <div class="entry-data">
+            <span class="game-name">{{ entry.1 }}</span><br>
+            <div class="game-hours-played">
+                <span class="game-hours-number">{{ entry.2 }}</span>
+                <span class="game-hours-text">hours played</span>
+            </div>
+        </div>
+
+        <canvas id="list-{{ entry.0 }}" width="400" height="105">
+            Your browser does not support HTML5 Canvas.
+        </canvas>
+
+        <span class="rank">{{ entry.0 }}</span>
+
+        <script type="text/javascript">
+            var options = {animation: false};
+            var data = {{ entry.6|safe }};
+            var ctx = $("#list-{{ entry.0 }}").get(0).getContext("2d");
+            var myPieChart = new Chart(ctx).Pie(data, options);
+        </script>
+    </div>
+    {% endfor %}
+    <br>
+</div>

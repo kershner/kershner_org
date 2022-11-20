@@ -156,3 +156,6 @@ BROKER_TRANSPORT = 'redis'
 # [ominous whoosher]
 WHOOSH_EXPIRATION_DAYS = 90
 WHOOSH_LIMIT_PER_HOUR = 5
+
+# Steam
+STEAM_API_KEY = PARAMETERS['steam_api_key']

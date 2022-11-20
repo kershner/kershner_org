@@ -1,0 +1,14 @@
+<div class="distinction green-gradient">
+    <span class="distinction-title">
+        {{ title }}
+        <span class="distinction-description">{{ desc }}</span>
+    </span>
+
+    {% if game_data %}
+        {% for entry in game_data %}
+            <a href="{{ entry.1 }}"><img src="{{ entry.0 }}" class="glow animate"></a>
+        {% endfor %}
+    {% else %}
+        <span class="distinction-text">{{ text }}{{ closing }}</span>
+    {% endif %}
+</div>

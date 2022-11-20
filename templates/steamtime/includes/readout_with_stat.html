@@ -1,0 +1,10 @@
+<div id="readout_{{ readout_id }}" class="readout">
+    <h1>
+        {% if game_num %}{{ game_num }} {% endif %}Most Played Steam Games<br>
+        <span class="yellow">{{ data.1 }}</span>
+    </h1>
+
+    <div class="statistics">
+        <span class="yellow">{{ data.2 }}</span> games | <span class="yellow">{{ data.3 }}</span> hours
+    </div>
+</div>

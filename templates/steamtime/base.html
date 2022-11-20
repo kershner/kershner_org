@@ -1,0 +1,43 @@
+{% load static %}
+{% load kershner_tags %}
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8" name="viewport" content="initial-scale=1">
+
+    <!-- CSS -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="https://{% settings_value "CLOUDFRONT_DOMAIN" %}/static/steamtime/css/steamtime.css"/>
+
+    <!-- Fonts -->
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:800' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
+    <!-- JS -->
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="https://{% settings_value "CLOUDFRONT_DOMAIN" %}/static/steamtime/js/jquery-ui.min.js"></script>
+    <script src="https://{% settings_value "CLOUDFRONT_DOMAIN" %}/static/steamtime/js/Chart.min.js"></script>
+    <script src="https://{% settings_value "CLOUDFRONT_DOMAIN" %}/static/steamtime/js/masonry.min.js"></script>
+    <script src="{% settings_value "BASE_S3_URL" %}/js/steamtime.js"></script>
+
+    <link rel="icon" type="image/png" href="https://{% settings_value "CLOUDFRONT_DOMAIN" %}/static/steamtime/img/favicon.ico">
+    <title>SteamTime - {% if title %}{{ title }}{% else %}Visualize Time Spent In Your Steam Library{% endif %}</title>
+</head>
+
+<body>
+    <div id="header" class="hidden">
+        <a href="{% url 'steamtime' %}"><h1 id="results-big-logo"><span class="white animate">Steam</span><span class="blue animate">Time</span></h1></a>
+        <a href="{% url 'steamtime' %}"><p class="white animate">VISUALIZE TIME SPENT IN YOUR STEAM LIBRARY</p></a>
+    </div>
+
+    {% block content %}{% endblock %}
+
+    {% block javascripts %}{% endblock %}
+    <div id="footer" class="hidden">
+        <p>
+            Powered by Steam<br>
+            <a href="http://steampowered.com"><img id="steam-icon" src="https://{% settings_value "CLOUDFRONT_DOMAIN" %}/static/steamtime/img/steam-icon.png" class="glow animate"></a>
+        </p>
+    </div>
+</body>
+</html>
