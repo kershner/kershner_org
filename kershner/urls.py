@@ -34,8 +34,7 @@ urlpatterns = [
     path('steamtime/', include(steamtime_patterns)),
 
     # Admin Stuff
-    path('admin/move-project-position/<project_id>/<direction>',
-         project_views.MoveProjectPositionView.as_view(),
+    path('kersh-zone/move-project-position/<project_id>/<direction>', project_views.MoveProjectPositionView.as_view(),
          name='move_project_position'),
-    path('admin/', admin.site.urls),
+    path('kersh-zone/', admin.site.urls),
 ]
