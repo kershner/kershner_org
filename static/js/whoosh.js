@@ -1,8 +1,8 @@
 const whoosh = {
-    'whooshViewerUrl': '',
-    'uploadFileSizeLimit': '',
-    'colorTimer': undefined,
-    'colorInterval': 15000
+    'whooshViewerUrl'       : '',
+    'uploadFileSizeLimit'   : '',
+    'colorTimer'            : undefined,
+    'colorInterval'         : 15000
 };
 
 whoosh.init = function() {
