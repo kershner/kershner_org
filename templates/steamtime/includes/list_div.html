@@ -28,17 +28,17 @@
             </div>
         </div>
 
-        <canvas id="list-{{ entry.0 }}" width="400" height="105">
+        <canvas id="{% if id_prefix %}{{ id_prefix }}-{% endif %}list-{{ entry.0 }}" width="400" height="105">
             Your browser does not support HTML5 Canvas.
         </canvas>
 
         <span class="rank">{{ entry.0 }}</span>
 
         <script type="text/javascript">
-            var options = {animation: false};
-            var data = {{ entry.6|safe }};
-            var ctx = $("#list-{{ entry.0 }}").get(0).getContext("2d");
-            var myPieChart = new Chart(ctx).Pie(data, options);
+            $(document).ready(function () {
+                let options = {animation: false};
+                chartInit({{ entry.6|safe }}, "list-{{ entry.0 }}", "pie", options {% if id_prefix %},'{{ id_prefix }}'{% endif %});
+            });
         </script>
     </div>
     {% endfor %}

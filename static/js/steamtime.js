@@ -350,16 +350,11 @@ function showStats(data1, data2, breakdownData) {
 	$("#stats-tab").click(function() {
 		displayElements("#readout-stats", "#stats");
 		var masonry = new Masonry("#distinctions-grid", {
-				itemSelector: ".distinction"
-            });
-		options = {animationSteps: 70, animationEasing: "easeOutExpo"};
-		options2 = {scaleFontColor: "#FFFFFF", scaleGridLineColor : "#FFFFFF"};
-		var ctx1 = $("#canvas-gen_stat_charts1").get(0).getContext("2d");
-		var ctx2 = $("#canvas-gen_stat_charts2").get(0).getContext("2d");
-		var ctx3 = $("#canvas-breakdown_chart").get(0).getContext("2d");
-		var myPieChart1 = new Chart(ctx1).Pie(data1, options);
-		var myPieChart2 = new Chart(ctx2).Pie(data2, options);
-		var myPieChart3 = new Chart(ctx3).Bar(breakdownData, options2);
+			itemSelector: ".distinction"
+		});
+		chartInit(data1, "canvas-gen_stat_charts1", "pie");
+		chartInit(data2, "canvas-gen_stat_charts2", "pie");
+		chartInit(breakdownData, "canvas-breakdown_chart", "bar");
 	});
 }
 
@@ -396,77 +391,88 @@ function displayElements(fade1, fade2) {
 	for (i = 0; i < elements.length; i++) {
 		$(elements[i]).css("display", "none");
 	}
-
-	console.log(fade1);
-	console.log(fade2);
 	
 	$(fade1).fadeIn("slow");
 	$(fade2).fadeIn("slow");
 }
 
+function chartInit(data, chartId, chartType, options=undefined, idPrefix=undefined) {
+	if (typeof options === "undefined") {
+		options = {animationSteps: 70, animationEasing: "easeOutExpo"};
+	}
+	options["scaleFontColor"] = "#FFFFFF";
+
+	if (typeof idPrefix !== "undefined") {
+		chartId = `${idPrefix}-${chartId}`;
+	}
+	chartId = `#${chartId}`;
+
+	let chart = $(chartId);
+	let ctx = chart.get(0).getContext("2d");
+
+	if (!chart.data('initialized')) {
+		switch(chartType) {
+		  case "donut":
+			new Chart(ctx).Doughnut(data, options);
+			break;
+		  case "line":
+			new Chart(ctx).Line(data, options);
+			break;
+		case "pie":
+			new Chart(ctx).Pie(data, options);
+			break;
+		  default:
+			new Chart(ctx).Bar(data, options);
+		}
+
+		chart.data('initialized', true);
+	}
+}
+
 // These functions call displayElements based on what icon/range has been clicked
 function showDonut_2weeks(data) {
 	displayElements("#readout_2weeks", "#donut_2weeks");
-	options = {animationSteps: 70, animationEasing: "easeOutExpo"};
-	var ctx = $("#canvas-donut_2weeks").get(0).getContext("2d");
-	var myDoughnutChart = new Chart(ctx).Doughnut(data, options);
+	chartInit(data, "canvas-donut_2weeks", "donut");
 }
 
 function showDonut_10(data) {
 	displayElements("#readout_10", "#donut_10");
-	options = {animationSteps: 70, animationEasing: "easeOutExpo"};
-	var ctx = $("#canvas-donut_10").get(0).getContext("2d");
-	var myDoughnutChart = new Chart(ctx).Doughnut(data, options);
+	chartInit(data, "canvas-donut_10", "donut");
 }
 
 function showDonut_20(data) {
 	displayElements("#readout_20", "#donut_20");
-	options = {animationSteps: 70, animationEasing: "easeOutExpo"};
-	var ctx = $("#canvas-donut_20").get(0).getContext("2d");
-	var myDoughnutChart = new Chart(ctx).Doughnut(data, options);
+	chartInit(data, "canvas-donut_20", "donut");
 }
 
 function showLine_2weeks(data) {
 	displayElements("#readout_2weeks", "#line_2weeks");
-	options = {scaleFontColor: "#FFFFFF"};
-	var ctx = $("#canvas-line-chart_2weeks").get(0).getContext("2d");
-	var myDoughnutChart = new Chart(ctx).Line(data, options);
+	chartInit(data, "canvas-line-chart_2weeks", "line");
 }
 
 function showLine_10(data) {
 	displayElements("#readout_10", "#line_10");
-	options = {scaleFontColor: "#FFFFFF"};
-	var ctx = $("#canvas-line-chart_10").get(0).getContext("2d");
-	var myDoughnutChart = new Chart(ctx).Line(data, options);
+	chartInit(data, "canvas-line-chart_10", "line");
 }
 
 function showLine_20(data) {
 	displayElements("#readout_20", "#line_20");
-	options = {scaleFontColor: "#FFFFFF"};
-	var ctx = $("#canvas-line-chart_20").get(0).getContext("2d");
-	var myDoughnutChart = new Chart(ctx).Line(data, options);
+	chartInit(data, "canvas-line-chart_20", "line");
 }
 
 function showBar_2weeks(data) {
 	displayElements("#readout_2weeks", "#bar_2weeks");
-	options = {scaleFontColor: "#FFFFFF", scaleGridLineColor : "#FFFFFF"};
-	var ctx = $("#canvas-bar-chart_2weeks").get(0).getContext("2d");
-	var myDoughnutChart = new Chart(ctx).Bar(data, options);
+	chartInit(data, "canvas-bar-chart_2weeks", "bar");
 }
 
 function showBar_10(data) {
-	console.log('Bar Data', data);
 	displayElements("#readout_10", "#bar_10");
-	options = {scaleFontColor: "#FFFFFF", scaleGridLineColor : "#FFFFFF"};
-	var ctx = $("#canvas-bar-chart_10").get(0).getContext("2d");
-	var myDoughnutChart = new Chart(ctx).Bar(data, options);
+	chartInit(data, "canvas-bar-chart_10", "bar");
 }
 
 function showBar_20(data) {
 	displayElements("#readout_20", "#bar_20");
-	options = {scaleFontColor: "#FFFFFF", scaleGridLineColor : "#FFFFFF"};
-	var ctx = $("#canvas-bar-chart_20").get(0).getContext("2d");
-	var myDoughnutChart = new Chart(ctx).Bar(data, options);
+	chartInit(data, "canvas-bar-chart_20", "bar");
 }
 
 function showList_2weeks() {
