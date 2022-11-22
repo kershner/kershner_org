@@ -17,7 +17,7 @@ bacon.init = function() {
 
 bacon.imageScroll = function() {
     window.onscroll = function(ev) {
-        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
             bacon.populateImages();
         }
     };
