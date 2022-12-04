@@ -6,12 +6,6 @@
         <source src="{{ selected_whoosh.cloudfront_video_url }}" type="video/mp4">
     </video>
 
-    {% if not selected_whoosh.saved %}
-    <div class="instructions small-font-size">
-        This Whoosh will disappear in {{ expiration_days }} days.
-    </div>
-    {% endif %}
-
     {% include 'whoosh/includes/whoosh_info.html' %}
     {% include 'whoosh/includes/whoosh_controls.html' %}
 

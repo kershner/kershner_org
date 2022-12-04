@@ -24,8 +24,7 @@ class WhooshContentMixin(ContextMixin):
         return ctx
 
     def get_recent_whooshes(self):
-        expiration = timezone.now() - datetime.timedelta(days=settings.WHOOSH_EXPIRATION_DAYS)
-        return Whoosh.objects.filter(processed__gte=expiration, saved=False, doppelganger=None).order_by('-id').all()[:self.whoosh_limit]
+        return Whoosh.objects.filter(saved=False, doppelganger=None).order_by('-id').all()[:self.whoosh_limit]
 
     def get_saved_whooshes(self):
         return Whoosh.objects.filter(saved=True, processed__isnull=False).order_by('-id').all()[:self.whoosh_limit]
@@ -89,16 +88,9 @@ class WhooshViewer(BaseWhooshView):
             return TemplateResponse(request, self.not_found_template, self.get_context_data())
 
         self.form = DoppelgangerForm(instance=whoosh)
-        earliest_doppel = whoosh.get_doppelgangers().last()
-        if earliest_doppel and earliest_doppel.expired:
-            self.form = None
-
-        whoosh_expiration = whoosh.created + datetime.timedelta(days=settings.WHOOSH_EXPIRATION_DAYS)
-        expiration_days = abs((timezone.now() - whoosh_expiration).days)
-
+        
         ctx = self.get_context_data()
         ctx['selected_whoosh'] = whoosh
-        ctx['expiration_days'] = expiration_days
         return TemplateResponse(request, self.template, ctx)
 
     @staticmethod

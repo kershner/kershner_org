@@ -63,13 +63,6 @@ class Whoosh(models.Model):
         super().save(*args, **kwargs)
 
     @property
-    def expired(self):
-        if self.processed:
-            time_since_created = timezone.now() - self.created
-            return time_since_created.days == settings.WHOOSH_EXPIRATION_DAYS
-        return False
-
-    @property
     def uploaded_video_s3_key(self):
         return 'static/{}'.format(str(self.source_video))
 

@@ -155,7 +155,6 @@ CELERY_RESULT_BACKEND = 'redis://{}:{}'.format(PARAMETERS['redis_host'], PARAMET
 BROKER_TRANSPORT = 'redis'
 
 # [ominous whoosher]
-WHOOSH_EXPIRATION_DAYS = 90
 WHOOSH_LIMIT_PER_HOUR = 5
 
 # Steam

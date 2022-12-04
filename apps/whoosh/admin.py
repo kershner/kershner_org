@@ -28,27 +28,6 @@ class DoppelgangerFilter(SimpleListFilter):
         return queryset
 
 
-class ExpiredFilter(SimpleListFilter):
-    title = 'Expired'
-    parameter_name = 'expired'
-
-    def lookups(self, request, model_admin):
-        return (
-            (True, 'Yes'),
-            (False, 'No'),
-        )
-
-    def queryset(self, request, queryset):
-        expire_threshold = timezone.now() - datetime.timedelta(days=settings.WHOOSH_EXPIRATION_DAYS)
-
-        if self.value() == 'False':
-            return queryset.filter(created__gte=expire_threshold)
-        elif self.value() == 'True':
-            return queryset.filter(created__lte=expire_threshold)
-
-        return queryset
-
-
 @admin.register(Whoosh)
 class WhooshAdmin(admin.ModelAdmin):
     change_form_template = 'admin/whoosh/change_form.html'
@@ -57,7 +36,7 @@ class WhooshAdmin(admin.ModelAdmin):
     readonly_fields = ['ip', 'doppelganger', 'uniq_id', 'user_agent', 'created', 'processed', 'source_video',
                        'processed_video', 'thumbnail', 'saved_video', 'saved_thumbnail', 'settings_hash',
                        'saved', 'hidden']
-    list_filter = ['saved', DoppelgangerFilter, ExpiredFilter]
+    list_filter = ['saved', DoppelgangerFilter]
 
     @staticmethod
     def thumbnail_preview(obj):
