@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'apps.song',
     'apps.project',
     'apps.whoosh',
+    'apps.ai_quiz',
     'storages',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -159,3 +160,6 @@ WHOOSH_LIMIT_PER_HOUR = 5
 
 # Steam
 STEAM_API_KEY = PARAMETERS['steam_api_key']
+
+# OpenAI
+OPENAI_API_KEY = PARAMETERS['openai_api_key']

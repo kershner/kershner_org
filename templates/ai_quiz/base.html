@@ -1,0 +1,48 @@
+{% load kershner_tags %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }}</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/ai-quiz.css">
+</head>
+<body>
+    <div class="content-wrapper">
+        {% block header %}
+            <h1 class="title secondary-font">{{ title }}</h1>
+        {% endblock%}
+
+        {% block content %}{% endblock %}
+
+        <hr>
+
+        {% include "ai_quiz/widgets/recent_quizzes.html" %}
+
+        <div class="footer">
+            <a href="{% url 'ai-quiz' %}">Home</a>
+            {% if quiz %}
+            <a href="{{ quiz.get_admin_url }}">Admin</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/randomColor.min.js"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/colorWave.js"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/aiQuiz.js"></script>
+    <script type="text/javascript">
+        if (document.readyState === 'complete') {
+            aiQuiz.init();
+        } else {
+            document.addEventListener('DOMContentLoaded', aiQuiz.init);
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

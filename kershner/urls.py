@@ -1,6 +1,7 @@
 from apps.screenbloom.views import screenbloom_landing
 from apps.steamtime.urls import steamtime_patterns
 from apps.project import views as project_views
+from apps.ai_quiz.urls import ai_quiz_patterns
 from apps.whoosh.urls import whoosh_patterns
 import apps.philomania.views as phil_views
 from . import views as kersh_views
@@ -23,6 +24,9 @@ urlpatterns = [
 
     # [ominous whoosher]
     path('whoosh/', include(whoosh_patterns)),
+
+    # AI Quiz
+    path('quiz/', include(ai_quiz_patterns)),
 
     # ScreenBloom landing page
     path('screenbloom/', screenbloom_landing),

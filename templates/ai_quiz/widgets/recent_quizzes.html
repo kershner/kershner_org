@@ -1,0 +1,20 @@
+{% if recent_quizzes %}
+<div class="quiz-widget-wrapper">
+    <h3 class="secondary-font">Recent Quizzes</h3>
+
+    <div class="quiz-widget-wrapper-inner">
+
+        <ul class="quiz-widget">
+        {% for recent_quiz in recent_quizzes %}
+        <li>
+        <a href="{% url 'view-ai-quiz' quiz_id=recent_quiz.uniq_id %}">
+            <div class="quiz {% if quiz.id == recent_quiz.id %}active{% endif %}">
+                <div class="quiz-subject">{{ recent_quiz }}</div>
+            </div>
+        </a>
+        </li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
