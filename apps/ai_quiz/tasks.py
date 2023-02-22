@@ -21,6 +21,7 @@ def process_quiz(quiz_id):
     Generate {new_quiz.num_questions} questions about {new_quiz.subject}
     Questions should be in format [question {DELIMIT} answer {DELIMIT} source]
     Delimit questions with {QUESTION_SEPARATOR}
+    Prefer Wikipedia source
     '''
     log.info(f"api_prompt: {api_prompt}")
     openai.api_key = settings.OPENAI_API_KEY

@@ -6,3 +6,35 @@
     <a href="{{ quiz.get_admin_url }}" title="View admin page for this quiz"><button>Admin</button></a>
     {% endif %}
 </div>
+
+<div class="quiz-control-widget share hidden">
+    <a href="/poop">
+        Copy link to clipboard
+    </a>
+
+     <a href="/pee">
+        Export CSV
+    </a>
+</div>
+
+<div class="quiz-control-widget quiz-settings hidden">
+    <div class="quiz-setting">
+        <div class="quiz-setting-label">Model Engine:</div>
+        <div class="quiz-setting-value">{{ quiz.get_model_engine_display }}</div>
+    </div>
+
+    <div class="quiz-setting">
+        <div class="quiz-setting-label">Temperature:</div>
+        <div class="quiz-setting-value">{{ quiz.temperature }}</div>
+    </div>
+
+    <div class="quiz-setting">
+        <div class="quiz-setting-label">Subject:</div>
+        <div class="quiz-setting-value">{{ quiz.subject }}</div>
+    </div>
+
+    <div class="quiz-setting">
+        <div class="quiz-setting-label">Questions:</div>
+        <div class="quiz-setting-value">{{ quiz.num_questions_real }}</div>
+    </div>
+</div>

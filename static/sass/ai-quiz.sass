@@ -3,6 +3,9 @@
 $quiz-black: #202123
 $quiz-grey: lighten($quiz-black, 12)
 
+.hidden
+  display: none !important
+
 %font-primary
   font-family: 'Source Sans Pro', sans-serif
   letter-spacing: .025rem
@@ -37,6 +40,9 @@ a
   margin: 0.25rem 0
   font-size: 1rem
   max-width: 30rem
+
+  a
+    text-decoration: underline
 
 button
   @extend %button-styles
@@ -119,7 +125,7 @@ select
 
 %button-styles
   cursor: pointer
-  margin: 1rem 0
+  margin: 0.5rem 0
   padding: 0.25rem 0.75rem
   font-size: 1rem
   line-height: 1rem
@@ -178,6 +184,46 @@ button[type="submit"]
       font-weight: bold
       font-size: 0.85rem
       @extend %font-secondary
+
+.quiz-control-widget
+  display: inline-block
+  padding: 1rem
+  border-radius: 0.2rem
+  background-color: $quiz-grey
+
+.share
+  a
+    display: block
+    margin-bottom: 0.5rem
+
+    &:hover
+      text-decoration: underline
+
+.quiz-settings
+  display: flex
+  padding: 1rem auto
+  flex-direction: column
+  max-width: 20rem
+  font-size: 0.95rem
+
+  .quiz-setting
+    display: flex
+    padding-bottom: 0.5rem
+    margin: 0.25rem 0
+    justify-content: space-between
+    border-bottom: 1px solid white
+
+    &:last-of-type
+      border-bottom: none
+
+    .quiz-setting-label
+      font-weight: bold
+      text-align: left
+      width: 100%
+    .quiz-setting-value
+      width: 100%
+      text-align: left
+      padding-left: 1rem
 
 .loading-spinner
   justify-content: center
