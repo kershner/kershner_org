@@ -44,6 +44,7 @@ aiQuiz.revealAnswerOnclick = function() {
     answers.forEach(element => {
       element.addEventListener('click', event => {
         const parentElement = event.target.closest(`.${obscuredClass}`);
+        parentElement.removeAttribute('title');
         removeClass(parentElement, obscuredClass)
       });
     });

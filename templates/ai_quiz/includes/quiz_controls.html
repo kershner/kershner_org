@@ -1,0 +1,8 @@
+<div class="quiz-controls">
+    <button id="share" title="Share this quiz">Share</button>
+    <button id="quiz-settings" title="Display the settings used to generate this quiz">Settings</button>
+    <a href="{% url 'ai-quiz' %}" title="Return home"><button>Home</button></a>
+    {% if user.is_superuser and quiz %}
+    <a href="{{ quiz.get_admin_url }}" title="View admin page for this quiz"><button>Admin</button></a>
+    {% endif %}
+</div>

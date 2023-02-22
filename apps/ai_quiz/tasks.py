@@ -62,7 +62,7 @@ def process_quiz(quiz_id):
             except IndexError as e:
                 continue
 
-        new_quiz.settings_hash = util.hash_data_structure(new_quiz.openai_settings())
+        new_quiz.settings_hash = new_quiz.openai_settings_hash
         new_quiz.openai_response = json.dumps(openai_response)
         new_quiz.processed = timezone.now()
     except Exception as e:

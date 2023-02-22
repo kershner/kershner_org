@@ -69,6 +69,8 @@ class AiQuizViewer(BaseAiQuizView):
         if not quiz:
             return TemplateResponse(request, self.not_found_template, self.get_context_data())
 
+        self.form = AiQuizForm(instance=quiz)
+
         ctx = self.get_context_data()
         ctx['quiz'] = quiz
         ctx['title'] = quiz.title

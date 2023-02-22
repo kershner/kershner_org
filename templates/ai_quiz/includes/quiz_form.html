@@ -1,0 +1,21 @@
+<form method="post" action="{% url 'ai-quiz' %}">
+    {% csrf_token %}
+    <h2 class="secondary-font">Generate a quiz about {{ form.subject}}</h2>
+
+    <div class="form-inner">
+        <div class="form-controls">
+            <div class="form-control">
+            {{ form.num_questions.label_tag }}
+            {{ form.num_questions}}
+            </div>
+
+            <div class="form-control">
+            {{ form.temperature.label_tag }}
+            {{ form.temperature}}
+            </div>
+        </div>
+
+        {{ form.user_agent}}
+        <button type="submit" title="Click to generate a quiz!">Create Quiz</button>
+    </div>
+</form>

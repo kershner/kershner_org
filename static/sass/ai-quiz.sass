@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Gloock&family=Source+Sans+Pro&display=swap')
 
 $quiz-black: #202123
+$quiz-grey: lighten($quiz-black, 12)
 
 %font-primary
   font-family: 'Source Sans Pro', sans-serif
@@ -21,12 +22,10 @@ body
 
 hr
   border: 0.1rem solid white
-  margin: 1rem 0
 
 a
   color: white
-  &:hover
-    text-decoration: none
+  text-decoration: none
 
 .secondary-font
   @extend %font-secondary
@@ -38,6 +37,9 @@ a
   margin: 0.25rem 0
   font-size: 1rem
   max-width: 30rem
+
+button
+  @extend %button-styles
 
 .question
   margin: 1rem auto
@@ -64,16 +66,19 @@ a
 
       .answer-source
         font-size: 0.75rem
+        a
+          text-decoration: underline
 
 %form-input-properties
   background: none
   background-color: $quiz-black
   color: white
-  border: 0.16rem solid white
-  border-radius: 0.3rem
+  border: 0.1rem solid white
+  border-radius: 0.25rem
 
 form
   display: inline-block
+  margin-bottom: 1rem
 
 .form-controls
   display: flex
@@ -82,7 +87,6 @@ form
     display: flex
     flex-direction: column
     margin-right: 1rem
-    width: 100%
 
     &:last-of-type
       margin-right: 0
@@ -104,6 +108,7 @@ select
   font-size: 1rem
   font-weight: bold
   @extend %form-input-properties
+  border: none !important
 
   option
     @extend %form-input-properties
@@ -115,24 +120,26 @@ select
 %button-styles
   cursor: pointer
   margin: 1rem 0
-  padding: 0.5rem
-  font-size: 1.25rem
-  line-height: 1.25rem
+  padding: 0.25rem 0.75rem
+  font-size: 1rem
+  line-height: 1rem
+  font-weight: bold
   @extend %form-input-properties
 
-  &:hover
+  &:hover,
+  &.active
     color: $quiz-black
     background: white
 
 button[type="submit"]
   display: block
-  width: 100%
-  @extend %button-styles
+  padding: .5rem 2rem !important
+  font-size: 1.25rem !important
+  line-height: 1.25rem !important
 
 .quiz-widget-wrapper
   display: inline-block
   position: relative
-  margin: 1rem auto
   width: 100%
 
   .quiz-widget-wrapper-inner
@@ -144,12 +151,33 @@ button[type="submit"]
   li a
     display: inline-block
 
-.footer
-  margin-top: 3rem
-  a
-    @extend %button-styles
-    text-decoration: none
+.quiz-wrapper
+  display: inline-flex
+  margin: .25rem
+  text-decoration: none
+
+  .quiz
+    display: flex
+    background-color: $quiz-grey
+    border-radius: 0.2rem
     font-size: 1rem
+    line-height: 2rem
+
+    &:hover
+      background-color: white
+      color: $quiz-black
+      font-weight: bold
+
+    .quiz-subject
+      padding: 0
+      padding-left: 0.5rem
+
+    .quiz-num-questions
+      margin-left: .5rem
+      padding: 0 .5rem
+      font-weight: bold
+      font-size: 0.85rem
+      @extend %font-secondary
 
 .loading-spinner
   justify-content: center

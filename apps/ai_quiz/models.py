@@ -48,7 +48,7 @@ class AiQuiz(models.Model):
     def openai_settings(self):
         return {
             'model': self.model_engine,
-            'temperature': self.temperature,
+            'temperature': str(self.temperature),
             'subject': self.subject.lower(),
             'num_questions': self.num_questions,
         }

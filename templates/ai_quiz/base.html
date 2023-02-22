@@ -19,16 +19,11 @@
 
         {% block content %}{% endblock %}
 
-        <hr>
-
         {% include "ai_quiz/widgets/recent_quizzes.html" %}
 
-        <div class="footer">
-            <a href="{% url 'ai-quiz' %}">Home</a>
-            {% if quiz %}
-            <a href="{{ quiz.get_admin_url }}">Admin</a>
-            {% endif %}
-        </div>
+        {% if request.resolver_match.url_name != 'ai-quiz' %}
+        <a href="{% url 'ai-quiz' %}"><button title="Return home">Home</button></a>
+        {% endif %}
     </div>
 
     <!-- JS -->

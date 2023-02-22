@@ -1,38 +1,47 @@
 {% extends 'ai_quiz/base.html' %}
 
+{% block header %}
+    {{ block.super }}
+    {% include "ai_quiz/includes/quiz_controls.html" %}
+{% endblock %}
+
 {% block content %}
-    {% if not quiz.processed and not quiz.error %}
-        <p class="blurb">
-            Your quiz is being generated!  This page will automatically refresh when it's ready.
-        </p>
-        <div class="loading-spinner">
-          <div class="spinner"></div>
-        </div>
-    {% elif quiz.error %}
-        <p class="blurb">Unfortunately, something went wrong processing this quiz.  Please try another.</p>
-    {% endif %}
+{% if not quiz.processed and not quiz.error %}
+    <p class="blurb">
+        Your quiz is being generated!  This page will automatically refresh when it's ready.
+    </p>
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+    </div>
+{% elif quiz.error %}
+    <p class="blurb">Unfortunately, something went wrong processing this quiz.  Please try another.</p>
+{% endif %}
 
-    {% if quiz.processed %}
-        {% for question in quiz.get_questions %}
-        <div class="question">
-            <div class="question-text">
-                {{ question.text }}
-            </div>
+{% if quiz.processed %}
+    {% for question in quiz.get_questions %}
+    <div class="question">
+        <div class="question-text">{{ question.text }}</div>
 
-            <div class="answer obscured">
-                <div class="answer-text">
-                    {{ question.get_answer.text }}
+        <div class="answer obscured"  title="Click to reveal answer">
+            <div class="answer-text">
+                {{ question.get_answer.text }}
 
-                    <div class="answer-source">
-                        <a href="{{ question.get_answer.source }}" target="_blank">
-                            {{ question.get_answer.source }}
-                        </a>
-                    </div>
+                <div class="answer-source">
+                    <a href="{{ question.get_answer.source }}" target="_blank">
+                        {{ question.get_answer.source }}
+                    </a>
                 </div>
             </div>
         </div>
-        {% endfor %}
+    </div>
+    {% endfor %}
+
+    {% if form %}
+        <hr>
+
+        {% include "ai_quiz/includes/quiz_form.html" %}
     {% endif %}
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
