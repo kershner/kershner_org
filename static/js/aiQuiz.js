@@ -1,7 +1,10 @@
 const aiQuiz = {
     'aiQuizViewerUrl': '',
     'colorTimer': undefined,
-    'colorInterval': 15000
+    'colorInterval': 15000,
+    'randomSuggestionInterval': 5000,
+    'subjectInput': document.querySelector('input[name="subject"]'),
+    'form': false
 };
 
 aiQuiz.init = function () {
@@ -9,11 +12,73 @@ aiQuiz.init = function () {
     aiQuiz.revealAnswerOnclick();
     aiQuiz.colorWaveInit();
     aiQuiz.quizControls();
+    if (aiQuiz.form) {
+        aiQuiz.randomSuggestions();
+        aiQuiz.sizeSubjectInputToValue();
+    }
+};
+
+aiQuiz.sizeSubjectInputToValue = function() {
+    setWidthToValue(aiQuiz.subjectInput);
+    aiQuiz.subjectInput.addEventListener('input', event => {
+        setWidthToValue(aiQuiz.subjectInput);
+    });
+
+    function setWidthToValue(element) {
+        let newWidth = '17rem';
+        if (element.value.length) {
+            newWidth = `${((element.value.length - 3))}ch`;
+        }
+        element.style.width = newWidth;
+    }
+};
+
+aiQuiz.randomSuggestions = function() {
+    const quizSuggestions = [
+        'Chewing gum', 'flags', 'Computer keyboards', 'Famous bridges', 'Cloud types', 'Hip hop fashion',
+        'Deadly diseases', 'dinosaurs', 'Whale traits', 'Famous mimes', 'Pasta types', 'Maritime disasters',
+        'Martial arts history', 'cartoons', 'Sandwich history', 'Dangerous insects', 'Sharks', 'Trees', 'Horses',
+        'Bicycle history', 'Fruits', 'Cheeses', 'Typewriters', 'Birds', 'Mushrooms', 'Gemstones', 'Unusual museums',
+        'Venomous snakes', 'Hot air balloons'
+    ];
+
+    let quizSuggestionsCopy = shuffle(quizSuggestions.slice());
+
+    function randomSuggestion() {
+        let suggestion = quizSuggestionsCopy.pop();
+        typeWriter(aiQuiz.subjectInput, suggestion);
+
+        if (quizSuggestionsCopy.length === 0) {
+            quizSuggestionsCopy = shuffle(quizSuggestions.slice());
+        }
+    }
+
+    function typeWriter(input, text) {
+        if (typeof(text) === 'undefined') {
+            return
+        }
+        const textArray = text.split('');
+        input.placeholder = '';
+        textArray.forEach((letter, i) =>
+            setTimeout(() => (input.placeholder += letter), 95 * i)
+        );
+        setInterval(() => typeWriter(input), 8000);
+    }
+
+    randomSuggestion();
+    setInterval(function() {
+        randomSuggestion();
+    }, aiQuiz.randomSuggestionInterval);
 };
 
 aiQuiz.quizControls = function () {
-    let quizControls = document.querySelector('.quiz-controls').querySelectorAll('button');
-    quizControls.forEach(element => {
+    let quizControls = document.querySelector('.quiz-controls');
+    if (!quizControls) {
+        return false;
+    }
+
+    let buttons = quizControls.querySelectorAll('button');
+    buttons.forEach(element => {
         element.addEventListener('click', event => {
             let buttonId = element.getAttribute('id');
             let quizControlDivs = document.querySelectorAll('.quiz-control-widget');
@@ -34,7 +99,7 @@ aiQuiz.quizControls = function () {
                 }
             });
 
-            quizControls.forEach(element => {
+            buttons.forEach(element => {
                 removeClass(element, 'active');
 
                 if (!closeWidget) {

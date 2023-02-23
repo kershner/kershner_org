@@ -1,9 +1,9 @@
-<form method="post" action="{% url 'ai-quiz' %}">
+<form method="post" action="{% url 'ai-quiz' %}" class="full-width">
     {% csrf_token %}
 
     <h2 class="secondary-font">Generate a quiz about
         <input type="{{ form.subject.widget.input_type }}" name="{{ form.subject.name }}"
-               value="{% if form.subject.value %}{{ form.subject.value }}{% endif %}" {% if not quiz %}autofocus="autofocus"{% endif %}
+               value="{% if form.subject.value %}{{ form.subject.value }}{% endif %}"
                title="Enter a subject for a quiz.  Anything!" maxlength="{{ form.subject.field.max_length }}"
                required="{{ form.subject.field.required }}" id="{{ form.subject.id_for_label }}">
     </h2>

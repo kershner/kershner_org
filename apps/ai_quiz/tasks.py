@@ -19,7 +19,7 @@ def process_quiz(quiz_id):
     new_quiz = AiQuiz.objects.filter(id=quiz_id).first()
     api_prompt = f'''
     Generate {new_quiz.num_questions} questions about {new_quiz.subject}
-    Questions should be in format [question {DELIMIT} answer {DELIMIT} source]
+    Format: [question {DELIMIT} answer {DELIMIT} source]
     Delimit questions with {QUESTION_SEPARATOR}
     Prefer Wikipedia source
     '''
@@ -31,7 +31,7 @@ def process_quiz(quiz_id):
           model=new_quiz.model_engine,
           prompt=api_prompt,
           temperature=new_quiz.temperature,
-          max_tokens=1400,
+          max_tokens=700,
           # top_p=1,
           frequency_penalty=0.0,
           presence_penalty=0.6

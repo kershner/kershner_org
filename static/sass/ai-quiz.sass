@@ -13,6 +13,11 @@ $quiz-grey: lighten($quiz-black, 12)
   font-family: 'Gloock', serif
   letter-spacing: .075rem
 
+.full-width
+  max-width: 100%
+.shortened-width
+  max-width: 40rem
+
 body
   background-color: $quiz-black
   color: white
@@ -20,10 +25,8 @@ body
   @extend %font-primary
   font-size: 1.15rem
 
-.content-wrapper
-  max-width: 40rem
-
 hr
+  margin: 0
   border: 0.1rem solid white
 
 a
@@ -84,7 +87,7 @@ button
 
 form
   display: inline-block
-  margin-bottom: 1rem
+  margin-bottom: 2rem
 
 .form-controls
   display: flex
@@ -104,8 +107,8 @@ input[name="subject"]
   background: none
   border: none
   border-bottom: 0.2rem solid white
-  max-width: 15rem
   font-size: 2rem
+  min-width: 17rem
   @extend %form-input-properties
 
 select
@@ -147,6 +150,7 @@ button[type="submit"]
   display: inline-block
   position: relative
   width: 100%
+  padding-top: 0.5rem
 
   .quiz-widget-wrapper-inner
     overflow: auto
@@ -187,17 +191,19 @@ button[type="submit"]
 
 .quiz-control-widget
   display: inline-block
-  padding: 1rem
-  border-radius: 0.2rem
-  background-color: $quiz-grey
+  padding: 0.25rem 1rem
+  @extend %form-input-properties
+
+  &.share
+    border: none
+    padding-top: 0
+    padding-left: 0
 
 .share
-  a
+  padding-top: 0.5rem
+  button
     display: block
-    margin-bottom: 0.5rem
-
-    &:hover
-      text-decoration: underline
+    font-weight: 400
 
 .quiz-settings
   display: flex
@@ -211,13 +217,12 @@ button[type="submit"]
     padding-bottom: 0.5rem
     margin: 0.25rem 0
     justify-content: space-between
-    border-bottom: 1px solid white
+    border-bottom: 1px dashed white
 
     &:last-of-type
       border-bottom: none
 
     .quiz-setting-label
-      font-weight: bold
       text-align: left
       width: 100%
     .quiz-setting-value
@@ -228,6 +233,7 @@ button[type="submit"]
 .loading-spinner
   justify-content: center
   align-items: center
+  margin: 1rem 0
 
 .spinner
   border: 4px solid white
