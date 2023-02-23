@@ -35,7 +35,7 @@ aiQuiz.sizeSubjectInputToValue = function() {
 
 aiQuiz.randomSuggestions = function() {
     const quizSuggestions = [
-        'Chewing gum', 'flags', 'Computer keyboards', 'Famous bridges', 'Cloud types', 'Hip hop fashion',
+        'Chewing gum', 'flags', 'keyboards', 'Famous bridges', 'Cloud types', 'Hip hop fashion',
         'Deadly diseases', 'dinosaurs', 'Whale traits', 'Famous mimes', 'Pasta types', 'Maritime disasters',
         'Martial arts history', 'cartoons', 'Sandwich history', 'Dangerous insects', 'Sharks', 'Trees', 'Horses',
         'Bicycle history', 'Fruits', 'Cheeses', 'Typewriters', 'Birds', 'Mushrooms', 'Gemstones', 'Unusual museums',

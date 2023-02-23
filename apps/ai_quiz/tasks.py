@@ -19,9 +19,8 @@ def process_quiz(quiz_id):
     new_quiz = AiQuiz.objects.filter(id=quiz_id).first()
     api_prompt = f'''
     Generate {new_quiz.num_questions} questions about {new_quiz.subject}
-    Format: [question {DELIMIT} answer {DELIMIT} source]
-    Delimit questions with {QUESTION_SEPARATOR}
-    Prefer Wikipedia source
+    Format [question{DELIMIT}answer{DELIMIT}source,prefer wikipedia]
+    Delimiter {QUESTION_SEPARATOR}
     '''
     log.info(f"api_prompt: {api_prompt}")
     openai.api_key = settings.OPENAI_API_KEY

@@ -12,7 +12,7 @@ from utility import util
 class AiQuizContentMixin(ContextMixin):
     title = 'AI Generated Quizzes!'
     form = AiQuizForm()
-    quiz_limit = 60
+    quiz_limit = 20
 
     def get_context_data(self, **kwargs):
         ctx = super(AiQuizContentMixin, self).get_context_data(**kwargs)
@@ -22,7 +22,16 @@ class AiQuizContentMixin(ContextMixin):
         return ctx
 
     def get_recent_quizzes(self):
-        return AiQuiz.objects.filter(processed__isnull=False).order_by('-id').all()[:self.quiz_limit]
+        unique_subjects = AiQuiz.objects.values('subject').distinct()
+        qs = AiQuiz.objects.filter(processed__isnull=False, subject__in=unique_subjects)
+
+        ids_to_query = {}
+        for quiz in qs:
+            if quiz.subject not in ids_to_query:
+                ids_to_query[quiz.subject] = quiz.id
+        ids_to_query = list(ids_to_query.values())
+
+        return AiQuiz.objects.filter(processed__isnull=False, id__in=ids_to_query).order_by('-id').all()[:self.quiz_limit]
 
 
 class BaseAiQuizView(View, AiQuizContentMixin):
@@ -71,7 +80,7 @@ class AiQuizViewer(BaseAiQuizView):
 
         self.form = None
         if quiz.processed:
-            self.form = AiQuizForm(instance=quiz)
+            self.form = AiQuizForm()
 
         ctx = self.get_context_data()
         ctx['quiz'] = quiz
