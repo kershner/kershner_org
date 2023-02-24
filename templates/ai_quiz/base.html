@@ -21,13 +21,15 @@
 
         {% block content %}{% endblock %}
 
+        {% if form %}
+            <hr class="shortened-width">
+
+            {% include "ai_quiz/includes/quiz_form.html" %}
+        {% endif %}
+
         <div class="widgets shortened-width">
         {% include "ai_quiz/widgets/recent_quizzes.html" %}
         <div class="shortened-width">
-
-        {% if request.resolver_match.url_name != 'ai-quiz' %}
-        <a href="{% url 'ai-quiz' %}"><button title="Return home">Home</button></a>
-        {% endif %}
     </div>
 
     <!-- JS -->

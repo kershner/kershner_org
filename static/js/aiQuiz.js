@@ -21,6 +21,9 @@ aiQuiz.init = function () {
 
 aiQuiz.copyToClipboard = function() {
     let copyToClipboardBtn = document.querySelector('#copy-to-clipboard');
+    if (!copyToClipboardBtn) {
+        return;
+    }
     let existingText = copyToClipboardBtn.innerHTML;
     copyToClipboardBtn.addEventListener('click', event => {
         navigator.clipboard.writeText(window.location.href);

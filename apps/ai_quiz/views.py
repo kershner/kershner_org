@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator, PageNotAnInteger
 from django.template.response import TemplateResponse
 from django.views.generic.base import ContextMixin
 from django.http import JsonResponse, HttpResponse
@@ -96,6 +97,27 @@ class AiQuizViewer(BaseAiQuizView):
             'processed': quiz.processed,
         }
         return JsonResponse(ctx)
+
+
+class AiQuizListView(BaseAiQuizView):
+    model = AiQuiz
+    template = 'ai_quiz/list.html'
+    title = 'All Quizzes'
+
+    def get(self, request):
+        all_quizzes = AiQuiz.objects.order_by('-id').all()
+        per_page = 20
+        paginator = Paginator(all_quizzes, per_page)
+        page = request.GET.get('page', 1)
+
+        try:
+            paginated_objects = paginator.page(page)
+        except PageNotAnInteger:
+            paginated_objects = paginator.page(1)
+
+        ctx = self.get_context_data()
+        ctx['quizzes'] = paginated_objects
+        return TemplateResponse(request, self.template, ctx)
 
 
 class AiQuizExport(BaseAiQuizView):

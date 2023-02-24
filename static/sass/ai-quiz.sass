@@ -9,14 +9,21 @@ $quiz-grey: lighten($quiz-black, 12)
 %font-primary
   font-family: 'Source Sans Pro', sans-serif
   letter-spacing: .025rem
+
 %font-secondary
   font-family: 'Gloock', serif
   letter-spacing: .075rem
 
 .full-width
   max-width: 100%
+
 .shortened-width
   max-width: 40rem
+
+.hover-underline
+  &:hover
+    .quiz-name
+      text-decoration: underline
 
 body
   background-color: $quiz-black
@@ -41,6 +48,7 @@ a
 
 .blurb
   margin: 0.25rem 0
+  margin-bottom: 1rem
   font-size: 1rem
   max-width: 30rem
 
@@ -160,6 +168,9 @@ button[type="submit"]
     overflow: auto
     max-height: 40rem
 
+    .widget-links
+      border: 1px solid red
+
   h3, ul
     margin: 0.25rem auto
   li a
@@ -254,3 +265,48 @@ button[type="submit"]
 @keyframes spin
   to
     transform: rotate(360deg)
+
+.all-quizzes
+  display: inline-block
+  padding: 0 0.25rem
+  list-style: none
+
+  li
+    border-bottom: 1px solid white
+    &:last-of-type
+      border-bottom: none
+
+    a
+      display: flex
+
+      .quiz-results-number
+        padding-top: 1rem
+        font-size: 1.5rem
+        @extend %font-secondary
+
+      .quiz-large
+        margin: 1rem 0
+        margin-left: 1rem
+        max-width: 30rem
+
+        .quiz-name
+          font-size: 1.5rem
+          @extend %font-secondary
+
+        .quiz-temperature
+          font-size: 0.9rem
+
+        .quiz-created
+          font-size: 0.8rem
+          font-style: italic
+
+.pagination
+  margin-bottom: 1rem
+
+  .step-links
+    a
+      margin: 0 0.1rem
+
+  .current-page
+    margin: 0 0.25rem
+    font-weight: bold

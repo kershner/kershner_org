@@ -1,12 +1,15 @@
 <div class="quiz-controls">
+    {% if quiz %}
     <button id="share" title="Share this quiz">Share</button>
     <button id="quiz-settings" title="Display the settings used to generate this quiz">Settings</button>
-    <a href="{% url 'ai-quiz' %}" title="Return home"><button>Home</button></a>
-    {% if user.is_superuser and quiz %}
-    <a href="{{ quiz.get_admin_url }}" title="View admin page for this quiz"><button>Admin</button></a>
+        {% if user.is_superuser %}
+        <a href="{{ quiz.get_admin_url }}" title="View admin page for this quiz"><button>Admin</button></a>
+        {% endif %}
     {% endif %}
+    <a href="{% url 'ai-quiz' %}" title="Return home"><button>Home</button></a>
 </div>
 
+{% if quiz %}
 <div class="quiz-control-widget share hidden">
     <button id="copy-to-clipboard" title="Click to copy the current URL">Copy link to clipboard</button>
     <button title="Click to export this quiz to CSV"><a href="{% url 'export-ai-quiz' quiz_id=quiz.uniq_id %}">Export CSV</a></button>
@@ -33,3 +36,4 @@
         <div class="quiz-setting-value">{{ quiz.num_questions_real }}</div>
     </div>
 </div>
+{% endif %}
