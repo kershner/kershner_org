@@ -52,11 +52,19 @@ a
 .blurb
   margin: 0.25rem 0
   margin-bottom: 0
-  font-size: 1rem
   max-width: 30rem
+
+  &.large
+    font-size: 1.5rem
+    line-height: 1.75rem
 
   a
     text-decoration: underline
+
+  &.disclaimer
+    margin-top: 0.5rem
+    font-size: 0.8rem
+    line-height: 1rem
 
 button
   @extend %button-styles

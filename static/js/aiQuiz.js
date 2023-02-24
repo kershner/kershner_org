@@ -3,6 +3,7 @@ const aiQuiz = {
     'colorTimer': undefined,
     'colorInterval': 15000,
     'randomSuggestionInterval': 5000,
+    'checkProcessedInterval': 4000,
     'subjectInput': document.querySelector('input[name="subject"]'),
     'form': false
 };
@@ -156,7 +157,7 @@ aiQuiz.checkQuizProcessed = function () {
                 location.reload();
             }
         });
-    }, 3000);
+    }, aiQuiz.checkProcessedInterval);
 };
 
 aiQuiz.revealAnswerOnclick = function () {
