@@ -1,0 +1,21 @@
+{% if quizzes %}
+<div class="pagination">
+    {% if quizzes.has_previous %}
+    <span class="step-links">
+        <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; first</a>
+        <a href="?page={{ quizzes.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">previous</a>
+    </span>
+    {% endif %}
+
+    <span class="current-page">
+        Page {{ quizzes.number }} of {{ quizzes.paginator.num_pages }}
+    </span>
+
+    {% if quizzes.has_next %}
+    <span class="step-links">
+        <a href="?page={{ quizzes.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endif %}{% endfor %}">next</a>
+        <a href="?page={{ quizzes.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">last &raquo;</a>
+    </span>
+    {% endif %}
+</div>
+{% endif %}

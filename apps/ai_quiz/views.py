@@ -1,9 +1,9 @@
 from django.core.paginator import Paginator, PageNotAnInteger
+from apps.ai_quiz.forms import AiQuizForm, AiQuizSearchForm
 from django.template.response import TemplateResponse
 from django.views.generic.base import ContextMixin
 from django.http import JsonResponse, HttpResponse
 from apps.ai_quiz.tasks import process_quiz
-from apps.ai_quiz.forms import AiQuizForm
 from apps.ai_quiz.models import AiQuiz
 from django.views.generic import View
 from django.shortcuts import redirect
@@ -103,13 +103,27 @@ class AiQuizListView(BaseAiQuizView):
     model = AiQuiz
     template = 'ai_quiz/list.html'
     title = 'All Quizzes'
+    per_page = 20
 
     def get(self, request):
-        all_quizzes = AiQuiz.objects.order_by('-id').all()
-        per_page = 20
-        paginator = Paginator(all_quizzes, per_page)
+        all_quizzes = AiQuiz.objects.order_by('-id')
         page = request.GET.get('page', 1)
+        subject_filter = request.GET.get('subject_query', None)
+        num_questions_filter = request.GET.get('num_questions_filter', None)
+        temperature_filter = request.GET.get('temperature_filter', None)
 
+        if subject_filter:
+            all_quizzes = all_quizzes.filter(subject__icontains=subject_filter)
+
+        if num_questions_filter and num_questions_filter != 'any':
+            all_quizzes = all_quizzes.filter(num_questions=num_questions_filter)
+
+        if temperature_filter and temperature_filter != 'any':
+            all_quizzes = all_quizzes.filter(temperature=temperature_filter)
+
+        total_quizzes = len(all_quizzes)
+
+        paginator = Paginator(all_quizzes, self.per_page)
         try:
             paginated_objects = paginator.page(page)
         except PageNotAnInteger:
@@ -117,8 +131,9 @@ class AiQuizListView(BaseAiQuizView):
 
         ctx = self.get_context_data()
         ctx['quizzes'] = paginated_objects
+        ctx['search_form'] = AiQuizSearchForm(request.GET)
+        ctx['total_quizzes'] = total_quizzes
         return TemplateResponse(request, self.template, ctx)
-
 
 class AiQuizExport(BaseAiQuizView):
     def get(self, request, quiz_id=None):

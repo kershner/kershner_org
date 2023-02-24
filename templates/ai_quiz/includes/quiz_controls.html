@@ -7,6 +7,10 @@
         {% endif %}
     {% endif %}
     <a href="{% url 'ai-quiz' %}" title="Return home"><button>Home</button></a>
+
+    {% if search_form %}
+    <a href="{% url 'list-ai-quiz' %}"><button title="Clear filters">Clear filters</button></a>
+    {% endif %}
 </div>
 
 {% if quiz %}

@@ -6,42 +6,54 @@
 {% endblock %}
 
 {% block content %}
-<ul class="all-quizzes">
-{% for quiz in quizzes %}
-    <li>
-        <a href="{% url 'view-ai-quiz' quiz_id=quiz.uniq_id %}" class="hover-underline">
-            <div class="quiz-results-number">{{ forloop.counter }}.</div>
-
-            <div class="quiz-large">
-                <div class="quiz-name">{{ quiz }}</div>
-                <div class="quiz-temperature">
-                    <span class="temp-label">Temperature:</span>
-                    <span>{{ quiz.temperature }}</span>
-                </div>
-                <div class="quiz-created">{{ quiz.created }}</div>
+    <div class="quiz-list-controls">
+        <form action="{% url 'list-ai-quiz' %}" method="get">
+            <div class="form-controls">
+                <div class="form-control">{{ search_form.subject_query }}</div>
             </div>
-        </a>
-    </li>
-{% endfor %}
-</ul>
 
-<div class="pagination">
-    {% if quizzes.has_previous %}
-    <span class="step-links">
-        <a href="?page=1">&laquo; first</a>
-        <a href="?page={{ quizzes.previous_page_number }}">previous</a>
-    </span>
+            <div class="form-controls filters">
+                <div class="form-control">
+                    {{ search_form.num_questions_filter.label_tag }}
+                    {{ search_form.num_questions_filter }}
+                </div>
+
+                <div class="form-control">
+                    {{ search_form.temperature_filter.label_tag }}
+                    {{ search_form.temperature_filter }}
+                </div>
+            </div>
+
+            <button type="submit" title="Search for a quiz">Search</button>
+        </form>
+    </div>
+
+    <hr class="shortened-width">
+
+    <div class="search-total">{{ total_quizzes }} quiz{% if total_quizzes > 1 %}zes{% endif %}</div>
+
+    <ul class="all-quizzes">
+        {% for quiz in quizzes %}
+            <li>
+                <a href="{% url 'view-ai-quiz' quiz_id=quiz.uniq_id %}" class="hover-underline">
+                    <div class="quiz-results-number">{{ forloop.counter }}.</div>
+
+                    <div class="quiz-large">
+                        <div class="quiz-name">{{ quiz }}</div>
+                        <div class="quiz-temperature">
+                            <span class="temp-label">Temperature:</span>
+                            <span>{{ quiz.temperature }}</span>
+                        </div>
+                        <div class="quiz-created">{{ quiz.created }}</div>
+                    </div>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    {% include 'ai_quiz/includes/quiz_search_pagination.html' %}
+
+    {% if not quizzes %}
+        <h2>No results</h2>
     {% endif %}
-
-    <span class="current-page">
-        Page {{ quizzes.number }} of {{ quizzes.paginator.num_pages }}
-    </span>
-
-    {% if quizzes.has_next %}
-    <span class="step-links">
-        <a href="?page={{ quizzes.next_page_number }}">next</a>
-        <a href="?page={{ quizzes.paginator.num_pages }}">last &raquo;</a>
-    </span>
-    {% endif %}
-</div>
 {% endblock %}
