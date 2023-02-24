@@ -47,7 +47,7 @@ class AiQuizSearchForm(forms.ModelForm):
                                     required=False,
                                     widget=forms.TextInput(attrs={
                                         'title': 'Filter quizzes by subject',
-                                        'placeholder': 'Search for a quiz subject'
+                                        'placeholder': 'Search for a subject'
                                     }))
 
     temp_ranges_with_any = [('any', 'Any')] + TEMP_RANGES
