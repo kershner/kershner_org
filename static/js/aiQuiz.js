@@ -12,10 +12,23 @@ aiQuiz.init = function () {
     aiQuiz.revealAnswerOnclick();
     aiQuiz.colorWaveInit();
     aiQuiz.quizControls();
+    aiQuiz.copyToClipboard();
     if (aiQuiz.form) {
         aiQuiz.randomSuggestions();
         aiQuiz.sizeSubjectInputToValue();
     }
+};
+
+aiQuiz.copyToClipboard = function() {
+    let copyToClipboardBtn = document.querySelector('#copy-to-clipboard');
+    let existingText = copyToClipboardBtn.innerHTML;
+    copyToClipboardBtn.addEventListener('click', event => {
+        navigator.clipboard.writeText(window.location.href);
+        copyToClipboardBtn.innerHTML = 'Copied!';
+        setTimeout(function() {
+            copyToClipboardBtn.innerHTML = existingText;
+        }, 5000);
+    });
 };
 
 aiQuiz.sizeSubjectInputToValue = function() {

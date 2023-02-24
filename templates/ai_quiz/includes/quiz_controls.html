@@ -8,8 +8,8 @@
 </div>
 
 <div class="quiz-control-widget share hidden">
-    <button title="Click to copy the current URL">Copy link to clipboard</button>
-    <button title="Click to export this quiz to CSV">Export CSV</button>
+    <button id="copy-to-clipboard" title="Click to copy the current URL">Copy link to clipboard</button>
+    <button title="Click to export this quiz to CSV"><a href="{% url 'export-ai-quiz' quiz_id=quiz.uniq_id %}">Export CSV</a></button>
 </div>
 
 <div class="quiz-control-widget quiz-settings hidden">

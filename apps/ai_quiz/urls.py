@@ -3,7 +3,6 @@ from django.urls import path
 
 ai_quiz_patterns = [
     path('', ai_quiz_views.AiQuizHomeView.as_view(), name='ai-quiz'),
-    path('view/', ai_quiz_views.AiQuizViewer.as_view(), name='view-ai-quiz'),
-    path('view/<quiz_id>/', ai_quiz_views.AiQuizViewer.as_view(), name='view-ai-quiz'),
     path('view/<quiz_id>', ai_quiz_views.AiQuizViewer.as_view(), name='view-ai-quiz'),
+    path('view/<quiz_id>/export', ai_quiz_views.AiQuizExport.as_view(), name='export-ai-quiz'),
 ]

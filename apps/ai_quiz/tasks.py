@@ -2,7 +2,6 @@ from celery.utils.log import get_task_logger
 from django.utils import timezone
 from django.conf import settings
 from kershner.celery import app
-from utility import util
 import openai
 import json
 
