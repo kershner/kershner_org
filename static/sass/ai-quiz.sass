@@ -350,3 +350,33 @@ button[type="submit"]
 .search-total
   margin-top: 1rem
   font-size: 0.95rem
+
+
+.quizzes-remaining
+  font-size: 0.9rem
+
+.tooltip
+  position: relative
+  cursor: pointer
+
+  &:hover
+    .tip-text
+      visibility: visible
+
+  svg
+    height: 14px
+    width: 14px
+
+  .tip-text
+    visibility: hidden
+    width: 10rem
+    border: 1px solid white
+    background-color: $quiz-black
+    color: white
+    padding: 0.5rem
+    position: absolute
+    bottom: 100%
+    left: 0
+    margin-left: -60px
+    z-index: 1
+    font-size: 0.8rem

@@ -7,7 +7,10 @@ from apps.ai_quiz.tasks import process_quiz
 from apps.ai_quiz.models import AiQuiz
 from django.views.generic import View
 from django.shortcuts import redirect
+from django.utils import timezone
+from django.conf import settings
 from utility import util
+import datetime
 import csv
 
 
@@ -36,7 +39,23 @@ class AiQuizContentMixin(ContextMixin):
         return AiQuiz.objects.filter(processed__isnull=False, id__in=ids_to_query).order_by('-id').all()[:self.quiz_limit]
 
 
-class BaseAiQuizView(View, AiQuizContentMixin):
+class QuizzesRemainingMixin(ContextMixin):
+    def get_context_data(self, **kwargs):
+        ctx = super(QuizzesRemainingMixin, self).get_context_data(**kwargs)
+
+        one_hour_ago = timezone.now() - datetime.timedelta(hours=1)
+        user_ip = util.get_client_ip(self.request)
+        quizzes_by_user = AiQuiz.objects.filter(ip=user_ip, created__gte=one_hour_ago).count()
+
+        quizzes_remaining = 0
+        if quizzes_by_user < settings.QUIZ_LIMIT_PER_HOUR:
+            quizzes_remaining = settings.QUIZ_LIMIT_PER_HOUR - quizzes_by_user
+
+        ctx['quizzes_remaining'] = quizzes_remaining
+        return ctx
+
+
+class BaseAiQuizView(QuizzesRemainingMixin, AiQuizContentMixin, View):
     not_found_template = 'ai_quiz/404.html'
 
     def get_context_data(self, **kwargs):

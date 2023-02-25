@@ -1,6 +1,6 @@
 <div class="submit-wrapper {{ extra_class }}">
     <div class="whooshes-remaining">
-        {{ whooshes_remaining }} Whoosh{% if whooshes_remaining != 1 %}es{% endif %} remaining {% include 'whoosh/forms/includes/remaining_tooltip.html' %}
+        {{ whooshes_remaining }} Whoosh{% if whooshes_remaining != 1 %}es{% endif %} remaining {% include 'includes/tooltip.html' with text='To keep my hosting costs down for this dumb thing as much as possible, there is a simple per-hour Whoosh limit.' %}
     </div>
 
     {% if whooshes_remaining or request.user.is_superuser %}

@@ -163,3 +163,6 @@ STEAM_API_KEY = PARAMETERS['steam_api_key']
 
 # OpenAI
 OPENAI_API_KEY = PARAMETERS['openai_api_key']
+
+# AI Quizzes
+QUIZ_LIMIT_PER_HOUR = 4
