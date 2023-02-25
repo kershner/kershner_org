@@ -129,12 +129,6 @@ class AiQuizAnswer(models.Model):
     created = models.DateTimeField(default=timezone.now)
     question = models.ForeignKey('ai_quiz.AiQuizQuestion', null=True, blank=True, on_delete=models.CASCADE)
     text = models.CharField(max_length=255)
-
-    ANSWER_TYPES = (
-        ('text', 'text'),
-        ('number', 'number')
-    )
-    answer_type = models.CharField(max_length=20, choices=ANSWER_TYPES, default='text')
     source = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
