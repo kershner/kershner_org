@@ -141,8 +141,6 @@ class AiQuizListView(BaseAiQuizView):
         if temperature_filter and temperature_filter != 'any':
             all_quizzes = all_quizzes.filter(temperature=temperature_filter)
 
-        total_quizzes = len(all_quizzes)
-
         paginator = Paginator(all_quizzes, self.per_page)
         try:
             paginated_objects = paginator.page(page)
@@ -152,7 +150,6 @@ class AiQuizListView(BaseAiQuizView):
         ctx = self.get_context_data()
         ctx['quizzes'] = paginated_objects
         ctx['search_form'] = AiQuizSearchForm(request.GET)
-        ctx['total_quizzes'] = total_quizzes
         return TemplateResponse(request, self.template, ctx)
 
 

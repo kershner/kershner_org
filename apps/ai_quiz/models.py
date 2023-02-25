@@ -22,7 +22,6 @@ class AiQuiz(models.Model):
         ('3', '3'),
         ('5', '5'),
         ('10', '10'),
-        ('20', '20'),
     ]
     num_questions = models.CharField(max_length=2, choices=NUM_QUESTION_CHOICES, default='3')
     subject = models.CharField(max_length=50)

@@ -28,12 +28,6 @@
         </form>
     </div>
 
-    <hr class="shortened-width">
-
-    {% if total_quizzes %}
-    <div class="search-total">{{ total_quizzes }} quiz{% if total_quizzes > 1 %}zes{% endif %}</div>
-    {% endif %}
-
     <ul class="all-quizzes">
         {% for quiz in quizzes %}
             <li>

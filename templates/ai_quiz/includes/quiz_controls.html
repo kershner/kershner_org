@@ -6,7 +6,11 @@
         <a href="{{ quiz.get_admin_url }}" title="View admin page for this quiz"><button>Admin</button></a>
         {% endif %}
     {% endif %}
-    <a href="{% url 'list-ai-quiz' %}" title="View and search all quizzes"><button>View all</button></a>
+
+    {% if request.resolver_match.url_name != 'list-ai-quiz' %}
+        <a href="{% url 'list-ai-quiz' %}" title="View and search all quizzes"><button>View all</button></a>
+    {% endif %}
+
     <a href="{% url 'ai-quiz' %}" title="Return home"><button>Home</button></a>
 
     {% if search_form %}
