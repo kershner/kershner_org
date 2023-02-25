@@ -40,6 +40,8 @@ class AiQuizContentMixin(ContextMixin):
 
 
 class QuizzesRemainingMixin(ContextMixin):
+    quizzes_remaining = 0
+
     def get_context_data(self, **kwargs):
         ctx = super(QuizzesRemainingMixin, self).get_context_data(**kwargs)
 
@@ -47,11 +49,10 @@ class QuizzesRemainingMixin(ContextMixin):
         user_ip = util.get_client_ip(self.request)
         quizzes_by_user = AiQuiz.objects.filter(ip=user_ip, created__gte=one_hour_ago).count()
 
-        quizzes_remaining = 0
         if quizzes_by_user < settings.QUIZ_LIMIT_PER_HOUR:
-            quizzes_remaining = settings.QUIZ_LIMIT_PER_HOUR - quizzes_by_user
+            self.quizzes_remaining = settings.QUIZ_LIMIT_PER_HOUR - quizzes_by_user
 
-        ctx['quizzes_remaining'] = quizzes_remaining
+        ctx['quizzes_remaining'] = self.quizzes_remaining
         return ctx
 
 
@@ -74,7 +75,7 @@ class AiQuizHomeView(BaseAiQuizView):
     def post(self, request):
         self.form = AiQuizForm(request.POST)
 
-        if self.form.is_valid():
+        if self.form.is_valid() and self.quizzes_remaining or request.user.is_superuser:
             # Check if a quiz already exists with these settings
             new_quiz = AiQuiz(**self.form.cleaned_data)
             existing_quiz = AiQuiz.objects.filter(settings_hash=new_quiz.openai_settings_hash).first()

@@ -130,7 +130,7 @@ class AiQuizAnswer(models.Model):
     def get_source_html(self):
         if 'http' in self.source:
             # Use regex to find the URL in the string and wrap it in an <a> tag
-            pattern = re.compile(r'https?://\S+[a-zA-Z0-9/]')
+            pattern = re.compile(r'https?://\S+[a-zA-Z0-9/)]')
             match = re.sub(pattern, lambda m: f'<a target="_blank" href="{m.group(0)}">{m.group(0)}</a>', self.source)
             return mark_safe(match)
 
