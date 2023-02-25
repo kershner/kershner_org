@@ -2,6 +2,7 @@
 
 $quiz-black: #202123
 $quiz-grey: lighten($quiz-black, 12)
+$quiz-text-shadow: 1px 1px 3px $quiz-black
 
 .hidden
   display: none !important
@@ -166,10 +167,20 @@ select
   font-weight: bold
   @extend %form-input-properties
 
-  &:hover,
+  &:hover
+    color: white
+    border-color: transparent
+    text-shadow: $quiz-text-shadow
   &.active
     color: $quiz-black
-    background: white
+    background-color: white
+    text-shadow: none
+    &:hover
+      color: white
+      text-shadow: $quiz-text-shadow
+
+  a:hover
+    color: white !important
 
 button[type="submit"]
   display: block
@@ -208,9 +219,8 @@ button[type="submit"]
     line-height: 2rem
 
     &:hover
-      background-color: white
-      color: $quiz-black
-      font-weight: bold
+      color: white
+      text-shadow: $quiz-text-shadow
 
     .quiz-subject
       padding: 0
@@ -238,10 +248,6 @@ button[type="submit"]
   button
     display: block
     font-weight: 400
-
-    &:hover
-      a
-        color: $quiz-black !important
 
 .quiz-settings
   display: flex

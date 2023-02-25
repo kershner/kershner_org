@@ -14,10 +14,32 @@ aiQuiz.init = function () {
     aiQuiz.colorWaveInit();
     aiQuiz.quizControls();
     aiQuiz.copyToClipboard();
+    aiQuiz.hoverEffects();
     if (aiQuiz.form) {
         aiQuiz.randomSuggestions();
         aiQuiz.sizeSubjectInputToValue();
     }
+};
+
+aiQuiz.hoverEffects = function() {
+    let hoverElements = document.querySelectorAll('.quiz, button, a');
+    hoverElements.forEach(function(element) {
+        element.addEventListener('mouseenter', function() {
+            let color = randomColor({luminosity: 'light'});
+            if (element.tagName === 'A') {
+                element.style.color = color;
+            } else {
+                element.style.backgroundColor = color;
+            }
+        });
+        element.addEventListener('mouseleave', function() {
+            if (element.tagName === 'A') {
+                element.style.color = '';
+            } else {
+                element.style.backgroundColor = '';
+            }
+        });
+    });
 };
 
 aiQuiz.copyToClipboard = function() {
