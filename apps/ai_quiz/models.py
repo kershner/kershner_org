@@ -1,12 +1,14 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import GenericIPAddressField
 from django.db.models import CheckConstraint, Q
+from django.utils.safestring import mark_safe
 from django.utils import timezone
 from django.urls import reverse
 from django.db import models
 from utility import util
 from uuid import uuid4
 import string
+import re
 
 
 class AiQuiz(models.Model):
@@ -124,3 +126,12 @@ class AiQuizAnswer(models.Model):
 
     def __str__(self):
         return f'Answer for question about {self.question.quiz.subject}'
+
+    def get_source_html(self):
+        if 'http' in self.source:
+            # Use regex to find the URL in the string and wrap it in an <a> tag
+            pattern = re.compile(r'https?://\S+[a-zA-Z0-9/]')
+            match = re.sub(pattern, lambda m: f'<a target="_blank" href="{m.group(0)}">{m.group(0)}</a>', self.source)
+            return mark_safe(match)
+
+        return self.source
