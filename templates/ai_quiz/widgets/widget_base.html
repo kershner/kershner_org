@@ -8,7 +8,7 @@
         <div class="quiz-widget-wrapper-inner">
         {% for quiz in quizzes %}
         <a class="quiz-wrapper" href="{% url 'view-ai-quiz' quiz_id=quiz.uniq_id %}">
-            <div title="{{ quiz }}" class="quiz{% if quiz.id == quiz.id %} active{% endif %}">
+            <div title="{{ quiz }}" class="quiz">
                 <div class="quiz-subject">{{ quiz.subject }}</div>
                 <div class="quiz-num-questions">{{ quiz.num_questions_real }}</div>
             </div>

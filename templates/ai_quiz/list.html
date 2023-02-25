@@ -31,7 +31,7 @@
     <ul class="all-quizzes">
         {% for quiz in quizzes %}
             <li>
-                <a href="{% url 'view-ai-quiz' quiz_id=quiz.uniq_id %}" class="hover-underline">
+                <a href="{% url 'view-ai-quiz' quiz_id=quiz.uniq_id %}" class="hover-underline quiz-link">
                     <div class="quiz-results-number">{{ forloop.counter }}.</div>
 
                     <div class="quiz-large">

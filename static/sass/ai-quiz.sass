@@ -4,6 +4,12 @@ $quiz-black: #202123
 $quiz-grey: lighten($quiz-black, 12)
 $quiz-text-shadow: 1px 1px 3px $quiz-black
 
+%animated-bg-color
+  transition: background-color 0.2s ease-in-out
+
+%animated-font-color
+  transition: color 0.3s ease-in-out
+
 .hidden
   display: none !important
 
@@ -40,6 +46,9 @@ hr
 a
   color: white
   text-decoration: none
+
+  &:hover
+    transition: none
 
 .secondary-font
   @extend %font-secondary
@@ -217,10 +226,15 @@ button[type="submit"]
     border-radius: 0.2rem
     font-size: 1rem
     line-height: 2rem
+    @extend %animated-bg-color
 
-    &:hover
+    &:hover,
+    &.active
       color: white
       text-shadow: $quiz-text-shadow
+
+    &:hover
+      transition: none
 
     .quiz-subject
       padding: 0

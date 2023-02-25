@@ -11,12 +11,18 @@
     <div class="form-inner">
         <div class="form-controls">
             <div class="form-control">
-            {{ form.num_questions.label_tag }}
+                <div class="form-label">
+                    {{ form.num_questions.label_tag }}
+                    {% include 'includes/tooltip.html' with text='Choose the number of questions you want for your quiz. The quiz content will vary based on your selection.' %}
+                </div>
             {{ form.num_questions}}
             </div>
 
             <div class="form-control">
-            {{ form.temperature.label_tag }}
+                <div class="form-label">
+                    {{ form.temperature.label_tag }}
+                    {% include 'includes/tooltip.html' with text='A higher temperature value means more creative and varied responses, while a lower value will generate more predictable and conservative results.' %}
+                </div>
             {{ form.temperature}}
             </div>
         </div>

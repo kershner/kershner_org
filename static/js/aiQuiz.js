@@ -14,17 +14,81 @@ aiQuiz.init = function () {
     aiQuiz.colorWaveInit();
     aiQuiz.quizControls();
     aiQuiz.copyToClipboard();
-    aiQuiz.hoverEffects();
+    aiQuiz.colorEffects();
     if (aiQuiz.form) {
         aiQuiz.randomSuggestions();
         aiQuiz.sizeSubjectInputToValue();
     }
 };
 
-aiQuiz.hoverEffects = function() {
+aiQuiz.colorEffects = function () {
+    let quizElements = document.querySelectorAll('.quiz');
+
+    function colorRandomQuiz() {
+        const randomIndex = Math.floor(Math.random() * quizElements.length);
+        const randomElement = quizElements[randomIndex];
+        const intervalTimer = 2000;
+        const fadeTimer = 2200;
+
+        randomElement.style.backgroundColor = randomColor({luminosity: 'light'});
+        addClass(randomElement, 'active');
+
+        setTimeout(function () {
+            removeClass(randomElement, 'active');
+            randomElement.style.backgroundColor = '';
+        }, fadeTimer);
+
+        setTimeout(() => {
+            colorRandomQuiz();
+        }, intervalTimer);
+    }
+
+    // Add transition in JS so there isn't an animation when first loading the page (looks weird)
+    const style = document.createElement('style');
+    style.innerHTML = 'a {transition: color 0.3s ease-in-out}';
+    document.head.appendChild(style);
+
+    function colorQuizLinks() {
+        let quizLinks = document.querySelectorAll('.quiz-link');
+        if (!quizLinks.length) {
+            return;
+        }
+
+        let i = 0;
+        let l = 0;
+        let waveIntervalSeconds = 100;
+        let loopInterval = 8000;
+
+        const colorLinks = setInterval(() => {
+            quizLinks[i].style.color = randomColor({luminosity: 'light'});
+            i++;
+            if (i >= quizLinks.length) {
+                clearInterval(colorLinks);
+
+                const revertLinks = setInterval(() => {
+                quizLinks[l].style.color = '';
+                l++;
+                if (l >= quizLinks.length) {
+                    clearInterval(revertLinks);
+
+                    setTimeout(() => {
+                        colorQuizLinks();
+                    }, loopInterval);
+                }
+            }, waveIntervalSeconds);
+            }
+        }, waveIntervalSeconds);
+    }
+
+    colorQuizLinks();
+    colorRandomQuiz();
+    aiQuiz.hoverEffects();
+};
+
+aiQuiz.hoverEffects = function () {
     let hoverElements = document.querySelectorAll('.quiz, button, a');
-    hoverElements.forEach(function(element) {
-        element.addEventListener('mouseenter', function() {
+    hoverElements.forEach(function (element) {
+        element.addEventListener('mouseenter', function () {
             let color = randomColor({luminosity: 'light'});
             if (element.tagName === 'A') {
                 element.style.color = color;
@@ -32,7 +96,7 @@ aiQuiz.hoverEffects = function() {
                 element.style.backgroundColor = color;
             }
         });
-        element.addEventListener('mouseleave', function() {
+        element.addEventListener('mouseleave', function () {
             if (element.tagName === 'A') {
                 element.style.color = '';
             } else {
@@ -42,7 +106,7 @@ aiQuiz.hoverEffects = function() {
     });
 };
 
-aiQuiz.copyToClipboard = function() {
+aiQuiz.copyToClipboard = function () {
     let copyToClipboardBtn = document.querySelector('#copy-to-clipboard');
     if (!copyToClipboardBtn) {
         return;
@@ -51,13 +115,13 @@ aiQuiz.copyToClipboard = function() {
     copyToClipboardBtn.addEventListener('click', event => {
         navigator.clipboard.writeText(window.location.href);
         copyToClipboardBtn.innerHTML = 'Copied!';
-        setTimeout(function() {
+        setTimeout(function () {
             copyToClipboardBtn.innerHTML = existingText;
         }, 5000);
     });
 };
 
-aiQuiz.sizeSubjectInputToValue = function() {
+aiQuiz.sizeSubjectInputToValue = function () {
     setWidthToValue(aiQuiz.subjectInput);
     aiQuiz.subjectInput.addEventListener('input', event => {
         setWidthToValue(aiQuiz.subjectInput);
@@ -75,7 +139,7 @@ aiQuiz.sizeSubjectInputToValue = function() {
     }
 };
 
-aiQuiz.randomSuggestions = function() {
+aiQuiz.randomSuggestions = function () {
     const quizSuggestions = [
         'Chewing gum', 'flags', 'keyboards', 'Famous bridges', 'Cloud types', 'Hip hop fashion',
         'Deadly diseases', 'dinosaurs', 'Whale traits', 'Famous mimes', 'Pasta types', 'Maritime disasters',
@@ -108,7 +172,7 @@ aiQuiz.randomSuggestions = function() {
     }
 
     randomSuggestion();
-    setInterval(function() {
+    setInterval(function () {
         randomSuggestion();
     }, aiQuiz.randomSuggestionInterval);
 };
