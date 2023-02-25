@@ -18,7 +18,7 @@ def process_quiz(quiz_id):
     new_quiz = AiQuiz.objects.filter(id=quiz_id).first()
     api_prompt = f'''
     Generate {new_quiz.num_questions} questions about {new_quiz.subject}
-    Format [question{DELIMIT}answer{DELIMIT}source,prefer wikipedia]
+    Format [question{DELIMIT}answer{DELIMIT}source,name only]
     Delimiter {QUESTION_SEPARATOR}
     '''
     log.info(f"api_prompt: {api_prompt}")
