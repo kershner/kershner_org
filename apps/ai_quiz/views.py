@@ -135,6 +135,7 @@ class AiQuizListView(BaseAiQuizView):
         ctx['total_quizzes'] = total_quizzes
         return TemplateResponse(request, self.template, ctx)
 
+
 class AiQuizExport(BaseAiQuizView):
     def get(self, request, quiz_id=None):
         quiz = AiQuiz.objects.filter(uniq_id=quiz_id).first()

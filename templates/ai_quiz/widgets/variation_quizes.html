@@ -1,0 +1,3 @@
+{% if quiz.get_variations %}
+    {% include "ai_quiz/widgets/widget_base.html" with quizzes=quiz.get_variations widget_title="Quiz Variations" %}
+{% endif %}

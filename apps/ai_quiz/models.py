@@ -73,6 +73,10 @@ class AiQuiz(models.Model):
     def get_questions(self):
         return AiQuizQuestion.objects.filter(quiz_id=self.id).all()
 
+    def get_variations(self):
+        variations = AiQuiz.objects.filter(subject=self.subject).exclude(id=self.id)
+        return variations.all().order_by('-id')
+
     class Meta:
         verbose_name = 'Quiz'
         verbose_name_plural = 'Quizzes'

@@ -1,9 +1,9 @@
 {% if recent_quizzes %}
-    {% include "ai_quiz/widgets/widget_base.html" with quizzes=recent_quizzes widget_title="Recent Quizzes" %}
+{% include "ai_quiz/widgets/widget_base.html" with quizzes=recent_quizzes widget_title="Recent Quizzes" %}
 
-    <div class="widget-links">
-        <a href="{% url 'list-ai-quiz' %}">
-            <button>View all</button>
-        </a>
-    </div>
+<div class="widget-links">
+    <a href="{% url 'list-ai-quiz' %}">
+        <button>View all</button>
+    </a>
+</div>
 {% endif %}
