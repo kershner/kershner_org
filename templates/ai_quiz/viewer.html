@@ -36,6 +36,16 @@
         </div>
     </div>
     {% endfor %}
+
+    {% if request.user.is_superuser %}
+    <ul class="cost-info">
+        {% for key, value in quiz.get_cost_info.items %}
+        <li>
+            <strong>{{ key }}</strong>: {{ value }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
 {% endif %}
 
 {% include 'ai_quiz/widgets/variation_quizes.html' %}

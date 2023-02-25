@@ -2,7 +2,8 @@ from apps.ai_quiz.models import AiQuiz
 from django import forms
 
 
-TEMP_RANGES =[(num, num) for num in [i/10 for i in range(0, 11, 2)]]
+TEMP_RANGES =[(num, num) for num in [i/10 for i in range(0, 11, 4)]]
+TEMP_RANGES.append((1.0, 1.0))
 
 class AiQuizForm(forms.ModelForm):
     num_questions = forms.ChoiceField(choices=AiQuiz.NUM_QUESTION_CHOICES,

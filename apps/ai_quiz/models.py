@@ -8,8 +8,11 @@ from django.db import models
 from utility import util
 from uuid import uuid4
 import string
+import json
 import re
 
+# https://openai.com/api/pricing/
+PRICE_PER_1000_TOKENS = 0.02
 
 class AiQuiz(models.Model):
     uniq_id = models.CharField(null=True, max_length=100)
@@ -78,6 +81,20 @@ class AiQuiz(models.Model):
     def get_variations(self):
         variations = AiQuiz.objects.filter(subject=self.subject).exclude(id=self.id)
         return variations.all().order_by('-id')
+
+    def get_cost_info(self):
+        tokens_used = json.loads(self.openai_response)['usage']['total_tokens']
+        pct_of_1000 = (tokens_used / 1000) * 100
+        price_per_tokens_used = (pct_of_1000 / 100) * PRICE_PER_1000_TOKENS
+        cost = (price_per_tokens_used * tokens_used) / 100
+
+        return {
+            'tokens_used': tokens_used,
+            'pct_of_1000': f'{round(pct_of_1000, 2)}%',
+            'price_per_1000_tokens': f'${PRICE_PER_1000_TOKENS}',
+            'price_per_tokens_used': f'${round(price_per_tokens_used, 2)}',
+            'total_cost': f'${round(cost, 2)}',
+        }
 
     class Meta:
         verbose_name = 'Quiz'
