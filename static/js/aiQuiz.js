@@ -66,7 +66,10 @@ aiQuiz.sizeSubjectInputToValue = function() {
     function setWidthToValue(element) {
         let newWidth = '17rem';
         if (element.value.length) {
-            newWidth = `${((element.value.length - 3))}ch`;
+            let newWidthValue = element.value.length - 3;
+            if (newWidthValue >= 15) {
+                newWidth = `${((element.value.length - 3))}ch`;
+            }
         }
         element.style.width = newWidth;
     }
