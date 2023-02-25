@@ -45,12 +45,12 @@ class QuizzesRemainingMixin(ContextMixin):
     def get_context_data(self, **kwargs):
         ctx = super(QuizzesRemainingMixin, self).get_context_data(**kwargs)
 
-        one_hour_ago = timezone.now() - datetime.timedelta(hours=1)
+        one_day_ago = timezone.now() - datetime.timedelta(days=1)
         user_ip = util.get_client_ip(self.request)
-        quizzes_by_user = AiQuiz.objects.filter(ip=user_ip, created__gte=one_hour_ago).count()
+        quizzes_by_user = AiQuiz.objects.filter(ip=user_ip, created__gte=one_day_ago).count()
 
-        if quizzes_by_user < settings.QUIZ_LIMIT_PER_HOUR:
-            self.quizzes_remaining = settings.QUIZ_LIMIT_PER_HOUR - quizzes_by_user
+        if quizzes_by_user < settings.QUIZ_LIMIT_PER_DAY:
+            self.quizzes_remaining = settings.QUIZ_LIMIT_PER_DAY - quizzes_by_user
 
         ctx['quizzes_remaining'] = self.quizzes_remaining
         return ctx

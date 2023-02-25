@@ -28,7 +28,7 @@
         {% endif %}
 
         <div class="quizzes-remaining">
-            {{ quizzes_remaining }} quiz{% if quizzes_remaining != 1 %}zes{% endif %} remaining this hour{% include 'includes/tooltip.html' with text='The OpenAI API is unfortunately not free.  There is a per-hour limit to keep my costs down for this silly app.' %}
+            {{ quizzes_remaining }} quiz{% if quizzes_remaining != 1 %}zes{% endif %} remaining today{% include 'includes/tooltip.html' with text='The OpenAI API is unfortunately not free.  There is a per-day limit to keep my costs down for this silly app.' %}
         </div>
     </div>
 </form>
