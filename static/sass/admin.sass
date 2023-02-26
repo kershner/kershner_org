@@ -17,3 +17,46 @@
     width: 5rem
     height: 5rem
     object-fit: cover
+
+/* Autocomplete filter styles */
+.autoComplete_wrapper
+  position: relative
+  padding: 0 .5rem
+  margin-bottom: 0.25rem
+
+  input
+    cursor: pointer
+    background: transparent
+    color: white
+    border: 1px solid white
+    border-radius: 0.2rem
+    padding: 0.25rem 0
+    &::placeholder
+      padding-left: 1rem
+
+  ul
+    z-index: 1
+    position: absolute
+    background: var(--body-bg)
+    max-height: 10rem
+    overflow-y: scroll
+    width: 100%
+    padding: 0 !important
+    border-radius: 0.2rem
+    border: 1px solid white
+    &:last-child
+      border-bottom: 1px solid white !important
+
+    li
+      cursor: pointer
+      padding-left: 1rem !important
+
+      &:hover
+        background-color: var(--body-quiet-color)
+        color: var(--body-bg)
+
+#changelist-filter
+  .autoComplete_wrapper
+    margin-top: -8px
+    &:last-child
+      margin-bottom: 0.5rem

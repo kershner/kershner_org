@@ -26,6 +26,7 @@ class AiQuizQuestionInline(admin.TabularInline):
     extra = 0
     readonly_fields = ('question_text', 'answer', 'source')
 
+
 class AiQuizAnswerInline(admin.TabularInline):
     @staticmethod
     def answer_text(obj):
@@ -42,22 +43,30 @@ class AiQuizAnswerInline(admin.TabularInline):
     extra = 0
     readonly_fields = ('answer_text', 'source_link')
 
+
 class GenericQuizAdminMixin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
+
 
 @admin.register(AiQuiz)
 class AiQuizAdmin(GenericQuizAdminMixin):
     list_display = ['id', 'created', 'num_questions', 'subject', 'processed']
     inlines = [AiQuizQuestionInline]
+    list_filter = ['created', 'subject', 'num_questions', 'processed']
+    search_fields = ['subject']
 
 
 @admin.register(AiQuizQuestion)
 class AiQuizQuestionAdmin(GenericQuizAdminMixin):
     list_display = ['id', 'created', 'quiz', 'text']
     inlines = [AiQuizAnswerInline]
+    list_filter = ['created', 'quiz']
+    search_fields = ['text']
 
 
 @admin.register(AiQuizAnswer)
 class AiQuizAnswerAdmin(GenericQuizAdminMixin):
     list_display = ['id', 'created', 'question', 'text', 'source', 'question']
+    list_filter = ['created']
+    search_fields = ['text']

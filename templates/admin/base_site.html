@@ -6,3 +6,16 @@
     {{ block.super }}
     <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/admin.css?timestamp={{ timestamp }}">
 {% endblock %}
+
+{% block footer %}
+    {{ block.super }}
+
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/autoComplete.min.js"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/admin.js"></script>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            customAdmin.init();
+        });
+    </script>
+{% endblock %}
