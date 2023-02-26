@@ -1,0 +1,19 @@
+{% extends 'admin/base.html' %}
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        {% with primary_color="#F2006D" %}
+        :root {
+            --primary: {{ primary_color }};
+            --delete-button-bg: {{ primary_color }};
+            --link-hover-color: {{ primary_color }};
+            --delete-button-hover-bg: {{ primary_color }};
+            --secondary: transparent;
+            --accent: white;
+            --header-color: white;
+            --selected-row: #444444;
+            --link-fg: #D9D9D9;
+        }
+        {% endwith %}
+    </style>
+{% endblock %}

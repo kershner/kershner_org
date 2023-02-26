@@ -42,3 +42,7 @@ urlpatterns = [
          name='move_project_position'),
     path('kersh-zone/', admin.site.urls),
 ]
+
+admin.site.site_header = "kershner.org admin"
+admin.site.site_title  =  "kershner.org admin"
+admin.site.index_title  =  ""
