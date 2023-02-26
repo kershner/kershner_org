@@ -5,25 +5,31 @@ customAdmin.init = function() {
 };
 
 customAdmin.autoCompleteListFilters = function() {
+    /**
+     * Convert Django 4+ changelist filters into simple autocomplete, styling not included
+     * requires https://tarekraafat.github.io/autoComplete.js
+     */
     let filters = document.querySelector('#changelist-filter').querySelectorAll('details');
     filters.forEach(element => {
         convertFilterToAutoComplete(element);
     });
 
     function convertFilterToAutoComplete(listFilterElement) {
-        let filterName = listFilterElement.dataset.filterTitle;
-        let newFilterId = `${filterName.replace(/\s+/g, '-')}-autocomplete-filter`;
-        let filterValues = [];
+        const filterName = listFilterElement.dataset.filterTitle;
+        const selectedText = listFilterElement.querySelector('li.selected').textContent;
+        const newFilterId = `${filterName.replace(/\s+/g, '-')}-autocomplete-filter`;  // replace spaces with hyphen
         let filterLinks = {};
-        let selectedText = listFilterElement.querySelector('li.selected').textContent;
 
-        addClass(listFilterElement, 'hidden');
-
-        listFilterElement.querySelectorAll('a').forEach((element, item) => {
-            filterValues.push(element.textContent);
+        // Build dictionary of {filterValue: filterLink}
+        // i.e. {'5': '?number=5'}
+        listFilterElement.querySelectorAll('a').forEach(element => {
             filterLinks[element.textContent] = element.getAttribute('href');
         });
 
+        // Hide the existing filter
+        addClass(listFilterElement, 'hidden');
+
+        // Create, configure, and insert the HTML elements for the new autocomplete filters
         let newHeader = document.createElement('h3');
         newHeader.textContent = `By ${filterName}`;
         listFilterElement.insertAdjacentElement('afterend', newHeader);
@@ -33,11 +39,14 @@ customAdmin.autoCompleteListFilters = function() {
         newInput.value = selectedText;
         newHeader.insertAdjacentElement('afterend', newInput);
 
+        // Initialize the autoComplete.js library
+        // https://tarekraafat.github.io/autoComplete.js
+        let storedFilterValue = '';
         const listFilterAutocomplete = new autoComplete({
             selector: `#${newFilterId}`,
             placeHolder: `Filter by ${filterName}...`,
             data: {
-                src: filterValues
+                src: Object.keys(filterLinks)
             },
             threshold: 0,
             resultsList: {
@@ -46,15 +55,18 @@ customAdmin.autoCompleteListFilters = function() {
             events: {
                 input: {
                     focus: () => {
+                        storedFilterValue = listFilterAutocomplete.input.value;
                         listFilterAutocomplete.input.value = '';
                         listFilterAutocomplete.start();
+                    },
+                    focusout: () => {
+                        listFilterAutocomplete.input.value = storedFilterValue;
                     }
                 },
                 list: {
                     click: (e) => {
-                        let filterValue = e.target.textContent;
-                        let link = filterLinks[filterValue];
-                        window.location.href = link;
+                        const filterValue = e.target.textContent;
+                        window.location.href = filterLinks[filterValue];
                     }
                 }
             }

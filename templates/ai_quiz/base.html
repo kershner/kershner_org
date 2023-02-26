@@ -39,6 +39,7 @@
     <script type="text/javascript">
         aiQuiz.form = {% if form %}true{% else %}false{% endif %};
         aiQuiz.uniqueSubjects = {{ unique_subjects|safe }};
+        aiQuiz.aiQuizListUrl = '{% url 'list-ai-quiz' %}';
 
         if (document.readyState === 'complete') {
             aiQuiz.init();
