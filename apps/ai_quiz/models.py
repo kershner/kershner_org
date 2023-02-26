@@ -42,6 +42,7 @@ class AiQuiz(models.Model):
     settings_hash = models.CharField(max_length=200, null=True, blank=True)
     openai_response = models.TextField(null=True, blank=True)
     error = models.TextField(null=True, blank=True)
+    cost = models.DecimalField(null=True, blank=True, decimal_places=2, max_digits=5)
 
     def save(self, *args, **kwargs):
         if not self.uniq_id:
@@ -95,7 +96,7 @@ class AiQuiz(models.Model):
             'pct_of_1000': f'{round(pct_of_1000, 2)}%',
             'price_per_1000_tokens': f'${PRICE_PER_1000_TOKENS}',
             'price_per_tokens_used': f'${round(price_per_tokens_used, 2)}',
-            'total_cost': f'${round(cost, 2)}',
+            'total_cost': round(cost, 2),
         }
 
     class Meta:

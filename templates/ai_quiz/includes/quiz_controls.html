@@ -5,6 +5,10 @@
         {% if user.is_superuser %}
         <a href="{{ quiz.get_admin_url }}" title="View admin page for this quiz"><button>Admin</button></a>
         {% endif %}
+    {% else %}
+        {% if user.is_superuser %}
+        <a href="{% url 'admin:ai_quiz_aiquiz_changelist' %}" title="View the quiz admin"><button>Admin</button></a>
+        {% endif %}
     {% endif %}
 
     {% if request.resolver_match.url_name != 'list-ai-quiz' %}

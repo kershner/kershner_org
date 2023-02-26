@@ -63,6 +63,7 @@ def process_quiz(quiz_id):
 
         new_quiz.settings_hash = new_quiz.openai_settings_hash
         new_quiz.openai_response = json.dumps(openai_response)
+        new_quiz.cost = new_quiz.get_cost_info()['total_cost']
         new_quiz.processed = timezone.now()
     except Exception as e:
         new_quiz.error = str(e)
