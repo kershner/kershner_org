@@ -32,8 +32,8 @@ aiQuiz.colorEffects = function () {
     function colorRandomQuiz() {
         const randomIndex = Math.floor(Math.random() * quizElements.length);
         const randomElement = quizElements[randomIndex];
-        const intervalTimer = 2000;
-        const fadeTimer = 2200;
+        const intervalTimer = 400;
+        const fadeTimer = 1000;
 
         randomElement.style.backgroundColor = randomColor({luminosity: 'light'});
         addClass(randomElement, 'active');
