@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.conf import settings
 from utility import util
 import datetime
+import random
 import csv
 
 
@@ -24,6 +25,7 @@ class AiQuizContentMixin(ContextMixin):
         ctx['form'] = self.form
         ctx['title'] = self.title
         ctx['recent_quizzes'] = self.get_recent_quizzes()
+        ctx['random_subjects'] = self.get_random_subjects()
         return ctx
 
     def get_recent_quizzes(self):
@@ -37,6 +39,11 @@ class AiQuizContentMixin(ContextMixin):
         ids_to_query = list(ids_to_query.values())
 
         return AiQuiz.objects.filter(processed__isnull=False, id__in=ids_to_query).order_by('-id').all()[:self.quiz_limit]
+
+    @staticmethod
+    def get_random_subjects():
+        unique_subjects = list(AiQuiz.objects.values_list('subject', flat=True).distinct())
+        return random.sample(unique_subjects, 5)
 
 
 class QuizzesRemainingMixin(ContextMixin):
@@ -176,3 +183,11 @@ class AiQuizExport(BaseAiQuizView):
             writer.writerow(row)
 
         return response
+
+
+class RandomQuizSubjectsView(AiQuizContentMixin, View):
+    def get(self, request):
+        response = {
+            'subjects': self.get_random_subjects()
+        }
+        return JsonResponse(response)

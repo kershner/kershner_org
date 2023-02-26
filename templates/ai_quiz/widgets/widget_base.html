@@ -7,12 +7,20 @@
 
         <div class="quiz-widget-wrapper-inner">
         {% for quiz in quizzes %}
-        <a class="quiz-wrapper" href="{% url 'view-ai-quiz' quiz_id=quiz.uniq_id %}">
-            <div title="{{ quiz }}" class="quiz">
-                <div class="quiz-subject">{{ quiz.subject }}</div>
-                <div class="quiz-num-questions">{{ quiz.num_questions_real }}</div>
-            </div>
-        </a>
+            {% if quiz.uniq_id %}
+            <a class="quiz-wrapper" href="{% url 'view-ai-quiz' quiz_id=quiz.uniq_id %}">
+                <div title="{{ quiz }}" class="quiz">
+                    <div class="quiz-subject">{{ quiz.subject }}</div>
+                    <div class="quiz-num-questions">{{ quiz.num_questions_real }}</div>
+                </div>
+            </a>
+            {% else %}
+            <a href="{% url 'list-ai-quiz' %}?subject_query={{ quiz }}" class="quiz-wrapper">
+                <div title="{{ quiz }}" class="quiz">
+                    <div class="quiz-subject">{{ quiz }}</div>
+                </div>
+            </a>
+            {% endif %}
         {% endfor %}
         </div>
     </div>

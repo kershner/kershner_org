@@ -1,9 +1,12 @@
 const aiQuiz = {
     'aiQuizViewerUrl': '',
+    'aiQuizListUrl': '',
+    'randomSubjectsUrl': '',
     'colorTimer': undefined,
     'colorInterval': 15000,
     'randomSuggestionInterval': 5000,
     'checkProcessedInterval': 4000,
+    'randomSubjectsInterval': 7000,
     'subjectInput': document.querySelector('input[name="subject"]'),
     'form': false
 };
@@ -15,6 +18,8 @@ aiQuiz.init = function () {
     aiQuiz.quizControls();
     aiQuiz.copyToClipboard();
     aiQuiz.colorEffects();
+    aiQuiz.hoverEffects();
+    aiQuiz.randomSubjects();
     if (aiQuiz.form) {
         aiQuiz.randomSuggestions();
         aiQuiz.sizeSubjectInputToValue();
@@ -46,6 +51,7 @@ aiQuiz.colorEffects = function () {
     // Add transition in JS so there isn't an animation when first loading the page (looks weird)
     const style = document.createElement('style');
     style.innerHTML = 'a {transition: color 0.3s ease-in-out}';
+    style.innerHTML += '.quiz {transition: background-color 0.3s ease-in-out}';
     document.head.appendChild(style);
 
     function colorQuizLinks() {
@@ -76,13 +82,47 @@ aiQuiz.colorEffects = function () {
                     }, loopInterval);
                 }
             }, waveIntervalSeconds);
-            }
-        }, waveIntervalSeconds);
+        }
+    }, waveIntervalSeconds);
     }
 
     colorQuizLinks();
     colorRandomQuiz();
-    aiQuiz.hoverEffects();
+};
+
+aiQuiz.randomSubjects = function () {
+    let randomSubjectsDiv = document.querySelector('.random-subjects').querySelector('.quiz-widget-wrapper-inner');
+
+    function populateRandomSubjects() {
+        fetchWrapper(aiQuiz.randomSubjectsUrl, 'get', {}, {}, function (data) {
+            let subjects = data['subjects'];
+            randomSubjectsDiv.innerHTML = '';
+
+            subjects.forEach((subject, index) => {
+                const anchorElement = document.createElement('a');
+                anchorElement.classList.add('quiz-wrapper');
+                anchorElement.title = `View quizzes about ${subject}`;
+                anchorElement.setAttribute('href', `${aiQuiz.aiQuizListUrl}?subject_query=${subject}`);
+                anchorElement.style.opacity = 0;
+                anchorElement.innerHTML = `
+                <div class="quiz">
+                    <div class="quiz-subject">${subject}</div>
+                </div>`;
+
+                randomSubjectsDiv.appendChild(anchorElement);
+                setTimeout(() => {
+                    anchorElement.style.opacity = 1;
+                }, index * 100);
+            });
+
+            aiQuiz.hoverEffects();
+        });
+    }
+
+    populateRandomSubjects();
+    setInterval(() => {
+        populateRandomSubjects();
+    }, aiQuiz.randomSubjectsInterval);
 };
 
 aiQuiz.hoverEffects = function () {
@@ -147,7 +187,6 @@ aiQuiz.randomSuggestions = function () {
         'Bicycle history', 'Fruits', 'Cheeses', 'Typewriters', 'Birds', 'Mushrooms', 'Gemstones', 'Unusual museums',
         'Venomous snakes', 'Hot air balloons'
     ];
-
     let quizSuggestionsCopy = shuffle(quizSuggestions.slice());
 
     function randomSuggestion() {

@@ -226,7 +226,7 @@ button[type="submit"]
     border-radius: 0.2rem
     line-height: 2rem
     font-size: 1.2rem
-    @extend %animated-bg-color
+    padding-right: 0.75rem
 
     &:hover,
     &.active
@@ -242,10 +242,17 @@ button[type="submit"]
 
     .quiz-num-questions
       margin-left: .5rem
-      padding: 0 .5rem
       font-weight: bold
       font-size: 0.85rem
       @extend %font-secondary
+
+.random-subjects
+  height: 9rem
+  overflow: hidden
+
+  .quiz-wrapper
+    opacity: 0
+    transition: opacity 0.5s ease-in-out
 
 .widgets
   margin-bottom: 1rem

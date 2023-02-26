@@ -21,9 +21,10 @@
 
         {% block content %}{% endblock %}
 
+        {% include "ai_quiz/widgets/random_subjects.html" %}
+
         {% if form %}
             <hr class="shortened-width">
-
             {% include "ai_quiz/includes/quiz_form.html" %}
         {% endif %}
 
@@ -37,6 +38,9 @@
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/aiQuiz.js"></script>
     <script type="text/javascript">
         aiQuiz.form = {% if form %}true{% else %}false{% endif %};
+        aiQuiz.randomSubjectsUrl = '{% url 'random-quiz-subjects' %}';
+        aiQuiz.aiQuizListUrl = '{% url 'list-ai-quiz' %}';
+
         if (document.readyState === 'complete') {
             aiQuiz.init();
         } else {
