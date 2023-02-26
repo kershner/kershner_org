@@ -38,8 +38,7 @@
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/aiQuiz.js"></script>
     <script type="text/javascript">
         aiQuiz.form = {% if form %}true{% else %}false{% endif %};
-        aiQuiz.randomSubjectsUrl = '{% url 'random-quiz-subjects' %}';
-        aiQuiz.aiQuizListUrl = '{% url 'list-ai-quiz' %}';
+        aiQuiz.uniqueSubjects = {{ unique_subjects|safe }};
 
         if (document.readyState === 'complete') {
             aiQuiz.init();

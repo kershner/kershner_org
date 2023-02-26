@@ -19,18 +19,18 @@ class AiQuizContentMixin(ContextMixin):
     title = 'AI Generated Quizzes!'
     form = AiQuizForm()
     quiz_limit = 20
+    unique_subjects = list(AiQuiz.objects.values_list('subject', flat=True).distinct())
 
     def get_context_data(self, **kwargs):
         ctx = super(AiQuizContentMixin, self).get_context_data(**kwargs)
         ctx['form'] = self.form
         ctx['title'] = self.title
         ctx['recent_quizzes'] = self.get_recent_quizzes()
-        ctx['random_subjects'] = self.get_random_subjects()
+        ctx['unique_subjects'] = self.unique_subjects
         return ctx
 
     def get_recent_quizzes(self):
-        unique_subjects = AiQuiz.objects.values('subject').distinct()
-        qs = AiQuiz.objects.filter(processed__isnull=False, subject__in=unique_subjects)
+        qs = AiQuiz.objects.filter(processed__isnull=False, subject__in=self.unique_subjects)
 
         ids_to_query = {}
         for quiz in qs:
@@ -39,12 +39,6 @@ class AiQuizContentMixin(ContextMixin):
         ids_to_query = list(ids_to_query.values())
 
         return AiQuiz.objects.filter(processed__isnull=False, id__in=ids_to_query).order_by('-id').all()[:self.quiz_limit]
-
-    @staticmethod
-    def get_random_subjects():
-        unique_subjects = list(AiQuiz.objects.values_list('subject', flat=True).distinct())
-        return random.sample(unique_subjects, 5)
-
 
 class QuizzesRemainingMixin(ContextMixin):
     quizzes_remaining = 0

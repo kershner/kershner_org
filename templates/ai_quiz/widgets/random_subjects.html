@@ -1,5 +1,5 @@
-{% if random_subjects%}
+{% if unique_subjects %}
     <div class="random-subjects">
-        {% include "ai_quiz/widgets/widget_base.html" with quizzes=random_subjects widget_title="Random Subjects" %}
+        {% include "ai_quiz/widgets/widget_base.html" with quizzes=unique_subjects widget_title="Random Subjects" %}
     </div>
 {% endif %}

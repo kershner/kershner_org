@@ -6,9 +6,10 @@ const aiQuiz = {
     'colorInterval': 15000,
     'randomSuggestionInterval': 5000,
     'checkProcessedInterval': 4000,
-    'randomSubjectsInterval': 7000,
+    'randomSubjectsInterval': 8000,
     'subjectInput': document.querySelector('input[name="subject"]'),
-    'form': false
+    'form': false,
+    'uniqueSubjects': []
 };
 
 aiQuiz.init = function () {
@@ -94,29 +95,27 @@ aiQuiz.randomSubjects = function () {
     let randomSubjectsDiv = document.querySelector('.random-subjects').querySelector('.quiz-widget-wrapper-inner');
 
     function populateRandomSubjects() {
-        fetchWrapper(aiQuiz.randomSubjectsUrl, 'get', {}, {}, function (data) {
-            let subjects = data['subjects'];
-            randomSubjectsDiv.innerHTML = '';
+        shuffle(aiQuiz.uniqueSubjects);
+        let subjects = aiQuiz.uniqueSubjects.slice(0, 4);
+        randomSubjectsDiv.innerHTML = '';
+        subjects.forEach((subject, index) => {
+            const anchorElement = document.createElement('a');
+            anchorElement.classList.add('quiz-wrapper');
+            anchorElement.title = `View quizzes about ${subject}`;
+            anchorElement.setAttribute('href', `${aiQuiz.aiQuizListUrl}?subject_query=${subject}`);
+            anchorElement.style.opacity = 0;
+            anchorElement.innerHTML = `
+            <div class="quiz">
+                <div class="quiz-subject">${subject}</div>
+            </div>`;
 
-            subjects.forEach((subject, index) => {
-                const anchorElement = document.createElement('a');
-                anchorElement.classList.add('quiz-wrapper');
-                anchorElement.title = `View quizzes about ${subject}`;
-                anchorElement.setAttribute('href', `${aiQuiz.aiQuizListUrl}?subject_query=${subject}`);
-                anchorElement.style.opacity = 0;
-                anchorElement.innerHTML = `
-                <div class="quiz">
-                    <div class="quiz-subject">${subject}</div>
-                </div>`;
-
-                randomSubjectsDiv.appendChild(anchorElement);
-                setTimeout(() => {
-                    anchorElement.style.opacity = 1;
-                }, index * 100);
-            });
-
-            aiQuiz.hoverEffects();
+            randomSubjectsDiv.appendChild(anchorElement);
+            setTimeout(() => {
+                anchorElement.style.opacity = 1;
+            }, index * 100);
         });
+
+        aiQuiz.hoverEffects();
     }
 
     populateRandomSubjects();
