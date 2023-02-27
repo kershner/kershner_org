@@ -9,7 +9,9 @@ const aiQuiz = {
     'randomSubjectsInterval': 8000,
     'subjectInput': document.querySelector('input[name="subject"]'),
     'form': false,
-    'uniqueSubjects': []
+    'uniqueSubjects': [],
+    'openModal': false,
+    'quizPricing': {}
 };
 
 aiQuiz.init = function () {
@@ -21,10 +23,34 @@ aiQuiz.init = function () {
     aiQuiz.colorEffects();
     aiQuiz.hoverEffects();
     aiQuiz.randomSubjects();
+    aiQuiz.openSubmitModal();
     if (aiQuiz.form) {
         aiQuiz.randomSuggestions();
         aiQuiz.sizeSubjectInputToValue();
     }
+};
+
+aiQuiz.openSubmitModal = function () {
+    let form = document.querySelector('#quiz-form');
+    let quizModal = document.querySelector('.quiz-modal');
+    let closeBtn = document.querySelector('#close-modal');
+    let numQuestions = document.querySelector('select[name="num_questions"]');
+    let quizCostSpan = document.querySelector('.quiz-cost');
+
+    form.addEventListener('submit', (e) => {
+        if (!aiQuiz.openModal) {
+            e.preventDefault();
+
+            quizCostSpan.textContent = aiQuiz.quizPricing[numQuestions.value];
+            removeClass(quizModal, 'hidden');
+            aiQuiz.colorWaveInit();
+        }
+    });
+
+    closeBtn.addEventListener('click', e => {
+        e.preventDefault();
+        addClass(quizModal, 'hidden');
+    });
 };
 
 aiQuiz.colorEffects = function () {
@@ -261,6 +287,7 @@ aiQuiz.colorWaveInit = function () {
     colorWave.color = randomColor({luminosity: 'light'});
     colorWave.init();
 
+    clearInterval(aiQuiz.colorTimer);
     aiQuiz.colorTimer = setInterval(function () {
         colorWave.color = randomColor({luminosity: 'light'});
         colorWave.init();

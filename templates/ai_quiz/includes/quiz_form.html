@@ -1,4 +1,4 @@
-<form method="post" action="{% url 'ai-quiz' %}" class="full-width">
+<form id="quiz-form" method="post" action="{% url 'ai-quiz' %}" class="full-width">
     {% csrf_token %}
 
     <h2 class="secondary-font">Generate a quiz about
@@ -29,12 +29,6 @@
 
         {{ form.user_agent}}
 
-        {% if quizzes_remaining or request.user.is_superuser %}
         <button type="submit" title="Click to generate a quiz!">Create Quiz</button>
-        {% endif %}
-
-        <div class="quizzes-remaining">
-            {{ quizzes_remaining }} quiz{% if quizzes_remaining != 1 %}zes{% endif %} remaining today{% include 'includes/tooltip.html' with text='The OpenAI API is unfortunately not free.  There is a per-day limit to keep my costs down for this goofy app.' %}
-        </div>
     </div>
 </form>

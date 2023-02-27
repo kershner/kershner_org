@@ -1,8 +1,4 @@
-import datetime
-
-from django.conf import settings
 from django.contrib.admin import SimpleListFilter
-from django.utils import timezone
 from django.utils.html import format_html
 from apps.whoosh.models import Whoosh
 from django.contrib import admin

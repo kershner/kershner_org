@@ -14,16 +14,18 @@ import re
 # https://openai.com/api/pricing/
 PRICE_PER_1000_TOKENS = 0.02
 
+NUM_QUESTIONS_AND_PRICES = {
+    3: 0.01,
+    5: 0.03,
+    10: 0.05,
+    15: 0.08
+}
+
 class AiQuiz(models.Model):
     uniq_id = models.CharField(null=True, max_length=100)
     created = models.DateTimeField(default=timezone.now)
 
-    NUM_QUESTION_CHOICES = [
-        ('3', '3'),
-        ('5', '5'),
-        ('10', '10'),
-        ('15', '15'),
-    ]
+    NUM_QUESTION_CHOICES = [(key, key) for key in NUM_QUESTIONS_AND_PRICES.keys()]
     num_questions = models.CharField(max_length=2, choices=NUM_QUESTION_CHOICES, default='3')
     subject = models.CharField(max_length=50)
 
