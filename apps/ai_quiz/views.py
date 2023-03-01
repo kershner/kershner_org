@@ -11,7 +11,6 @@ from django.utils import timezone
 from django.conf import settings
 from utility import util
 import datetime
-import random
 import csv
 
 
@@ -184,11 +183,3 @@ class AiQuizExport(BaseAiQuizView):
             writer.writerow(row)
 
         return response
-
-
-class RandomQuizSubjectsView(AiQuizContentMixin, View):
-    def get(self, request):
-        response = {
-            'subjects': self.get_random_subjects()
-        }
-        return JsonResponse(response)

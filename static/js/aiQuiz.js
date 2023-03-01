@@ -10,7 +10,7 @@ const aiQuiz = {
     'subjectInput': document.querySelector('input[name="subject"]'),
     'form': false,
     'uniqueSubjects': [],
-    'openModal': false,
+    'showModal': false,
     'quizPricing': {}
 };
 
@@ -38,7 +38,7 @@ aiQuiz.openSubmitModal = function () {
     let quizCostSpan = document.querySelector('.quiz-cost');
 
     form.addEventListener('submit', (e) => {
-        if (!aiQuiz.openModal) {
+        if (!aiQuiz.showModal) {
             e.preventDefault();
 
             quizCostSpan.textContent = aiQuiz.quizPricing[numQuestions.value];

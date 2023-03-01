@@ -25,7 +25,7 @@ class AiQuiz(models.Model):
     uniq_id = models.CharField(null=True, max_length=100)
     created = models.DateTimeField(default=timezone.now)
 
-    NUM_QUESTION_CHOICES = [(key, key) for key in NUM_QUESTIONS_AND_PRICES.keys()]
+    NUM_QUESTION_CHOICES = [(str(key), str(key)) for key in NUM_QUESTIONS_AND_PRICES.keys()]
     num_questions = models.CharField(max_length=2, choices=NUM_QUESTION_CHOICES, default='3')
     subject = models.CharField(max_length=50)
 
