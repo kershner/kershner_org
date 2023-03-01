@@ -7,7 +7,6 @@
         <br>
         <em>{{ quiz.created }}</em>
     </p>
-    {% include "ai_quiz/includes/quiz_controls.html" %}
 {% endblock %}
 
 {% block content %}
@@ -20,6 +19,7 @@
     </div>
 {% elif quiz.error %}
     <p class="blurb">Unfortunately, something went wrong processing this quiz.  Please try another.</p>
+    <div class="spacer"></div>
 {% endif %}
 
 {% if quiz.processed %}
@@ -31,7 +31,9 @@
             <div class="answer-text">
                 {{ question.get_answer.text }}
 
+                {% if  question.get_answer.source  %}
                 <div class="answer-source">- {{ question.get_answer.get_source_html }}</div>
+                {% endif %}
             </div>
         </div>
     </div>

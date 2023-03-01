@@ -1,10 +1,5 @@
 {% extends 'ai_quiz/base.html' %}
 
-{% block header %}
-    {{ block.super }}
-    {% include "ai_quiz/includes/quiz_controls.html" %}
-{% endblock %}
-
 {% block content %}
     <div class="quiz-list-controls">
         <form action="{% url 'list-ai-quiz' %}" method="get">
@@ -31,7 +26,7 @@
     <ul class="all-quizzes">
         {% for quiz in quizzes %}
             <li>
-                <a href="{% url 'view-ai-quiz' quiz_id=quiz.uniq_id %}" class="hover-underline quiz-link">
+                <a href="{% url 'view-ai-quiz' quiz_id=quiz.uniq_id %}" class="quiz-link">
                     <div class="quiz-results-number">{{ forloop.counter }}.</div>
 
                     <div class="quiz-large">

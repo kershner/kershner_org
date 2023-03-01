@@ -1,5 +1,10 @@
 {% extends 'ai_quiz/base.html' %}
 
+{% block header %}
+    {{ block.super }}
+{% endblock %}
+
 {% block content %}
     <h1 class="secondary-font">404</h1>
+    <p>No quiz was found at this URL, please try another.</p>
 {% endblock %}

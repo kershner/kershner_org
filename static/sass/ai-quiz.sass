@@ -20,18 +20,13 @@ $quiz-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1)
 
 %font-secondary
   font-family: 'Gloock', serif
-  letter-spacing: .075rem
+  letter-spacing: 0.1rem
 
 .full-width
   max-width: 100%
 
 .shortened-width
   max-width: 40rem
-
-.hover-underline
-  &:hover
-    .quiz-name
-      text-decoration: underline
 
 body
   background-color: $quiz-black
@@ -44,8 +39,8 @@ hr
   margin: 0
   border: 0.1rem solid white
 
-  &.spacer
-    margin: 1rem 0
+.spacer
+  margin: 1rem 0
 
 a
   color: white
@@ -353,6 +348,7 @@ button.open-submit-modal
 
         .quiz-name
           font-size: 1.5rem
+          font-weight: bold
           @extend %font-secondary
 
         .quiz-temperature

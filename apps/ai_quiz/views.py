@@ -52,7 +52,7 @@ class QuizzesRemainingMixin(ContextMixin):
         if quizzes_by_user < settings.QUIZ_LIMIT_PER_DAY:
             self.quizzes_remaining = settings.QUIZ_LIMIT_PER_DAY - quizzes_by_user
 
-        ctx['quizzes_remaining'] = self.quizzes_remaining
+        ctx['quizzes_remaining'] = self.quizzes_remaining or self.request.user.is_superuser
         return ctx
 
 
@@ -107,10 +107,6 @@ class AiQuizViewer(BaseAiQuizView):
         if not quiz:
             return TemplateResponse(request, self.not_found_template, self.get_context_data())
 
-        self.form = None
-        if quiz.processed:
-            self.form = AiQuizForm()
-
         ctx = self.get_context_data()
         ctx['quiz'] = quiz
         ctx['title'] = quiz.title
@@ -133,7 +129,7 @@ class AiQuizListView(BaseAiQuizView):
     per_page = 20
 
     def get(self, request):
-        all_quizzes = AiQuiz.objects.order_by('-id')
+        all_quizzes = AiQuiz.objects.filter(processed__isnull=False).order_by('-id')
         page = request.GET.get('page', 1)
         subject_filter = request.GET.get('subject_query', None)
         num_questions_filter = request.GET.get('num_questions_filter', None)
@@ -166,10 +162,10 @@ class AiQuizExport(BaseAiQuizView):
         if not quiz:
             return TemplateResponse(request, self.not_found_template, self.get_context_data())
 
-        header_row = ['Question', 'Answer', 'Subject']
+        header_row = ['Question', 'Answer', 'Subject', 'Source']
         data = []
         for question in quiz.get_questions():
-            data.append([question.text, question.get_answer().text, quiz.subject])
+            data.append([question.text, question.get_answer().text, quiz.subject, question.get_answer().source])
 
         # Create a CSV response
         filename = f"{quiz}.csv"
