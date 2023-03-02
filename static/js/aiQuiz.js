@@ -11,7 +11,8 @@ const aiQuiz = {
     'form': false,
     'uniqueSubjects': [],
     'showModal': false,
-    'maxRandomSubjects': 10
+    'maxRandomSubjects': 10,
+    'randomQuizTimer': undefined
 };
 
 aiQuiz.init = function () {
@@ -55,28 +56,27 @@ aiQuiz.openSubmitModal = function () {
     });
 };
 
-aiQuiz.colorEffects = function () {
+aiQuiz.colorRandomQuiz = function() {
     let quizElements = document.querySelectorAll('.quiz');
+    const randomIndex = Math.floor(Math.random() * quizElements.length);
+    const randomElement = quizElements[randomIndex];
+    const intervalTimer = 400;
+    const fadeTimer = 1000;
 
-    function colorRandomQuiz() {
-        const randomIndex = Math.floor(Math.random() * quizElements.length);
-        const randomElement = quizElements[randomIndex];
-        const intervalTimer = 400;
-        const fadeTimer = 1000;
+    randomElement.style.backgroundColor = randomColor({luminosity: 'light'});
+    addClass(randomElement, 'active');
 
-        randomElement.style.backgroundColor = randomColor({luminosity: 'light'});
-        addClass(randomElement, 'active');
+    setTimeout(function () {
+        removeClass(randomElement, 'active');
+        randomElement.style.backgroundColor = '';
+    }, fadeTimer);
 
-        setTimeout(function () {
-            removeClass(randomElement, 'active');
-            randomElement.style.backgroundColor = '';
-        }, fadeTimer);
+    aiQuiz.randomQuizTimer = setTimeout(() => {
+        aiQuiz.colorRandomQuiz();
+    }, intervalTimer);
+};
 
-        setTimeout(() => {
-            colorRandomQuiz();
-        }, intervalTimer);
-    }
-
+aiQuiz.colorEffects = function () {
     // Add transition in JS so there isn't an animation when first loading the page (looks weird)
     const style = document.createElement('style');
     style.innerHTML = 'a {transition: color 0.3s ease-in-out}';
@@ -116,7 +116,7 @@ aiQuiz.colorEffects = function () {
     }
 
     colorQuizLinks();
-    colorRandomQuiz();
+    aiQuiz.colorRandomQuiz();
 };
 
 aiQuiz.randomSubjects = function () {
