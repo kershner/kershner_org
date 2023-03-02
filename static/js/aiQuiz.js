@@ -6,7 +6,7 @@ const aiQuiz = {
     'colorInterval': 15000,
     'randomSuggestionInterval': 5000,
     'checkProcessedInterval': 4000,
-    'randomSubjectsInterval': 8000,
+    'randomSubjectsInterval': 10000,
     'subjectInput': document.querySelector('input[name="subject"]'),
     'form': false,
     'uniqueSubjects': [],
