@@ -41,7 +41,9 @@ aiQuiz.openSubmitModal = function () {
         if (!aiQuiz.showModal) {
             e.preventDefault();
 
-            quizCostSpan.textContent = aiQuiz.quizPricing[numQuestions.value];
+            if (quizCostSpan) {
+                quizCostSpan.textContent = aiQuiz.quizPricing[numQuestions.value];
+            }
             removeClass(quizModal, 'hidden');
             aiQuiz.colorWaveInit();
         }

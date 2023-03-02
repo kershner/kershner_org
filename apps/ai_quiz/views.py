@@ -18,14 +18,14 @@ class AiQuizContentMixin(ContextMixin):
     title = 'AI Generated Quizzes!'
     form = AiQuizForm()
     quiz_limit = 20
-    unique_subjects = list(AiQuiz.objects.values_list('subject', flat=True).distinct())
+    unique_subjects = []
 
     def get_context_data(self, **kwargs):
         ctx = super(AiQuizContentMixin, self).get_context_data(**kwargs)
         ctx['form'] = self.form
         ctx['title'] = self.title
         ctx['recent_quizzes'] = self.get_recent_quizzes()
-        ctx['unique_subjects'] = self.unique_subjects
+        ctx['unique_subjects'] = list(AiQuiz.objects.values_list('subject', flat=True).order_by('?').distinct())[:100]
         return ctx
 
     def get_recent_quizzes(self):
@@ -47,12 +47,15 @@ class QuizzesRemainingMixin(ContextMixin):
 
         one_day_ago = timezone.now() - datetime.timedelta(days=1)
         user_ip = util.get_client_ip(self.request)
-        quizzes_by_user = AiQuiz.objects.filter(ip=user_ip, created__gte=one_day_ago).count()
+        quizzes_by_user = AiQuiz.objects.filter(ip=user_ip, created__gte=one_day_ago).order_by('created').all()
+        latest_quiz = quizzes_by_user.last()
+        next_quiz_time = latest_quiz.created + datetime.timedelta(days=1)
 
-        if quizzes_by_user < settings.QUIZ_LIMIT_PER_DAY:
-            self.quizzes_remaining = settings.QUIZ_LIMIT_PER_DAY - quizzes_by_user
+        if len(quizzes_by_user) < settings.QUIZ_LIMIT_PER_DAY:
+            self.quizzes_remaining = settings.QUIZ_LIMIT_PER_DAY - len(qquizzes_by_user)
 
         ctx['quizzes_remaining'] = self.quizzes_remaining or self.request.user.is_superuser
+        ctx['next_quiz_time'] = next_quiz_time
         return ctx
 
 

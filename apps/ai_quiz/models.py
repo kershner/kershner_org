@@ -12,13 +12,14 @@ import json
 import re
 
 # https://openai.com/api/pricing/
-PRICE_PER_1000_TOKENS = 0.02
+PRICE_PER_1000_TOKENS = 0.002
 
 NUM_QUESTIONS_AND_PRICES = {
     3: 0.01,
     5: 0.03,
     10: 0.05,
-    15: 0.08
+    15: 0.08,
+    20: 0.1
 }
 
 QUIZ_STYLES = [
@@ -41,12 +42,13 @@ class AiQuiz(models.Model):
     processed = models.DateTimeField(null=True, blank=True)
 
     MODEL_ENGINE_CHOICES = (
+        ('gpt-3.5-turbo', 'chat-gpt'),
         ('text-davinci-003', 'Davinci'),
         ('curie', 'Curie'),
         ('babbage', 'Babbage'),
         ('ada', 'Ada')
     )
-    model_engine = models.CharField(max_length=20, choices=MODEL_ENGINE_CHOICES, default='text-davinci-003')
+    model_engine = models.CharField(max_length=20, choices=MODEL_ENGINE_CHOICES, default='gpt-3.5-turbo')
     temperature = models.FloatField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
 
     ip = GenericIPAddressField(null=True, blank=True)
@@ -94,7 +96,7 @@ class AiQuiz(models.Model):
         return AiQuizQuestion.objects.filter(quiz_id=self.id).all()
 
     def get_variations(self):
-        variations = AiQuiz.objects.filter(processed__isnull=False, subject=self.subject).exclude(id=self.id)
+        variations = AiQuiz.objects.filter(processed__isnull=False, subject=self.subject.lower()).exclude(id=self.id)
         return variations.all().order_by('-id')
 
     def get_cost_info(self):
@@ -110,8 +112,8 @@ class AiQuiz(models.Model):
                 'tokens_used': tokens_used,
                 'pct_of_1000': f'{round(pct_of_1000, 2)}%',
                 'price_per_1000_tokens': f'${PRICE_PER_1000_TOKENS}',
-                'price_per_tokens_used': f'${round(price_per_tokens_used, 2)}',
-                'total_cost': round(cost, 2),
+                'price_per_tokens_used': f'${round(price_per_tokens_used, 4)}',
+                'total_cost': round(cost, 4),
             }
 
         return cost_info

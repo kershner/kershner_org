@@ -6,7 +6,7 @@ import openai
 import json
 
 log = get_task_logger(__name__)
-QUESTION_SEPARATOR = '^='
+QUESTION_SEPARATOR = '\n'
 DELIMIT = '||'
 
 
@@ -16,28 +16,38 @@ def process_quiz(quiz_id):
     log.info('\n============ Running process_quiz() as Celery task....')
 
     new_quiz = AiQuiz.objects.filter(id=quiz_id).first()
-    api_prompt = f'''
-    Generate {new_quiz.num_questions} questions about {new_quiz.subject}
-    Format [question{DELIMIT}answer{DELIMIT}source,name only]
-    Delimiter {QUESTION_SEPARATOR}
+
+    system_prompt = f'''
+    You are a quiz generator returning a list of questions.
+    Include only questions in the response.
     '''
+    api_prompt = f'''
+    Generate {new_quiz.num_questions} questions about {new_quiz.subject}.
+    Generate questions in this format: question{DELIMIT}answer{DELIMIT}source,name only
+    '''
+
+    log.info(f"system_prompt: {system_prompt}")
     log.info(f"api_prompt: {api_prompt}")
+
     openai.api_key = settings.OPENAI_API_KEY
 
     try:
-        openai_response = openai.Completion.create(
-          model=new_quiz.model_engine,
-          prompt=api_prompt,
-          temperature=new_quiz.temperature,
-          max_tokens=700,
-          # top_p=1,
-          frequency_penalty=0.0,
-          presence_penalty=0.6
+        openai_response = openai.ChatCompletion.create(
+            model=new_quiz.model_engine,
+            temperature=new_quiz.temperature,
+            max_tokens=1000,
+            # top_p=1,
+            frequency_penalty=0.0,
+            presence_penalty=0.6,
+            messages=[
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': api_prompt}
+            ]
         )
 
         log.info(f"openai_response: {openai_response}")
 
-        questions_text = openai_response['choices'][0]['text'].strip()
+        questions_text = openai_response['choices'][0]['message']['content'].strip()
         questions_list = questions_text.split(QUESTION_SEPARATOR)
 
         for question in questions_list:
