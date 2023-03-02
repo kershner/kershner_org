@@ -41,7 +41,7 @@ class AiQuizContentMixin(ContextMixin):
 
     @staticmethod
     def get_unique_subjects(limit=None):
-        subjects = list(AiQuiz.objects.values_list('subject', flat=True).order_by('?').distinct())
+        subjects = list(AiQuiz.objects.filter(error__isnull=True, processed__isnull=False).values_list('subject', flat=True).order_by('?').distinct())
         if limit:
             subjects = subjects[:limit]
 

@@ -60,7 +60,7 @@ aiQuiz.colorRandomQuiz = function() {
     let quizElements = document.querySelectorAll('.quiz');
     const randomIndex = Math.floor(Math.random() * quizElements.length);
     const randomElement = quizElements[randomIndex];
-    const intervalTimer = 400;
+    const intervalTimer = 600;
     const fadeTimer = 1000;
 
     randomElement.style.backgroundColor = randomColor({luminosity: 'light'});
