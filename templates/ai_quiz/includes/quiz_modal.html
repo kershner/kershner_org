@@ -6,46 +6,10 @@
             <button id="close-modal" title="Close this modal">Close</button>
         </div>
 
-{#        <h1 class="title secondary-font">Money please!</h1>#}
-{##}
-{#        <p class="blurb">#}
-{#            Then OpenAI API charges for use of its text generation models by the <strong>token</strong>,#}
-{#            which can be thought of as pieces of words.#}
-{#            <br>#}
-{#            <br>#}
-{#            One free quiz can be generated daily and additional quizzes can be purchased easily.#}
-{#        </p>#}
-{##}
-{#        <hr class="spacer">#}
-{##}
-{#        <p class="blurb">Pricing is based on the number of questions:</p>#}
-{##}
-{#        <table>#}
-{#            <tbody>#}
-{#                {% for key, value in quiz_pricing.items %}#}
-{#                <tr>#}
-{#                    <td>{{ key }} questions:</td>#}
-{#                    <td>${{ value }}</td>#}
-{#                </tr>#}
-{#                {% endfor %}#}
-{#            </tbody>#}
-{#        </table>#}
-{##}
-{#        <div class="current-total-cost">#}
-{#            <p class="blurb">Your total:</p>#}
-{#            <h2 class="secondary-font">$<span class="quiz-cost">0.00</span></h2>#}
-{#        </div>#}
-{##}
-{#        <p class="blurb">Pay with:</p>#}
-{##}
-{#        <div class="payment-actions">#}
-{#            <button class="" title="Pay with PayPal">PayPal</button>#}
-{#        </div>#}
-
         <h1 class="title secondary-font">Quiz limit!</h1>
 
-        <p class="blurb">The OpenAI API unfortunately costs money to use.</p>
-        <p class="blurb">There is currently a {% settings_value "QUIZ_LIMIT_PER_DAY" %} quiz per day limit.</p>
+        <p class="blurb">The OpenAI API unfortunately costs money to use!</p>
+        <p class="blurb">There is a {% settings_value "QUIZ_LIMIT_PER_DAY" %} quiz per day limit.</p>
 
         <hr class="spacer">
 

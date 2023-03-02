@@ -1,7 +1,11 @@
+{% if quiz %}
+    {% include 'ai_quiz/includes/quiz_tags.html' %}
+{% endif %}
+
 <div class="quiz-controls">
     {% if quiz %}
-    <button id="share" title="Share this quiz">Share</button>
-    <button id="quiz-settings" title="Display the settings used to generate this quiz">Settings</button>
+    <button id="copy-to-clipboard" title="Click to copy the current URL">Copy URL</button>
+    <button title="Click to export this quiz to CSV"><a href="{% url 'export-ai-quiz' quiz_id=quiz.uniq_id %}">Export CSV</a></button>
         {% if user.is_superuser %}
         <a href="{{ quiz.get_admin_url }}" title="View admin page for this quiz"><button>Admin</button></a>
         {% endif %}
@@ -21,32 +25,3 @@
     <a href="{% url 'list-ai-quiz' %}"><button title="Clear filters">Clear filters</button></a>
     {% endif %}
 </div>
-
-{% if quiz %}
-<div class="quiz-control-widget share hidden">
-    <button id="copy-to-clipboard" title="Click to copy the current URL">Copy link to clipboard</button>
-    <button title="Click to export this quiz to CSV"><a href="{% url 'export-ai-quiz' quiz_id=quiz.uniq_id %}">Export CSV</a></button>
-</div>
-
-<div class="quiz-control-widget quiz-settings hidden">
-    <div class="quiz-setting">
-        <div class="quiz-setting-label">Model Engine:</div>
-        <div class="quiz-setting-value">{{ quiz.get_model_engine_display }}</div>
-    </div>
-
-    <div class="quiz-setting">
-        <div class="quiz-setting-label">Temperature:</div>
-        <div class="quiz-setting-value">{{ quiz.temperature }}</div>
-    </div>
-
-    <div class="quiz-setting">
-        <div class="quiz-setting-label">Subject:</div>
-        <div class="quiz-setting-value">{{ quiz.subject }}</div>
-    </div>
-
-    <div class="quiz-setting">
-        <div class="quiz-setting-label">Questions:</div>
-        <div class="quiz-setting-value">{{ quiz.num_questions_real }}</div>
-    </div>
-</div>
-{% endif %}

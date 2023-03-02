@@ -22,13 +22,13 @@
 
         {% block content %}{% endblock %}
 
-        {% include "ai_quiz/widgets/random_subjects.html" %}
-
         {% if form %}
             <hr class="shortened-width">
             {% include "ai_quiz/includes/quiz_form.html" %}
             {% include "ai_quiz/includes/quiz_modal.html" %}
         {% endif %}
+
+        {% include "ai_quiz/widgets/random_subjects.html" %}
 
         {% include "ai_quiz/widgets/recent_quizzes.html" %}
     </div>
@@ -43,7 +43,6 @@
         aiQuiz.uniqueSubjects = {{ unique_subjects|safe }};
         aiQuiz.aiQuizListUrl = '{% url 'list-ai-quiz' %}';
         aiQuiz.showModal = {% if quizzes_remaining %}true{% else %}false{% endif %};
-        aiQuiz.quizPricing = {{ quiz_pricing }};
 
         if (document.readyState === 'complete') {
             aiQuiz.init();

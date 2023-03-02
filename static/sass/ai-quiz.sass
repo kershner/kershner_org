@@ -190,7 +190,6 @@ select
   a:hover
     color: white !important
 
-
 %submit-button-styles
   display: block
   padding: .5rem 2rem !important
@@ -250,9 +249,6 @@ button.open-submit-modal
       @extend %font-secondary
 
 .random-subjects
-  overflow-x: hidden
-  white-space: nowrap
-
   .quiz-wrapper
     opacity: 0
     transition: opacity 0.5s ease-in-out
@@ -264,20 +260,6 @@ button.open-submit-modal
   display: inline-block
   padding: 0.25rem 1rem
   @extend %form-input-properties
-
-  &.share
-    border: none
-    padding-top: 0
-    padding-left: 0
-
-.share
-  padding-top: 0.5rem
-
-  button
-    display: block
-    font-weight: 400
-    &:first-of-type
-      margin-top: 0
 
 .quiz-settings
   display: flex
@@ -329,6 +311,7 @@ button.open-submit-modal
   list-style: none
 
   li
+    display: flex
     border-bottom: 1px solid white
     &:last-of-type
       border-bottom: none
@@ -336,27 +319,24 @@ button.open-submit-modal
     a
       display: flex
 
-      .quiz-results-number
-        padding-top: 1rem
+    .quiz-results-number
+      padding-top: 1rem
+      font-size: 1.5rem
+      @extend %font-secondary
+
+    .quiz-large
+      margin: 1rem 0
+      margin-left: 1rem
+      max-width: 30rem
+
+      .quiz-name
         font-size: 1.5rem
+        font-weight: bold
         @extend %font-secondary
 
-      .quiz-large
-        margin: 1rem 0
-        margin-left: 1rem
-        max-width: 30rem
-
-        .quiz-name
-          font-size: 1.5rem
-          font-weight: bold
-          @extend %font-secondary
-
-        .quiz-temperature
-          font-size: 0.9rem
-
-        .quiz-created
-          font-size: 0.8rem
-          font-style: italic
+      .quiz-created
+        font-size: 0.8rem
+        font-style: italic
 
 .pagination
   margin: 1rem 0
@@ -437,28 +417,16 @@ button.open-submit-modal
     border-radius: 0.2rem
     box-shadow: $quiz-box-shadow
 
-    table
-      font-size: 1rem
-      width: 100%
-      max-width: 15rem
+.quiz-tags
+  display: flex
+  .quiz-tag
+    margin-right: 0.25rem
+    padding: 0.2rem 0.75rem
+    font-size: 0.9rem
+    font-weight: 100
+    border-radius: 1rem
+    background-color: $quiz-grey
+    border: none
 
-      td
-        border-bottom: 1px dotted white
-
-        &:first-of-type
-          font-weight: bold
-        &:last-of-type
-          text-align: right
-
-    .quiz-modal-controls
-      text-align: right
-
-    .current-total-cost
-      margin-top: 1rem
-
-      h2
-        margin-top: 0
-
-    .payment-actions
-      button
-        @extend %submit-button-styles
+    &:hover
+      background-color: $quiz-grey !important

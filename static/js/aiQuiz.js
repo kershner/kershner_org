@@ -11,7 +11,7 @@ const aiQuiz = {
     'form': false,
     'uniqueSubjects': [],
     'showModal': false,
-    'quizPricing': {}
+    'maxRandomSubjects': 10
 };
 
 aiQuiz.init = function () {
@@ -124,7 +124,7 @@ aiQuiz.randomSubjects = function () {
 
     function populateRandomSubjects() {
         shuffle(aiQuiz.uniqueSubjects);
-        let subjects = aiQuiz.uniqueSubjects.slice(0, 4);
+        let subjects = aiQuiz.uniqueSubjects.slice(0, aiQuiz.maxRandomSubjects);
         randomSubjectsDiv.innerHTML = '';
         subjects.forEach((subject, index) => {
             const anchorElement = document.createElement('a');
