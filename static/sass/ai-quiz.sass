@@ -186,6 +186,8 @@ select
     &:hover
       color: white
       text-shadow: $quiz-text-shadow
+  &.disabled
+    cursor: not-allowed
 
   a:hover
     color: white !important
@@ -199,6 +201,9 @@ select
 button[type="submit"],
 button.open-submit-modal
   @extend %submit-button-styles
+
+.pagination
+  margin-bottom: 1rem
 
 .quiz-widget-wrapper
   display: inline-block
@@ -338,17 +343,6 @@ button.open-submit-modal
         font-size: 0.8rem
         font-style: italic
 
-.pagination
-  margin: 1rem 0
-
-  .step-links
-    a
-      margin: 0 0.1rem
-
-  .current-page
-    margin: 0 0.25rem
-    font-weight: bold
-
 .quiz-list-controls
   margin: 1rem 0
 
@@ -358,7 +352,6 @@ button.open-submit-modal
 .search-total
   margin-top: 1rem
   font-size: 0.95rem
-
 
 .quizzes-remaining
   font-size: 0.9rem

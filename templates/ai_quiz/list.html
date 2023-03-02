@@ -23,19 +23,23 @@
         </form>
     </div>
 
+    {% include 'ai_quiz/includes/quiz_search_pagination.html' %}
+
     <ul class="all-quizzes">
         {% for quiz in quizzes %}
-            <li>
-                <a href="{% url 'view-ai-quiz' quiz_id=quiz.uniq_id %}" class="quiz-link">
-                    <div class="quiz-results-number">{{ forloop.counter }}.</div>
+        <li>
+            {% with total_index=quizzes.start_index|add:forloop.counter|add:-1 %}
+            <a href="{% url 'view-ai-quiz' quiz_id=quiz.uniq_id %}" class="quiz-link">
+                <div class="quiz-results-number">{{ total_index }}.</div>
 
-                    <div class="quiz-large">
-                        <div class="quiz-name">{{ quiz }}</div>
-                        {% include 'ai_quiz/includes/quiz_tags.html' with quiz=quiz %}
-                        <div class="quiz-created">{{ quiz.created }}</div>
-                    </div>
-                </a>
-            </li>
+                <div class="quiz-large">
+                    <div class="quiz-name">{{ quiz }}</div>
+                    {% include 'ai_quiz/includes/quiz_tags.html' with quiz=quiz %}
+                    <div class="quiz-created">{{ quiz.created }}</div>
+                </div>
+            </a>
+            {% endwith %}
+        </li>
         {% endfor %}
     </ul>
 
