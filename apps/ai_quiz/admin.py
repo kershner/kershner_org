@@ -53,7 +53,7 @@ class GenericQuizAdminMixin(admin.ModelAdmin):
 class AiQuizAdmin(GenericQuizAdminMixin):
     list_display = ['id', 'created', 'num_questions', 'subject', 'processed', 'cost']
     inlines = [AiQuizQuestionInline]
-    list_filter = ['created', 'subject', 'num_questions', 'processed', 'cost']
+    list_filter = ['created', 'subject', 'num_questions', 'model_engine', 'processed', 'cost']
     search_fields = ['subject']
 
 

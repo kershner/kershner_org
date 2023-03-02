@@ -23,7 +23,7 @@ def process_quiz(quiz_id):
     '''
     api_prompt = f'''
     Generate {new_quiz.num_questions} questions about {new_quiz.subject}.
-    Generate questions in this format: question{DELIMIT}answer{DELIMIT}source,name only
+    Use this format: question{DELIMIT}answer{DELIMIT}name of source
     '''
 
     log.info(f"system_prompt: {system_prompt}")

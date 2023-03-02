@@ -165,4 +165,4 @@ STEAM_API_KEY = PARAMETERS['steam_api_key']
 OPENAI_API_KEY = PARAMETERS['openai_api_key']
 
 # AI Quizzes
-QUIZ_LIMIT_PER_DAY = 3
+QUIZ_LIMIT_PER_DAY = 8

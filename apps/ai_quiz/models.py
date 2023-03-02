@@ -12,7 +12,10 @@ import json
 import re
 
 # https://openai.com/api/pricing/
-PRICE_PER_1000_TOKENS = 0.002
+MODEL_PRICING_PER_1000_TOKENS = {
+    'text-davinci-003': 0.02,
+    'gpt-3.5-turbo': 0.002
+}
 
 NUM_QUESTIONS_AND_PRICES = {
     3: 0.01,
@@ -43,10 +46,7 @@ class AiQuiz(models.Model):
 
     MODEL_ENGINE_CHOICES = (
         ('gpt-3.5-turbo', 'chat-gpt'),
-        ('text-davinci-003', 'Davinci'),
-        ('curie', 'Curie'),
-        ('babbage', 'Babbage'),
-        ('ada', 'Ada')
+        ('text-davinci-003', 'Davinci')
     )
     model_engine = models.CharField(max_length=20, choices=MODEL_ENGINE_CHOICES, default='gpt-3.5-turbo')
     temperature = models.FloatField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
@@ -56,7 +56,7 @@ class AiQuiz(models.Model):
     settings_hash = models.CharField(max_length=200, null=True, blank=True)
     openai_response = models.TextField(null=True, blank=True)
     error = models.TextField(null=True, blank=True)
-    cost = models.DecimalField(null=True, blank=True, decimal_places=2, max_digits=5)
+    cost = models.DecimalField(null=True, blank=True, decimal_places=4, max_digits=5)
 
     def save(self, *args, **kwargs):
         if not self.uniq_id:
@@ -104,16 +104,14 @@ class AiQuiz(models.Model):
 
         if self.openai_response:
             tokens_used = json.loads(self.openai_response)['usage']['total_tokens']
-            pct_of_1000 = (tokens_used / 1000) * 100
-            price_per_tokens_used = (pct_of_1000 / 100) * PRICE_PER_1000_TOKENS
-            cost = (price_per_tokens_used * tokens_used) / 100
+            thousands_of_tokens_used = tokens_used / 1000
+            cost_of_tokens_used = MODEL_PRICING_PER_1000_TOKENS[self.model_engine] * thousands_of_tokens_used
+            cost = round(cost_of_tokens_used, 4)
 
             cost_info = {
                 'tokens_used': tokens_used,
-                'pct_of_1000': f'{round(pct_of_1000, 2)}%',
-                'price_per_1000_tokens': f'${PRICE_PER_1000_TOKENS}',
-                'price_per_tokens_used': f'${round(price_per_tokens_used, 4)}',
-                'total_cost': round(cost, 4),
+                'price_per_1000': f'${round(MODEL_PRICING_PER_1000_TOKENS[self.model_engine], 4)}',
+                'total_cost': cost,
             }
 
         return cost_info

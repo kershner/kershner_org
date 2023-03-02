@@ -25,11 +25,11 @@ class AiQuizContentMixin(ContextMixin):
         ctx['form'] = self.form
         ctx['title'] = self.title
         ctx['recent_quizzes'] = self.get_recent_quizzes()
-        ctx['unique_subjects'] = list(AiQuiz.objects.values_list('subject', flat=True).order_by('?').distinct())[:100]
+        ctx['unique_subjects'] = self.get_unique_subjects(100)
         return ctx
 
     def get_recent_quizzes(self):
-        qs = AiQuiz.objects.filter(processed__isnull=False, subject__in=self.unique_subjects)
+        qs = AiQuiz.objects.filter(processed__isnull=False, subject__in=self.get_unique_subjects())
 
         ids_to_query = {}
         for quiz in qs:
@@ -38,6 +38,14 @@ class AiQuizContentMixin(ContextMixin):
         ids_to_query = list(ids_to_query.values())
 
         return AiQuiz.objects.filter(processed__isnull=False, id__in=ids_to_query).order_by('-id').all()[:self.quiz_limit]
+
+    @staticmethod
+    def get_unique_subjects(limit=None):
+        subjects = list(AiQuiz.objects.values_list('subject', flat=True).order_by('?').distinct())
+        if limit:
+            subjects = subjects[:limit]
+
+        return subjects
 
 class QuizzesRemainingMixin(ContextMixin):
     quizzes_remaining = 0
