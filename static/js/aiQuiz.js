@@ -184,6 +184,7 @@ aiQuiz.copyToClipboard = function () {
         copyToClipboardBtn.innerHTML = 'Copied!';
         setTimeout(function () {
             copyToClipboardBtn.innerHTML = existingText;
+            copyToClipboardBtn.classList.remove('active');
         }, 5000);
     });
 };
