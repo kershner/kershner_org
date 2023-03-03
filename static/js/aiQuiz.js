@@ -85,7 +85,7 @@ aiQuiz.colorEffects = function () {
 
     function colorQuizLinks() {
         let quizLinks = document.querySelectorAll('.quiz-link');
-        if (!quizLinks.length) {
+        if (!quizLinks.length || quizLinks.length < 6) {
             return;
         }
 
