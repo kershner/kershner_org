@@ -19,15 +19,6 @@ MODEL_PRICING_PER_1000_TOKENS = {
 
 NUM_QUESTIONS = [3, 5, 10, 15, 20]
 
-QUIZ_STYLES = [
-    'None'
-    'Wacky',
-    'Edgy',
-    'Serious',
-    'Sarcastic',
-    'Like I\'m 5'
-]
-
 class AiQuiz(models.Model):
     uniq_id = models.CharField(null=True, max_length=100)
     created = models.DateTimeField(default=timezone.now)
