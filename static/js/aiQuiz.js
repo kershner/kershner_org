@@ -19,7 +19,6 @@ aiQuiz.init = function () {
     aiQuiz.populateUserAgent();
     aiQuiz.revealAnswerOnclick();
     aiQuiz.colorWaveInit();
-    aiQuiz.quizControls();
     aiQuiz.copyToClipboard();
     aiQuiz.colorEffects();
     aiQuiz.hoverEffects();
@@ -242,47 +241,6 @@ aiQuiz.randomSuggestions = function () {
     setInterval(function () {
         randomSuggestion();
     }, aiQuiz.randomSuggestionInterval);
-};
-
-aiQuiz.quizControls = function () {
-    let quizControls = document.querySelector('.quiz-controls');
-    if (!quizControls) {
-        return false;
-    }
-
-    let buttons = quizControls.querySelectorAll('button');
-    buttons.forEach(element => {
-        element.addEventListener('click', event => {
-            let buttonId = element.getAttribute('id');
-            let quizControlDivs = document.querySelectorAll('.quiz-control-widget');
-            let closeWidget = false;
-
-            // If target is already active, close the widget
-            if (hasClass(event.target, 'active')) {
-                closeWidget = true;
-            }
-
-            quizControlDivs.forEach(element => {
-                addClass(element, 'hidden');
-
-                if (!closeWidget) {
-                    if (hasClass(element, buttonId)) {
-                        removeClass(element, 'hidden');
-                    }
-                }
-            });
-
-            buttons.forEach(element => {
-                removeClass(element, 'active');
-
-                if (!closeWidget) {
-                    if (event.target === element) {
-                        addClass(element, 'active');
-                    }
-                }
-            });
-        });
-    });
 };
 
 aiQuiz.colorWaveInit = function () {
