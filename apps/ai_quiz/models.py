@@ -17,13 +17,7 @@ MODEL_PRICING_PER_1000_TOKENS = {
     'gpt-3.5-turbo': 0.002
 }
 
-NUM_QUESTIONS_AND_PRICES = {
-    3: 0.01,
-    5: 0.03,
-    10: 0.05,
-    15: 0.08,
-    20: 0.1
-}
+NUM_QUESTIONS = [3, 5, 10, 15, 20]
 
 QUIZ_STYLES = [
     'None'
@@ -38,7 +32,7 @@ class AiQuiz(models.Model):
     uniq_id = models.CharField(null=True, max_length=100)
     created = models.DateTimeField(default=timezone.now)
 
-    NUM_QUESTION_CHOICES = [(str(key), str(key)) for key in NUM_QUESTIONS_AND_PRICES.keys()]
+    NUM_QUESTION_CHOICES = [(str(num), str(num)) for num in NUM_QUESTIONS]
     num_questions = models.CharField(max_length=2, choices=NUM_QUESTION_CHOICES, default='3')
     subject = models.CharField(max_length=50)
 

@@ -1,10 +1,10 @@
-from apps.ai_quiz.models import AiQuiz, NUM_QUESTIONS_AND_PRICES
 from django.core.paginator import Paginator, PageNotAnInteger
 from apps.ai_quiz.forms import AiQuizForm, AiQuizSearchForm
 from django.template.response import TemplateResponse
 from django.views.generic.base import ContextMixin
 from django.http import JsonResponse, HttpResponse
 from apps.ai_quiz.tasks import process_quiz
+from apps.ai_quiz.models import AiQuiz
 from django.views.generic import View
 from django.shortcuts import redirect
 from django.utils import timezone
@@ -57,24 +57,20 @@ class QuizzesRemainingMixin(ContextMixin):
         user_ip = util.get_client_ip(self.request)
         quizzes_by_user = AiQuiz.objects.filter(ip=user_ip, created__gte=one_day_ago).order_by('created').all()
         latest_quiz = quizzes_by_user.last()
-        next_quiz_time = latest_quiz.created + datetime.timedelta(days=1)
+
+        next_quiz_time = timezone.now()
+        if latest_quiz:
+            next_quiz_time = latest_quiz.created + datetime.timedelta(days=1)
 
         if len(quizzes_by_user) < settings.QUIZ_LIMIT_PER_DAY:
-            self.quizzes_remaining = settings.QUIZ_LIMIT_PER_DAY - len(qquizzes_by_user)
+            self.quizzes_remaining = settings.QUIZ_LIMIT_PER_DAY - len(quizzes_by_user)
 
         ctx['quizzes_remaining'] = self.quizzes_remaining or self.request.user.is_superuser
         ctx['next_quiz_time'] = next_quiz_time
         return ctx
 
 
-class QuizPricingMixin(ContextMixin):
-    def get_context_data(self, **kwargs):
-        ctx = super(QuizPricingMixin, self).get_context_data(**kwargs)
-        ctx['quiz_pricing'] = NUM_QUESTIONS_AND_PRICES
-        return ctx
-
-
-class BaseAiQuizView(QuizzesRemainingMixin, AiQuizContentMixin, QuizPricingMixin, View):
+class BaseAiQuizView(QuizzesRemainingMixin, AiQuizContentMixin, View):
     not_found_template = 'ai_quiz/404.html'
 
     def get_context_data(self, **kwargs):
