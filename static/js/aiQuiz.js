@@ -57,24 +57,26 @@ aiQuiz.openSubmitModal = function () {
 
 aiQuiz.colorRandomQuiz = function() {
     let quizElements = document.querySelectorAll('.quiz');
-    if (quizElements) {
-        const randomIndex = Math.floor(Math.random() * quizElements.length);
-        const randomElement = quizElements[randomIndex];
-        const intervalTimer = 600;
-        const fadeTimer = 1000;
+    const randomIndex = Math.floor(Math.random() * quizElements.length);
+    const randomElement = quizElements[randomIndex];
+    const intervalTimer = 600;
+    const fadeTimer = 1000;
 
-        randomElement.style.backgroundColor = randomColor({luminosity: 'light'});
-        addClass(randomElement, 'active');
-
-        setTimeout(function () {
-            removeClass(randomElement, 'active');
-            randomElement.style.backgroundColor = '';
-        }, fadeTimer);
-
-        aiQuiz.randomQuizTimer = setTimeout(() => {
-            aiQuiz.colorRandomQuiz();
-        }, intervalTimer);
+    if (!randomElement) {
+        return;
     }
+
+    randomElement.style.backgroundColor = randomColor({luminosity: 'light'});
+    addClass(randomElement, 'active');
+
+    setTimeout(function () {
+        removeClass(randomElement, 'active');
+        randomElement.style.backgroundColor = '';
+    }, fadeTimer);
+
+    aiQuiz.randomQuizTimer = setTimeout(() => {
+        aiQuiz.colorRandomQuiz();
+    }, intervalTimer);
 };
 
 aiQuiz.colorEffects = function () {
@@ -121,12 +123,17 @@ aiQuiz.colorEffects = function () {
 };
 
 aiQuiz.randomSubjects = function () {
-    let randomSubjectsDiv = document.querySelector('.random-subjects').querySelector('.quiz-widget-wrapper-inner');
+    let randomSubjectsDiv = document.querySelector('.random-subjects');
+    if (!randomSubjectsDiv) {
+        return;
+    }
+
+    let quizWrappers = randomSubjectsDiv.querySelector('.quiz-widget-wrapper-inner');
 
     function populateRandomSubjects() {
         shuffle(aiQuiz.uniqueSubjects);
         let subjects = aiQuiz.uniqueSubjects.slice(0, aiQuiz.maxRandomSubjects);
-        randomSubjectsDiv.innerHTML = '';
+        quizWrappers.innerHTML = '';
         subjects.forEach((subject, index) => {
             const anchorElement = document.createElement('a');
             anchorElement.classList.add('quiz-wrapper');
@@ -138,7 +145,7 @@ aiQuiz.randomSubjects = function () {
                 <div class="quiz-subject">${subject}</div>
             </div>`;
 
-            randomSubjectsDiv.appendChild(anchorElement);
+            quizWrappers.appendChild(anchorElement);
             setTimeout(() => {
                 anchorElement.style.opacity = 1;
             }, index * 100);
