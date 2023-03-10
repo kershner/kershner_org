@@ -140,7 +140,7 @@ class AiQuizListView(BaseAiQuizView):
     per_page = 20
 
     def get(self, request):
-        all_quizzes = AiQuiz.objects.filter(processed__isnull=False).order_by('-id')
+        all_quizzes = AiQuiz.objects.filter(processed__isnull=False, error__isnull=True).order_by('-id')
         page = request.GET.get('page', 1)
         subject_filter = request.GET.get('subject_query', None)
         num_questions_filter = request.GET.get('num_questions_filter', None)
