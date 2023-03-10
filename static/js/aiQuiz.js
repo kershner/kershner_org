@@ -34,16 +34,10 @@ aiQuiz.openSubmitModal = function () {
     let form = document.querySelector('#quiz-form');
     let quizModal = document.querySelector('.quiz-modal');
     let closeBtn = document.querySelector('#close-modal');
-    let numQuestions = document.querySelector('select[name="num_questions"]');
-    let quizCostSpan = document.querySelector('.quiz-cost');
 
     form.addEventListener('submit', (e) => {
-        if (!aiQuiz.showModal) {
+        if (aiQuiz.showModal) {
             e.preventDefault();
-
-            if (quizCostSpan) {
-                quizCostSpan.textContent = aiQuiz.quizPricing[numQuestions.value];
-            }
             removeClass(quizModal, 'hidden');
             aiQuiz.colorWaveInit();
         }
