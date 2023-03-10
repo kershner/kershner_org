@@ -40,6 +40,7 @@ class AiQuiz(models.Model):
     user_agent = models.TextField(null=True, blank=True)
     settings_hash = models.CharField(max_length=200, null=True, blank=True)
     openai_response = models.TextField(null=True, blank=True)
+    moderation_response = models.TextField(null=True, blank=True)
     error = models.TextField(null=True, blank=True)
     cost = models.DecimalField(null=True, blank=True, decimal_places=4, max_digits=5)
 

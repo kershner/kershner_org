@@ -29,7 +29,9 @@ class AiQuizContentMixin(ContextMixin):
         return ctx
 
     def get_recent_quizzes(self):
-        qs = AiQuiz.objects.filter(processed__isnull=False, subject__in=self.get_unique_subjects())
+        qs = AiQuiz.objects.filter(processed__isnull=False,
+                                   error__isnull=True,
+                                   subject__in=self.get_unique_subjects())
 
         ids_to_query = {}
         for quiz in qs:
@@ -37,7 +39,9 @@ class AiQuizContentMixin(ContextMixin):
                 ids_to_query[quiz.subject] = quiz.id
         ids_to_query = list(ids_to_query.values())
 
-        return AiQuiz.objects.filter(processed__isnull=False, id__in=ids_to_query).order_by('-id').all()[:self.quiz_limit]
+        return AiQuiz.objects.filter(processed__isnull=False,
+                                     error__isnull=True,
+                                     id__in=ids_to_query).order_by('-id').all()[:self.quiz_limit]
 
     @staticmethod
     def get_unique_subjects(limit=None):
