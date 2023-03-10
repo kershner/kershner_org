@@ -57,22 +57,24 @@ aiQuiz.openSubmitModal = function () {
 
 aiQuiz.colorRandomQuiz = function() {
     let quizElements = document.querySelectorAll('.quiz');
-    const randomIndex = Math.floor(Math.random() * quizElements.length);
-    const randomElement = quizElements[randomIndex];
-    const intervalTimer = 600;
-    const fadeTimer = 1000;
+    if (quizElements) {
+        const randomIndex = Math.floor(Math.random() * quizElements.length);
+        const randomElement = quizElements[randomIndex];
+        const intervalTimer = 600;
+        const fadeTimer = 1000;
 
-    randomElement.style.backgroundColor = randomColor({luminosity: 'light'});
-    addClass(randomElement, 'active');
+        randomElement.style.backgroundColor = randomColor({luminosity: 'light'});
+        addClass(randomElement, 'active');
 
-    setTimeout(function () {
-        removeClass(randomElement, 'active');
-        randomElement.style.backgroundColor = '';
-    }, fadeTimer);
+        setTimeout(function () {
+            removeClass(randomElement, 'active');
+            randomElement.style.backgroundColor = '';
+        }, fadeTimer);
 
-    aiQuiz.randomQuizTimer = setTimeout(() => {
-        aiQuiz.colorRandomQuiz();
-    }, intervalTimer);
+        aiQuiz.randomQuizTimer = setTimeout(() => {
+            aiQuiz.colorRandomQuiz();
+        }, intervalTimer);
+    }
 };
 
 aiQuiz.colorEffects = function () {
