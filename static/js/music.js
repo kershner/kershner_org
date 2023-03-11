@@ -153,12 +153,6 @@ music.init = function() {
         document.querySelectorAll('.playlist-option').forEach(function(e) {
             removeClass(e, 'active');
             removeClass(e, 'dynamic-color');
-            for (var i=0; i<portfolio.colors.length; i++) {
-                if (hasClass(e, portfolio.colors[i][0])) {
-                    removeClass(e,  portfolio.colors[i][0]);
-                    break;
-                }
-            }
         });
         addClass(element, 'dynamic-color');
         addClass(element, 'active');
