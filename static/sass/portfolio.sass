@@ -60,6 +60,13 @@ a
 .big-call-to-action
   display: inline-block
 
+.welcome h1 a
+  color: $black
+  text-decoration-color: var(--dynamic-color)
+
+  span
+    transition: 0.5s
+
 #page-wrapper
   .particles-js-canvas-el
     position: fixed
@@ -428,6 +435,9 @@ a
 body.dark-mode
   color: $white
   background-color: $black
+
+  .welcome h1 a
+    color: $white
 
   .footer a
     color: $white !important
