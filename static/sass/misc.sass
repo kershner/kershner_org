@@ -56,6 +56,11 @@ $iphone5-breakpoint: 570px
 %btn-click
   top: 4px
 
+@mixin hover-state
+  &:hover
+    transition: none
+    filter: brightness(90%) !important
+
 // Animations
 =animation-prefix($property, $seconds)
   -webkit-transition: $property $seconds ease-in-out
@@ -171,9 +176,7 @@ $iphone5-breakpoint: 570px
   @extend %box-shadow
   @extend %ripple
   +animation-prefix(background-color, 0.2s)
+  @include hover-state
 
   &:active
     @extend %btn-click
-
-  &:hover
-    filter: brightness(90%)

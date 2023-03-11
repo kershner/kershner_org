@@ -133,6 +133,7 @@ a
       a
         position: relative
         z-index: 1
+        @include hover-state
 
         &:active
           @extend %btn-click
@@ -221,8 +222,8 @@ a
             width: 0.9rem
             margin-left: 0.1rem
 
-        a .tech-tag:hover
-          filter: brightness(90%)
+        a .tech-tag
+          @include hover-state
 
     a
       text-decoration: none
@@ -264,9 +265,7 @@ a
       position: relative
       z-index: 1
       border-radius: .3em
-
-      &:hover
-        filter: brightness(90%)
+      @include hover-state
 
     &.drop-shadow
       img
@@ -422,6 +421,8 @@ a
         font-family: $secondary-font
         font-size: 2em
         color: $light-black
+        transition: none
+        @include hover-state
 
 // Dark mode
 body.dark-mode
