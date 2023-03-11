@@ -3,7 +3,6 @@ var portfolio = {
     'baseS3Url'             : '',
     'projectsPerPage'       : 0,
     'projectsHtml'          : [],
-    'colorIndex'            : 0,
     'colorChangeInterval'   : 10000,  // 10 seconds,
     'projectsWrapper'       : document.getElementsByClassName('projects-wrapper')[0],
     'projectWrappers'       : document.getElementsByClassName('project-wrapper'),
@@ -12,16 +11,12 @@ var portfolio = {
     'cubeGrid'              : document.getElementsByClassName('cube-grid')[0],
     'moreProjectsBtn'       : document.getElementById('more-projects-btn'),
     'darkModeClass'         : 'dark-mode',
-    'colors'                : [
-        ['purple', '#8c53c6'],
-        ['pink', '#F2006D'],
-        ['orange', '#FF613A'],
-        ['green', '#04E762'],
-        ['blue', '#0079F2']
-    ]
+    'currentColor'          : ''
 };
 
 portfolio.init = function() {
+    portfolio.currentColor = randomColor({luminosity: 'light'});
+
     portfolio.rotateColors();
     portfolio.scrollEvents();
     portfolio.themeToggle();
@@ -62,7 +57,6 @@ portfolio.addProjects = function(startingIndex) {
 
     // hit em with the colorwave on the first page
     if (indexToAdd === portfolio.projectsPerPage) {
-        colorWave.color = portfolio.colors[portfolio.colorIndex][1];
         colorWave.init();
     }
 };
@@ -76,12 +70,6 @@ portfolio.addProject = function(projectIndex) {
     if (numProjectWrappers < totalProjects) {
         let tempDiv = document.createElement('div');
         tempDiv.innerHTML = portfolio.projectsHtml[projectIndex];
-        let dynamicColorElements = tempDiv.getElementsByClassName('dynamic-color');
-        let currentColor = portfolio.colors[portfolio.colorIndex][0];
-        for (let i=0; i<dynamicColorElements.length; i++) {
-            addClass(dynamicColorElements[i], currentColor);
-        }
-        
         portfolio.projectsWrapper.insertAdjacentHTML('beforeend', tempDiv.innerHTML);
     }
 
@@ -91,8 +79,8 @@ portfolio.addProject = function(projectIndex) {
 };
 
 portfolio.rotateColors = function() {
-    var particlesCanvas = 'particles-js-canvas-el';
-    shuffle(portfolio.colors);
+    let particlesCanvas = 'particles-js-canvas-el';
+
     portfolio.changeColors();
     setInterval(function() {
         var particlesWrapper = document.getElementsByClassName(particlesCanvas)[0];
@@ -124,28 +112,14 @@ portfolio.rotateColors = function() {
 };
 
 portfolio.changeColors = function() {
-    var dynamicElements = document.getElementsByClassName('dynamic-color'),
-        currentColor = portfolio.colors[portfolio.colorIndex];
+    document.documentElement.style.setProperty('--dynamic-color', portfolio.currentColor);
 
-    portfolio.colorIndex += 1;
-    if (portfolio.colorIndex === portfolio.colors.length) {
-        portfolio.colorIndex = 0;
-    }
+    particlesInit(portfolio.currentColor);
 
-    for (var i=0; i<dynamicElements.length; i++) {
-        var dynamicElement = dynamicElements[i];
-        addNewColorClass(dynamicElement);
-    }
-
-    function addNewColorClass(el) {
-        removeClass(el, currentColor[0]);
-        addClass(el, portfolio.colors[portfolio.colorIndex][0]);
-    }
-
-    particlesInit(portfolio.colors[portfolio.colorIndex][1]);
-
-    colorWave.color = portfolio.colors[portfolio.colorIndex][1];
+    colorWave.color = portfolio.currentColor;
     colorWave.init();
+
+    portfolio.currentColor = randomColor({luminosity: 'bright'});
 };
 
 portfolio.themeToggle = function() {

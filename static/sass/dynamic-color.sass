@@ -1,40 +1,13 @@
 @import 'misc'
 
 %dynamic-background-color
-  &.purple
-    background-color: $purple
-  &.green
-    background-color: $green
-  &.orange
-    background-color: $orange
-  &.blue
-    background-color: $blue
-  &.pink
-    background-color: $pink
+  background-color: var(--dynamic-color)
 
 %dynamic-text-color
-  &.purple
-    color: $purple
-  &.green
-    color: $green
-  &.orange
-    color: $orange
-  &.blue
-    color: $blue
-  &.pink
-    color: $pink
+  color: var(--dynamic-color)
 
 %dynamic-border-color
-  &.purple
-    border: 1px solid $purple
-  &.green
-    border: 1px solid $green
-  &.orange
-    border: 1px solid $orange
-  &.blue
-    border: 1px solid $blue
-  &.pink
-    border: 1px solid $pink
+  border: 1px solid var(--dynamic-color)
 
 =dynamic-icon($icon-name)
   @extend %dynamic-background-color
@@ -122,56 +95,13 @@ h1
 input[type=range]
   &.dynamic-color
     background-color: rgba(0, 0, 0, 0.0)
+    &::-webkit-slider-thumb
+      border: 0 solid var(--dynamic-color)
+      background: var(--dynamic-color)
 
-    &.purple
-       &::-webkit-slider-thumb
-        border: 0 solid $purple
-        background: $purple
-    &.orange
-      &::-webkit-slider-thumb
-        border: 0 solid $orange
-        background: $orange
-    &.blue
-      &::-webkit-slider-thumb
-        border: 0 solid $blue
-        background: $blue
-    &.pink
-      &::-webkit-slider-thumb
-        border: 0 solid $pink
-        background: $pink
-    &.green
-      &::-webkit-slider-thumb
-        border: 0 solid $green
-        background: $green
-    &.black
-      &::-webkit-slider-thumb
-        border: 0 solid $black
-        background: $black
-
-    &.purple
-      &:focus::-webkit-slider-runnable-track,
-      &::-webkit-slider-runnable-track
-        background: $purple
-    &.green
-      &:focus::-webkit-slider-runnable-track,
-      &::-webkit-slider-runnable-track
-        background: $green
-    &.orange
-      &:focus::-webkit-slider-runnable-track,
-      &::-webkit-slider-runnable-track
-        background: $orange
-    &.blue
-      &:focus::-webkit-slider-runnable-track,
-      &::-webkit-slider-runnable-track
-        background: $blue
-    &.pink
-      &:focus::-webkit-slider-runnable-track,
-      &::-webkit-slider-runnable-track
-        background: $pink
-    &.black
-      &:focus::-webkit-slider-runnable-track,
-      &::-webkit-slider-runnable-track
-        background: $black
+    &:focus::-webkit-slider-runnable-track,
+    &::-webkit-slider-runnable-track
+      background: var(--dynamic-color)
 
 .sound-wave-bar
   @extend %dynamic-background-color

@@ -1,7 +1,16 @@
 let customAdmin = {};
 
 customAdmin.init = function() {
+    customAdmin.randomColor();
     customAdmin.autoCompleteListFilters();
+};
+
+customAdmin.randomColor = function() {
+    let color = randomColor({luminosity: 'light'});
+    document.documentElement.style.setProperty('--primary', color);
+    document.documentElement.style.setProperty('--delete-button-bg', color);
+    document.documentElement.style.setProperty('--link-hover-color', color);
+    document.documentElement.style.setProperty('--delete-button-hover-bg', color);
 };
 
 customAdmin.autoCompleteListFilters = function() {
@@ -9,7 +18,13 @@ customAdmin.autoCompleteListFilters = function() {
      * Convert Django 4+ changelist filters into simple autocomplete, styling not included
      * requires https://tarekraafat.github.io/autoComplete.js
      */
-    let filters = document.querySelector('#changelist-filter').querySelectorAll('details');
+    let changelistFilters = document.querySelector('#changelist-filter');
+    if (!changelistFilters) {
+        return;
+    }
+
+    let filters = changelistFilters.querySelectorAll('details');
+
     filters.forEach(element => {
         convertFilterToAutoComplete(element);
     });

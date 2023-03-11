@@ -32,7 +32,6 @@ music.init = function() {
             var containerDiv = document.createElement('div'),
                 playlistContainer = document.getElementById('songs'),
                 song = music.songs[i],
-                currentColor = portfolio.colors[portfolio.colorIndex][0],
                 classNames = 'amplitude-song-container',
                 playlist = songsPlaylist,
                 playlistString = 'songs',
@@ -56,7 +55,7 @@ music.init = function() {
             }
 
             if (song.youtube_url) {
-                youtubeLinkHtml = `<a href="${song.youtube_url}" target="_blank" title="View on YouTube"><div class="song-youtube-link dynamic-color ${currentColor} amplitude-pause"></div></a>`;
+                youtubeLinkHtml = `<a href="${song.youtube_url}" target="_blank" title="View on YouTube"><div class="song-youtube-link dynamic-color amplitude-pause"></div></a>`;
             }
 
             containerDiv.setAttribute('amplitude-playlist', playlistString);
@@ -66,7 +65,7 @@ music.init = function() {
                 <div amplitude-playlist=${playlistString} amplitude-song-index=${i} class="song-info amplitude-play-pause">
                     <div class="song-thumbnail">
                         <img src="${song.cover_art_url}">
-                        <div class="activity dynamic-color ${currentColor}">
+                        <div class="activity dynamic-color">
                         </div>
                     </div>
 
@@ -77,7 +76,7 @@ music.init = function() {
 
                 <div class="song-extras">
                     ${youtubeLinkHtml}
-                    <a href="${song.url}" target="_blank" title="Download"><div class="song-download-link dynamic-color ${currentColor} amplitude-pause"></div></a>
+                    <a href="${song.url}" target="_blank" title="Download"><div class="song-download-link dynamic-color amplitude-pause"></div></a>
                 </div>
 
                 <div class="duration">${song.duration}</div>
@@ -148,8 +147,7 @@ music.init = function() {
         var type = element.getAttribute('data-type'),
             songsContainer = document.getElementById('songs'),
             loopsContainer = document.getElementById('loops'),
-            oldSongsContainer = document.getElementById('old-songs'),
-            currentColor = portfolio.colors[portfolio.colorIndex][0];
+            oldSongsContainer = document.getElementById('old-songs');
 
         // Remove/add active class
         document.querySelectorAll('.playlist-option').forEach(function(e) {
@@ -164,7 +162,6 @@ music.init = function() {
         });
         addClass(element, 'dynamic-color');
         addClass(element, 'active');
-        addClass(element, currentColor);
 
         addClass(songsContainer, 'hidden');
         addClass(loopsContainer, 'hidden');

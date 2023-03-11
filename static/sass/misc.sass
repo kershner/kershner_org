@@ -21,6 +21,9 @@ $secondary-font: 'Montserrat', sans-serif
   width: $size
   height: $size
 
+%text-shadow
+  text-shadow: 1px 1px 1.2px #202123
+
 // Colors
 $black: #202020
 $white: #FFF
@@ -173,6 +176,7 @@ $iphone5-breakpoint: 570px
   color: $white
   border-radius: 100px
   text-align: center
+  @extend %text-shadow
   @extend %box-shadow
   @extend %ripple
   +animation-prefix(background-color, 0.2s)

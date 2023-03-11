@@ -1,3 +1,6 @@
+%text-shadow
+  text-shadow: 1px 1px 1.2px #202123
+
 .project-position-controls
   display: inline-flex
   flex-direction: column
@@ -62,3 +65,11 @@
     margin-top: -8px
     &:last-child
       margin-bottom: 0.5rem
+
+.module caption,
+.breadcrumbs,
+#changelist-filter h2,
+.module h2,
+.submit-row,
+.submit-row input
+  @extend %text-shadow
