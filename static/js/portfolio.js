@@ -124,16 +124,28 @@ portfolio.changeColors = function() {
 
 portfolio.themeToggle = function() {
     let toggle = document.getElementsByClassName('theme-switch')[0];
+    let bigWelcomeText = document.querySelectorAll('.welcome h1 a span');
+
     toggle.addEventListener('click', function() {
         let currentTheme = '';
         if (hasClass(toggle, 'active')) {
+            // Remove dark mode
             removeClass(toggle, 'active');
             removeClass(document.body, portfolio.darkModeClass);
         } else {
+            // Add dark mode
             addClass(toggle, 'active');
             addClass(document.body, portfolio.darkModeClass);
             currentTheme = 'dark-mode'
         }
+
+        bigWelcomeText.forEach(e => {
+            e.style.transition = '0.5s';
+            e.addEventListener('transitionend', () => {
+                // Remove the transition property to revert to default
+                e.style.transition = '';
+            });
+        });
 
         const headers = {
             'X-CSRFToken': getCookie('csrftoken')
