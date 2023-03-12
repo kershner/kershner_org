@@ -15,7 +15,7 @@
             <div class="project-technologies">
                 {% for tech in project.project_technologies %}
                     {% if tech.link %}
-                    <a href="{{ tech.link }}" title="View the code" target="_blank">
+                    <a href="{{ tech.link }}" title="View the {{ tech.title }} code" target="_blank">
                         <div class="tech-tag">{{ tech.title }} {% include 'portfolio/includes/external_link_icon.html' %}</div>
                     </a>
                     {% else %}
@@ -33,7 +33,7 @@
         {% endif %}
         
         {% if project.site_url %}
-        <a href="{{ project.site_url }}" target="_blank" title="View the project">
+        <a href="{{ project.site_url }}" target="_blank" title="View {{ project.title }}">
             <div class="project-link-btn dynamic-color">View →</div>
         </a>
         {% endif %}
