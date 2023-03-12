@@ -65,24 +65,24 @@
             <div class="footer-links">
                 <div class="footer-link">
                     {% if request.resolver_match.url_name == 'music' %}
-                    <a href="{% url 'home' %}">
+                    <a href="{% url 'home' %}" title="Home">
                         Home
                     </a>
                     {% else %}
-                    <a href="{% url 'music' %}">
+                    <a href="{% url 'music' %}" title="Music">
                         Music
                     </a>
                     {% endif %}
                 </div>
 
                 <div class="footer-link">
-                    <a href="https://www.github.com/kershner" target="_blank">
+                    <a href="https://www.github.com/kershner" target="_blank" title="Github">
                         Github
                     </a>
                 </div>
 
                 <div class="footer-link">
-                    <a href="mailto:tylerkershner@gmail.com" target="_blank">
+                    <a href="mailto:tylerkershner@gmail.com" target="_blank" title="Email">
                         Email
                     </a>
                 </div>
