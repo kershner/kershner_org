@@ -69,7 +69,7 @@ class QuizzesRemainingMixin(ContextMixin):
         if len(quizzes_by_user) < settings.QUIZ_LIMIT_PER_DAY:
             self.quizzes_remaining = settings.QUIZ_LIMIT_PER_DAY - len(quizzes_by_user)
 
-        ctx['quizzes_remaining'] = self.quizzes_remaining or self.request.user.is_superuser
+        ctx['quizzes_remaining'] = settings.QUIZ_LIMIT_PER_DAY
         ctx['next_quiz_time'] = next_quiz_time
         return ctx
 
