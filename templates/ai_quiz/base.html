@@ -42,7 +42,7 @@
         aiQuiz.form = {% if form %}true{% else %}false{% endif %};
         aiQuiz.uniqueSubjects = {{ unique_subjects|safe }};
         aiQuiz.aiQuizListUrl = '{% url 'list-ai-quiz' %}';
-        aiQuiz.showModal = {% if quizzes_remaining|length > 0 or request.user.is_superuser %}false{% else %}true{% endif %};
+        aiQuiz.showModal = false;
 
         if (document.readyState === 'complete') {
             aiQuiz.init();
