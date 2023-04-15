@@ -74,7 +74,7 @@ class QuizzesRemainingMixin(ContextMixin):
         return ctx
 
 
-class BaseAiQuizView(QuizzesRemainingMixin, AiQuizContentMixin, View):
+class BaseAiQuizView(AiQuizContentMixin, View):
     not_found_template = 'ai_quiz/404.html'
 
     def get_context_data(self, **kwargs):
@@ -93,7 +93,7 @@ class AiQuizHomeView(BaseAiQuizView):
     def post(self, request):
         self.form = AiQuizForm(request.POST)
 
-        if self.form.is_valid() and self.quizzes_remaining or request.user.is_superuser:
+        if self.form.is_valid() or request.user.is_superuser:
             # Check if a quiz already exists with these settings
             new_quiz = AiQuiz(**self.form.cleaned_data)
             existing_quiz = AiQuiz.objects.filter(settings_hash=new_quiz.openai_settings_hash).first()
