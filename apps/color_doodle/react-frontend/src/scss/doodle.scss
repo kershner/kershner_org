@@ -1,3 +1,8 @@
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
 %box-shadow {
   box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.15);
 }
@@ -5,12 +10,11 @@
 .doodle-squares {
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-evenly;
 
   button {
     background-color: #FFF;
-    border: 1px solid;
-    margin-right: -1px;
-    margin-top: -1px;
+    border: 1px solid transparent;
   }
 }
 
@@ -23,7 +27,7 @@
   bottom: 1rem;
   height: 12rem;
   width: 15rem;
-  overflow-y: scroll;
+  overflow-y: auto;
   border-radius: 0.2rem;
   @extend %box-shadow;
 

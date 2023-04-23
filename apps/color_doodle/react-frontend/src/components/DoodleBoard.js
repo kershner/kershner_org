@@ -3,21 +3,23 @@ const randomColor = require('randomcolor');
 import ViewportResize, { resizeColorGrid, calculateNumberOfCells } from "./ViewportResize"
 
 
+export function colorSquare(squareEl) {
+    squareEl.style.backgroundColor = randomColor({luminosity: 'light'});
+}
+
 function DoodleSquare(props) {
-    const [color, setColor] = useState("rgb(255, 255, 255");
     const numColumns = Math.floor(window.innerWidth / props.state.cellSize);
     const divStyle = {
         flexBasis: `${100 / numColumns}%`,
         height: `${props.state.cellSize}px`,
         width: `${props.state.cellSize}px`,
-        borderColor: props.state.border ? "#999" : "transparent",
+        borderRightColor: props.state.border ? "#999" : "transparent",
+        borderBottomColor: props.state.border ? "#999" : "transparent",
         transition: `background-color ${props.state.animationDelay}s ease-out`
     };
 
     function mouseEnter(e) {
-        const colorToSet = randomColor({luminosity: 'light'});
-        setColor(colorToSet);
-        e.target.style.backgroundColor = colorToSet;
+        colorSquare(e.target);
     }
 
     function mouseLeave(e) {

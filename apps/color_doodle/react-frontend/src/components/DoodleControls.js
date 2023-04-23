@@ -1,5 +1,6 @@
 import React from "react"
 import { resizeColorGrid } from "./ViewportResize"
+import { colorSquare } from "./DoodleBoard"
 
 function DoodleControl(props) {
     return (
@@ -40,7 +41,7 @@ function CellSizeControl(props) {
     return <DoodleControl inputType="range"
                           name={controlName}
                           label="Cell Size"
-                          max="200"
+                          max="500"
                           min="50"
                           step="10"
                           handleChange={handleChange}
@@ -59,8 +60,59 @@ function BorderControl(props) {
                           name={controlName}
                           label="Border"
                           handleChange={handleChange}
-                          value={props.state.border}
-                          checked={props.state.border} />;
+                          value={props.state[controlName]}
+                          checked={props.state[controlName]} />;
+}
+
+function autoDoodle(interval) {
+    window.autoDoodleInterval = setInterval(() => {
+        const squares = document.querySelectorAll(".doodle-square");
+        const randomSquare = squares[Math.floor(Math.random() * squares.length)];
+        colorSquare(randomSquare)
+    }, interval);
+}
+
+function AutoDoodleControl(props) {
+    const controlName = "autoDoodle";
+
+    function handleChange(e) {
+        clearInterval(window.autoDoodleInterval);
+        props.updateValue(controlName, e.target.checked);
+
+
+        if (e.target.checked) {
+            autoDoodle(props.state.autoDoodleInterval);
+        }
+    }
+
+    return <DoodleControl inputType="checkbox"
+                          name={controlName}
+                          label="Auto Doodle"
+                          handleChange={handleChange}
+                          value={props.state[controlName]}
+                          checked={props.state[controlName]} />;
+}
+
+function AutoDoodleIntervalControl(props) {
+    const controlName = "autoDoodleInterval";
+
+    function handleChange(e) {
+        clearInterval(window.autoDoodleInterval);
+        props.updateValue(controlName, e.target.value);
+
+        if (props.state.autoDoodle) {
+            autoDoodle(props.state.autoDoodleInterval);
+        }
+    }
+
+    return <DoodleControl inputType="range"
+                          name={controlName}
+                          label="Auto Doodle Interval"
+                          step="100"
+                          max="5000"
+                          min="100"
+                          handleChange={handleChange}
+                          value={props.state[controlName]} />;
 }
 
 function AnimationControl(props) {
@@ -76,7 +128,7 @@ function AnimationControl(props) {
                           step="0.1"
                           max="2"
                           handleChange={handleChange}
-                          value={props.state.animationDelay} />;
+                          value={props.state[controlName]} />;
 }
 
 export default function DoodleControls(props) {
@@ -86,6 +138,8 @@ export default function DoodleControls(props) {
             <legend>Descriptive text here.</legend>
                 <CellSizeControl state={props.state} updateValue={props.updateValue} />
                 <BorderControl state={props.state} updateValue={props.updateValue} />
+                <AutoDoodleControl state={props.state} updateValue={props.updateValue} />
+                <AutoDoodleIntervalControl state={props.state} updateValue={props.updateValue} />
                 <AnimationControl state={props.state} updateValue={props.updateValue} />
             </fieldset>
         </div>

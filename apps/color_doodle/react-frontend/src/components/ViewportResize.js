@@ -4,7 +4,12 @@ import { useState, useEffect } from "react";
 export function calculateNumberOfCells(totalHeight, totalWidth, cellSize) {
     const numberOfRows = Math.floor(totalHeight / cellSize);
     const numberOfColumns = Math.floor(totalWidth / cellSize);
-    return numberOfRows * numberOfColumns;
+    let totalCells = numberOfRows * numberOfColumns;
+
+    // Adding extra row so grid extends beyond viewport
+    totalCells +=  totalCells / numberOfRows;
+
+    return totalCells;
 }
 
 export function resizeColorGrid(props) {

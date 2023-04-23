@@ -6,7 +6,9 @@ export default function DoodleState() {
         numSquares: calculateNumberOfCells(window.innerHeight, window.innerWidth, 100),
         cellSize: 100,
         animationDelay: 0,
-        border: true
+        border: true,
+        autoDoodle: false,
+        autoDoodleInterval: 200
     };
 
     const [state, setState] = useState(defaultState);
