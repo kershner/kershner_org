@@ -1,11 +1,12 @@
 from apps.screenbloom.views import screenbloom_landing
+from apps.color_doodle.urls import doodle_patterns
 from apps.steamtime.urls import steamtime_patterns
 from apps.project import views as project_views
 from apps.ai_quiz.urls import ai_quiz_patterns
 from apps.whoosh.urls import whoosh_patterns
 import apps.philomania.views as phil_views
-from . import views as kersh_views
 from django.urls import include, path
+from . import views as kersh_views
 from apps.bacon.views import bacon
 from django.contrib import admin
 
@@ -27,6 +28,9 @@ urlpatterns = [
 
     # AI Quiz
     path('quiz/', include(ai_quiz_patterns)),
+
+    # Color Doodle
+    path('doodle/', include(doodle_patterns)),
 
     # ScreenBloom landing page
     path('screenbloom/', screenbloom_landing),

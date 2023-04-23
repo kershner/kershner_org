@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'apps.project',
     'apps.whoosh',
     'apps.ai_quiz',
+    'apps.color_doodle',
     'storages',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -45,11 +46,12 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'kershner.urls'
 
-TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates')
+DJANGO_TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates')
+COLOR_DOODLE_REACT_PATH = os.path.join(BASE_DIR, 'apps', 'color_doodle', 'react-frontend')
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [TEMPLATE_PATH],
+        'DIRS': [DJANGO_TEMPLATE_PATH, COLOR_DOODLE_REACT_PATH],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -113,6 +115,7 @@ TIME_INPUT_FORMATS = ['%I:%M %p']
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
+    COLOR_DOODLE_REACT_PATH
 ]
 
 # AWS Config

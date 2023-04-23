@@ -1,0 +1,43 @@
+%box-shadow {
+  box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.15);
+}
+
+.doodle-squares {
+  display: flex;
+  flex-wrap: wrap;
+
+  button {
+    background-color: #FFF;
+    border: 1px solid;
+    margin-right: -1px;
+    margin-top: -1px;
+  }
+}
+
+.doodle-controls {
+  position: fixed;
+  background-color: #FFF;
+  display: inline-flex;
+  padding: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  height: 12rem;
+  width: 15rem;
+  overflow-y: scroll;
+  border-radius: 0.2rem;
+  @extend %box-shadow;
+
+  fieldset {
+    border: none;
+    padding: 0;
+    width: 100%;
+
+    input {
+      cursor: pointer;
+
+      &[type="range"] {
+        width: 100%;
+      }
+    }
+  }
+}

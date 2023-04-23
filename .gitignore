@@ -18,3 +18,5 @@ site_config/certs/
 venv2/
 linux-venv/
 kersh_venv/
+apps/color_doodle/react-frontend/dist/
+apps/color_doodle/react-frontend/node_modules/

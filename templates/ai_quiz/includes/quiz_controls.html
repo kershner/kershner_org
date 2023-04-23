@@ -19,7 +19,9 @@
         <a href="{% url 'list-ai-quiz' %}" title="View and search all quizzes"><button>View all</button></a>
     {% endif %}
 
+    {% if request.resolver_match.url_name != 'ai-quiz' %}
     <a href="{% url 'ai-quiz' %}" title="Return home"><button>Home</button></a>
+    {% endif %}
 
     {% if search_form %}
     <a href="{% url 'list-ai-quiz' %}"><button title="Clear filters">Clear filters</button></a>
