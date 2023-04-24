@@ -4,14 +4,14 @@ const randomColor = require('randomcolor');
 import ViewportResize from "./ViewportResize"
 
 
-export function colorSquare(squareEl, colorFadeEnabled, backgroundColor) {
+export function colorSquare(squareEl, state) {
     squareEl.addEventListener("transitionend", colorFade);
-    squareEl.style.backgroundColor = randomColor({luminosity: 'light'});
+    squareEl.style.backgroundColor = randomColor({luminosity: state.luminosity});
 
     function colorFade() {
-        if (colorFadeEnabled) {
+        if (state.colorFade) {
             squareEl.addEventListener("transitionend", removeColorFade);
-            squareEl.style.backgroundColor = backgroundColor;
+            squareEl.style.backgroundColor = state.backgroundColor;
         }
     }
 
@@ -33,7 +33,7 @@ function DoodleSquare() {
     };
 
     function mouseEnter(e) {
-        colorSquare(e.target, globalState.colorFade, globalState.backgroundColor);
+        colorSquare(e.target, globalState);
     }
 
     function mouseLeave(e) {
