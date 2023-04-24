@@ -1,19 +1,23 @@
-import React, { useState } from "react"
-import ReactDOM from "react-dom";
+import React from "react"
+import { createRoot } from 'react-dom/client';
 import DoodleBoard from "./components/DoodleBoard"
 import DoodleControls from "./components/DoodleControls"
-import DoodleState from "./components/DoodleState"
+import { GlobalStateProvider } from "./components/DoodleState"
 
 
 export default function App() {
-    const [state, updateValue] = DoodleState();
-
     return (
         <>
-            <DoodleBoard state={state} updateValue={updateValue} />
-            <DoodleControls state={state} updateValue={updateValue} />
+            <DoodleBoard />
+            <DoodleControls />
         </>
     )
 }
 
-ReactDOM.render(<App />, document.getElementById("root"));
+const container = document.getElementById("root");
+const root = createRoot(container);
+root.render(
+    <GlobalStateProvider>
+        <App />,
+    </GlobalStateProvider>
+);

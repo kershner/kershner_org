@@ -1,24 +1,36 @@
-import React, { useState } from "react"
+import React, { createContext, useState } from 'react';
 import { calculateNumberOfCells } from "./ViewportResize"
 
-export default function DoodleState() {
+
+const GlobalStateContext = createContext({});
+
+const GlobalStateProvider = ({ children }) => {
     const defaultState = {
         numSquares: calculateNumberOfCells(window.innerHeight, window.innerWidth, 100),
         cellSize: 100,
-        animationDelay: 0,
+        animationDelay: 0.1,
         border: true,
         autoDoodle: false,
-        autoDoodleInterval: 200
+        autoDoodleInterval: 200,
+        colorFade: true,
+        backgroundColor: "#FFF"
     };
 
-    const [state, setState] = useState(defaultState);
+    const [globalState, setGlobalState] = useState(defaultState);
 
-    const updateValue = (key, newValue) => {
-        setState(prevState => ({
-            ...prevState,
-            [key]: newValue
-        }));
+    const updateGlobalState = (key, value, callback) => {
+        setGlobalState(prevState => {
+            const newState = {...prevState, [key]: value};
+            if (callback) callback(newState);
+            return newState;
+        });
     };
 
-    return [state, updateValue]
-}
+    return (
+        <GlobalStateContext.Provider value={{ globalState, updateGlobalState }}>
+            {children}
+        </GlobalStateContext.Provider>
+    );
+};
+
+export { GlobalStateContext, GlobalStateProvider };

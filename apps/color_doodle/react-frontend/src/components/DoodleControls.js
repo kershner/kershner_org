@@ -1,10 +1,12 @@
-import React from "react"
-import { resizeColorGrid } from "./ViewportResize"
+import React, { useEffect, useContext } from "react"
+import { GlobalStateContext } from './DoodleState';
+import { getNewGridNumCells } from "./ViewportResize"
 import { colorSquare } from "./DoodleBoard"
+
 
 function DoodleControl(props) {
     return (
-        <p>
+        <fieldset>
             <div className="label-group">
                 <label htmlFor={props.name}>{props.label}:</label>
                 <span>{props.value ? props.value : ""}</span>
@@ -19,23 +21,25 @@ function DoodleControl(props) {
                 min={props.min ? props.min : "0"}
                 max={props.max ? props.max : "200"}
                 step={props.step ? props.step : "1"}
-                checked={props.checked ? "checked" : undefined}
+                checked={props.checked ? true : false}
                 value={props.value}
             />
-        </p>
+        </fieldset>
     )
 }
 
-function CellSizeControl(props) {
+function CellSizeControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "cellSize";
 
     function handleChange(e) {
-        props.updateValue(controlName, e.target.value);
-        resizeColorGrid(props);
+        updateGlobalState(controlName, e.target.value, ()=> {
+            updateGlobalState("numSquares", getNewGridNumCells());
+        });
     }
 
     function handleMouseUp(e) {
-        resizeColorGrid(props);
+        updateGlobalState("numSquares", getNewGridNumCells());
     }
 
     return <DoodleControl inputType="range"
@@ -46,80 +50,99 @@ function CellSizeControl(props) {
                           step="10"
                           handleChange={handleChange}
                           mouseUp={handleMouseUp}
-                          value={props.state.cellSize} />;
+                          value={globalState[controlName]}/>;
 }
 
-function BorderControl(props) {
+function BorderControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "border";
 
     function handleChange(e) {
-        props.updateValue(controlName, !props.state.border);
+        updateGlobalState(controlName, !globalState.border);
     }
 
     return <DoodleControl inputType="checkbox"
                           name={controlName}
                           label="Border"
                           handleChange={handleChange}
-                          value={props.state[controlName]}
-                          checked={props.state[controlName]} />;
+                          value={globalState[controlName]}
+                          checked={globalState[controlName]}/>;
 }
 
-function autoDoodle(interval) {
-    window.autoDoodleInterval = setInterval(() => {
-        const squares = document.querySelectorAll(".doodle-square");
-        const randomSquare = squares[Math.floor(Math.random() * squares.length)];
-        colorSquare(randomSquare)
-    }, interval);
+function autoDoodle(autoDoodleEnabled, interval, colorFadeEnabled, backgroundColor) {
+    clearInterval(window.autoDoodleInterval);
+
+    if (autoDoodleEnabled) {
+        window.autoDoodleInterval = setInterval(() => {
+            const squares = document.querySelectorAll(".doodle-square");
+            const randomSquare = squares[Math.floor(Math.random() * squares.length)];
+            colorSquare(randomSquare, colorFadeEnabled, backgroundColor);
+        }, interval);
+    }
 }
 
-function AutoDoodleControl(props) {
+function AutoDoodleControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "autoDoodle";
 
     function handleChange(e) {
-        clearInterval(window.autoDoodleInterval);
-        props.updateValue(controlName, e.target.checked);
-
-
-        if (e.target.checked) {
-            autoDoodle(props.state.autoDoodleInterval);
-        }
+        updateGlobalState(controlName, !globalState.autoDoodle, newState => {
+            autoDoodle(newState.autoDoodle, newState.autoDoodleInterval, newState.colorFade, newState.backgroundColor);
+        });
     }
 
     return <DoodleControl inputType="checkbox"
                           name={controlName}
                           label="Auto Doodle"
                           handleChange={handleChange}
-                          value={props.state[controlName]}
-                          checked={props.state[controlName]} />;
+                          checked={globalState[controlName]}/>;
 }
 
-function AutoDoodleIntervalControl(props) {
+function AutoDoodleIntervalControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "autoDoodleInterval";
 
     function handleChange(e) {
-        clearInterval(window.autoDoodleInterval);
-        props.updateValue(controlName, e.target.value);
-
-        if (props.state.autoDoodle) {
-            autoDoodle(props.state.autoDoodleInterval);
-        }
+        updateGlobalState(controlName, e.target.value, newState => {
+            autoDoodle(newState.autoDoodle, newState.autoDoodleInterval, newState.colorFade, newState.backgroundColor);
+        });
     }
 
     return <DoodleControl inputType="range"
                           name={controlName}
                           label="Auto Doodle Interval"
                           step="100"
-                          max="5000"
+                          max="2000"
                           min="100"
                           handleChange={handleChange}
-                          value={props.state[controlName]} />;
+                          value={globalState[controlName]}/>;
 }
 
-function AnimationControl(props) {
+function ColorFadeControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const controlName = "colorFade";
+
+    function handleChange(e) {
+        updateGlobalState(controlName, !globalState.colorFade, newState => {
+            autoDoodle(newState.autoDoodle, newState.autoDoodleInterval, newState.colorFade, newState.backgroundColor);
+        });
+    }
+
+    return <DoodleControl inputType="checkbox"
+                          name={controlName}
+                          label="Color Fade"
+                          handleChange={handleChange}
+                          checked={globalState[controlName]}/>;
+}
+
+function AnimationControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "animationDelay";
 
     function handleChange(e) {
-        props.updateValue(controlName, e.target.value);
+        updateGlobalState(controlName, e.target.value, newState => {
+            autoDoodle(newState.autoDoodle, newState.autoDoodleInterval, newState.colorFade, newState.backgroundColor);
+        });
     }
 
     return <DoodleControl inputType="range"
@@ -127,20 +150,22 @@ function AnimationControl(props) {
                           label="Animation"
                           step="0.1"
                           max="2"
+                          min="0.1"
                           handleChange={handleChange}
-                          value={props.state[controlName]} />;
+                          value={globalState[controlName]}/>;
 }
 
-export default function DoodleControls(props) {
+export default function DoodleControls() {
     return (
         <div className="doodle-controls">
             <fieldset>
-            <legend>Descriptive text here.</legend>
-                <CellSizeControl state={props.state} updateValue={props.updateValue} />
-                <BorderControl state={props.state} updateValue={props.updateValue} />
-                <AutoDoodleControl state={props.state} updateValue={props.updateValue} />
-                <AutoDoodleIntervalControl state={props.state} updateValue={props.updateValue} />
-                <AnimationControl state={props.state} updateValue={props.updateValue} />
+                <legend>Descriptive text here.</legend>
+                <CellSizeControl />
+                <BorderControl />
+                <AutoDoodleControl />
+                <AutoDoodleIntervalControl />
+                <ColorFadeControl />
+                <AnimationControl />
             </fieldset>
         </div>
     )

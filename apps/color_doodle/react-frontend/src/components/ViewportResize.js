@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { GlobalStateContext } from './DoodleState';
 
 
 export function calculateNumberOfCells(totalHeight, totalWidth, cellSize) {
@@ -12,20 +13,20 @@ export function calculateNumberOfCells(totalHeight, totalWidth, cellSize) {
     return totalCells;
 }
 
-export function resizeColorGrid(props) {
+export function getNewGridNumCells() {
     const button = document.querySelector(".doodle-square");
     const styles = getComputedStyle(button);
     const buttonSize = parseInt(styles.getPropertyValue("height"), 10);
-    const numCells = calculateNumberOfCells(window.innerHeight, window.innerWidth, buttonSize);
-    props.updateValue("numSquares", numCells);
+    return calculateNumberOfCells(window.innerHeight, window.innerWidth, buttonSize);
 }
 
 export default function ViewportResize(props) {
     const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
 
     useEffect(() => {
         function handleResize() {
-            resizeColorGrid(props);
+            updateGlobalState("numSquares", getNewGridNumCells());
         }
 
         window.addEventListener("resize", handleResize);

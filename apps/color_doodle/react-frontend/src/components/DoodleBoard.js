@@ -1,25 +1,39 @@
-import React, { useEffect, useState } from "react"
+import React, { useState, useContext } from "react"
+import { GlobalStateContext } from './DoodleState';
 const randomColor = require('randomcolor');
-import ViewportResize, { resizeColorGrid, calculateNumberOfCells } from "./ViewportResize"
+import ViewportResize from "./ViewportResize"
 
 
-export function colorSquare(squareEl) {
+export function colorSquare(squareEl, colorFadeEnabled, backgroundColor) {
+    squareEl.addEventListener("transitionend", colorFade);
     squareEl.style.backgroundColor = randomColor({luminosity: 'light'});
+
+    function colorFade() {
+        if (colorFadeEnabled) {
+            squareEl.addEventListener("transitionend", removeColorFade);
+            squareEl.style.backgroundColor = backgroundColor;
+        }
+    }
+
+    function removeColorFade() {
+        squareEl.removeEventListener("transitionend", colorFade);
+    }
 }
 
-function DoodleSquare(props) {
-    const numColumns = Math.floor(window.innerWidth / props.state.cellSize);
+function DoodleSquare() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const numColumns = Math.floor(window.innerWidth / globalState.cellSize);
     const divStyle = {
         flexBasis: `${100 / numColumns}%`,
-        height: `${props.state.cellSize}px`,
-        width: `${props.state.cellSize}px`,
-        borderRightColor: props.state.border ? "#999" : "transparent",
-        borderBottomColor: props.state.border ? "#999" : "transparent",
-        transition: `background-color ${props.state.animationDelay}s ease-out`
+        height: `${globalState.cellSize}px`,
+        width: `${globalState.cellSize}px`,
+        borderRightColor: globalState.border ? "#999" : "transparent",
+        borderBottomColor: globalState.border ? "#999" : "transparent",
+        transition: `background-color ${globalState.animationDelay}s ease-out`
     };
 
     function mouseEnter(e) {
-        colorSquare(e.target);
+        colorSquare(e.target, globalState.colorFade, globalState.backgroundColor);
     }
 
     function mouseLeave(e) {
@@ -34,10 +48,11 @@ function DoodleSquare(props) {
     );
 }
 
-function DoodleSquares(props) {
+function DoodleSquares() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const doodleSquares = [];
-    for (let i=0; i<props.state.numSquares; i++) {
-        doodleSquares.push(<DoodleSquare state={props.state} />);
+    for (let i=0; i<globalState.numSquares; i++) {
+        doodleSquares.push(<DoodleSquare key={i} />);
     }
 
     return (
@@ -47,11 +62,11 @@ function DoodleSquares(props) {
     )
 }
 
-export default function DoodleBoard(props) {
+export default function DoodleBoard() {
     return (
         <div className="doodle-board">
-            <ViewportResize state={props.state} updateValue={props.updateValue} />
-            <DoodleSquares state={props.state} updateValue={props.updateValue} />
+            <ViewportResize />
+            <DoodleSquares />
         </div>
     )
 }
