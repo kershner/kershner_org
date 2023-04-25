@@ -1,7 +1,8 @@
 import React from "react"
 import {
-    CellSizeControl, BorderControl, AutoDoodleControl, AutoDoodleIntervalControl,
-    ColorFadeControl, AnimationControl, LuminosityControl, BackgroundColorControl
+    CellSizeControl, BorderStyleControl, BorderWidthControl, AutoDoodleControl,
+    AutoDoodleIntervalControl, ColorFadeControl, AnimationControl, LuminosityControl,
+    BackgroundColorControl
 } from "./DoodleControls"
 
 
@@ -10,7 +11,8 @@ export function GridControlsFieldset() {
         <fieldset>
             <legend>Grid</legend>
             <CellSizeControl />
-            <BorderControl />
+            <BorderStyleControl />
+            <BorderWidthControl />
             <BackgroundColorControl />
         </fieldset>
     )

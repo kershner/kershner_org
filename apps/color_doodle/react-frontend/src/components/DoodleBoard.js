@@ -27,23 +27,30 @@ function DoodleSquare() {
         flexBasis: `${100 / numColumns}%`,
         height: `${globalState.cellSize}px`,
         width: `${globalState.cellSize}px`,
-        borderRightColor: globalState.border ? "#999" : "transparent",
-        borderBottomColor: globalState.border ? "#999" : "transparent",
+        borderWidth: `${globalState.borderWidth}px`,
+        borderRightColor: globalState.borderColor,
+        borderBottomColor: globalState.borderColor,
+        borderStyle: globalState.borderStyle,
         transition: `background-color ${globalState.animationDelay}s ease-out`
     };
 
-    function mouseEnter(e) {
+    function handleMouseEnter(e) {
         colorSquare(e.target, globalState);
     }
 
-    function mouseLeave(e) {
+    function handleMouseLeave(e) {
+    }
+
+    function handleClick(e) {
+        console.log("clicked!", e);
     }
 
     return (
         <button style={divStyle}
                 className="doodle-square"
-                onMouseEnter={mouseEnter}
-                onMouseLeave={mouseLeave}>
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onClick={handleClick}>
         </button>
     );
 }

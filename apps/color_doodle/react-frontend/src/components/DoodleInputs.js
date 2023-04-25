@@ -2,7 +2,7 @@ import React, { useContext } from "react"
 import { GlobalStateContext } from "./DoodleState";
 
 
-export function DoodleSelectOption(props) {
+function DoodleSelectOption(props) {
     return (
        <option value={props.value}>{props.name}</option>
     )
@@ -30,7 +30,8 @@ export function DoodleControl(props) {
                id={inputProps.name}
                name={inputProps.name}
                onChange={inputProps.handleChange}
-               onMouseUp={inputProps.mouseUp ? inputProps.mouseUp : undefined}
+               onMouseUp={inputProps.handleMouseUp ? inputProps.handleMouseUp : undefined}
+               onTouchEnd={inputProps.handleTouchEnd ? inputProps.handleTouchEnd : undefined}
                min={inputProps.min ? inputProps.min : "0"}
                max={inputProps.max ? inputProps.max : "200"}
                step={inputProps.step ? inputProps.step : "1"}

@@ -20,6 +20,10 @@ export function CellSizeControl() {
         updateGlobalState("numSquares", getNewGridNumCells());
     }
 
+    function handleTouchEnd(e) {
+        updateGlobalState("numSquares", getNewGridNumCells());
+    }
+
     return <DoodleInput inputType="range"
                         name={controlName}
                         label={label}
@@ -27,25 +31,58 @@ export function CellSizeControl() {
                         min="50"
                         step="10"
                         handleChange={handleChange}
-                        mouseUp={handleMouseUp}
+                        handleMouseUp={handleMouseUp}
+                        handleTouchEnd={handleTouchEnd}
                         value={globalState[controlName]} />;
 }
 
-export function BorderControl() {
+export function BorderStyleControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "border";
-    const label = "Border";
+    const controlName = "borderStyle";
+    const label = "Border Style";
+    const options = {
+        "hidden": "hidden",
+        "dotted": "dotted",
+        "dashed": "dashed",
+        "solid": "solid",
+        "double": "double",
+        "groove": "groove",
+        "ridge": "ridge",
+        "inset": "inset",
+        "outset": "outset"
+    };
 
     function handleChange(e) {
-        updateGlobalState(controlName, !globalState.border);
+        updateGlobalState(controlName, e.target.value, newState => {
+            autoDoodle(newState);
+        });
     }
 
-    return <DoodleInput inputType="checkbox"
+    return <DoodleInput inputType="select"
                         name={controlName}
                         label={label}
                         handleChange={handleChange}
-                        value={globalState[controlName]}
-                        checked={globalState[controlName]} />;
+                        options={options}
+                        defaultValue={globalState[controlName]} />;
+}
+
+export function BorderWidthControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const controlName = "borderWidth";
+    const label = "Border width";
+
+    function handleChange(e) {
+        updateGlobalState(controlName, e.target.value);
+    }
+
+    return <DoodleInput inputType="range"
+                        name={controlName}
+                        label={label}
+                        max="20"
+                        min="1"
+                        step="1"
+                        handleChange={handleChange}
+                        value={globalState[controlName]}/>;
 }
 
 function autoDoodle(state) {
@@ -160,7 +197,7 @@ export function LuminosityControl() {
                         label={label}
                         handleChange={handleChange}
                         options={options}
-                        defaultValue={globalState.luminosity} />;
+                        defaultValue={globalState[controlName]} />;
 }
 
 export function BackgroundColorControl() {
@@ -172,13 +209,9 @@ export function BackgroundColorControl() {
         "dark": "#202123"
     };
 
-    function setBackgroundColor(color) {
-        document.body.style.backgroundColor = color;
-    }
-
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, newState => {
-            setBackgroundColor(newState.backgroundColor);
+            document.body.style.backgroundColor = newState.backgroundColor;
             autoDoodle(newState);
         });
     }
@@ -188,5 +221,5 @@ export function BackgroundColorControl() {
                         label={label}
                         handleChange={handleChange}
                         options={options}
-                        defaultValue={globalState.backgroundColor} />;
+                        defaultValue={globalState[controlName]} />;
 }
