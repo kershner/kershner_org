@@ -1,7 +1,7 @@
 import React from "react"
-import { createRoot } from 'react-dom/client';
+import { createRoot } from "react-dom/client"
 import DoodleBoard from "./components/DoodleBoard"
-import DoodleControls from "./components/DoodleControls"
+import DoodleMenu from "./components/DoodleMenu"
 import { GlobalStateProvider } from "./components/DoodleState"
 
 
@@ -9,13 +9,12 @@ export default function App() {
     return (
         <>
             <DoodleBoard />
-            <DoodleControls />
+            <DoodleMenu />
         </>
     )
 }
 
-const container = document.getElementById("root");
-const root = createRoot(container);
+const root = createRoot(document.getElementById("root"));
 root.render(
     <GlobalStateProvider>
         <App />,

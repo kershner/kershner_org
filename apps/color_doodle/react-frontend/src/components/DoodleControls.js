@@ -1,68 +1,11 @@
 import React, { useEffect, useContext } from "react"
-import { GlobalStateContext } from './DoodleState';
-import { getNewGridNumCells } from "./ViewportResize"
-import { colorSquare } from "./DoodleBoard"
+import { GlobalStateContext } from "./DoodleState"
+import getNewGridNumCells from "./ViewportResize"
+import colorSquare from "./DoodleBoard"
+import DoodleInput from "./DoodleInputs"
 
 
-function DoodleSelectOption(props) {
-    return (
-       <option value={props.value}>{props.name}</option>
-    )
-}
-
-function DoodleSelect(props) {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const inputProps = props.props;
-    const options = [];
-    for (const key in inputProps.options) {
-        options.push(<DoodleSelectOption key={key} value={inputProps.options[key]} name={key} />)
-    }
-
-    return (
-        <select name={inputProps.name} onChange={inputProps.handleChange} defaultValue={inputProps.defaultValue}>
-            {options}
-        </select>
-    )
-}
-
-function DoodleControl(props) {
-    const inputProps = props.props;
-    return (
-        <input type={inputProps.inputType}
-               id={inputProps.name}
-               name={inputProps.name}
-               onChange={inputProps.handleChange}
-               onMouseUp={inputProps.mouseUp ? inputProps.mouseUp : undefined}
-               min={inputProps.min ? inputProps.min : "0"}
-               max={inputProps.max ? inputProps.max : "200"}
-               step={inputProps.step ? inputProps.step : "1"}
-               checked={inputProps.checked ? true : false}
-               value={inputProps.value} />
-    )
-}
-
-function DoodleInput(props) {
-    let doodleInput = undefined;
-    switch (props.inputType) {
-        case "select":
-            doodleInput = <DoodleSelect props={props} />;
-            break;
-        default:
-            doodleInput = <DoodleControl props={props} />;
-            break;
-    }
-
-    return (
-        <div className="input-group">
-            <div className="label-group">
-                <label htmlFor={props.name}>{props.label}</label>
-            </div>
-            { doodleInput }
-        </div>
-    )
-}
-
-function CellSizeControl() {
+export function CellSizeControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "cellSize";
 
@@ -87,15 +30,7 @@ function CellSizeControl() {
                         value={globalState[controlName]} />;
 }
 
-function CellSizeControlFieldset() {
-    return (
-        <fieldset>
-            <CellSizeControl />
-        </fieldset>
-    )
-}
-
-function BorderControl() {
+export function BorderControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "border";
 
@@ -111,14 +46,6 @@ function BorderControl() {
                         checked={globalState[controlName]} />;
 }
 
-function BorderControlFieldset() {
-    return (
-        <fieldset>
-            <BorderControl />
-        </fieldset>
-    )
-}
-
 function autoDoodle(state) {
     clearInterval(window.autoDoodleInterval);
 
@@ -131,7 +58,7 @@ function autoDoodle(state) {
     }
 }
 
-function AutoDoodleControl() {
+export function AutoDoodleControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "autoDoodle";
 
@@ -148,7 +75,7 @@ function AutoDoodleControl() {
                         checked={globalState[controlName]} />;
 }
 
-function AutoDoodleIntervalControl() {
+export function AutoDoodleIntervalControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "autoDoodleInterval";
 
@@ -168,16 +95,7 @@ function AutoDoodleIntervalControl() {
                         value={globalState[controlName]} />;
 }
 
-function AutoDoodleControlFieldset() {
-    return (
-        <fieldset>
-            <AutoDoodleControl />
-            <AutoDoodleIntervalControl />
-        </fieldset>
-    )
-}
-
-function ColorFadeControl() {
+export function ColorFadeControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "colorFade";
 
@@ -194,15 +112,7 @@ function ColorFadeControl() {
                         checked={globalState[controlName]} />;
 }
 
-function ColorFadeControlFieldset() {
-    return (
-        <fieldset>
-            <ColorFadeControl />
-        </fieldset>
-    )
-}
-
-function AnimationControl() {
+export function AnimationControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "animationDelay";
 
@@ -222,15 +132,7 @@ function AnimationControl() {
                         value={globalState[controlName]} />;
 }
 
-function AnimationControlFieldset() {
-    return (
-        <fieldset>
-            <AnimationControl />
-        </fieldset>
-    )
-}
-
-function LuminosityControl() {
+export function LuminosityControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "luminosity";
     const luminosityOptions = {
@@ -254,15 +156,7 @@ function LuminosityControl() {
                         defaultValue={globalState.luminosity} />;
 }
 
-function LuminosityControlFieldset() {
-    return (
-        <fieldset>
-            <LuminosityControl />
-        </fieldset>
-    )
-}
-
-function BackgroundColorControl() {
+export function BackgroundColorControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "backgroundColor";
     const backgroundColorOptions = {
@@ -271,7 +165,7 @@ function BackgroundColorControl() {
     };
 
     function setBackgroundColor(color) {
-        const elements = document.querySelectorAll('.doodle-square');
+        const elements = document.querySelectorAll(".doodle-square");
         elements.forEach(element => {
           element.style.backgroundColor = color;
         });
@@ -290,26 +184,4 @@ function BackgroundColorControl() {
                         handleChange={handleChange}
                         options={backgroundColorOptions}
                         defaultValue={globalState.backgroundColor} />;
-}
-
-function BackgroundColorControlFieldset() {
-    return (
-        <fieldset>
-            <BackgroundColorControl />
-        </fieldset>
-    )
-}
-
-export default function DoodleControls() {
-    return (
-        <div className="doodle-controls">
-            <CellSizeControlFieldset />
-            <BorderControlFieldset />
-            <BackgroundColorControlFieldset />
-            <AutoDoodleControlFieldset />
-            <ColorFadeControlFieldset />
-            <LuminosityControlFieldset />
-            <AnimationControlFieldset />
-        </div>
-    )
 }

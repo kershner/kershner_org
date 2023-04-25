@@ -1,5 +1,5 @@
-import { useState, useEffect, useContext } from "react";
-import { GlobalStateContext } from './DoodleState';
+import { useState, useEffect, useContext } from "react"
+import { GlobalStateContext } from "./DoodleState"
 
 
 export function calculateNumberOfCells(totalHeight, totalWidth, cellSize) {

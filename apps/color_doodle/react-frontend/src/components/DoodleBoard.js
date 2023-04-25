@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react"
-import { GlobalStateContext } from './DoodleState';
-const randomColor = require('randomcolor');
+const randomColor = require("randomcolor");
+import { GlobalStateContext } from "./DoodleState"
 import ViewportResize from "./ViewportResize"
 
 
