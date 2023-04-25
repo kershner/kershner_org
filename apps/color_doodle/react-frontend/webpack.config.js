@@ -4,7 +4,7 @@ const baseDir = "./src/";
 
 module.exports = {
     entry: {
-      bundle: [`${baseDir}App.js`, `${baseDir}main.scss`]
+      bundle: [`${baseDir}App.js`, `${baseDir}/scss/doodle.scss`]
     },
     module: {
         rules: [
@@ -26,7 +26,7 @@ module.exports = {
             filename: "[name].css"
         }),
         new HtmlWebPackPlugin({
-            template: `${baseDir}doodle_index.html`,
+            template: `${baseDir}/templates/doodle_index.html`,
             publicPath: "/static/dist/"
         })
     ]
