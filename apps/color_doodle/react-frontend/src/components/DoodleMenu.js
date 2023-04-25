@@ -1,20 +1,15 @@
 import React from "react"
 import {
-    CellSizeControlFieldset, BorderControlFieldset, BackgroundColorControlFieldset, AutoDoodleControlFieldset,
-    ColorFadeControlFieldset, LuminosityControlFieldset, AnimationControlFieldset
+    GridControlsFieldset, ColorControlsFieldset, AutoControlsFieldset
 } from "./DoodleFieldsets"
 
 
 export default function DoodleMenu() {
     return (
         <div className="doodle-controls">
-            <CellSizeControlFieldset />
-            <BorderControlFieldset />
-            <BackgroundColorControlFieldset />
-            <AutoDoodleControlFieldset />
-            <ColorFadeControlFieldset />
-            <LuminosityControlFieldset />
-            <AnimationControlFieldset />
+            <ColorControlsFieldset />
+            <GridControlsFieldset />
+            <AutoControlsFieldset />
         </div>
     )
 }

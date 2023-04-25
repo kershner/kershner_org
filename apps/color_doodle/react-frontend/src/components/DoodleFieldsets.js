@@ -5,59 +5,34 @@ import {
 } from "./DoodleControls"
 
 
-export function CellSizeControlFieldset() {
+export function GridControlsFieldset() {
     return (
         <fieldset>
+            <legend>Grid</legend>
             <CellSizeControl />
-        </fieldset>
-    )
-}
-
-export function BorderControlFieldset() {
-    return (
-        <fieldset>
             <BorderControl />
+            <BackgroundColorControl />
         </fieldset>
     )
 }
 
-export function AutoDoodleControlFieldset() {
+export function ColorControlsFieldset() {
     return (
         <fieldset>
-            <AutoDoodleControl />
-            <AutoDoodleIntervalControl />
-        </fieldset>
-    )
-}
-
-export function ColorFadeControlFieldset() {
-    return (
-        <fieldset>
+            <legend>Color</legend>
             <ColorFadeControl />
-        </fieldset>
-    )
-}
-
-export function AnimationControlFieldset() {
-    return (
-        <fieldset>
             <AnimationControl />
-        </fieldset>
-    )
-}
-
-export function LuminosityControlFieldset() {
-    return (
-        <fieldset>
             <LuminosityControl />
         </fieldset>
     )
 }
 
-export function BackgroundColorControlFieldset() {
+export function AutoControlsFieldset() {
     return (
         <fieldset>
-            <BackgroundColorControl />
+            <legend>Automation</legend>
+            <AutoDoodleControl />
+            <AutoDoodleIntervalControl />
         </fieldset>
     )
 }

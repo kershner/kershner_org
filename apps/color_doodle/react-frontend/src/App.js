@@ -17,6 +17,6 @@ export default function App() {
 const root = createRoot(document.getElementById("root"));
 root.render(
     <GlobalStateProvider>
-        <App />,
+        <App />
     </GlobalStateProvider>
 );

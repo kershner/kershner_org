@@ -11,7 +11,7 @@ export function colorSquare(squareEl, state) {
     function colorFade() {
         if (state.colorFade) {
             squareEl.addEventListener("transitionend", removeColorFade);
-            squareEl.style.backgroundColor = state.backgroundColor;
+            squareEl.style.backgroundColor = "unset";
         }
     }
 

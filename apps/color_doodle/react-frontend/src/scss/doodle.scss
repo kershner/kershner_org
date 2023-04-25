@@ -1,6 +1,10 @@
+$black: #202123;
+
 body {
   margin: 0;
   overflow: hidden;
+  font-family: Arial, sans-serif;
+  background-color: $black;
 }
 
 %box-shadow {
@@ -13,20 +17,21 @@ body {
   justify-content: space-evenly;
 
   button {
-    background-color: #202123;
+    background-color: transparent;
     border: 1px solid transparent;
   }
 }
 
 .doodle-controls {
   position: fixed;
-  background-color: #FFF;
+  background-color: lighten($black, 8);
   padding: 1rem;
   right: 1rem;
   bottom: 1rem;
   width: 12rem;
   overflow-y: auto;
   border-radius: 0.2rem;
+  color: #FFF;
   @extend %box-shadow;
 
   fieldset {
@@ -34,13 +39,25 @@ body {
     flex-direction: column;
     padding: 0;
     border: 0;
-    margin: 0.5rem 0;
+    margin: 1rem 0;
+    &:not(:last-of-type) {
+      padding-bottom: 1rem;
+      border-bottom: 1px solid white;
+    }
+
+    legend {
+      padding: 0;
+      font-weight: bold;
+    }
 
     .input-group {
       display: flex;
+      margin: 0.1rem 0;
       width: 100%;
+      font-size: 0.85rem;
 
       .label-group {
+        align-self: center;
         flex-shrink: 0;
         width: 5rem;
         padding-right: 0.5rem;
