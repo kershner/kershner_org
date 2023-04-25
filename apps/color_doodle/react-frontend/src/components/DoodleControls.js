@@ -6,7 +6,7 @@ import { colorSquare } from "./DoodleBoard"
 
 function DoodleSelectOption(props) {
     return (
-       <option value={props.value}>{props.value}</option>
+       <option value={props.value}>{props.name}</option>
     )
 }
 
@@ -14,12 +14,12 @@ function DoodleSelect(props) {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const inputProps = props.props;
     const options = [];
-    for (let i=0; i<inputProps.options.length; i++) {
-        options.push(<DoodleSelectOption key={i} value={inputProps.options[i]} />)
+    for (const key in inputProps.options) {
+        options.push(<DoodleSelectOption key={key} value={inputProps.options[key]} name={key} />)
     }
 
     return (
-        <select name={inputProps.name} onChange={inputProps.handleChange} defaultValue={globalState.luminosity}>
+        <select name={inputProps.name} onChange={inputProps.handleChange} defaultValue={inputProps.defaultValue}>
             {options}
         </select>
     )
@@ -57,7 +57,6 @@ function DoodleInput(props) {
             <div className="label-group">
                 <label htmlFor={props.name}>{props.label}</label>
             </div>
-
             { doodleInput }
         </div>
     )
@@ -234,12 +233,12 @@ function AnimationControlFieldset() {
 function LuminosityControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "luminosity";
-    const luminosityOptions = [
-        'bright',
-        'light',
-        'dark',
-        'all'
-    ];
+    const luminosityOptions = {
+        "bright": "bright",
+        "light": "light",
+        "dark": "dark",
+        "all": "all"
+    };
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, newState => {
@@ -251,7 +250,8 @@ function LuminosityControl() {
                         name={controlName}
                         label="Luminosity"
                         handleChange={handleChange}
-                        options={luminosityOptions} />;
+                        options={luminosityOptions}
+                        defaultValue={globalState.luminosity} />;
 }
 
 function LuminosityControlFieldset() {
@@ -262,15 +262,54 @@ function LuminosityControlFieldset() {
     )
 }
 
+function BackgroundColorControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const controlName = "backgroundColor";
+    const backgroundColorOptions = {
+        "light": "#FFF",
+        "dark": "#202123"
+    };
+
+    function setBackgroundColor(color) {
+        const elements = document.querySelectorAll('.doodle-square');
+        elements.forEach(element => {
+          element.style.backgroundColor = color;
+        });
+    }
+
+    function handleChange(e) {
+        updateGlobalState(controlName, e.target.value, newState => {
+            setBackgroundColor(newState.backgroundColor);
+            autoDoodle(newState);
+        });
+    }
+
+    return <DoodleInput inputType="select"
+                        name={controlName}
+                        label="Background"
+                        handleChange={handleChange}
+                        options={backgroundColorOptions}
+                        defaultValue={globalState.backgroundColor} />;
+}
+
+function BackgroundColorControlFieldset() {
+    return (
+        <fieldset>
+            <BackgroundColorControl />
+        </fieldset>
+    )
+}
+
 export default function DoodleControls() {
     return (
         <div className="doodle-controls">
             <CellSizeControlFieldset />
             <BorderControlFieldset />
+            <BackgroundColorControlFieldset />
             <AutoDoodleControlFieldset />
             <ColorFadeControlFieldset />
-            <AnimationControlFieldset />
             <LuminosityControlFieldset />
+            <AnimationControlFieldset />
         </div>
     )
 }

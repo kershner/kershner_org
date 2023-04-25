@@ -13,7 +13,7 @@ const GlobalStateProvider = ({ children }) => {
         autoDoodle: false,
         autoDoodleInterval: 200,
         colorFade: true,
-        backgroundColor: "#FFF",
+        backgroundColor: "#202123",
         luminosity: "light"
     };
 
