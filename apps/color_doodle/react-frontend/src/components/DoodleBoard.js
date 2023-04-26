@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from "react"
 const randomColor = require("randomcolor");
 import { GlobalStateContext } from "./DoodleState"
 import ViewportResize from "./ViewportResize"
+import { numCols } from "../utils/util"
 
 
 export function colorSquare(squareEl, state, callback = null) {
@@ -27,9 +28,8 @@ export function colorSquare(squareEl, state, callback = null) {
 
 function DoodleSquare(props) {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const numColumns = Math.floor(window.innerWidth / globalState.cellSize);
     const divStyle = {
-        flexBasis: `${100 / numColumns}%`,
+        flexBasis: `${100 / numCols(globalState.cellSize) }%`,
         height: `${globalState.cellSize}px`,
         borderWidth: `${globalState.borderWidth}px`,
         borderRightColor: globalState.borderColor,
@@ -62,11 +62,10 @@ function DoodleSquare(props) {
 
 function DoodleSquares() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const numberOfColumns = Math.floor(window.innerWidth / globalState.cellSize);
     const doodleSquares = [];
     for (let i=0; i<globalState.numSquares; i++) {
-        const row = Math.floor(i / numberOfColumns);
-        const col = i % numberOfColumns;
+        const row = Math.floor(i / numCols(globalState.cellSize));
+        const col = i % numCols(globalState.cellSize);
         const dataAttrs = {
             'data-row': row,
             'data-col': col

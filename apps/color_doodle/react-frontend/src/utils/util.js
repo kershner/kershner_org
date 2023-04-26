@@ -1,3 +1,11 @@
+export const numCols = (cellSize) => {
+    return Math.floor(window.innerWidth / cellSize);
+};
+
+export const numRows = (cellSize) => {
+    return Math.floor(window.innerHeight / cellSize);
+};
+
 function getComputedButtonSize() {
     const button = document.querySelector(".doodle-square");
     const styles = getComputedStyle(button);
@@ -5,12 +13,10 @@ function getComputedButtonSize() {
 }
 
 export function calculateNumberOfCells(cellSize) {
-    const numberOfRows = Math.floor(window.innerHeight / cellSize);
-    const numberOfColumns = Math.floor(window.innerWidth / cellSize);
-    let totalCells = numberOfRows * numberOfColumns;
+    let totalCells = numRows(cellSize) * numCols(cellSize);
 
     // Adding extra row so grid extends beyond viewport
-    totalCells += numberOfColumns;
+    totalCells += numCols(cellSize);
 
     return totalCells;
 }

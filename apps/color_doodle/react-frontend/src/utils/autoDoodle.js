@@ -1,8 +1,11 @@
 import { colorSquare } from "../components/DoodleBoard"
+import { numCols, numRows } from "../utils/util"
 
 export default class AutoDoodle {
     constructor(state) {
         this.state = state;
+        this.allSquares = document.querySelectorAll(".doodle-square");
+        this.selectableSquares = Array.from(this.allSquares);
     }
 
     colorSquaresInSequence(collection) {
@@ -26,33 +29,34 @@ export default class AutoDoodle {
         this.colorSquaresInSequence(elements[randomIndex]);
     }
 
+    random(fill=false) {
+        const randomIndex = Math.floor(Math.random() * this.selectableSquares.length);
+        const randomSquare = this.selectableSquares.splice(randomIndex, 1)[0];
+        colorSquare(randomSquare, this.state);
+    }
+
+    /**
+     * Main event loop
+     */
     run() {
         clearInterval(window.autoDoodleInterval);
 
         if (this.state.autoDoodle) {
-            // for random mode
-            let allSquares = document.querySelectorAll(".doodle-square");
-            let selectableSquares = Array.from(allSquares);
-
             window.autoDoodleInterval = setInterval(() => {
                 switch (this.state.autoDoodleMode) {
                     case "rainHorizontal":
-                        const numberOfRows = Math.floor(window.innerHeight / this.state.cellSize) + 1;
-                        this.rain("row", numberOfRows);
+                        this.rain("row", numRows(this.state.cellSize) + 1);
                         break;
                     case "rainVertical":
-                        const numberOfColumns = Math.floor(window.innerWidth / this.state.cellSize);
-                        this.rain("col", numberOfColumns);
+                        this.rain("col", numCols(this.state.cellSize));
                         break;
                     default:  // Random
-                        const randomIndex = Math.floor(Math.random() * selectableSquares.length);
-                        const randomSquare = selectableSquares.splice(randomIndex, 1)[0];
-                        colorSquare(randomSquare, this.state);
+                        this.random();
                         break;
                 }
 
-                if (!selectableSquares.length) {
-                    selectableSquares = Array.from(allSquares);
+                if (!this.selectableSquares.length) {
+                    this.selectableSquares = Array.from(this.allSquares);
                 }
             }, this.state.autoDoodleInterval);
         }
