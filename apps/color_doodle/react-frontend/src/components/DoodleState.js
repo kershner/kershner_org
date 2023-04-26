@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react"
-import { calculateNumberOfCells } from "./ViewportResize"
+import { calculateNumberOfCells } from "../utils/util"
 
 
 const GlobalStateContext = createContext({});

@@ -1,8 +1,9 @@
 import React, { useContext } from "react"
 import { GlobalStateContext } from "./DoodleState"
-import { getNewGridNumCells } from "./ViewportResize"
+import { getNewGridNumCells } from "../utils/util"
 import { colorSquare } from "./DoodleBoard"
 import DoodleInput from "./DoodleInputs"
+import AutoDoodle from "../utils/autoDoodle"
 
 
 export function CellSizeControl() {
@@ -13,20 +14,20 @@ export function CellSizeControl() {
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, ()=> {
             updateGlobalState("numSquares", getNewGridNumCells(), newState => {
-                autoDoodle(newState);
+                new AutoDoodle(newState).run();
             });
         });
     }
 
     function handleMouseUp(e) {
         updateGlobalState("numSquares", getNewGridNumCells(), newState => {
-            autoDoodle(newState);
+            new AutoDoodle(newState).run();
         });
     }
 
     function handleTouchEnd(e) {
         updateGlobalState("numSquares", getNewGridNumCells(), newState => {
-            autoDoodle(newState);
+            new AutoDoodle(newState).run();
         });
     }
 
@@ -60,7 +61,7 @@ export function BorderStyleControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, newState => {
-            autoDoodle(newState);
+            new AutoDoodle(newState).run();
         });
     }
 
@@ -91,61 +92,6 @@ export function BorderWidthControl() {
                         value={globalState[controlName]}/>;
 }
 
-
-// Auto Doodle stuff, probably should be in its own function ///////////////////////////////////////////////////////////
-function colorSquaresInSequence(collection, state) {
-    let timeOffset = 0;  // ms
-    let timeOffsetDelay = 100;
-    collection.forEach((element) => {
-        setTimeout(() => {
-            colorSquare(element, state);
-        }, timeOffset += timeOffsetDelay)
-    });
-}
-
-function autoDoodle(state) {
-    clearInterval(window.autoDoodleInterval);
-
-    if (state.autoDoodle) {
-        // for random mode
-        let allSquares = document.querySelectorAll(".doodle-square");
-        let selectableSquares = Array.from(allSquares);
-
-        window.autoDoodleInterval = setInterval(() => {
-            switch (state.autoDoodleMode) {
-                case "rainHorizontal":
-                    const numberOfRows = Math.floor(window.innerHeight / state.cellSize) + 1;
-                    rain("row", numberOfRows, state);
-                    break;
-                case "rainVertical":
-                    const numberOfColumns = Math.floor(window.innerWidth / state.cellSize);
-                    rain("col", numberOfColumns, state);
-                    break;
-                default:  // Random
-                    const randomIndex = Math.floor(Math.random() * selectableSquares.length);
-                    const randomSquare = selectableSquares.splice(randomIndex, 1)[0];
-                    colorSquare(randomSquare, state);
-                    break;
-            }
-
-            if (!selectableSquares.length) {
-                selectableSquares = Array.from(allSquares);
-            }
-        }, state.autoDoodleInterval);
-    }
-
-    function rain(rainType, total, state) {
-        // pick a row/column at random
-        const elements = [];
-        for (let i=0; i<total; i++) {
-            elements.push(document.querySelectorAll(`[data-${rainType}="${i}"]`));
-        }
-        const randomIndex = Math.floor(Math.random() * elements.length);
-        colorSquaresInSequence(elements[randomIndex], state);
-    }
-}
-// Auto Doodle stuff, probably should be in its own function ///////////////////////////////////////////////////////////
-
 export function AutoDoodleControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "autoDoodle";
@@ -153,7 +99,7 @@ export function AutoDoodleControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, !globalState.autoDoodle, newState => {
-            autoDoodle(newState);
+            new AutoDoodle(newState).run();
         });
     }
 
@@ -176,7 +122,7 @@ export function AutoModeControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, newState => {
-            autoDoodle(newState);
+            new AutoDoodle(newState).run();
         });
     }
 
@@ -195,7 +141,7 @@ export function AutoDoodleIntervalControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, newState => {
-            autoDoodle(newState);
+            new AutoDoodle(newState).run();
         });
     }
 
@@ -216,7 +162,7 @@ export function ColorFadeControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, !globalState.colorFade, newState => {
-            autoDoodle(newState);
+            new AutoDoodle(newState).run();
         });
     }
 
@@ -234,7 +180,7 @@ export function AnimationDelayControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, newState => {
-            autoDoodle(newState);
+            new AutoDoodle(newState).run();
         });
     }
 
@@ -264,7 +210,7 @@ export function AnimationEasingControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, newState => {
-            autoDoodle(newState);
+            new AutoDoodle(newState).run();
         });
     }
 
@@ -289,7 +235,7 @@ export function LuminosityControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, newState => {
-            autoDoodle(newState);
+            new AutoDoodle(newState).run();
         });
     }
 
@@ -313,7 +259,7 @@ export function BackgroundColorControl() {
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, newState => {
             document.body.style.backgroundColor = newState.backgroundColor;
-            autoDoodle(newState);
+            new AutoDoodle(newState).run();
         });
     }
 
