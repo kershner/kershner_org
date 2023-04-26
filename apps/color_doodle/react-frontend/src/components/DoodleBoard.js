@@ -46,17 +46,7 @@ function DoodleSquare(props) {
     }
 
     function handleClick(e) {
-        const row = e.target.getAttribute("data-row");
-        const col = e.target.getAttribute("data-col");
-        const fullRow = document.querySelectorAll(`[data-row="${row}"]`);
-        const fullColumn = document.querySelectorAll(`[data-col="${col}"]`);
-
-        fullColumn.forEach((element) => {
-            colorSquare(element, globalState);
-        });
-        fullRow.forEach((element) => {
-            colorSquare(element, globalState);
-        });
+        console.log('Clicked! ', e.target);
     }
 
     return (

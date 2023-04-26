@@ -12,16 +12,22 @@ export function CellSizeControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, ()=> {
-            updateGlobalState("numSquares", getNewGridNumCells());
+            updateGlobalState("numSquares", getNewGridNumCells(), newState => {
+                autoDoodle(newState);
+            });
         });
     }
 
     function handleMouseUp(e) {
-        updateGlobalState("numSquares", getNewGridNumCells());
+        updateGlobalState("numSquares", getNewGridNumCells(), newState => {
+            autoDoodle(newState);
+        });
     }
 
     function handleTouchEnd(e) {
-        updateGlobalState("numSquares", getNewGridNumCells());
+        updateGlobalState("numSquares", getNewGridNumCells(), newState => {
+            autoDoodle(newState);
+        });
     }
 
     return <DoodleInput inputType="range"
@@ -86,24 +92,59 @@ export function BorderWidthControl() {
 }
 
 
-function getRandomSquare() {
-    const squares = document.querySelectorAll(".doodle-square");
-    return squares[Math.floor(Math.random() * squares.length)];
+// Auto Doodle stuff, probably should be in its own function ///////////////////////////////////////////////////////////
+function colorSquaresInSequence(collection, state) {
+    let timeOffset = 0;  // ms
+    let timeOffsetDelay = 100;
+    collection.forEach((element) => {
+        setTimeout(() => {
+            colorSquare(element, state);
+        }, timeOffset += timeOffsetDelay)
+    });
 }
 
 function autoDoodle(state) {
     clearInterval(window.autoDoodleInterval);
 
     if (state.autoDoodle) {
+        // for random mode
+        let allSquares = document.querySelectorAll(".doodle-square");
+        let selectableSquares = Array.from(allSquares);
+
         window.autoDoodleInterval = setInterval(() => {
             switch (state.autoDoodleMode) {
-                default:  // Random
-                    colorSquare(getRandomSquare(), state);
+                case "rainHorizontal":
+                    const numberOfRows = Math.floor(window.innerHeight / state.cellSize) + 1;
+                    rain("row", numberOfRows, state);
                     break;
+                case "rainVertical":
+                    const numberOfColumns = Math.floor(window.innerWidth / state.cellSize);
+                    rain("col", numberOfColumns, state);
+                    break;
+                default:  // Random
+                    const randomIndex = Math.floor(Math.random() * selectableSquares.length);
+                    const randomSquare = selectableSquares.splice(randomIndex, 1)[0];
+                    colorSquare(randomSquare, state);
+                    break;
+            }
+
+            if (!selectableSquares.length) {
+                selectableSquares = Array.from(allSquares);
             }
         }, state.autoDoodleInterval);
     }
+
+    function rain(rainType, total, state) {
+        // pick a row/column at random
+        const elements = [];
+        for (let i=0; i<total; i++) {
+            elements.push(document.querySelectorAll(`[data-${rainType}="${i}"]`));
+        }
+        const randomIndex = Math.floor(Math.random() * elements.length);
+        colorSquaresInSequence(elements[randomIndex], state);
+    }
 }
+// Auto Doodle stuff, probably should be in its own function ///////////////////////////////////////////////////////////
 
 export function AutoDoodleControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
@@ -128,7 +169,9 @@ export function AutoModeControl() {
     const controlName = "autoDoodleMode";
     const label = "Mode";
     const options = {
-        "random": "random"
+        "random": "random",
+        "rain (vertical)": "rainVertical",
+        "rain (horizontal)": "rainHorizontal"
     };
 
     function handleChange(e) {
