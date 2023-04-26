@@ -116,6 +116,7 @@ export function AutoModeControl() {
     const label = "Mode";
     const options = {
         "random": "random",
+        "random (fill/clear)": "randomFill",
         "rain (vertical)": "rainVertical",
         "rain (horizontal)": "rainHorizontal"
     };

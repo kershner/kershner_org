@@ -6,6 +6,7 @@ export default class AutoDoodle {
         this.state = state;
         this.allSquares = document.querySelectorAll(".doodle-square");
         this.selectableSquares = Array.from(this.allSquares);
+        this.currentlyFilling = true;
     }
 
     colorSquaresInSequence(collection) {
@@ -30,9 +31,34 @@ export default class AutoDoodle {
     }
 
     random(fill=false) {
-        const randomIndex = Math.floor(Math.random() * this.selectableSquares.length);
-        const randomSquare = this.selectableSquares.splice(randomIndex, 1)[0];
-        colorSquare(randomSquare, this.state);
+        let collection = this.allSquares;
+        let modifiedState = { ...this.state };
+
+        if (fill) {
+            // Get  collection of squares, either all transparent or all non-transparent
+            collection = Array.from(this.allSquares).filter(el => {
+                const transparentBg = "rgba(0, 0, 0, 0)";
+                const computedStyle = window.getComputedStyle(el);
+                if (this.currentlyFilling) {
+                    return computedStyle.backgroundColor === transparentBg;
+                } else {
+                    return computedStyle.backgroundColor !== transparentBg;
+                }
+            });
+
+            // When all squares have been addressed, flip the fill mode and re-set the collection
+            if (!collection.length) {
+                collection = Array.from(this.allSquares);
+                this.currentlyFilling = !this.currentlyFilling;
+            }
+
+            modifiedState.colorFade = !this.currentlyFilling;
+        }
+
+        let randomIndex = Math.floor(Math.random() * collection.length);
+        let randomSquare = collection[randomIndex];
+
+        colorSquare(randomSquare, modifiedState);
     }
 
     /**
@@ -50,13 +76,12 @@ export default class AutoDoodle {
                     case "rainVertical":
                         this.rain("col", numCols(this.state.cellSize));
                         break;
+                    case "randomFill":
+                        this.random(true);
+                        break;
                     default:  // Random
                         this.random();
                         break;
-                }
-
-                if (!this.selectableSquares.length) {
-                    this.selectableSquares = Array.from(this.allSquares);
                 }
             }, this.state.autoDoodleInterval);
         }
