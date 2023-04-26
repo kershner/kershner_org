@@ -2,22 +2,25 @@ import { useState, useEffect, useContext } from "react"
 import { GlobalStateContext } from "./DoodleState"
 
 
-export function calculateNumberOfCells(totalHeight, totalWidth, cellSize) {
-    const numberOfRows = Math.floor(totalHeight / cellSize);
-    const numberOfColumns = Math.floor(totalWidth / cellSize);
+function getComputedButtonSize() {
+    const button = document.querySelector(".doodle-square");
+    const styles = getComputedStyle(button);
+    return parseInt(styles.getPropertyValue("height"), 10);
+}
+
+export function calculateNumberOfCells(cellSize) {
+    const numberOfRows = Math.floor(window.innerHeight / cellSize);
+    const numberOfColumns = Math.floor(window.innerWidth / cellSize);
     let totalCells = numberOfRows * numberOfColumns;
 
     // Adding extra row so grid extends beyond viewport
-    totalCells +=  totalCells / numberOfRows;
+    totalCells += numberOfColumns;
 
     return totalCells;
 }
 
 export function getNewGridNumCells() {
-    const button = document.querySelector(".doodle-square");
-    const styles = getComputedStyle(button);
-    const buttonSize = parseInt(styles.getPropertyValue("height"), 10);
-    return calculateNumberOfCells(window.innerHeight, window.innerWidth, buttonSize);
+    return calculateNumberOfCells(getComputedButtonSize());
 }
 
 export default function ViewportResize(props) {

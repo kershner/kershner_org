@@ -5,9 +5,10 @@ import { calculateNumberOfCells } from "./ViewportResize"
 const GlobalStateContext = createContext({});
 
 const GlobalStateProvider = ({ children }) => {
+    const defaultCellSize = 100;
     const defaultState = {
-        numSquares: calculateNumberOfCells(window.innerHeight, window.innerWidth, 100),
-        cellSize: 100,
+        numSquares: calculateNumberOfCells(defaultCellSize),
+        cellSize: defaultCellSize,
         animationDelay: 0.1,
         borderStyle: "solid",
         borderColor: "#999",

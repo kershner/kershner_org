@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react"
+import React, { useContext } from "react"
 import { GlobalStateContext } from "./DoodleState"
 import { getNewGridNumCells } from "./ViewportResize"
 import { colorSquare } from "./DoodleBoard"
