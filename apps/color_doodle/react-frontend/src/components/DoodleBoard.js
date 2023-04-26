@@ -4,19 +4,24 @@ import { GlobalStateContext } from "./DoodleState"
 import ViewportResize from "./ViewportResize"
 
 
-export function colorSquare(squareEl, state) {
-    squareEl.addEventListener("transitionend", colorFade);
+export function colorSquare(squareEl, state, callback = null) {
+    squareEl.addEventListener("transitionend", transitionEndHandler);
     squareEl.style.backgroundColor = randomColor({luminosity: state.luminosity});
 
-    function colorFade() {
+    function transitionEndHandler() {
         if (state.colorFade) {
-            squareEl.addEventListener("transitionend", removeColorFade);
             squareEl.style.backgroundColor = "unset";
         }
+
+        squareEl.addEventListener("transitionend", removeTransitionEndHandler);
     }
 
-    function removeColorFade() {
-        squareEl.removeEventListener("transitionend", colorFade);
+    function removeTransitionEndHandler() {
+        squareEl.removeEventListener("transitionend", transitionEndHandler);
+
+        if (callback) {
+            callback();
+        }
     }
 }
 
@@ -30,7 +35,7 @@ function DoodleSquare(props) {
         borderRightColor: globalState.borderColor,
         borderBottomColor: globalState.borderColor,
         borderStyle: globalState.borderStyle,
-        transition: `background-color ${globalState.animationDelay}s ease-out`
+        transition: `background-color ${globalState.animationDelay}s ${globalState.animationEasing}`
     };
 
     function handleMouseEnter(e) {

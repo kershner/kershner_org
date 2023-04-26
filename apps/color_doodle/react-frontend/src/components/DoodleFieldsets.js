@@ -1,8 +1,8 @@
 import React from "react"
 import {
-    CellSizeControl, BorderStyleControl, BorderWidthControl, AutoDoodleControl,
-    AutoDoodleIntervalControl, ColorFadeControl, AnimationControl, LuminosityControl,
-    BackgroundColorControl
+    CellSizeControl, BorderStyleControl, BorderWidthControl, AutoDoodleControl, AutoModeControl,
+    AutoDoodleIntervalControl, ColorFadeControl, AnimationDelayControl, AnimationEasingControl,
+    LuminosityControl, BackgroundColorControl
 } from "./DoodleControls"
 
 
@@ -23,8 +23,17 @@ export function ColorControlsFieldset() {
         <fieldset>
             <legend>Color</legend>
             <ColorFadeControl />
-            <AnimationControl />
             <LuminosityControl />
+        </fieldset>
+    )
+}
+
+export function AnimationControlsFieldset() {
+    return (
+        <fieldset>
+            <legend>Animation</legend>
+            <AnimationDelayControl />
+            <AnimationEasingControl />
         </fieldset>
     )
 }
@@ -34,6 +43,7 @@ export function AutoControlsFieldset() {
         <fieldset>
             <legend>Automation</legend>
             <AutoDoodleControl />
+            <AutoModeControl />
             <AutoDoodleIntervalControl />
         </fieldset>
     )

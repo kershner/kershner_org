@@ -85,14 +85,22 @@ export function BorderWidthControl() {
                         value={globalState[controlName]}/>;
 }
 
+
+function getRandomSquare() {
+    const squares = document.querySelectorAll(".doodle-square");
+    return squares[Math.floor(Math.random() * squares.length)];
+}
+
 function autoDoodle(state) {
     clearInterval(window.autoDoodleInterval);
 
     if (state.autoDoodle) {
         window.autoDoodleInterval = setInterval(() => {
-            const squares = document.querySelectorAll(".doodle-square");
-            const randomSquare = squares[Math.floor(Math.random() * squares.length)];
-            colorSquare(randomSquare, state);
+            switch (state.autoDoodleMode) {
+                default:  // Random
+                    colorSquare(getRandomSquare(), state);
+                    break;
+            }
         }, state.autoDoodleInterval);
     }
 }
@@ -113,6 +121,28 @@ export function AutoDoodleControl() {
                         label={label}
                         handleChange={handleChange}
                         checked={globalState[controlName]} />;
+}
+
+export function AutoModeControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const controlName = "autoDoodleMode";
+    const label = "Mode";
+    const options = {
+        "random": "random"
+    };
+
+    function handleChange(e) {
+        updateGlobalState(controlName, e.target.value, newState => {
+            autoDoodle(newState);
+        });
+    }
+
+    return <DoodleInput inputType="select"
+                        name={controlName}
+                        label={label}
+                        handleChange={handleChange}
+                        options={options}
+                        defaultValue={globalState[controlName]}/>;
 }
 
 export function AutoDoodleIntervalControl() {
@@ -154,10 +184,10 @@ export function ColorFadeControl() {
                         checked={globalState[controlName]} />;
 }
 
-export function AnimationControl() {
+export function AnimationDelayControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "animationDelay";
-    const label = "Animation";
+    const label = "Delay";
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, newState => {
@@ -173,6 +203,34 @@ export function AnimationControl() {
                         min="0.1"
                         handleChange={handleChange}
                         value={globalState[controlName]} />;
+}
+
+export function AnimationEasingControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const controlName = "animationEasing";
+    const label = "Easing";
+    const options = {
+        "linear": "linear",
+        "ease": "ease",
+        "ease-in": "ease-in",
+        "ease-out": "ease-out",
+        "ease-in-out": "ease-in-out",
+        "step-start": "step-start",
+        "step-end": "step-end"
+    };
+
+    function handleChange(e) {
+        updateGlobalState(controlName, e.target.value, newState => {
+            autoDoodle(newState);
+        });
+    }
+
+    return <DoodleInput inputType="select"
+                        name={controlName}
+                        label={label}
+                        handleChange={handleChange}
+                        options={options}
+                        defaultValue={globalState[controlName]}/>;
 }
 
 export function LuminosityControl() {

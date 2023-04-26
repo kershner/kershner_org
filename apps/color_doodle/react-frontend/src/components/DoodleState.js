@@ -9,11 +9,13 @@ const GlobalStateProvider = ({ children }) => {
     const defaultState = {
         numSquares: calculateNumberOfCells(defaultCellSize),
         cellSize: defaultCellSize,
+        animationEasing: "ease-out",
         animationDelay: 0.1,
         borderStyle: "solid",
         borderColor: "#999",
         borderWidth: 1,
         autoDoodle: false,
+        autoDoodleMode: "random",
         autoDoodleInterval: 200,
         colorFade: true,
         backgroundColor: "#202123",
