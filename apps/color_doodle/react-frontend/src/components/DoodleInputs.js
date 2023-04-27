@@ -4,7 +4,7 @@ import { GlobalStateContext } from "./DoodleState";
 
 function DoodleSelectOption(props) {
     return (
-       <option value={props.value}>{props.name}</option>
+        <option value={props.value}>{props.name}</option>
     )
 }
 
@@ -13,7 +13,7 @@ export function DoodleSelect(props) {
     const inputProps = props.props;
     const options = [];
     for (const key in inputProps.options) {
-        options.push(<DoodleSelectOption key={key} value={inputProps.options[key]} name={key} />)
+        options.push(<DoodleSelectOption key={key} value={inputProps.options[key]} name={key}/>)
     }
 
     return (
@@ -36,7 +36,7 @@ export function DoodleControl(props) {
                max={inputProps.max ? inputProps.max : "200"}
                step={inputProps.step ? inputProps.step : "1"}
                checked={inputProps.checked ? true : false}
-               value={inputProps.value} />
+               value={inputProps.value}/>
     )
 }
 
@@ -44,10 +44,10 @@ export default function DoodleInput(props) {
     let doodleInput = undefined;
     switch (props.inputType) {
         case "select":
-            doodleInput = <DoodleSelect props={props} />;
+            doodleInput = <DoodleSelect props={props}/>;
             break;
         default:
-            doodleInput = <DoodleControl props={props} />;
+            doodleInput = <DoodleControl props={props}/>;
             break;
     }
 
@@ -58,5 +58,15 @@ export default function DoodleInput(props) {
             </div>
             { doodleInput }
         </div>
+    )
+}
+
+export function DoodleButton(props) {
+    return (
+        <button id={`doodle-button-${props.id}`}
+                className="doodle-button"
+                onClick={props.onClick}>
+            {props.value}
+        </button>
     )
 }

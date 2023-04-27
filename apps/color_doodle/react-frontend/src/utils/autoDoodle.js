@@ -5,7 +5,6 @@ export default class AutoDoodle {
     constructor(state) {
         this.state = state;
         this.allSquares = document.querySelectorAll(".doodle-square");
-        this.selectableSquares = Array.from(this.allSquares);
         this.currentlyFilling = true;
     }
 
@@ -50,6 +49,7 @@ export default class AutoDoodle {
             if (!collection.length) {
                 collection = Array.from(this.allSquares);
                 this.currentlyFilling = !this.currentlyFilling;
+                this.run();
             }
 
             modifiedState.colorFade = !this.currentlyFilling;
@@ -66,7 +66,6 @@ export default class AutoDoodle {
      */
     run() {
         clearInterval(window.autoDoodleInterval);
-
         if (this.state.autoDoodle) {
             window.autoDoodleInterval = setInterval(() => {
                 switch (this.state.autoDoodleMode) {

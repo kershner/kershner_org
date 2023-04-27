@@ -1,13 +1,14 @@
 import React, { createContext, useState } from "react"
-import { calculateNumberOfCells } from "../utils/util"
+import { calculateNumberOfCells, parseParams, updateUrlParams } from "../utils/util"
 
 
 const GlobalStateContext = createContext({});
 
 const GlobalStateProvider = ({ children }) => {
     const defaultCellSize = 100;
+    const defaultNumSquares = calculateNumberOfCells(defaultCellSize);
     const defaultState = {
-        numSquares: calculateNumberOfCells(defaultCellSize),
+        numSquares: defaultNumSquares,
         cellSize: defaultCellSize,
         animationEasing: "ease-out",
         animationDelay: 0.1,
@@ -23,11 +24,15 @@ const GlobalStateProvider = ({ children }) => {
         mouseDown: false
     };
 
-    const [globalState, setGlobalState] = useState(defaultState);
+    // Parse URL parameters into the initial state
+    const paramDict = parseParams();
+    const modifiedState = Object.assign(defaultState, paramDict);
+    const [globalState, setGlobalState] = useState(modifiedState);
 
     const updateGlobalState = (key, value, callback) => {
         setGlobalState(prevState => {
             const newState = {...prevState, [key]: value};
+            updateUrlParams(newState);
             if (callback) callback(newState);
             return newState;
         });
