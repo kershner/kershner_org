@@ -3,7 +3,6 @@ import { GlobalStateContext } from "./DoodleState"
 import { getNewGridNumCells } from "../utils/util"
 import { colorSquare } from "./DoodleBoard"
 import DoodleInput from "./DoodleInputs"
-import AutoDoodle from "../utils/autoDoodle"
 
 
 export function CellSizeControl() {
@@ -13,22 +12,16 @@ export function CellSizeControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, ()=> {
-            updateGlobalState("numSquares", getNewGridNumCells(), newState => {
-                new AutoDoodle(newState).run();
-            });
+            updateGlobalState("numSquares", getNewGridNumCells());
         });
     }
 
     function handleMouseUp(e) {
-        updateGlobalState("numSquares", getNewGridNumCells(), newState => {
-            new AutoDoodle(newState).run();
-        });
+        updateGlobalState("numSquares", getNewGridNumCells());
     }
 
     function handleTouchEnd(e) {
-        updateGlobalState("numSquares", getNewGridNumCells(), newState => {
-            new AutoDoodle(newState).run();
-        });
+        updateGlobalState("numSquares", getNewGridNumCells());
     }
 
     return <DoodleInput inputType="range"
@@ -60,9 +53,7 @@ export function BorderStyleControl() {
     };
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value, newState => {
-            new AutoDoodle(newState).run();
-        });
+        updateGlobalState(controlName, e.target.value);
     }
 
     return <DoodleInput inputType="select"
@@ -98,9 +89,7 @@ export function AutoDoodleControl() {
     const label = "Enabled";
 
     function handleChange(e) {
-        updateGlobalState(controlName, !globalState.autoDoodle, newState => {
-            new AutoDoodle(newState).run();
-        });
+        updateGlobalState(controlName, !globalState.autoDoodle);
     }
 
     return <DoodleInput inputType="checkbox"
@@ -122,9 +111,7 @@ export function AutoModeControl() {
     };
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value, newState => {
-            new AutoDoodle(newState).run();
-        });
+        updateGlobalState(controlName, e.target.value);
     }
 
     return <DoodleInput inputType="select"
@@ -141,9 +128,7 @@ export function AutoDoodleIntervalControl() {
     const label = "Interval";
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value, newState => {
-            new AutoDoodle(newState).run();
-        });
+        updateGlobalState(controlName, e.target.value);
     }
 
     return <DoodleInput inputType="range"
@@ -162,9 +147,7 @@ export function ColorFadeControl() {
     const label = "Fade";
 
     function handleChange(e) {
-        updateGlobalState(controlName, !globalState.colorFade, newState => {
-            new AutoDoodle(newState).run();
-        });
+        updateGlobalState(controlName, !globalState.colorFade);
     }
 
     return <DoodleInput inputType="checkbox"
@@ -180,9 +163,7 @@ export function AnimationDelayControl() {
     const label = "Delay";
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value, newState => {
-            new AutoDoodle(newState).run();
-        });
+        updateGlobalState(controlName, e.target.value);
     }
 
     return <DoodleInput inputType="range"
@@ -210,9 +191,7 @@ export function AnimationEasingControl() {
     };
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value, newState => {
-            new AutoDoodle(newState).run();
-        });
+        updateGlobalState(controlName, e.target.value);
     }
 
     return <DoodleInput inputType="select"
@@ -235,9 +214,7 @@ export function LuminosityControl() {
     };
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value, newState => {
-            new AutoDoodle(newState).run();
-        });
+        updateGlobalState(controlName, e.target.value);
     }
 
     return <DoodleInput inputType="select"
@@ -258,10 +235,7 @@ export function BackgroundColorControl() {
     };
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value, newState => {
-            document.body.style.backgroundColor = newState.backgroundColor;
-            new AutoDoodle(newState).run();
-        });
+        updateGlobalState(controlName, e.target.value);
     }
 
     return <DoodleInput inputType="select"
