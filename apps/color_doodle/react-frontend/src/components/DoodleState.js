@@ -19,7 +19,8 @@ const GlobalStateProvider = ({ children }) => {
         autoDoodleInterval: 200,
         colorFade: true,
         backgroundColor: "#202123",
-        luminosity: "light"
+        luminosity: "light",
+        mouseDown: false
     };
 
     const [globalState, setGlobalState] = useState(defaultState);

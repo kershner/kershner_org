@@ -2,12 +2,14 @@ import React, { useState, useContext, useEffect } from "react"
 const randomColor = require("randomcolor");
 import { GlobalStateContext } from "./DoodleState"
 import ViewportResize from "./ViewportResize"
-import { numCols } from "../utils/util"
+import { numCols, range } from "../utils/util"
 
 
-export function colorSquare(squareEl, state, callback = null) {
+export function colorSquare(squareEl, state, callback=null, color=null) {
     squareEl.addEventListener("transitionend", transitionEndHandler);
-    squareEl.style.backgroundColor = randomColor({luminosity: state.luminosity});
+
+    const chosenColor = color ? color : randomColor({luminosity: state.luminosity});
+    squareEl.style.backgroundColor = chosenColor;
 
     function transitionEndHandler() {
         if (state.colorFade) {
@@ -39,14 +41,58 @@ function DoodleSquare(props) {
     };
 
     function handleMouseEnter(e) {
-        colorSquare(e.target, globalState);
+        if (globalState.mouseDown) {
+            colorAdjacentSquares(e.target, 1);
+        } else {
+            colorSquare(e.target, globalState);
+        }
     }
 
     function handleMouseLeave(e) {
     }
 
+    function handleMouseDown(e) {
+        updateGlobalState("mouseDown", true);
+        colorAdjacentSquares(e.target, 1);
+    }
+
+    function handleMouseUp(e) {
+        updateGlobalState("mouseDown", false);
+    }
+
+    function handleTouchStart(e) {
+        handleMouseDown(e);
+    }
+
+    function handleTouchEnd(e) {
+        handleMouseUp(e);
+    }
+
     function handleClick(e) {
-        console.log('Clicked! ', e.target);
+    }
+
+    function colorAdjacentSquares(square, offset=1) {
+        const { row, col } = square.dataset;
+        const adjacentSquares = getAdjacentSquares(+row, +col, offset);
+        const chosenColor = randomColor({luminosity: globalState.luminosity});
+
+        adjacentSquares.forEach(({ row, col }) => {
+            const selector = `.doodle-square[data-row="${row}"][data-col="${col}"]`;
+            const square = document.querySelector(selector);
+            if (square) {
+                colorSquare(square, globalState, null, chosenColor);
+            }
+        });
+    }
+
+    function getAdjacentSquares(row, col, offset) {
+        const squares = [];
+        for (let r=row-offset; r<=row+offset; r++) {
+            for (let c=col-offset; c<=col+offset; c++) {
+                squares.push({ row: r, col: c });
+            }
+        }
+        return squares;
     }
 
     return (
@@ -54,8 +100,12 @@ function DoodleSquare(props) {
                 className="doodle-square"
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
+                onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
                 onClick={handleClick}
-                {...props.dataAttrs} >
+            {...props.dataAttrs} >
         </button>
     );
 }

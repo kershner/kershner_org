@@ -2,6 +2,7 @@ $black: #202123;
 
 body {
   margin: 0;
+  padding: 0;
   overflow: hidden;
   font-family: Arial, sans-serif;
   background-color: $black;
@@ -14,9 +15,10 @@ body {
 .doodle-squares {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-evenly;
 
   button {
+    padding: 0;
+    margin: 0;
     background-color: transparent;
     border: 1px solid transparent;
   }
