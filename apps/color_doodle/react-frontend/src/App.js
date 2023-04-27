@@ -2,6 +2,7 @@ import React, { useEffect, useContext } from "react"
 import { createRoot } from "react-dom/client"
 import DoodleBoard from "./components/DoodleBoard"
 import DoodleMenu from "./components/DoodleMenu"
+import { ExpandMenuButton } from "./components/DoodleButtons"
 import { GlobalStateProvider, GlobalStateContext } from "./components/DoodleState"
 import AutoDoodle from "./utils/autoDoodle"
 import { getNewGridNumCells } from "./utils/util"
@@ -23,6 +24,7 @@ export default function App() {
 
     return (
         <>
+            <ExpandMenuButton />
             <DoodleBoard />
             <DoodleMenu />
         </>

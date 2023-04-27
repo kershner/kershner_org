@@ -62,9 +62,10 @@ export default function DoodleInput(props) {
 }
 
 export function DoodleButton(props) {
+    const cssClass = `doodle-button ${props.extraClassNames}`;
     return (
         <button id={`doodle-button-${props.id}`}
-                className="doodle-button"
+                className={cssClass}
                 onClick={props.onClick}>
             {props.value}
         </button>

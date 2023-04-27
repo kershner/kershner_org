@@ -18,3 +18,35 @@ export function CopyUrlButton() {
                          value={buttonName}
                          onClick={handleClick} />;
 }
+
+export function ExpandMenuButton() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const buttonId = "expand-menu";
+    const buttonName = "Expand";
+    const extraCssClass = "expand-menu-btn";
+
+    function handleClick(e) {
+        updateGlobalState("menuOpen", true);
+    }
+
+    return <DoodleButton id={buttonId}
+                         extraClassNames={extraCssClass}
+                         value={buttonName}
+                         onClick={handleClick} />;
+}
+
+export function CloseMenuButton() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const buttonId = "close-menu";
+    const buttonName = "Close";
+    const extraCssClass = "close-menu-btn";
+
+    function handleClick(e) {
+        updateGlobalState("menuOpen", false);
+    }
+
+    return <DoodleButton id={buttonId}
+                         extraClassNames={extraCssClass}
+                         value={buttonName}
+                         onClick={handleClick} />;
+}

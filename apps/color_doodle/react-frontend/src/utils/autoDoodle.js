@@ -30,7 +30,7 @@ export default class AutoDoodle {
     }
 
     random(fill=false) {
-        let collection = this.allSquares;
+        let collection = Array.from(this.allSquares);
         let modifiedState = { ...this.state };
 
         if (fill) {
@@ -55,6 +55,7 @@ export default class AutoDoodle {
             modifiedState.colorFade = !this.currentlyFilling;
         }
 
+        // TODO - shuffle the collection and splice the first index each time
         let randomIndex = Math.floor(Math.random() * collection.length);
         let randomSquare = collection[randomIndex];
 

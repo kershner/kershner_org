@@ -21,7 +21,8 @@ const GlobalStateProvider = ({ children }) => {
         colorFade: true,
         backgroundColor: "#202123",
         luminosity: "light",
-        mouseDown: false
+        mouseDown: false,
+        menuOpen: false
     };
 
     // Parse URL parameters into the initial state

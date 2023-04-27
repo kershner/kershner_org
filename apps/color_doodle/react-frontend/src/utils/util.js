@@ -26,9 +26,9 @@ export function getNewGridNumCells() {
 }
 
 export function encodeParams(params) {
-  return Object.keys(params)
-    .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key]))
-    .join('&');
+    return Object.keys(params)
+        .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key]))
+        .join('&');
 }
 
 export function parseParams() {
@@ -56,12 +56,13 @@ export function updateUrlParams(state) {
     }
 
     stateCopy = removeKeys(stateCopy, keysToRemove);
-    const params = encodeParams(stateCopy);
-    const newUrl = `?${params}`;
-    history.replaceState(null, null, newUrl);
+    history.replaceState(null, null, `?${encodeParams(stateCopy)}`);
 }
 
-export function copyToClipboard(text) {
-  navigator.clipboard.writeText(text)
-    .catch((err) => console.error('Error copying text: ', err));
+export async function copyToClipboard(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
 }
