@@ -56,8 +56,7 @@ export function updateUrlParams(state) {
     let stateCopy = { ...state };
     const keysToRemove = [
         "numSquares",
-        "mouseDown",
-        "updatingUrlParams"
+        "mouseDown"
     ];
 
     function removeKeys(obj, keys) {

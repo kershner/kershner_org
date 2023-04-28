@@ -10,7 +10,7 @@ export function CopyUrlButton() {
     const buttonName = "Copy URL";
 
     function handleClick(e) {
-        updateUrlParams(updateGlobalState);
+        updateUrlParams(globalState);
         copyToClipboard(window.location.href);
         alert("URL copied!");
     }

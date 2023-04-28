@@ -19,8 +19,7 @@ export const defaultState = {
     autoDoodle: false,
     colorFade: true,
     mouseDown: false,
-    menuOpen: true,
-    updatingUrlParams: false
+    menuOpen: true
 };
 
 const GlobalStateContext = createContext({});
