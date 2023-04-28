@@ -2,6 +2,9 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const baseDir = "./src/";
 
+//const publicUrl = "/static/dist";  // dev
+const publicUrl  = "https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/color_doodle/dist";
+
 module.exports = {
     entry: {
       bundle: [`${baseDir}App.js`, `${baseDir}/scss/doodle.scss`]
@@ -27,7 +30,7 @@ module.exports = {
         }),
         new HtmlWebPackPlugin({
             template: `${baseDir}/templates/doodle_index.html`,
-            publicPath: "/static/dist/"
+            publicPath: publicUrl
         })
     ]
 };
