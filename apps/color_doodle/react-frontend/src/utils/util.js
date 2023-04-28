@@ -1,3 +1,6 @@
+import { defaultState } from "../components/DoodleState"
+
+
 export const numCols = (cellSize) => {
     return Math.floor(window.innerWidth / cellSize);
 };
@@ -32,13 +35,18 @@ export function encodeParams(params) {
 }
 
 export function parseParams() {
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    let params = Object.fromEntries(urlSearchParams.entries());
+    let params = defaultState;
 
-    // Convert true/false query params to actual JS bools
-    params["colorFade"] = params["colorFade"] !== "false";
-    params["autoDoodle"] = params["autoDoodle"] !== "false";
-    params["menuOpen"] = params["menuOpen"] !== "false";
+    if (window.location.search !== "") {
+        const urlSearchParams = new URLSearchParams(window.location.search);
+        params = Object.fromEntries(urlSearchParams.entries());
+
+        const trueFalseParams = ["colorFade", "autoDoodle", "menuOpen"];
+        // Convert true/false query params to actual JS bools
+        trueFalseParams.forEach((param) => {
+            params[param] = params[param] !== "false";
+        });
+    }
 
     return params;
 }
@@ -48,7 +56,8 @@ export function updateUrlParams(state) {
     let stateCopy = { ...state };
     const keysToRemove = [
         "numSquares",
-        "mouseDown"
+        "mouseDown",
+        "updatingUrlParams"
     ];
 
     function removeKeys(obj, keys) {

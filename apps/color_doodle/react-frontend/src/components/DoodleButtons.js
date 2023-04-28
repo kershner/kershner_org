@@ -1,7 +1,7 @@
 import React, { useContext } from "react"
 import { GlobalStateContext } from "./DoodleState"
 import { DoodleButton } from "./DoodleInputs"
-import { encodeParams, copyToClipboard } from "../utils/util"
+import { encodeParams, copyToClipboard, updateUrlParams } from "../utils/util"
 
 
 export function CopyUrlButton() {
@@ -10,6 +10,7 @@ export function CopyUrlButton() {
     const buttonName = "Copy URL";
 
     function handleClick(e) {
+        updateUrlParams(updateGlobalState);
         copyToClipboard(window.location.href);
         alert("URL copied!");
     }
@@ -26,7 +27,9 @@ export function ExpandMenuButton() {
     const extraCssClass = "expand-menu-btn";
 
     function handleClick(e) {
-        updateGlobalState("menuOpen", true);
+        updateGlobalState("menuOpen", true, (newState)=> {
+            updateUrlParams(newState);
+        });
     }
 
     return <DoodleButton id={buttonId}
@@ -42,7 +45,9 @@ export function CloseMenuButton() {
     const extraCssClass = "close-menu-btn";
 
     function handleClick(e) {
-        updateGlobalState("menuOpen", false);
+        updateGlobalState("menuOpen", false, (newState)=> {
+            updateUrlParams(newState);
+        });
     }
 
     return <DoodleButton id={buttonId}

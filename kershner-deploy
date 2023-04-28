@@ -43,7 +43,7 @@ echo '==========[ Web server should be back online now... ]=========='
 echo ''
 
 echo '==========[ Collecting static files ]=========='
-$PYTHON $BASEDIR/manage.py collectstatic $PROD_SETTINGS --noinput
+$PYTHON $BASEDIR/manage.py collectstatic $PROD_SETTINGS --noinput -i node_modules
 echo ''
 
 echo '==========[ Deploy Complete! ]=========='

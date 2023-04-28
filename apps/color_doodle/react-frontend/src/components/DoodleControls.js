@@ -1,6 +1,6 @@
 import React, { useContext } from "react"
 import { GlobalStateContext } from "./DoodleState"
-import { getNewGridNumCells } from "../utils/util"
+import { getNewGridNumCells, updateUrlParams } from "../utils/util"
 import DoodleInput from "./DoodleInputs"
 
 
@@ -16,11 +16,15 @@ export function CellSizeControl() {
     }
 
     function handleMouseUp(e) {
-        updateGlobalState("numSquares", getNewGridNumCells());
+        updateGlobalState("numSquares", getNewGridNumCells(), (newState)=> {
+            updateUrlParams(newState);
+        });
     }
 
     function handleTouchEnd(e) {
-        updateGlobalState("numSquares", getNewGridNumCells());
+        updateGlobalState("numSquares", getNewGridNumCells(), (newState)=> {
+            updateUrlParams(newState);
+        });
     }
 
     return <DoodleInput inputType="range"
@@ -52,7 +56,9 @@ export function BorderStyleControl() {
     };
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value);
+        updateGlobalState(controlName, e.target.value, (newState)=> {
+            updateUrlParams(newState);
+        });
     }
 
     return <DoodleInput inputType="select"
@@ -72,6 +78,18 @@ export function BorderWidthControl() {
         updateGlobalState(controlName, e.target.value);
     }
 
+    function handleMouseUp(e) {
+        updateGlobalState(controlName, e.target.value, (newState)=> {
+            updateUrlParams(newState);
+        });
+    }
+
+    function handleTouchEnd(e) {
+        updateGlobalState(controlName, e.target.value, (newState)=> {
+            updateUrlParams(newState);
+        });
+    }
+
     return <DoodleInput inputType="range"
                         name={controlName}
                         label={label}
@@ -79,6 +97,8 @@ export function BorderWidthControl() {
                         min="1"
                         step="1"
                         handleChange={handleChange}
+                        handleMouseUp={handleMouseUp}
+                        handleTouchEnd={handleTouchEnd}
                         value={globalState[controlName]}/>;
 }
 
@@ -104,7 +124,9 @@ export function AutoDoodleControl() {
     const label = "Enabled";
 
     function handleChange(e) {
-        updateGlobalState(controlName, !globalState.autoDoodle);
+        updateGlobalState(controlName, !globalState.autoDoodle, (newState)=> {
+            updateUrlParams(newState);
+        });
     }
 
     return <DoodleInput inputType="checkbox"
@@ -126,7 +148,9 @@ export function AutoModeControl() {
     };
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value);
+        updateGlobalState(controlName, e.target.value, (newState)=> {
+            updateUrlParams(newState);
+        });
     }
 
     return <DoodleInput inputType="select"
@@ -146,6 +170,18 @@ export function AutoDoodleIntervalControl() {
         updateGlobalState(controlName, e.target.value);
     }
 
+    function handleMouseUp(e) {
+        updateGlobalState(controlName, e.target.value, (newState)=> {
+            updateUrlParams(newState);
+        });
+    }
+
+    function handleTouchEnd(e) {
+        updateGlobalState(controlName, e.target.value, (newState)=> {
+            updateUrlParams(newState);
+        });
+    }
+
     return <DoodleInput inputType="range"
                         name={controlName}
                         label={label}
@@ -153,6 +189,8 @@ export function AutoDoodleIntervalControl() {
                         max="2000"
                         min="100"
                         handleChange={handleChange}
+                        handleMouseUp={handleMouseUp}
+                        handleTouchEnd={handleTouchEnd}
                         value={globalState[controlName]} />;
 }
 
@@ -162,7 +200,9 @@ export function ColorFadeControl() {
     const label = "Fade";
 
     function handleChange(e) {
-        updateGlobalState(controlName, !globalState.colorFade);
+        updateGlobalState(controlName, !globalState.colorFade, (newState)=> {
+            updateUrlParams(newState);
+        });
     }
 
     return <DoodleInput inputType="checkbox"
@@ -181,6 +221,18 @@ export function AnimationDelayControl() {
         updateGlobalState(controlName, e.target.value);
     }
 
+    function handleMouseUp(e) {
+        updateGlobalState(controlName, e.target.value, (newState)=> {
+            updateUrlParams(newState);
+        });
+    }
+
+    function handleTouchEnd(e) {
+        updateGlobalState(controlName, e.target.value, (newState)=> {
+            updateUrlParams(newState);
+        });
+    }
+
     return <DoodleInput inputType="range"
                         name={controlName}
                         label={label}
@@ -188,6 +240,8 @@ export function AnimationDelayControl() {
                         max="2"
                         min="0.1"
                         handleChange={handleChange}
+                        handleMouseUp={handleMouseUp}
+                        handleTouchEnd={handleTouchEnd}
                         value={globalState[controlName]} />;
 }
 
@@ -206,7 +260,9 @@ export function AnimationEasingControl() {
     };
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value);
+        updateGlobalState(controlName, e.target.value, (newState)=> {
+            updateUrlParams(newState);
+        });
     }
 
     return <DoodleInput inputType="select"
@@ -229,7 +285,9 @@ export function LuminosityControl() {
     };
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value);
+        updateGlobalState(controlName, e.target.value, (newState)=> {
+            updateUrlParams(newState);
+        });
     }
 
     return <DoodleInput inputType="select"
@@ -250,7 +308,9 @@ export function BackgroundColorControl() {
     };
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value);
+        updateGlobalState(controlName, e.target.value, (newState)=> {
+            updateUrlParams(newState);
+        });
     }
 
     return <DoodleInput inputType="radio"
