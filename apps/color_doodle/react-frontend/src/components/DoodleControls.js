@@ -83,6 +83,22 @@ export function BorderWidthControl() {
                         value={globalState[controlName]}/>;
 }
 
+export function BorderColorControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const controlName = "borderColor";
+    const label = "Color";
+
+    function handleChange(e) {
+        updateGlobalState(controlName, e.target.value);
+    }
+
+    return <DoodleInput inputType="color"
+                        name={controlName}
+                        label={label}
+                        handleChange={handleChange}
+                        value={globalState[controlName]}/>;
+}
+
 export function AutoDoodleControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "autoDoodle";
@@ -229,7 +245,7 @@ export function BackgroundColorControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "backgroundColor";
     const label = "Background";
-    const options = {
+    const choices = {
         "light": "#FFF",
         "dark": "#202123"
     };
@@ -238,10 +254,10 @@ export function BackgroundColorControl() {
         updateGlobalState(controlName, e.target.value);
     }
 
-    return <DoodleInput inputType="select"
+    return <DoodleInput inputType="radio"
                         name={controlName}
                         label={label}
                         handleChange={handleChange}
-                        options={options}
-                        defaultValue={globalState[controlName]} />;
+                        choices={choices}
+                        checkedProperty={controlName}/>;
 }

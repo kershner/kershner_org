@@ -38,6 +38,7 @@ export function parseParams() {
     // Convert true/false query params to actual JS bools
     params["colorFade"] = params["colorFade"] !== "false";
     params["autoDoodle"] = params["autoDoodle"] !== "false";
+    params["menuOpen"] = params["menuOpen"] !== "false";
 
     return params;
 }

@@ -22,7 +22,7 @@ export function CopyUrlButton() {
 export function ExpandMenuButton() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const buttonId = "expand-menu";
-    const buttonName = "Expand";
+    const buttonName = "Settings";
     const extraCssClass = "expand-menu-btn";
 
     function handleClick(e) {

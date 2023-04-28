@@ -40,11 +40,49 @@ export function DoodleControl(props) {
     )
 }
 
+function DoodleRadioChoiceLabel(props) {
+    return (
+        <label htmlFor={props.id}>{props.label}</label>
+    )
+}
+
+function DoodleRadioChoice(props) {
+    return (
+        <input type="radio" id={props.id} value={props.value} name={props.name} checked={props.checked} value={props.value} />
+    )
+}
+
+export function DoodleRadio(props) {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const inputProps = props.props;
+    const choices = [];
+    for (const key in inputProps.choices) {
+        const id = `${key}-choice`;
+        const value = inputProps.choices[key];
+        const checked = globalState[inputProps.checkedProperty] === value;
+        const labelKey = `${key}-label`;
+        const choiceKey = `${key}-choice`;
+        choices.push(<DoodleRadioChoice key={labelKey} value={value} name={key} checked={checked} />);
+        choices.push(<DoodleRadioChoiceLabel key={choiceKey} id={id} label={key} />);
+    }
+    return (
+        <div id={inputProps.name} onChange={inputProps.handleChange}>
+            { choices }
+        </div>
+    )
+}
+
 export default function DoodleInput(props) {
     let doodleInput = undefined;
     switch (props.inputType) {
         case "select":
             doodleInput = <DoodleSelect props={props}/>;
+            break;
+        case "radio":
+            doodleInput = <DoodleRadio props={props}/>;
+            break;
+        case "color":
+            doodleInput = <DoodleControl props={props}/>;
             break;
         default:
             doodleInput = <DoodleControl props={props}/>;

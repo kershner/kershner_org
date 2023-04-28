@@ -15,10 +15,10 @@ export default function DoodleMenu() {
         <div className={cssStr}>
             <CloseMenuButton />
             <DoodleTopButtons />
+            <AutoControlsFieldset />
             <ColorControlsFieldset />
             <AnimationControlsFieldset />
             <GridControlsFieldset />
-            <AutoControlsFieldset />
         </div>
     )
 }

@@ -15,14 +15,18 @@ body {
   display: none !important;
 }
 
-.expand-menu-btn {
-  position: fixed;
-  right: 1rem;
-  top: 1rem;
-}
+.doodle-button {
+  cursor: pointer;
 
-.close-menu-btn {
-  align-self: flex-end;
+  &.expand-menu-btn {
+    position: fixed;
+    right: 1.5rem;
+    top: 1.5rem;
+  }
+
+  &.close-menu-btn {
+    align-self: flex-end;
+  }
 }
 
 .doodle-squares {
@@ -45,8 +49,7 @@ body {
   right: 0;
   height: 100%;
   background-color: lighten($black, 8);
-  padding: 1rem;
-  width: 12rem;
+  padding: 1.5rem;
   overflow-y: auto;
   border-radius: 0.2rem;
   color: #FFF;
@@ -70,7 +73,7 @@ body {
 
     .input-group {
       display: flex;
-      margin: 0.1rem 0;
+      margin: 0.2rem 0;
       width: 100%;
       font-size: 0.85rem;
 
