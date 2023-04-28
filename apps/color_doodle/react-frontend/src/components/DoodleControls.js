@@ -1,7 +1,6 @@
 import React, { useContext } from "react"
 import { GlobalStateContext } from "./DoodleState"
 import { getNewGridNumCells } from "../utils/util"
-import { colorSquare } from "./DoodleBoard"
 import DoodleInput from "./DoodleInputs"
 
 
@@ -39,7 +38,7 @@ export function CellSizeControl() {
 export function BorderStyleControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "borderStyle";
-    const label = "Border Style";
+    const label = "Style";
     const options = {
         "hidden": "hidden",
         "dotted": "dotted",
@@ -67,7 +66,7 @@ export function BorderStyleControl() {
 export function BorderWidthControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "borderWidth";
-    const label = "Border width";
+    const label = "Width";
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value);
@@ -259,5 +258,5 @@ export function BackgroundColorControl() {
                         label={label}
                         handleChange={handleChange}
                         choices={choices}
-                        checkedProperty={controlName}/>;
+                        checkedProperty={controlName} />;
 }

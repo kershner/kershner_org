@@ -48,7 +48,7 @@ function DoodleRadioChoiceLabel(props) {
 
 function DoodleRadioChoice(props) {
     return (
-        <input type="radio" id={props.id} value={props.value} name={props.name} checked={props.checked} value={props.value} />
+        <input type="radio" id={props.id} value={props.value} name={props.name} onChange={()=>{}} checked={props.checked} value={props.value} />
     )
 }
 
