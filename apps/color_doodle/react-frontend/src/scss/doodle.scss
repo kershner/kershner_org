@@ -61,8 +61,7 @@ body {
   right: 0;
   height: 100%;
   background-color: lighten($black, 8);
-  padding: 1.5rem;
-  padding-bottom: 5rem;
+  padding: 1.5rem 0;
   overflow-y: auto;
   border-radius: 0.2rem;
   color: #FFF;
@@ -73,27 +72,42 @@ body {
     display: flex;
     flex-direction: column;
     padding: 0;
-    margin-bottom: 1.5rem;
-    border: none;
+    padding-bottom: 0.5rem;
+    border: 0;
     &:last-of-type {
       margin-bottom: 5rem;
     }
 
-    legend {
-      padding: 0;
+    .fieldset-label {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.25rem 0.5rem;
       font-weight: bold;
+      border: 1px solid #FFF;
+      cursor: pointer;
     }
 
     .input-group {
-      display: flex;
+      display: none;
       flex-direction: column;
       align-items: flex-start;
       margin-bottom: 0.25rem;
-      width: 100%;
+      padding: 0 1rem;
       font-size: 0.9rem;
 
       .label-group {
         margin: 0.25rem 0;
+      }
+    }
+
+    &.expanded {
+      .fieldset-label {
+        background-color: #FFF;
+        color: $black;
+      }
+
+      .input-group {
+        display: flex;
       }
     }
   }

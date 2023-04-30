@@ -25,7 +25,14 @@ export const defaultState = {
     autoDoodle: false,
     colorFade: true,
     mouseDown: false,
-    menuOpen: true
+    // Menu States
+    menuOpen: true,
+    automationFieldsetOpen: true,
+    clickEffectFieldsetOpen: false,
+    hoverEffectFieldsetOpen: false,
+    colorFieldsetOpen: false,
+    animationFieldsetOpen: false,
+    gridFieldsetOpen: false
 };
 
 const GlobalStateContext = createContext({});

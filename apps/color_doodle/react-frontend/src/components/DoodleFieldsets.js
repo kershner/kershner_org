@@ -1,4 +1,6 @@
-import React from "react"
+import React, { useContext, useEffect } from "react"
+import { GlobalStateContext } from "./DoodleState"
+import { updateUrlParams } from "../utils/util"
 import {
     CellSizeControl, BorderStyleControl, BorderWidthControl, BorderColorControl, AutoDoodleControl,
     AutoModeControl, AutoDoodleIntervalControl, ColorFadeControl, AnimationDelayControl, AnimationEasingControl,
@@ -8,10 +10,35 @@ import {
 } from "./DoodleControls"
 
 
-export function GridControlsFieldset() {
+function CollapsibleFieldsetHeader(props) {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    function handleClick(e) {
+        const fieldset = e.target.closest("fieldset");
+        const statusIcon = e.target.closest(".fieldset-label").querySelector("span");
+        const open = !globalState[props.stateValue];
+        statusIcon.textContent = open ? "▲" : "▼";
+        fieldset.classList.toggle("expanded");
+
+        updateGlobalState(props.stateValue, open, (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
     return (
-        <fieldset>
-            <legend>Grid</legend>
+        <div className="fieldset-label" onClick={handleClick}>
+            <legend>{props.name}</legend>
+            <span>⯆</span>
+        </div>
+    )
+}
+
+export function GridControlsFieldset() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const toggleStateValue = "gridFieldsetOpen";
+
+    return (
+        <fieldset className={globalState[toggleStateValue] ? "expanded" : ""}>
+            <CollapsibleFieldsetHeader name="Grid" stateValue={toggleStateValue} />
             <BackgroundColorControl />
             <CellSizeControl />
             <BorderStyleControl />
@@ -22,9 +49,12 @@ export function GridControlsFieldset() {
 }
 
 export function ClickEffectControlsFieldset() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const toggleStateValue = "clickEffectFieldsetOpen";
+
     return (
-        <fieldset>
-            <legend>Click effect</legend>
+        <fieldset className={globalState[toggleStateValue] ? "expanded" : ""}>
+            <CollapsibleFieldsetHeader name="Click" stateValue={toggleStateValue} />
             <ClickEffectEnabledControl />
             <ClickEffectModeControl />
             <ClickEffectAnimationDelayControl />
@@ -33,9 +63,12 @@ export function ClickEffectControlsFieldset() {
 }
 
 export function HoverEffectControlsFieldset() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const toggleStateValue = "hoverEffectFieldsetOpen";
+
     return (
-        <fieldset>
-            <legend>Hover effect</legend>
+        <fieldset className={globalState[toggleStateValue] ? "expanded" : ""}>
+            <CollapsibleFieldsetHeader name="Hover" stateValue={toggleStateValue} />
             <HoverEffectEnabledControl />
             <HoverEffectRadiusControl />
             <HoverEffectAnimationDelayControl />
@@ -44,9 +77,12 @@ export function HoverEffectControlsFieldset() {
 }
 
 export function ColorControlsFieldset() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const toggleStateValue = "colorFieldsetOpen";
+
     return (
-        <fieldset>
-            <legend>Color</legend>
+        <fieldset className={globalState[toggleStateValue] ? "expanded" : ""}>
+            <CollapsibleFieldsetHeader name="Color" stateValue={toggleStateValue} />
             <ColorFadeControl />
             <LuminosityControl />
         </fieldset>
@@ -54,9 +90,12 @@ export function ColorControlsFieldset() {
 }
 
 export function AnimationControlsFieldset() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const toggleStateValue = "animationFieldsetOpen";
+
     return (
-        <fieldset>
-            <legend>Animation</legend>
+        <fieldset className={globalState[toggleStateValue] ? "expanded" : ""}>
+            <CollapsibleFieldsetHeader name="Animation" stateValue={toggleStateValue} />
             <AnimationDelayControl />
             <AnimationEasingControl />
         </fieldset>
@@ -64,9 +103,12 @@ export function AnimationControlsFieldset() {
 }
 
 export function AutoControlsFieldset() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const toggleStateValue = "automationFieldsetOpen";
+
     return (
-        <fieldset>
-            <legend>Automation</legend>
+        <fieldset className={globalState[toggleStateValue] ? "expanded" : ""}>
+            <CollapsibleFieldsetHeader name="Automation" stateValue={toggleStateValue} />
             <AutoDoodleControl />
             <AutoModeControl />
             <AutoDoodleIntervalControl />
