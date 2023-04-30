@@ -27,7 +27,7 @@ function CollapsibleFieldsetHeader(props) {
     return (
         <div className="fieldset-label" onClick={handleClick}>
             <legend>{props.name}</legend>
-            <span>⯆</span>
+            <span>▼</span>
         </div>
     )
 }
