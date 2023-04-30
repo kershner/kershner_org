@@ -34,7 +34,8 @@ module.exports = {
         }),
         new HtmlWebPackPlugin({
             template: `${baseDir}/templates/doodle_index.html`,
-            publicPath: publicUrl
+            publicPath: publicUrl,
+            filename: "color_doodle_index.html"
         })
     ]
 };

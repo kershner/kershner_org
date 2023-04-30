@@ -47,7 +47,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'kershner.urls'
 
 DJANGO_TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates')
-COLOR_DOODLE_REACT_PATH = os.path.join(BASE_DIR, 'apps', 'color_doodle', 'react-frontend')
+COLOR_DOODLE_REACT_PATH = os.path.join(BASE_DIR, 'apps', 'color_doodle', 'react-frontend', 'color_doodle_dist')
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
