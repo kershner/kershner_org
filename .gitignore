@@ -20,3 +20,4 @@ linux-venv/
 kersh_venv/
 apps/color_doodle/react-frontend/dist/
 apps/color_doodle/react-frontend/node_modules/
+apps/color_doodle/react-frontend/color_doodle_dist/
