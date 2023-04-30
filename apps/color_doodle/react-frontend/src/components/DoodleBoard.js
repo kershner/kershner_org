@@ -5,11 +5,14 @@ import ViewportResize from "./ViewportResize"
 import { numCols, range } from "../utils/util"
 
 
-export function colorSquare(squareEl, state, callback=null, color=null) {
+export function colorSquare(squareEl, state, callback=null, color=null, duration=null) {
     squareEl.addEventListener("transitionend", transitionEndHandler);
 
     const chosenColor = color ? color : randomColor({luminosity: state.luminosity});
+    const chosenDuration = duration ? duration : state.animationDuration;
+
     squareEl.style.backgroundColor = chosenColor;
+    squareEl.style.transitionDuration = `${chosenDuration}s`;
 
     function transitionEndHandler() {
         if (state.colorFade) {
@@ -37,23 +40,23 @@ function DoodleSquare(props) {
         borderRightColor: globalState.borderColor,
         borderBottomColor: globalState.borderColor,
         borderStyle: globalState.borderStyle,
-        transition: `background-color ${globalState.animationDelay}s ${globalState.animationEasing}`
+        transition: `background-color ${globalState.animationEasing}`
     };
 
     function handleMouseEnter(e) {
-        if (globalState.mouseDown) {
-            colorAdjacentSquares(e.target, 1);
-        } else {
-            colorSquare(e.target, globalState);
+        if (globalState.hoverEffectEnabled) {
+            const radius = parseInt(globalState.hoverEffectRadius);
+            const duration = parseFloat(globalState.hoverEffectAnimationDuration);
+            colorAdjacentSquares(e.target, radius, duration);
         }
     }
 
-    function handleMouseLeave(e) {
-    }
-
     function handleMouseDown(e) {
-        updateGlobalState("mouseDown", true);
-        colorAdjacentSquares(e.target, 1);
+        if (globalState.clickEffectEnabled) {
+            updateGlobalState("mouseDown", true);
+            console.log(`clicked! mode: ${globalState.clickEffectMode}`);
+            colorAdjacentSquares(e.target, 1, globalState.clickEffectAnimationDuration);
+        }
     }
 
     function handleMouseUp(e) {
@@ -68,10 +71,7 @@ function DoodleSquare(props) {
         handleMouseUp(e);
     }
 
-    function handleClick(e) {
-    }
-
-    function colorAdjacentSquares(square, offset=1) {
+    function colorAdjacentSquares(square, offset=1, duration=globalState.animationDuration) {
         const { row, col } = square.dataset;
         const adjacentSquares = getAdjacentSquares(+row, +col, offset);
         const chosenColor = randomColor({luminosity: globalState.luminosity});
@@ -80,7 +80,7 @@ function DoodleSquare(props) {
             const selector = `.doodle-square[data-row="${row}"][data-col="${col}"]`;
             const square = document.querySelector(selector);
             if (square) {
-                colorSquare(square, globalState, null, chosenColor);
+                colorSquare(square, globalState, null, chosenColor, duration);
             }
         });
     }
@@ -99,12 +99,10 @@ function DoodleSquare(props) {
         <button style={divStyle}
                 className="doodle-square"
                 onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
                 onMouseDown={handleMouseDown}
                 onMouseUp={handleMouseUp}
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
-                onClick={handleClick}
             {...props.dataAttrs} >
         </button>
     );

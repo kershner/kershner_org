@@ -96,7 +96,7 @@ export function ClearBoardButton() {
 
 export function DoodleMenuButtonGroupTop() {
     return (
-        <div className="doodle-buttons">
+        <div className="doodle-button-group menu-buttons">
             <CopyUrlButton />
             <DefaultStateButton />
             <ClearBoardButton />

@@ -2,7 +2,9 @@ import React from "react"
 import {
     CellSizeControl, BorderStyleControl, BorderWidthControl, BorderColorControl, AutoDoodleControl,
     AutoModeControl, AutoDoodleIntervalControl, ColorFadeControl, AnimationDelayControl, AnimationEasingControl,
-    LuminosityControl, BackgroundColorControl
+    LuminosityControl, BackgroundColorControl, ClickEffectEnabledControl, ClickEffectModeControl,
+    ClickEffectAnimationDelayControl, HoverEffectEnabledControl, HoverEffectRadiusControl,
+    HoverEffectAnimationDelayControl
 } from "./DoodleControls"
 
 
@@ -15,6 +17,28 @@ export function GridControlsFieldset() {
             <BorderStyleControl />
             <BorderWidthControl />
             <BorderColorControl />
+        </fieldset>
+    )
+}
+
+export function ClickEffectControlsFieldset() {
+    return (
+        <fieldset>
+            <legend>Click effect</legend>
+            <ClickEffectEnabledControl />
+            <ClickEffectModeControl />
+            <ClickEffectAnimationDelayControl />
+        </fieldset>
+    )
+}
+
+export function HoverEffectControlsFieldset() {
+    return (
+        <fieldset>
+            <legend>Hover effect</legend>
+            <HoverEffectEnabledControl />
+            <HoverEffectRadiusControl />
+            <HoverEffectAnimationDelayControl />
         </fieldset>
     )
 }

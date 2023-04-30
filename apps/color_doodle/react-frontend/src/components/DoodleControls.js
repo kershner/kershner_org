@@ -16,13 +16,13 @@ export function CellSizeControl() {
     }
 
     function handleMouseUp(e) {
-        updateGlobalState("numSquares", getNewGridNumCells(), (newState)=> {
+        updateGlobalState("numSquares", getNewGridNumCells(), (newState) => {
             updateUrlParams(newState);
         });
     }
 
     function handleTouchEnd(e) {
-        updateGlobalState("numSquares", getNewGridNumCells(), (newState)=> {
+        updateGlobalState("numSquares", getNewGridNumCells(), (newState) => {
             updateUrlParams(newState);
         });
     }
@@ -56,7 +56,7 @@ export function BorderStyleControl() {
     };
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value, (newState)=> {
+        updateGlobalState(controlName, e.target.value, (newState) => {
             updateUrlParams(newState);
         });
     }
@@ -79,13 +79,13 @@ export function BorderWidthControl() {
     }
 
     function handleMouseUp(e) {
-        updateGlobalState(controlName, e.target.value, (newState)=> {
+        updateGlobalState(controlName, e.target.value, (newState) => {
             updateUrlParams(newState);
         });
     }
 
     function handleTouchEnd(e) {
-        updateGlobalState(controlName, e.target.value, (newState)=> {
+        updateGlobalState(controlName, e.target.value, (newState) => {
             updateUrlParams(newState);
         });
     }
@@ -112,13 +112,13 @@ export function BorderColorControl() {
     }
 
     function handleMouseUp(e) {
-        updateGlobalState(controlName, e.target.value, (newState)=> {
+        updateGlobalState(controlName, e.target.value, (newState) => {
             updateUrlParams(newState);
         });
     }
 
     function handleTouchEnd(e) {
-        updateGlobalState(controlName, e.target.value, (newState)=> {
+        updateGlobalState(controlName, e.target.value, (newState) => {
             updateUrlParams(newState);
         });
     }
@@ -136,7 +136,7 @@ export function AutoDoodleControl() {
     const label = "Enabled";
 
     function handleChange(e) {
-        updateGlobalState(controlName, !globalState.autoDoodle, (newState)=> {
+        updateGlobalState(controlName, !globalState[controlName], (newState) => {
             updateUrlParams(newState);
         });
     }
@@ -160,7 +160,7 @@ export function AutoModeControl() {
     };
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value, (newState)=> {
+        updateGlobalState(controlName, e.target.value, (newState) => {
             updateUrlParams(newState);
         });
     }
@@ -183,13 +183,13 @@ export function AutoDoodleIntervalControl() {
     }
 
     function handleMouseUp(e) {
-        updateGlobalState(controlName, e.target.value, (newState)=> {
+        updateGlobalState(controlName, e.target.value, (newState) => {
             updateUrlParams(newState);
         });
     }
 
     function handleTouchEnd(e) {
-        updateGlobalState(controlName, e.target.value, (newState)=> {
+        updateGlobalState(controlName, e.target.value, (newState) => {
             updateUrlParams(newState);
         });
     }
@@ -212,7 +212,7 @@ export function ColorFadeControl() {
     const label = "Fade";
 
     function handleChange(e) {
-        updateGlobalState(controlName, !globalState.colorFade, (newState)=> {
+        updateGlobalState(controlName, !globalState[controlName], (newState) => {
             updateUrlParams(newState);
         });
     }
@@ -226,21 +226,21 @@ export function ColorFadeControl() {
 
 export function AnimationDelayControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "animationDelay";
-    const label = "Delay";
+    const controlName = "animationDuration";
+    const label = "Global Duration";
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value);
     }
 
     function handleMouseUp(e) {
-        updateGlobalState(controlName, e.target.value, (newState)=> {
+        updateGlobalState(controlName, e.target.value, (newState) => {
             updateUrlParams(newState);
         });
     }
 
     function handleTouchEnd(e) {
-        updateGlobalState(controlName, e.target.value, (newState)=> {
+        updateGlobalState(controlName, e.target.value, (newState) => {
             updateUrlParams(newState);
         });
     }
@@ -272,7 +272,7 @@ export function AnimationEasingControl() {
     };
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value, (newState)=> {
+        updateGlobalState(controlName, e.target.value, (newState) => {
             updateUrlParams(newState);
         });
     }
@@ -297,7 +297,7 @@ export function LuminosityControl() {
     };
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value, (newState)=> {
+        updateGlobalState(controlName, e.target.value, (newState) => {
             updateUrlParams(newState);
         });
     }
@@ -320,7 +320,7 @@ export function BackgroundColorControl() {
     };
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value, (newState)=> {
+        updateGlobalState(controlName, e.target.value, (newState) => {
             updateUrlParams(newState);
         });
     }
@@ -331,4 +331,167 @@ export function BackgroundColorControl() {
                         handleChange={handleChange}
                         choices={choices}
                         checkedProperty={controlName} />;
+}
+
+// Click effect controls
+export function ClickEffectEnabledControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const controlName = "clickEffectEnabled";
+    const label = "Enabled";
+
+    function handleChange(e) {
+        updateGlobalState(controlName, !globalState[controlName], (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
+    return <DoodleInput inputType="checkbox"
+                        name={controlName}
+                        label={label}
+                        handleChange={handleChange}
+                        checked={globalState[controlName]} />;
+}
+
+export function ClickEffectModeControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const controlName = "clickEffectMode";
+    const label = "Effect";
+    const options = {
+        "block": "block",
+        "random": "random",
+        "random (fill/clear)": "randomFill",
+        "rain (vertical)": "rainVertical",
+        "rain (horizontal)": "rainHorizontal"
+    };
+
+    function handleChange(e) {
+        updateGlobalState(controlName, e.target.value, (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
+    return <DoodleInput inputType="select"
+                        name={controlName}
+                        label={label}
+                        handleChange={handleChange}
+                        options={options}
+                        defaultValue={globalState[controlName]}/>;
+}
+
+export function ClickEffectAnimationDelayControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const controlName = "clickEffectAnimationDuration";
+    const label = "Animation duration";
+
+    function handleChange(e) {
+        updateGlobalState(controlName, e.target.value);
+    }
+
+    function handleMouseUp(e) {
+        updateGlobalState(controlName, e.target.value, (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
+    function handleTouchEnd(e) {
+        updateGlobalState(controlName, e.target.value, (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
+    return <DoodleInput inputType="range"
+                        name={controlName}
+                        label={label}
+                        step="0.1"
+                        max="2"
+                        min="0.1"
+                        handleChange={handleChange}
+                        handleMouseUp={handleMouseUp}
+                        handleTouchEnd={handleTouchEnd}
+                        value={globalState[controlName]} />;
+}
+
+// Hover effect controls
+export function HoverEffectEnabledControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const controlName = "hoverEffectEnabled";
+    const label = "Enabled";
+
+    function handleChange(e) {
+        updateGlobalState(controlName, !globalState[controlName], (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
+    return <DoodleInput inputType="checkbox"
+                        name={controlName}
+                        label={label}
+                        handleChange={handleChange}
+                        checked={globalState[controlName]} />;
+}
+
+export function HoverEffectRadiusControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const controlName = "hoverEffectRadius";
+    const label = "Radius";
+
+    function handleChange(e) {
+        updateGlobalState(controlName, e.target.value);
+    }
+
+    function handleMouseUp(e) {
+        updateGlobalState(controlName, e.target.value, (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
+    function handleTouchEnd(e) {
+        updateGlobalState(controlName, e.target.value, (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
+    return <DoodleInput inputType="range"
+                        name={controlName}
+                        label={label}
+                        step="1"
+                        max="3"
+                        min="0"
+                        handleChange={handleChange}
+                        handleMouseUp={handleMouseUp}
+                        handleTouchEnd={handleTouchEnd}
+                        value={globalState[controlName]} />;
+}
+
+export function HoverEffectAnimationDelayControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const controlName = "hoverEffectAnimationDuration";
+    const label = "Animation duration";
+
+    function handleChange(e) {
+        updateGlobalState(controlName, e.target.value);
+    }
+
+    function handleMouseUp(e) {
+        updateGlobalState(controlName, e.target.value, (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
+    function handleTouchEnd(e) {
+        updateGlobalState(controlName, e.target.value, (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
+    return <DoodleInput inputType="range"
+                        name={controlName}
+                        label={label}
+                        step="0.1"
+                        max="2"
+                        min="0.1"
+                        handleChange={handleChange}
+                        handleMouseUp={handleMouseUp}
+                        handleTouchEnd={handleTouchEnd}
+                        value={globalState[controlName]} />;
 }

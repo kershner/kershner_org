@@ -47,11 +47,13 @@ export function parseParams() {
         const urlSearchParams = new URLSearchParams(window.location.search);
         params = Object.fromEntries(urlSearchParams.entries());
 
-        const trueFalseParams = ["colorFade", "autoDoodle", "menuOpen"];
         // Convert true/false query params to actual JS bools
-        trueFalseParams.forEach((param) => {
-            params[param] = params[param] !== "false";
-        });
+        for (const key in params) {
+            const value = params[key];
+            if (value === "true" || value === "false") {
+                params[key] = value !== "false";
+            }
+        }
     }
 
     return params;
@@ -59,7 +61,7 @@ export function parseParams() {
 
 export function updateUrlParams(state) {
     // Pop out unnecessary system params
-    let stateCopy = { ...state };
+    let stateCopy = {...state};
     const keysToRemove = [
         "numSquares",
         "mouseDown"
@@ -83,7 +85,7 @@ export async function copyToClipboard(text) {
 }
 
 export function shuffleArray(array) {
-    for (let i = array.length-1; i>0; i--) {
+    for (let i=array.length-1; i>0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
     }

@@ -2,7 +2,8 @@ import React, { useContext } from "react"
 import { GlobalStateContext } from "./DoodleState"
 import { DoodleMenuButtonGroupTop, CloseMenuButton } from "./DoodleButtons"
 import {
-    GridControlsFieldset, ColorControlsFieldset, AnimationControlsFieldset, AutoControlsFieldset
+    GridControlsFieldset, ClickEffectControlsFieldset, ColorControlsFieldset, AnimationControlsFieldset,
+    AutoControlsFieldset, HoverEffectControlsFieldset
 } from "./DoodleFieldsets"
 
 
@@ -15,6 +16,8 @@ export default function DoodleMenu() {
             <CloseMenuButton />
             <DoodleMenuButtonGroupTop />
             <AutoControlsFieldset />
+            <ClickEffectControlsFieldset />
+            <HoverEffectControlsFieldset />
             <ColorControlsFieldset />
             <AnimationControlsFieldset />
             <GridControlsFieldset />
