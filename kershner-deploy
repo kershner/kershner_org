@@ -42,7 +42,7 @@ echo ''
 echo '==========[ Compiling front end assets (react etc) ]=========='
 cd $COLOR_DOODLE_DIR
 npm install
-npm run build-prod
+npm run build
 
 echo '==========[ Restarting supervisor ]=========='
 sudo service supervisor restart
