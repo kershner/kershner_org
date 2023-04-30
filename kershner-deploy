@@ -11,7 +11,7 @@ PYTHON="$VENVDIR/bin/python"
 PROD_SETTINGS="--settings=site_config.settings.prod"
 
 # react apps
-COLOR_DOODLE_DIR=$DJANGODIR/apps/color_doodle/react_frontend
+COLOR_DOODLE_DIR=$BASEDIR/apps/color_doodle/react_frontend
 
 echo '==========[ DEPLOYING KERSHNER.ORG ]=========='
 echo ''
