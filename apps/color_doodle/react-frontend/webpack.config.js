@@ -3,7 +3,7 @@ const HtmlWebPackPlugin = require("html-webpack-plugin");
 const baseDir = "./src/";
 
 //const publicUrl = "/static/dist";  // dev
-const publicUrl  = "https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/color_doodle/dist";
+const publicUrl  = "https://djfdm802jwooz.cloudfront.net/static/color_doodle/dist";
 
 module.exports = {
     entry: {
