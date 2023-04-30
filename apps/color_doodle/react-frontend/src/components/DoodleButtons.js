@@ -43,7 +43,7 @@ export function CloseMenuButton() {
 function CopyUrlButton() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const buttonId = "copy-url";
-    const buttonName = "Copy URL";
+    const buttonName = "Share";
 
     function handleClick(e) {
         updateUrlParams(globalState);

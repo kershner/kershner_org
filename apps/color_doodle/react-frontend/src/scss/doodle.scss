@@ -20,6 +20,7 @@ body {
   border: 1px solid #FFF;
   color: #FFF;
   background: unset;
+  font-size: 1.2rem;
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
 
@@ -38,6 +39,7 @@ body {
 
   &.close-menu-btn {
     align-self: flex-end;
+    margin-right: 0.5rem;
   }
 }
 
@@ -57,6 +59,7 @@ body {
   display: flex;
   flex-direction: column;
   position: fixed;
+  width: 15rem;
   top: 0;
   right: 0;
   height: 100%;
