@@ -10,6 +10,9 @@ PIP="$VENVDIR/bin/pip"
 PYTHON="$VENVDIR/bin/python"
 PROD_SETTINGS="--settings=site_config.settings.prod"
 
+# react apps
+COLOR_DOODLE_DIR=$DJANGODIR/apps/color_doodle/react_frontend
+
 echo '==========[ DEPLOYING KERSHNER.ORG ]=========='
 echo ''
 
@@ -35,6 +38,12 @@ $PYTHON $BASEDIR/manage.py makemigrations $PROD_SETTINGS
 $PYTHON $BASEDIR/manage.py migrate $PROD_SETTINGS
 echo ''
 
+
+echo '==========[ Compiling front end assets (react etc) ]=========='
+cd $COLOR_DOODLE_DIR
+npm install
+npm run build-prod
+
 echo '==========[ Restarting supervisor ]=========='
 sudo service supervisor restart
 echo ''
@@ -43,7 +52,7 @@ echo '==========[ Web server should be back online now... ]=========='
 echo ''
 
 echo '==========[ Collecting static files ]=========='
-$PYTHON $BASEDIR/manage.py collectstatic $PROD_SETTINGS --noinput -i node_modules
+$PYTHON $BASEDIR/manage.py collectstatic $PROD_SETTINGS --noinput --ignore=node_modules
 echo ''
 
 echo '==========[ Deploy Complete! ]=========='
