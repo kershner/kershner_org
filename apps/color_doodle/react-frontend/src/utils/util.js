@@ -25,7 +25,13 @@ export function calculateNumberOfCells(cellSize) {
 }
 
 export function getNewGridNumCells() {
-    return calculateNumberOfCells(getComputedButtonSize());
+    let cellSize;
+    try {
+        cellSize = getComputedButtonSize();
+    } catch (e) {
+        cellSize = defaultState.cellSize;
+    }
+    return calculateNumberOfCells(cellSize);
 }
 
 export function encodeParams(params) {

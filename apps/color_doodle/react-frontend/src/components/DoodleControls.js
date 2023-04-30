@@ -30,7 +30,7 @@ export function CellSizeControl() {
     return <DoodleInput inputType="range"
                         name={controlName}
                         label={label}
-                        max="500"
+                        max="350"
                         min="50"
                         step="10"
                         handleChange={handleChange}
