@@ -108,7 +108,9 @@ export function BorderColorControl() {
     const label = "Color";
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value);
+        updateGlobalState(controlName, e.target.value, (newState)=> {
+            updateUrlParams(newState);
+        });
     }
 
     return <DoodleInput inputType="color"

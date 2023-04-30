@@ -8,7 +8,7 @@ function DoodleSelectOption(props) {
     )
 }
 
-export function DoodleSelect(props) {
+function DoodleSelect(props) {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const inputProps = props.props;
     const options = [];
@@ -23,7 +23,7 @@ export function DoodleSelect(props) {
     )
 }
 
-export function DoodleControl(props) {
+function DoodleControl(props) {
     const inputProps = props.props;
     return (
         <input type={inputProps.inputType}
@@ -40,15 +40,12 @@ export function DoodleControl(props) {
     )
 }
 
-function DoodleRadioChoiceLabel(props) {
-    return (
-        <label htmlFor={props.id}>{props.label}</label>
-    )
-}
-
 function DoodleRadioChoice(props) {
     return (
-        <input type="radio" id={props.id} value={props.value} name={props.name} onChange={()=>{}} checked={props.checked} value={props.value} />
+        <div className="doodle-radio">
+            <input type="radio" id={props.id} value={props.value} name={props.name} onChange={()=>{}} checked={props.checked} value={props.value} />
+            <label htmlFor={props.id}>{props.label}</label>
+        </div>
     )
 }
 
@@ -61,9 +58,7 @@ export function DoodleRadio(props) {
         const value = inputProps.choices[key];
         const checked = globalState[inputProps.checkedProperty] === value;
         const labelKey = `${key}-label`;
-        const choiceKey = `${key}-choice`;
-        choices.push(<DoodleRadioChoice key={labelKey} value={value} name={key} checked={checked} />);
-        choices.push(<DoodleRadioChoiceLabel key={choiceKey} id={id} label={key} />);
+        choices.push(<DoodleRadioChoice  key={labelKey} value={value} name={key} checked={checked} id={id} label={key} />)
     }
     return (
         <div id={inputProps.name} onChange={inputProps.handleChange}>

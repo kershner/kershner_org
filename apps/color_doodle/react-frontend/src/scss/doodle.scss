@@ -4,7 +4,7 @@ body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  font-family: Arial, sans-serif;
+  font-family: Verdana, sans-serif;
 }
 
 %box-shadow {
@@ -17,11 +17,24 @@ body {
 
 .doodle-button {
   cursor: pointer;
+  border: 1px solid #FFF;
+  color: #FFF;
+  background: unset;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+
+  &:hover {
+    background: #FFF;
+    color: $black;
+  }
 
   &.expand-menu-btn {
     position: fixed;
     right: 1.5rem;
     top: 1.5rem;
+    background: $black;
+    color: #FFF;
+    border: none;
   }
 
   &.close-menu-btn {
@@ -53,18 +66,15 @@ body {
   overflow-y: auto;
   border-radius: 0.2rem;
   color: #FFF;
+  font-size: 1.25rem;
   @extend %box-shadow;
 
   fieldset {
     display: flex;
     flex-direction: column;
     padding: 0;
-    border: 0;
-    margin: 1rem 0;
-    &:not(:last-of-type) {
-      padding-bottom: 1rem;
-      border-bottom: 1px solid white;
-    }
+    margin-bottom: 1.5rem;
+    border: none;
 
     legend {
       padding: 0;
@@ -73,15 +83,14 @@ body {
 
     .input-group {
       display: flex;
-      margin: 0.2rem 0;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: 0.25rem;
       width: 100%;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
 
       .label-group {
-        align-self: center;
-        flex-shrink: 0;
-        width: 5rem;
-        padding-right: 0.5rem;
+        margin: 0.25rem 0;
       }
     }
   }
@@ -89,6 +98,9 @@ body {
   select {
     cursor: pointer;
     width: 100%;
+    font-size: 1.1rem;
+    border-radius: 0.75rem;
+    padding: 0.1rem 0.25rem;
   }
 
   input {
@@ -96,7 +108,34 @@ body {
     cursor: pointer;
 
     &[type="range"] {
-      width: 100%;
+      margin: 0.25rem auto;
+      width: 85%;
+      transform: scale(1.2);
+    }
+    &[type="checkbox"] {
+      transform: scale(1.75);
+    }
+  }
+
+  .doodle-radio {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.25rem;
+
+    input[type="radio"] {
+      transform: scale(1.5);
+    }
+    label {
+      padding-left: 0.5rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  .doodle-buttons {
+    margin: 1rem auto;
+
+    button {
+      margin: 0.25rem;
     }
   }
 }
