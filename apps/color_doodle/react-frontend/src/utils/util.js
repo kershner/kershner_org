@@ -76,8 +76,16 @@ export function updateUrlParams(state) {
 
 export async function copyToClipboard(text) {
     try {
-      await navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(text);
     } catch (err) {
-      console.error('Failed to copy: ', err);
+        console.error('Failed to copy: ', err);
     }
+}
+
+export function shuffleArray(array) {
+    for (let i = array.length-1; i>0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
 }

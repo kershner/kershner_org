@@ -1,10 +1,11 @@
 import { colorSquare } from "../components/DoodleBoard"
-import { numCols, numRows } from "../utils/util"
+import { numCols, numRows, shuffleArray } from "../utils/util"
 
 export default class AutoDoodle {
     constructor(state) {
         this.state = state;
         this.allSquares = document.querySelectorAll(".doodle-square");
+        this.tempCollection = shuffleArray(Array.from(this.allSquares));
         this.currentlyFilling = true;
     }
 
@@ -30,35 +31,18 @@ export default class AutoDoodle {
     }
 
     random(fill=false) {
-        let collection = Array.from(this.allSquares);
         let modifiedState = { ...this.state };
 
         if (fill) {
-            // Get  collection of squares, either all transparent or all non-transparent
-            collection = Array.from(this.allSquares).filter(el => {
-                const transparentBg = "rgba(0, 0, 0, 0)";
-                const computedStyle = window.getComputedStyle(el);
-                if (this.currentlyFilling) {
-                    return computedStyle.backgroundColor === transparentBg;
-                } else {
-                    return computedStyle.backgroundColor !== transparentBg;
-                }
-            });
-
-            // When all squares have been addressed, flip the fill mode and re-set the collection
-            if (!collection.length) {
-                collection = Array.from(this.allSquares);
-                this.currentlyFilling = !this.currentlyFilling;
-                this.run();
-            }
-
             modifiedState.colorFade = !this.currentlyFilling;
         }
 
-        // TODO - shuffle the collection and splice the first index each time
-        let randomIndex = Math.floor(Math.random() * collection.length);
-        let randomSquare = collection[randomIndex];
+        if (!this.tempCollection.length) {
+            this.tempCollection = shuffleArray(Array.from(this.allSquares));
+            this.currentlyFilling = !this.currentlyFilling;
+        }
 
+        let randomSquare = this.tempCollection.shift();
         colorSquare(randomSquare, modifiedState);
     }
 
