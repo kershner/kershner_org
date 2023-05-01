@@ -74,6 +74,7 @@ body {
   fieldset {
     display: flex;
     flex-direction: column;
+    margin: 0;
     padding: 0;
     padding-bottom: 0.5rem;
     border: 0;
@@ -86,7 +87,9 @@ body {
       justify-content: space-between;
       padding: 0.25rem 0.5rem;
       font-weight: bold;
-      border: 1px solid #FFF;
+      border: 0;
+      border-top: 1px solid #FFF;
+      border-bottom: 1px solid #FFF;
       cursor: pointer;
     }
 
