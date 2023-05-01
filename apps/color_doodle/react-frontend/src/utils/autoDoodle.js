@@ -1,5 +1,5 @@
 import { colorSquare } from "../components/DoodleBoard"
-import { numCols, numRows, shuffleArray } from "../utils/util"
+import { numCols, numRows, shuffleArray, colorSquaresInSequence } from "../utils/util"
 
 export default class AutoDoodle {
     constructor(state) {
@@ -7,16 +7,6 @@ export default class AutoDoodle {
         this.allSquares = document.querySelectorAll(".doodle-square");
         this.tempCollection = shuffleArray(Array.from(this.allSquares));
         this.currentlyFilling = true;
-    }
-
-    colorSquaresInSequence(collection) {
-        let timeOffset = 0;  // ms
-        let timeOffsetDelay = 100;
-        collection.forEach((element) => {
-            setTimeout(() => {
-                colorSquare(element, this.state, null, null, this.state.autoDoodleAnimationDuration, this.state.autoDoodleAnimationEasing);
-            }, timeOffset += timeOffsetDelay)
-        });
     }
 
     rain(rainType, total) {
@@ -27,7 +17,9 @@ export default class AutoDoodle {
 
         // pick a row/column at random
         const randomIndex = Math.floor(Math.random() * elements.length);
-        this.colorSquaresInSequence(elements[randomIndex]);
+        const duration = this.state.autoDoodleAnimationDuration;
+        const easing = this.state.autoDoodleAnimationEasing;
+        colorSquaresInSequence(elements[randomIndex], this.state, duration, easing);
     }
 
     random(fill=false) {
@@ -43,7 +35,9 @@ export default class AutoDoodle {
         }
 
         let randomSquare = this.tempCollection.shift();
-        colorSquare(randomSquare, modifiedState, null, null, modifiedState.autoDoodleAnimationDuration, modifiedState.autoDoodleAnimationEasing);
+        const duration = modifiedState.autoDoodleAnimationDuration;
+        const easing = modifiedState.autoDoodleAnimationEasing;
+        colorSquare(randomSquare, modifiedState, null, null, duration, easing);
     }
 
     /**

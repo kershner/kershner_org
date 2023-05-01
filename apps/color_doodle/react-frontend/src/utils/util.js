@@ -1,4 +1,5 @@
 import { defaultState } from "../components/DoodleState"
+import { colorSquare } from "../components/DoodleBoard"
 
 
 export const numCols = (cellSize) => {
@@ -90,4 +91,14 @@ export function shuffleArray(array) {
         [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
+}
+
+export function colorSquaresInSequence(collection, state, duration="0.1", easing="ease") {
+    let timeOffset = 0;  // ms
+    let timeOffsetDelay = 100;
+    collection.forEach((element) => {
+        setTimeout(() => {
+            colorSquare(element, state, null, null, duration, easing);
+        }, timeOffset += timeOffsetDelay)
+    });
 }

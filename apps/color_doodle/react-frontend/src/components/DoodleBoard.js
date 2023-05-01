@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from "react"
 const randomColor = require("randomcolor");
 import { GlobalStateContext } from "./DoodleState"
 import ViewportResize from "./ViewportResize"
-import { numCols } from "../utils/util"
+import { numCols, colorSquaresInSequence } from "../utils/util"
 
 
 export function colorSquare(squareEl, state, callback=null, color=null, duration=null, easing=null) {
@@ -58,8 +58,58 @@ function DoodleSquare(props) {
             updateGlobalState("mouseDown", true);
             const duration = globalState.clickEffectAnimationDuration;
             const easing = globalState.clickEffectAnimationEasing;
-            colorAdjacentSquares(e.target, 1, duration, easing);
+
+            switch (globalState.clickEffectMode) {
+                case "rowAndCol":
+                    columnOrRowClick(e.target, "row", true);
+                    columnOrRowClick(e.target, "col", true);
+                    break;
+                case "row":
+                    columnOrRowClick(e.target, "row", true);
+                    break;
+                case "column":
+                    columnOrRowClick(e.target, "col", true);
+                    break;
+                case "rain":
+                    columnOrRowClick(e.target);
+                    break;
+                default:
+                    colorAdjacentSquares(e.target, 1, duration, easing);
+                    break;
+            }
         }
+    }
+
+    function columnOrRowClick(target, type="col", before=false) {
+        const { row, col } = target.dataset;
+        const rowAndCol = {
+            "row": parseInt(row),
+            "col": parseInt(col)
+        };
+        const columnSquares = document.querySelectorAll(`[data-${type}="${rowAndCol[type]}"]`);
+        const beforeTarget = [];
+        const afterTarget = [];
+
+        columnSquares.forEach((squareEl) => {
+            let squareRowOrCol = parseInt(squareEl.dataset.col);
+            let comparisonRowOrCol = rowAndCol["col"];
+            if (type === "col") {
+                squareRowOrCol = parseInt(squareEl.dataset.row);
+                comparisonRowOrCol = rowAndCol["row"];
+            }
+            if (squareRowOrCol < comparisonRowOrCol) {
+                beforeTarget.push(squareEl);
+            } else if (squareRowOrCol >= comparisonRowOrCol) {
+                afterTarget.push(squareEl);
+            }
+        });
+
+        const duration = globalState.clickEffectAnimationDuration;
+        const easing = globalState.clickEffectAnimationEasing;
+        if (before) {
+            colorSquaresInSequence(beforeTarget.reverse(), globalState, duration, easing);
+        }
+        colorSquaresInSequence(afterTarget, globalState, duration, easing);
     }
 
     function handleMouseUp(e) {

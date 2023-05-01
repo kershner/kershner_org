@@ -377,10 +377,10 @@ export function ClickEffectModeControl() {
     const label = "Effect";
     const options = {
         "block": "block",
-        "random": "random",
-        "random (fill/clear)": "randomFill",
-        "rain (vertical)": "rainVertical",
-        "rain (horizontal)": "rainHorizontal"
+        "row": "row",
+        "column": "column",
+        "row and column": "rowAndCol",
+        "rain": "rain"
     };
 
     function handleChange(e) {
