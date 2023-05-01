@@ -11,10 +11,8 @@ export function colorSquare(squareEl, state, callback = null, color = null, dura
     const chosenColor = color ? color : randomColor({luminosity: state.luminosity});
     const chosenDuration = duration ? duration : state.autoDoodleAnimationDuration;
     const chosenEasing = easing ? easing : "ease-out";
-
+    squareEl.style.transition = `background-color ${chosenDuration}s ${chosenEasing}`;
     squareEl.style.backgroundColor = chosenColor;
-    squareEl.style.transitionDuration = `${chosenDuration}s`;
-    squareEl.style.transitionTimingFunction = chosenEasing;
 
     function transitionEndHandler() {
         if (state.colorFade) {
