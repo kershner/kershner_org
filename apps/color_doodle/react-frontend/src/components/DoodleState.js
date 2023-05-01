@@ -4,6 +4,14 @@ import { calculateNumberOfCells, parseParams } from "../utils/util"
 
 const defaultCellSize = 100;
 const defaultNumSquares = calculateNumberOfCells(defaultCellSize);
+export const effectTypes = {
+    "block": "block",
+    "row": "row",
+    "column": "column",
+    "row and column": "rowAndCol",
+    "rain": "rain",
+    "ring": "ring"
+};
 export const defaultState = {
     numSquares: defaultNumSquares,
     cellSize: defaultCellSize,
@@ -41,7 +49,7 @@ const GlobalStateContext = createContext({});
 const GlobalStateProvider = ({ children }) => {
     // Parse URL parameters into the initial state
     const paramDict = parseParams();
-    const defaultStateCopy = {...defaultState };
+    const defaultStateCopy = {...defaultState};
     const modifiedState = Object.assign(defaultStateCopy, paramDict);
     const [globalState, setGlobalState] = useState(modifiedState);
 

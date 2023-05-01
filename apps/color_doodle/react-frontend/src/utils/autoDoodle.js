@@ -1,5 +1,7 @@
 import { colorSquare } from "../components/DoodleBoard"
-import { numCols, numRows, shuffleArray, colorSquaresInSequence } from "../utils/util"
+import { numCols, numRows, shuffleArray } from "../utils/util"
+import { colorSquaresInSequence, columnOrRowClick, ringClick } from "../utils/animationHelper"
+
 
 export default class AutoDoodle {
     constructor(state) {
@@ -9,21 +11,8 @@ export default class AutoDoodle {
         this.currentlyFilling = true;
     }
 
-    rain(rainType, total) {
-        const elements = [];
-        for (let i=0; i<total; i++) {
-            elements.push(document.querySelectorAll(`[data-${rainType}="${i}"]`));
-        }
-
-        // pick a row/column at random
-        const randomIndex = Math.floor(Math.random() * elements.length);
-        const duration = this.state.autoDoodleAnimationDuration;
-        const easing = this.state.autoDoodleAnimationEasing;
-        colorSquaresInSequence(elements[randomIndex], this.state, duration, easing);
-    }
-
-    random(fill=false) {
-        let modifiedState = { ...this.state };
+    random(fill = false) {
+        let modifiedState = {...this.state};
 
         if (fill) {
             modifiedState.colorFade = !this.currentlyFilling;
@@ -47,12 +36,30 @@ export default class AutoDoodle {
         clearInterval(window.autoDoodleInterval);
         if (this.state.autoDoodle) {
             window.autoDoodleInterval = setInterval(() => {
+                if (!this.tempCollection.length) {
+                    this.tempCollection = shuffleArray(Array.from(this.allSquares));
+                    this.currentlyFilling = !this.currentlyFilling;
+                }
+                let randomSquare = this.tempCollection.shift();
+                const duration = this.state.autoDoodleAnimationDuration;
+                const easing = this.state.autoDoodleAnimationEasing;
+
                 switch (this.state.autoDoodleMode) {
-                    case "rainHorizontal":
-                        this.rain("row", numRows(this.state.cellSize) + 1);
+                    case "ring":
+                        ringClick(randomSquare, this.state, duration, easing);
                         break;
-                    case "rainVertical":
-                        this.rain("col", numCols(this.state.cellSize));
+                    case "rowAndCol":
+                        columnOrRowClick(randomSquare, this.state, "row", true, duration, easing);
+                        columnOrRowClick(randomSquare, this.state, "col", true, duration, easing);
+                        break;
+                    case "row":
+                        columnOrRowClick(randomSquare, this.state, "row", true, duration, easing);
+                        break;
+                    case "column":
+                        columnOrRowClick(randomSquare, this.state, "col", true, duration, easing);
+                        break;
+                    case "rain":
+                        columnOrRowClick(randomSquare, this.state, "col", false, duration, easing);
                         break;
                     case "randomFill":
                         this.random(true);

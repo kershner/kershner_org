@@ -1,5 +1,5 @@
 import React, { useContext } from "react"
-import { GlobalStateContext } from "./DoodleState"
+import { GlobalStateContext, effectTypes } from "./DoodleState"
 import { getNewGridNumCells, updateUrlParams } from "../utils/util"
 import DoodleInput from "./DoodleInputs"
 
@@ -61,14 +61,14 @@ export function AnimationDurationControl(props) {
                         handleChange={handleChange}
                         handleMouseUp={handleMouseUp}
                         handleTouchEnd={handleTouchEnd}
-                        value={globalState[props.stateValue]} />;
+                        value={globalState[props.stateValue]}/>;
 }
 
 export function AnimationControls(props) {
     return (
         <div className="animation-controls">
-            <AnimationDurationControl stateValue={props.durationStateValue} />
-            <AnimationEasingControl stateValue={props.easingStateValue} />
+            <AnimationDurationControl stateValue={props.durationStateValue}/>
+            <AnimationEasingControl stateValue={props.easingStateValue}/>
         </div>
     )
 }
@@ -107,7 +107,7 @@ export function CellSizeControl() {
                         handleChange={handleChange}
                         handleMouseUp={handleMouseUp}
                         handleTouchEnd={handleTouchEnd}
-                        value={globalState[controlName]} />;
+                        value={globalState[controlName]}/>;
 }
 
 export function BorderStyleControl() {
@@ -137,7 +137,7 @@ export function BorderStyleControl() {
                         label={label}
                         handleChange={handleChange}
                         options={options}
-                        defaultValue={globalState[controlName]} />;
+                        defaultValue={globalState[controlName]}/>;
 }
 
 export function BorderWidthControl() {
@@ -217,19 +217,17 @@ export function AutoDoodleControl() {
                         name={controlName}
                         label={label}
                         handleChange={handleChange}
-                        checked={globalState[controlName]} />;
+                        checked={globalState[controlName]}/>;
 }
 
 export function AutoModeControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "autoDoodleMode";
     const label = "Mode";
-    const options = {
-        "random": "random",
-        "random (fill/clear)": "randomFill",
-        "rain (vertical)": "rainVertical",
-        "rain (horizontal)": "rainHorizontal"
-    };
+    let effectOptions = {...effectTypes};
+    delete effectOptions.block;
+    effectOptions["random"] = "random";
+    effectOptions["random (fill/clear)"] = "randomFill";
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, (newState) => {
@@ -241,7 +239,7 @@ export function AutoModeControl() {
                         name={controlName}
                         label={label}
                         handleChange={handleChange}
-                        options={options}
+                        options={effectOptions}
                         defaultValue={globalState[controlName]}/>;
 }
 
@@ -275,13 +273,13 @@ export function AutoDoodleIntervalControl() {
                         handleChange={handleChange}
                         handleMouseUp={handleMouseUp}
                         handleTouchEnd={handleTouchEnd}
-                        value={globalState[controlName]} />;
+                        value={globalState[controlName]}/>;
 }
 
 export function AutoDoodleAnimationControls() {
     return (
         <AnimationControls durationStateValue="autoDoodleAnimationDuration"
-                           easingStateValue="autoDoodleAnimationEasing" />
+                           easingStateValue="autoDoodleAnimationEasing"/>
     )
 }
 
@@ -301,7 +299,7 @@ export function ColorFadeControl() {
                         name={controlName}
                         label={label}
                         handleChange={handleChange}
-                        checked={globalState[controlName]} />;
+                        checked={globalState[controlName]}/>;
 }
 
 export function LuminosityControl() {
@@ -326,7 +324,7 @@ export function LuminosityControl() {
                         label={label}
                         handleChange={handleChange}
                         options={options}
-                        defaultValue={globalState[controlName]} />;
+                        defaultValue={globalState[controlName]}/>;
 }
 
 export function BackgroundColorControl() {
@@ -349,7 +347,7 @@ export function BackgroundColorControl() {
                         label={label}
                         handleChange={handleChange}
                         choices={choices}
-                        checkedProperty={controlName} />;
+                        checkedProperty={controlName}/>;
 }
 
 // Click effect controls
@@ -368,21 +366,13 @@ export function ClickEffectEnabledControl() {
                         name={controlName}
                         label={label}
                         handleChange={handleChange}
-                        checked={globalState[controlName]} />;
+                        checked={globalState[controlName]}/>;
 }
 
 export function ClickEffectModeControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "clickEffectMode";
     const label = "Effect";
-    const options = {
-        "block": "block",
-        "row": "row",
-        "column": "column",
-        "row and column": "rowAndCol",
-        "rain": "rain",
-        "ring": "ring"
-    };
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, (newState) => {
@@ -394,14 +384,14 @@ export function ClickEffectModeControl() {
                         name={controlName}
                         label={label}
                         handleChange={handleChange}
-                        options={options}
+                        options={effectTypes}
                         defaultValue={globalState[controlName]}/>;
 }
 
 export function ClickEffectAnimationControls() {
     return (
         <AnimationControls durationStateValue="clickEffectAnimationDuration"
-                           easingStateValue="clickEffectAnimationEasing" />
+                           easingStateValue="clickEffectAnimationEasing"/>
     )
 }
 
@@ -421,7 +411,7 @@ export function HoverEffectEnabledControl() {
                         name={controlName}
                         label={label}
                         handleChange={handleChange}
-                        checked={globalState[controlName]} />;
+                        checked={globalState[controlName]}/>;
 }
 
 export function HoverEffectRadiusControl() {
@@ -454,12 +444,12 @@ export function HoverEffectRadiusControl() {
                         handleChange={handleChange}
                         handleMouseUp={handleMouseUp}
                         handleTouchEnd={handleTouchEnd}
-                        value={globalState[controlName]} />;
+                        value={globalState[controlName]}/>;
 }
 
 export function HoverEffectAnimationControls() {
     return (
         <AnimationControls durationStateValue="hoverEffectAnimationDuration"
-                           easingStateValue="hoverEffectAnimationEasing" />
+                           easingStateValue="hoverEffectAnimationEasing"/>
     )
 }

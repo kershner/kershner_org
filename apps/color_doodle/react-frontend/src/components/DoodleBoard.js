@@ -2,7 +2,8 @@ import React, { useState, useContext, useEffect } from "react"
 const randomColor = require("randomcolor");
 import { GlobalStateContext } from "./DoodleState"
 import ViewportResize from "./ViewportResize"
-import { numCols, colorSquaresInSequence } from "../utils/util"
+import { numCols } from "../utils/util"
+import { colorSquaresInSequence, ringClick, columnOrRowClick } from "../utils/animationHelper"
 
 
 export function colorSquare(squareEl, state, callback = null, color = null, duration = null, easing = null) {
@@ -59,95 +60,26 @@ function DoodleSquare(props) {
 
             switch (globalState.clickEffectMode) {
                 case "ring":
-                    ringClick(e.target);
+                    ringClick(e.target, globalState, duration, easing);
                     break;
                 case "rowAndCol":
-                    columnOrRowClick(e.target, "row", true);
-                    columnOrRowClick(e.target, "col", true);
+                    columnOrRowClick(e.target, globalState, "row", true, duration, easing);
+                    columnOrRowClick(e.target, globalState, "col", true, duration, easing);
                     break;
                 case "row":
-                    columnOrRowClick(e.target, "row", true);
+                    columnOrRowClick(e.target, globalState, "row", true, duration, easing);
                     break;
                 case "column":
-                    columnOrRowClick(e.target, "col", true);
+                    columnOrRowClick(e.target, globalState, "col", true, duration, easing);
                     break;
                 case "rain":
-                    columnOrRowClick(e.target);
+                    columnOrRowClick(e.target, globalState, duration, easing);
                     break;
                 default:
                     colorAdjacentSquares(e.target, 1, duration, easing);
                     break;
             }
         }
-    }
-
-    function ringClick(target) {
-        const duration = globalState.clickEffectAnimationDuration;
-        const easing = globalState.clickEffectAnimationEasing;
-        const cellSize = globalState.cellSize;
-        const grid = document.querySelector('.doodle-board');
-        const maxOffset = Math.floor(Math.min(grid.offsetWidth, grid.offsetHeight) / (2 * cellSize));
-        let timeOffset = 0;  // ms
-        let timeOffsetDelay = 100;
-        const selectedColor = randomColor({luminosity: globalState.luminosity});
-
-        for (let offset = 1; offset <= maxOffset; offset++) {
-            setTimeout(() => {
-                const selectedSquares = getRingOfSquaresAroundTarget(target, offset);
-                selectedSquares.forEach((square) => {
-                    colorSquare(square, globalState, null, selectedColor, duration, easing);
-                });
-
-            }, timeOffset += timeOffsetDelay);
-        }
-    }
-
-    function getRingOfSquaresAroundTarget(target, offset) {
-        const selectedSquares = [];
-        const row = parseInt(target.dataset.row);
-        const col = parseInt(target.dataset.col);
-
-        for (let i = -offset; i <= offset; i++) {
-            for (let j = -offset; j <= offset; j++) {
-                if (Math.abs(i) !== offset && Math.abs(j) !== offset) continue; // skip cells inside ring
-                const square = document.querySelector(`button[data-row="${row + i}"][data-col="${col + j}"]`);
-                if (square) selectedSquares.push(square);
-            }
-        }
-
-        return selectedSquares;
-    }
-
-    function columnOrRowClick(target, type = "col", before = false) {
-        const { row, col } = target.dataset;
-        const rowAndCol = {
-            "row": parseInt(row),
-            "col": parseInt(col)
-        };
-        const columnSquares = document.querySelectorAll(`[data-${type}="${rowAndCol[type]}"]`);
-        const beforeTarget = [];
-        const afterTarget = [];
-
-        columnSquares.forEach((squareEl) => {
-            let squareRowOrCol = parseInt(squareEl.dataset.col);
-            let comparisonRowOrCol = rowAndCol["col"];
-            if (type === "col") {
-                squareRowOrCol = parseInt(squareEl.dataset.row);
-                comparisonRowOrCol = rowAndCol["row"];
-            }
-            if (squareRowOrCol < comparisonRowOrCol) {
-                beforeTarget.push(squareEl);
-            } else if (squareRowOrCol >= comparisonRowOrCol) {
-                afterTarget.push(squareEl);
-            }
-        });
-
-        const duration = globalState.clickEffectAnimationDuration;
-        const easing = globalState.clickEffectAnimationEasing;
-        if (before) {
-            colorSquaresInSequence(beforeTarget.reverse(), globalState, duration, easing);
-        }
-        colorSquaresInSequence(afterTarget, globalState, duration, easing);
     }
 
     function handleMouseUp(e) {
