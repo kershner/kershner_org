@@ -380,7 +380,8 @@ export function ClickEffectModeControl() {
         "row": "row",
         "column": "column",
         "row and column": "rowAndCol",
-        "rain": "rain"
+        "rain": "rain",
+        "ring": "ring"
     };
 
     function handleChange(e) {

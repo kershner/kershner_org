@@ -16,7 +16,7 @@ export const defaultState = {
     autoDoodleAnimationEasing: "ease-out",
     backgroundColor: "#202123",
     luminosity: "light",
-    clickEffectMode: "block",
+    clickEffectMode: "ring",
     clickEffectAnimationDuration: 0.1,
     clickEffectAnimationEasing: "ease-out",
     clickEffectEnabled: true,

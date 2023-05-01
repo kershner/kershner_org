@@ -5,7 +5,7 @@ import ViewportResize from "./ViewportResize"
 import { numCols, colorSquaresInSequence } from "../utils/util"
 
 
-export function colorSquare(squareEl, state, callback=null, color=null, duration=null, easing=null) {
+export function colorSquare(squareEl, state, callback = null, color = null, duration = null, easing = null) {
     squareEl.addEventListener("transitionend", transitionEndHandler);
 
     const chosenColor = color ? color : randomColor({luminosity: state.luminosity});
@@ -60,6 +60,9 @@ function DoodleSquare(props) {
             const easing = globalState.clickEffectAnimationEasing;
 
             switch (globalState.clickEffectMode) {
+                case "ring":
+                    ringClick(e.target);
+                    break;
                 case "rowAndCol":
                     columnOrRowClick(e.target, "row", true);
                     columnOrRowClick(e.target, "col", true);
@@ -80,7 +83,44 @@ function DoodleSquare(props) {
         }
     }
 
-    function columnOrRowClick(target, type="col", before=false) {
+    function ringClick(target) {
+        const duration = globalState.clickEffectAnimationDuration;
+        const easing = globalState.clickEffectAnimationEasing;
+        const cellSize = globalState.cellSize;
+        const grid = document.querySelector('.doodle-board');
+        const maxOffset = Math.floor(Math.min(grid.offsetWidth, grid.offsetHeight) / (2 * cellSize));
+        let timeOffset = 0;  // ms
+        let timeOffsetDelay = 100;
+        const selectedColor = randomColor({luminosity: globalState.luminosity});
+
+        for (let offset = 1; offset <= maxOffset; offset++) {
+            setTimeout(() => {
+                const selectedSquares = getRingOfSquaresAroundTarget(target, offset);
+                selectedSquares.forEach((square) => {
+                    colorSquare(square, globalState, null, selectedColor, duration, easing);
+                });
+
+            }, timeOffset += timeOffsetDelay);
+        }
+    }
+
+    function getRingOfSquaresAroundTarget(target, offset) {
+        const selectedSquares = [];
+        const row = parseInt(target.dataset.row);
+        const col = parseInt(target.dataset.col);
+
+        for (let i = -offset; i <= offset; i++) {
+            for (let j = -offset; j <= offset; j++) {
+                if (Math.abs(i) !== offset && Math.abs(j) !== offset) continue; // skip cells inside ring
+                const square = document.querySelector(`button[data-row="${row + i}"][data-col="${col + j}"]`);
+                if (square) selectedSquares.push(square);
+            }
+        }
+
+        return selectedSquares;
+    }
+
+    function columnOrRowClick(target, type = "col", before = false) {
         const { row, col } = target.dataset;
         const rowAndCol = {
             "row": parseInt(row),
@@ -124,7 +164,7 @@ function DoodleSquare(props) {
         handleMouseUp(e);
     }
 
-    function colorAdjacentSquares(square, offset=1, duration=null, easing=null) {
+    function colorAdjacentSquares(square, offset = 1, duration = null, easing = null) {
         const { row, col } = square.dataset;
         const adjacentSquares = getAdjacentSquares(+row, +col, offset);
         const chosenColor = randomColor({luminosity: globalState.luminosity});
@@ -142,9 +182,9 @@ function DoodleSquare(props) {
 
     function getAdjacentSquares(row, col, offset) {
         const squares = [];
-        for (let r=row-offset; r<=row+offset; r++) {
-            for (let c=col-offset; c<=col+offset; c++) {
-                squares.push({ row: r, col: c });
+        for (let r = row - offset; r <= row + offset; r++) {
+            for (let c = col - offset; c <= col + offset; c++) {
+                squares.push({row: r, col: c});
             }
         }
         return squares;
@@ -166,7 +206,7 @@ function DoodleSquare(props) {
 function DoodleSquares() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const doodleSquares = [];
-    for (let i=0; i<globalState.numSquares; i++) {
+    for (let i = 0; i < globalState.numSquares; i++) {
         const row = Math.floor(i / numCols(globalState.cellSize));
         const col = i % numCols(globalState.cellSize);
         const dataAttrs = {
@@ -174,7 +214,7 @@ function DoodleSquares() {
             'data-col': col
         };
 
-        doodleSquares.push(<DoodleSquare key={i} dataAttrs={dataAttrs} />);
+        doodleSquares.push(<DoodleSquare key={i} dataAttrs={dataAttrs}/>);
     }
 
     return (
