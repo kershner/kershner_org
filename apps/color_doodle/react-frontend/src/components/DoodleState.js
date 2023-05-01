@@ -18,7 +18,7 @@ export const defaultState = {
     borderStyle: "solid",
     borderColor: "#999",
     borderWidth: 1,
-    autoDoodleMode: "rainVertical",
+    autoDoodleMode: "rain",
     autoDoodleInterval: 200,
     autoDoodleAnimationDuration: 0.1,
     autoDoodleAnimationEasing: "ease-out",
