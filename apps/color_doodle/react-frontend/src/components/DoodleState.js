@@ -7,20 +7,22 @@ const defaultNumSquares = calculateNumberOfCells(defaultCellSize);
 export const defaultState = {
     numSquares: defaultNumSquares,
     cellSize: defaultCellSize,
-    animationEasing: "ease-out",
-    animationDuration: 0.1,
     borderStyle: "solid",
     borderColor: "#999",
     borderWidth: 1,
-    autoDoodleMode: "random",
+    autoDoodleMode: "rainVertical",
     autoDoodleInterval: 200,
+    autoDoodleAnimationDuration: 0.1,
+    autoDoodleAnimationEasing: "ease-out",
     backgroundColor: "#202123",
     luminosity: "light",
     clickEffectMode: "block",
     clickEffectAnimationDuration: 0.1,
+    clickEffectAnimationEasing: "ease-out",
     clickEffectEnabled: true,
     hoverEffectRadius: 0,
     hoverEffectAnimationDuration: 0.1,
+    hoverEffectAnimationEasing: "ease-out",
     hoverEffectEnabled: true,
     autoDoodle: false,
     colorFade: true,
@@ -31,7 +33,6 @@ export const defaultState = {
     clickEffectFieldsetOpen: false,
     hoverEffectFieldsetOpen: false,
     colorFieldsetOpen: false,
-    animationFieldsetOpen: false,
     gridFieldsetOpen: false
 };
 

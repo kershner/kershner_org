@@ -2,17 +2,19 @@ import React, { useState, useContext, useEffect } from "react"
 const randomColor = require("randomcolor");
 import { GlobalStateContext } from "./DoodleState"
 import ViewportResize from "./ViewportResize"
-import { numCols, range } from "../utils/util"
+import { numCols } from "../utils/util"
 
 
-export function colorSquare(squareEl, state, callback=null, color=null, duration=null) {
+export function colorSquare(squareEl, state, callback=null, color=null, duration=null, easing=null) {
     squareEl.addEventListener("transitionend", transitionEndHandler);
 
     const chosenColor = color ? color : randomColor({luminosity: state.luminosity});
-    const chosenDuration = duration ? duration : state.animationDuration;
+    const chosenDuration = duration ? duration : state.autoDoodleAnimationDuration;
+    const chosenEasing = easing ? easing : "ease-out";
 
     squareEl.style.backgroundColor = chosenColor;
     squareEl.style.transitionDuration = `${chosenDuration}s`;
+    squareEl.style.transitionTimingFunction = chosenEasing;
 
     function transitionEndHandler() {
         if (state.colorFade) {
@@ -39,23 +41,24 @@ function DoodleSquare(props) {
         borderWidth: `${globalState.borderWidth}px`,
         borderRightColor: globalState.borderColor,
         borderBottomColor: globalState.borderColor,
-        borderStyle: globalState.borderStyle,
-        transition: `background-color ${globalState.animationEasing}`
+        borderStyle: globalState.borderStyle
     };
 
     function handleMouseEnter(e) {
         if (globalState.hoverEffectEnabled) {
             const radius = parseInt(globalState.hoverEffectRadius);
-            const duration = parseFloat(globalState.hoverEffectAnimationDuration);
-            colorAdjacentSquares(e.target, radius, duration);
+            const duration = globalState.hoverEffectAnimationDuration;
+            const easing = globalState.hoverEffectAnimationEasing;
+            colorAdjacentSquares(e.target, radius, duration, easing);
         }
     }
 
     function handleMouseDown(e) {
         if (globalState.clickEffectEnabled) {
             updateGlobalState("mouseDown", true);
-            console.log(`clicked! mode: ${globalState.clickEffectMode}`);
-            colorAdjacentSquares(e.target, 1, globalState.clickEffectAnimationDuration);
+            const duration = globalState.clickEffectAnimationDuration;
+            const easing = globalState.clickEffectAnimationEasing;
+            colorAdjacentSquares(e.target, 1, duration, easing);
         }
     }
 
@@ -71,16 +74,18 @@ function DoodleSquare(props) {
         handleMouseUp(e);
     }
 
-    function colorAdjacentSquares(square, offset=1, duration=globalState.animationDuration) {
+    function colorAdjacentSquares(square, offset=1, duration=null, easing=null) {
         const { row, col } = square.dataset;
         const adjacentSquares = getAdjacentSquares(+row, +col, offset);
         const chosenColor = randomColor({luminosity: globalState.luminosity});
+        const chosenDuration = duration ? duration : "0.1";
+        const chosenEasing = easing ? easing : "ease";
 
         adjacentSquares.forEach(({ row, col }) => {
             const selector = `.doodle-square[data-row="${row}"][data-col="${col}"]`;
             const square = document.querySelector(selector);
             if (square) {
-                colorSquare(square, globalState, null, chosenColor, duration);
+                colorSquare(square, globalState, null, chosenColor, chosenDuration, chosenEasing);
             }
         });
     }

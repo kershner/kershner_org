@@ -3,10 +3,10 @@ import { GlobalStateContext } from "./DoodleState"
 import { updateUrlParams } from "../utils/util"
 import {
     CellSizeControl, BorderStyleControl, BorderWidthControl, BorderColorControl, AutoDoodleControl,
-    AutoModeControl, AutoDoodleIntervalControl, ColorFadeControl, AnimationDelayControl, AnimationEasingControl,
-    LuminosityControl, BackgroundColorControl, ClickEffectEnabledControl, ClickEffectModeControl,
-    ClickEffectAnimationDelayControl, HoverEffectEnabledControl, HoverEffectRadiusControl,
-    HoverEffectAnimationDelayControl
+    AutoModeControl, AutoDoodleIntervalControl, ColorFadeControl, AutoDoodleAnimationControls,
+    LuminosityControl, BackgroundColorControl, ClickEffectEnabledControl, AnimationEasingControl,
+    ClickEffectModeControl, ClickEffectAnimationControls, HoverEffectEnabledControl, HoverEffectRadiusControl,
+    HoverEffectAnimationControls
 } from "./DoodleControls"
 
 
@@ -27,7 +27,7 @@ function CollapsibleFieldsetHeader(props) {
     return (
         <div className="fieldset-label" onClick={handleClick}>
             <legend>{props.name}</legend>
-            <span>▼</span>
+            <span>{globalState[props.stateValue] ? "▲" : "▼"}</span>
         </div>
     )
 }
@@ -57,7 +57,7 @@ export function ClickEffectControlsFieldset() {
             <CollapsibleFieldsetHeader name="Click" stateValue={toggleStateValue} />
             <ClickEffectEnabledControl />
             <ClickEffectModeControl />
-            <ClickEffectAnimationDelayControl />
+            <ClickEffectAnimationControls />
         </fieldset>
     )
 }
@@ -71,7 +71,7 @@ export function HoverEffectControlsFieldset() {
             <CollapsibleFieldsetHeader name="Hover" stateValue={toggleStateValue} />
             <HoverEffectEnabledControl />
             <HoverEffectRadiusControl />
-            <HoverEffectAnimationDelayControl />
+            <HoverEffectAnimationControls />
         </fieldset>
     )
 }
@@ -89,19 +89,6 @@ export function ColorControlsFieldset() {
     )
 }
 
-export function AnimationControlsFieldset() {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const toggleStateValue = "animationFieldsetOpen";
-
-    return (
-        <fieldset className={globalState[toggleStateValue] ? "expanded" : ""}>
-            <CollapsibleFieldsetHeader name="Animation" stateValue={toggleStateValue} />
-            <AnimationDelayControl />
-            <AnimationEasingControl />
-        </fieldset>
-    )
-}
-
 export function AutoControlsFieldset() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const toggleStateValue = "automationFieldsetOpen";
@@ -111,6 +98,7 @@ export function AutoControlsFieldset() {
             <CollapsibleFieldsetHeader name="Automation" stateValue={toggleStateValue} />
             <AutoDoodleControl />
             <AutoModeControl />
+            <AutoDoodleAnimationControls />
             <AutoDoodleIntervalControl />
         </fieldset>
     )

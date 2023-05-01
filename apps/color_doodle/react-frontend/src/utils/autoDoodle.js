@@ -14,7 +14,7 @@ export default class AutoDoodle {
         let timeOffsetDelay = 100;
         collection.forEach((element) => {
             setTimeout(() => {
-                colorSquare(element, this.state);
+                colorSquare(element, this.state, null, null, this.state.autoDoodleAnimationDuration, this.state.autoDoodleAnimationEasing);
             }, timeOffset += timeOffsetDelay)
         });
     }
@@ -43,7 +43,7 @@ export default class AutoDoodle {
         }
 
         let randomSquare = this.tempCollection.shift();
-        colorSquare(randomSquare, modifiedState);
+        colorSquare(randomSquare, modifiedState, null, null, modifiedState.autoDoodleAnimationDuration, modifiedState.autoDoodleAnimationEasing);
     }
 
     /**

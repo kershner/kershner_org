@@ -4,6 +4,77 @@ import { getNewGridNumCells, updateUrlParams } from "../utils/util"
 import DoodleInput from "./DoodleInputs"
 
 
+// Generic animation helpers
+export function AnimationEasingControl(props) {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const label = "Easing";
+    const options = {
+        "linear": "linear",
+        "ease": "ease",
+        "ease-in": "ease-in",
+        "ease-out": "ease-out",
+        "ease-in-out": "ease-in-out",
+        "step-start": "step-start",
+        "step-end": "step-end"
+    };
+
+    function handleChange(e) {
+        updateGlobalState(props.stateValue, e.target.value, (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
+    return <DoodleInput inputType="select"
+                        name={props.stateValue}
+                        label={label}
+                        handleChange={handleChange}
+                        options={options}
+                        defaultValue={globalState[props.stateValue]}/>;
+}
+
+export function AnimationDurationControl(props) {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const label = "Animation";
+
+    function handleChange(e) {
+        updateGlobalState(props.stateValue, e.target.value);
+    }
+
+    function handleMouseUp(e) {
+        updateGlobalState(props.stateValue, e.target.value, (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
+    function handleTouchEnd(e) {
+        updateGlobalState(props.stateValue, e.target.value, (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
+    return <DoodleInput inputType="range"
+                        name={props.stateValue}
+                        label={label}
+                        step="0.1"
+                        max="2"
+                        min="0.1"
+                        handleChange={handleChange}
+                        handleMouseUp={handleMouseUp}
+                        handleTouchEnd={handleTouchEnd}
+                        value={globalState[props.stateValue]} />;
+}
+
+export function AnimationControls(props) {
+    return (
+        <div className="animation-controls">
+            <AnimationDurationControl stateValue={props.durationStateValue} />
+            <AnimationEasingControl stateValue={props.easingStateValue} />
+        </div>
+    )
+}
+
+
+// Grid controls
 export function CellSizeControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "cellSize";
@@ -130,6 +201,7 @@ export function BorderColorControl() {
                         value={globalState[controlName]}/>;
 }
 
+// Auto mode controls
 export function AutoDoodleControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "autoDoodle";
@@ -206,6 +278,14 @@ export function AutoDoodleIntervalControl() {
                         value={globalState[controlName]} />;
 }
 
+export function AutoDoodleAnimationControls() {
+    return (
+        <AnimationControls durationStateValue="autoDoodleAnimationDuration"
+                           easingStateValue="autoDoodleAnimationEasing" />
+    )
+}
+
+// Color controls
 export function ColorFadeControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "colorFade";
@@ -222,67 +302,6 @@ export function ColorFadeControl() {
                         label={label}
                         handleChange={handleChange}
                         checked={globalState[controlName]} />;
-}
-
-export function AnimationDelayControl() {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "animationDuration";
-    const label = "Global Duration";
-
-    function handleChange(e) {
-        updateGlobalState(controlName, e.target.value);
-    }
-
-    function handleMouseUp(e) {
-        updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
-        });
-    }
-
-    function handleTouchEnd(e) {
-        updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
-        });
-    }
-
-    return <DoodleInput inputType="range"
-                        name={controlName}
-                        label={label}
-                        step="0.1"
-                        max="2"
-                        min="0.1"
-                        handleChange={handleChange}
-                        handleMouseUp={handleMouseUp}
-                        handleTouchEnd={handleTouchEnd}
-                        value={globalState[controlName]} />;
-}
-
-export function AnimationEasingControl() {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "animationEasing";
-    const label = "Easing";
-    const options = {
-        "linear": "linear",
-        "ease": "ease",
-        "ease-in": "ease-in",
-        "ease-out": "ease-out",
-        "ease-in-out": "ease-in-out",
-        "step-start": "step-start",
-        "step-end": "step-end"
-    };
-
-    function handleChange(e) {
-        updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
-        });
-    }
-
-    return <DoodleInput inputType="select"
-                        name={controlName}
-                        label={label}
-                        handleChange={handleChange}
-                        options={options}
-                        defaultValue={globalState[controlName]}/>;
 }
 
 export function LuminosityControl() {
@@ -378,37 +397,11 @@ export function ClickEffectModeControl() {
                         defaultValue={globalState[controlName]}/>;
 }
 
-export function ClickEffectAnimationDelayControl() {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "clickEffectAnimationDuration";
-    const label = "Animation duration";
-
-    function handleChange(e) {
-        updateGlobalState(controlName, e.target.value);
-    }
-
-    function handleMouseUp(e) {
-        updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
-        });
-    }
-
-    function handleTouchEnd(e) {
-        updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
-        });
-    }
-
-    return <DoodleInput inputType="range"
-                        name={controlName}
-                        label={label}
-                        step="0.1"
-                        max="2"
-                        min="0.1"
-                        handleChange={handleChange}
-                        handleMouseUp={handleMouseUp}
-                        handleTouchEnd={handleTouchEnd}
-                        value={globalState[controlName]} />;
+export function ClickEffectAnimationControls() {
+    return (
+        <AnimationControls durationStateValue="clickEffectAnimationDuration"
+                           easingStateValue="clickEffectAnimationEasing" />
+    )
 }
 
 // Hover effect controls
@@ -463,35 +456,9 @@ export function HoverEffectRadiusControl() {
                         value={globalState[controlName]} />;
 }
 
-export function HoverEffectAnimationDelayControl() {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "hoverEffectAnimationDuration";
-    const label = "Animation duration";
-
-    function handleChange(e) {
-        updateGlobalState(controlName, e.target.value);
-    }
-
-    function handleMouseUp(e) {
-        updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
-        });
-    }
-
-    function handleTouchEnd(e) {
-        updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
-        });
-    }
-
-    return <DoodleInput inputType="range"
-                        name={controlName}
-                        label={label}
-                        step="0.1"
-                        max="2"
-                        min="0.1"
-                        handleChange={handleChange}
-                        handleMouseUp={handleMouseUp}
-                        handleTouchEnd={handleTouchEnd}
-                        value={globalState[controlName]} />;
+export function HoverEffectAnimationControls() {
+    return (
+        <AnimationControls durationStateValue="hoverEffectAnimationDuration"
+                           easingStateValue="hoverEffectAnimationEasing" />
+    )
 }
