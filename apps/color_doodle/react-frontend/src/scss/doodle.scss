@@ -154,7 +154,7 @@ body {
     }
   }
 
-  .animation-controls {
+  .input-row {
     display: flex;
 
     .input-group {
@@ -162,10 +162,20 @@ body {
 
       &:first-of-type {
         padding: 0 1rem;
-        max-width: 5rem;
       }
       &:last-of-type {
         padding-right: 0.5rem;
+      }
+      [type="checkbox"] {
+        margin-top: 0.35rem;
+      }
+    }
+  }
+
+  .animation-controls {
+    .input-group {
+      &:first-of-type {
+        max-width: 5rem;
       }
     }
   }

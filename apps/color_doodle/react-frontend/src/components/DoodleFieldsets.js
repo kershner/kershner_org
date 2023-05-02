@@ -3,7 +3,7 @@ import { GlobalStateContext } from "./DoodleState"
 import { updateUrlParams } from "../utils/util"
 import {
     CellSizeControl, BorderStyleControl, BorderWidthControl, BorderColorControl, AutoDoodleControl,
-    AutoModeControl, AutoDoodleIntervalControl, ColorFadeControl, AutoDoodleAnimationControls,
+    AutoDoodleModeControls, AutoDoodleIntervalControl, ColorFadeControl, AutoDoodleAnimationControls,
     LuminosityControl, BackgroundColorControl, ClickEffectEnabledControl, AnimationEasingControl,
     ClickEffectModeControl, ClickEffectAnimationControls, HoverEffectEnabledControl, HoverEffectRadiusControl,
     HoverEffectAnimationControls, AutoDoodleRandomControl
@@ -97,10 +97,9 @@ export function AutoControlsFieldset() {
         <fieldset className={globalState[toggleStateValue] ? "expanded" : ""}>
             <CollapsibleFieldsetHeader name="Automation" stateValue={toggleStateValue} />
             <AutoDoodleControl />
-            <AutoModeControl />
+            <AutoDoodleModeControls />
             <AutoDoodleAnimationControls />
             <AutoDoodleIntervalControl />
-            <AutoDoodleRandomControl />
         </fieldset>
     )
 }

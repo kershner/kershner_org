@@ -66,7 +66,7 @@ export function AnimationDurationControl(props) {
 
 export function AnimationControls(props) {
     return (
-        <div className="animation-controls">
+        <div className="input-row animation-controls">
             <AnimationDurationControl stateValue={props.durationStateValue}/>
             <AnimationEasingControl stateValue={props.easingStateValue}/>
         </div>
@@ -210,7 +210,7 @@ export function AutoDoodleControl() {
                         checked={globalState[controlName]}/>;
 }
 
-export function AutoModeControl() {
+export function AutoDoodleModeSelectControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "autoDoodleMode";
     const label = "Mode";
@@ -230,7 +230,36 @@ export function AutoModeControl() {
                         label={label}
                         handleChange={handleChange}
                         options={effectOptions}
+                        disabled={globalState.autoDoodleRandom}
                         defaultValue={globalState[controlName]}/>;
+}
+
+export function AutoDoodleRandomControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const controlName = "autoDoodleRandom";
+    const label = "Random";
+
+    function handleChange(e) {
+        const randomEnabled = !globalState[controlName];
+        updateGlobalState(controlName, randomEnabled, (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
+    return <DoodleInput inputType="checkbox"
+                        name={controlName}
+                        label={label}
+                        handleChange={handleChange}
+                        checked={globalState[controlName]}/>;
+}
+
+export function AutoDoodleModeControls() {
+    return (
+        <div className="input-row">
+            <AutoDoodleModeSelectControl />
+            <AutoDoodleRandomControl />
+        </div>
+    )
 }
 
 export function AutoDoodleIntervalControl() {
@@ -271,24 +300,6 @@ export function AutoDoodleAnimationControls() {
         <AnimationControls durationStateValue="autoDoodleAnimationDuration"
                            easingStateValue="autoDoodleAnimationEasing"/>
     )
-}
-
-export function AutoDoodleRandomControl() {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "autoDoodleRandom";
-    const label = "Random";
-
-    function handleChange(e) {
-        updateGlobalState(controlName, !globalState[controlName], (newState) => {
-            updateUrlParams(newState);
-        });
-    }
-
-    return <DoodleInput inputType="checkbox"
-                        name={controlName}
-                        label={label}
-                        handleChange={handleChange}
-                        checked={globalState[controlName]}/>;
 }
 
 // Color controls
