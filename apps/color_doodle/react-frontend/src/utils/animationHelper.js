@@ -15,7 +15,8 @@ export function colorSquaresInSequence(collection, state, duration = "0.1", easi
 export function ringClick(target, state, duration = null, easing = null) {
     const cellSize = state.cellSize;
     const grid = document.querySelector('.doodle-board');
-    const maxOffset = Math.floor(Math.min(grid.offsetWidth, grid.offsetHeight) / (2 * cellSize));
+    let maxOffset = Math.floor(Math.min(grid.offsetWidth, grid.offsetHeight) / (2 * cellSize));
+    maxOffset = maxOffset > 4 ? 4 : maxOffset;
     let timeOffset = 0;  // ms
     let timeOffsetDelay = 100;
     const selectedColor = randomColor({luminosity: state.luminosity});
