@@ -73,7 +73,7 @@ function DoodleSquare(props) {
                     columnOrRowClick(e.target, globalState, "col", true, duration, easing);
                     break;
                 case "rain":
-                    columnOrRowClick(e.target, globalState, duration, easing);
+                    columnOrRowClick(e.target, globalState, "col", false, duration, easing);
                     break;
                 default:
                     colorAdjacentSquares(e.target, 1, duration, easing);

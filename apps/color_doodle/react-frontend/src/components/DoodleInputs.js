@@ -9,7 +9,6 @@ function DoodleSelectOption(props) {
 }
 
 function DoodleSelect(props) {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const inputProps = props.props;
     const options = [];
     for (const key in inputProps.options) {
