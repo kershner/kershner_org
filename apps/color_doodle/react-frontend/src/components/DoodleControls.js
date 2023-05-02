@@ -179,16 +179,6 @@ export function BorderColorControl() {
     const label = "Color";
 
     function handleChange(e) {
-        updateGlobalState(controlName, e.target.value);
-    }
-
-    function handleMouseUp(e) {
-        updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
-        });
-    }
-
-    function handleTouchEnd(e) {
         updateGlobalState(controlName, e.target.value, (newState) => {
             updateUrlParams(newState);
         });

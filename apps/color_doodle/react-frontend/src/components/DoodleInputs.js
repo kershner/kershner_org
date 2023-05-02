@@ -17,7 +17,7 @@ function DoodleSelect(props) {
     }
 
     return (
-        <select name={inputProps.name} onChange={inputProps.handleChange} defaultValue={inputProps.defaultValue} value={inputProps.defaultValue}>
+        <select name={inputProps.name} onChange={inputProps.handleChange} value={inputProps.defaultValue}>
             {options}
         </select>
     )
