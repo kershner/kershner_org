@@ -93,7 +93,8 @@ export function columnOrRowClick(params) {
         "state": params.state,
         "duration": params.duration,
         "easing": params.easing,
-        "colorFade": params.colorFade
+        "colorFade": params.colorFade,
+        "luminosity": params.luminosity
     };
 
     if (params.before) {
