@@ -13,21 +13,15 @@ export default class AutoDoodle {
         this.effectTypes = shuffleArray(Object.values(effectTypes));
     }
 
-    random(fill = false) {
+    random(randomSquare, fill = false) {
         let modifiedState = {...this.state};
+        const duration = modifiedState.autoDoodleAnimationDuration;
+        const easing = modifiedState.autoDoodleAnimationEasing;
 
         if (fill) {
             modifiedState.colorFade = !this.currentlyFilling;
         }
 
-        if (!this.tempCollection.length) {
-            this.tempCollection = shuffleArray(Array.from(this.allSquares));
-            this.currentlyFilling = !this.currentlyFilling;
-        }
-
-        let randomSquare = this.tempCollection.shift();
-        const duration = modifiedState.autoDoodleAnimationDuration;
-        const easing = modifiedState.autoDoodleAnimationEasing;
         colorSquare(randomSquare, modifiedState, null, null, duration, easing);
     }
 
@@ -50,10 +44,10 @@ export default class AutoDoodle {
                 columnOrRowClick(square, this.state, "col", false, duration, easing);
                 break;
             case "randomFill":
-                this.random(true);
+                this.random(square, true);
                 break;
             default:  // Random
-                this.random();
+                this.random(square, false);
                 break;
         }
     }
