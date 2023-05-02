@@ -17,7 +17,7 @@ function DoodleSelect(props) {
     }
 
     return (
-        <select name={inputProps.name} onChange={inputProps.handleChange} defaultValue={inputProps.defaultValue}>
+        <select name={inputProps.name} onChange={inputProps.handleChange} defaultValue={inputProps.defaultValue} value={inputProps.defaultValue}>
             {options}
         </select>
     )
@@ -36,6 +36,7 @@ function DoodleControl(props) {
                max={inputProps.max ? inputProps.max : "200"}
                step={inputProps.step ? inputProps.step : "1"}
                checked={inputProps.checked ? true : false}
+               defaultValue={inputProps.defaultValue? defaultValue.value : undefined}
                value={inputProps.value}/>
     )
 }
