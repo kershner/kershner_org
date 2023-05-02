@@ -99,7 +99,6 @@ export default class AutoDoodle {
 
                 if (this.state.autoDoodleRandom) {
                     chosenEffect = this.effectChangeChance() ? this.effectTypes.shift() : this.effectTypes[0];
-                    colorFade = colorFade ? this.colorFadeChance() : colorFade;
                 }
 
                 const effectParams = {
@@ -107,7 +106,7 @@ export default class AutoDoodle {
                     "effect": chosenEffect,
                     "duration": this.state.autoDoodleAnimationDuration,
                     "easing": this.state.autoDoodleAnimationEasing,
-                    "colorFade": colorFade,
+                    "colorFade": colorFade ? this.colorFadeChance() : colorFade,
                     "luminosity": this.state.autoDoodleLuminosity
                 };
                 this.effectChoice(effectParams);
