@@ -3,10 +3,10 @@ import { GlobalStateContext } from "./DoodleState"
 import { updateUrlParams } from "../utils/util"
 import {
     CellSizeControl, BorderStyleControl, BorderWidthControl, BorderColorControl, AutoDoodleControl,
-    AutoDoodleModeControls, AutoDoodleIntervalControl, ColorFadeControl, AutoDoodleAnimationControls,
-    LuminosityControl, BackgroundColorControl, ClickEffectEnabledControl, AnimationEasingControl,
-    ClickEffectModeControl, ClickEffectAnimationControls, HoverEffectEnabledControl, HoverEffectRadiusControl,
-    HoverEffectAnimationControls, AutoDoodleRandomControl
+    AutoDoodleColorFadeControl, AutoDoodleModeControls, AutoDoodleIntervalControl, ColorFadeControl,
+    AutoDoodleAnimationControls, LuminosityControl, BackgroundColorControl, ClickEffectEnabledControl,
+    AnimationEasingControl, ClickEffectModeControl, ClickEffectAnimationControls, HoverEffectEnabledControl,
+    HoverEffectRadiusControl, HoverEffectAnimationControls, AutoDoodleRandomControl
 } from "./DoodleControls"
 
 
@@ -100,6 +100,7 @@ export function AutoControlsFieldset() {
             <AutoDoodleModeControls />
             <AutoDoodleAnimationControls />
             <AutoDoodleIntervalControl />
+            <AutoDoodleColorFadeControl />
         </fieldset>
     )
 }

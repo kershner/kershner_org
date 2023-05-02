@@ -23,6 +23,7 @@ export const defaultState = {
     autoDoodleAnimationDuration: 0.1,
     autoDoodleAnimationEasing: "ease-out",
     autoDoodleRandom: true,
+    autoDoodleRandomColorFade: true,
     backgroundColor: "#202123",
     luminosity: "light",
     clickEffectMode: "ring",

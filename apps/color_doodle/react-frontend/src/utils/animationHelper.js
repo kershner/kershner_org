@@ -1,31 +1,46 @@
-import { colorSquare } from "../components/DoodleBoard"
+import { colorSquare, defaultColorSquareParams } from "../components/DoodleBoard"
 const randomColor = require("randomcolor");
 
 
-export function colorSquaresInSequence(collection, state, duration = "0.1", easing = "ease") {
+export function colorSquaresInSequence(collection, state, duration = "0.1", easing = "ease", colorFade = null) {
     let timeOffset = 0;  // ms
     let timeOffsetDelay = 100;
     collection.forEach((element) => {
         setTimeout(() => {
-            colorSquare(element, state, null, null, duration, easing);
+            const colorSquareParams = {
+                "square": element,
+                "state": state,
+                "duration": duration,
+                "easing": easing,
+                "colorFade": colorFade
+            };
+            colorSquare({...defaultColorSquareParams, ...colorSquareParams});
         }, timeOffset += timeOffsetDelay)
     });
 }
 
-export function ringClick(target, state, duration = null, easing = null) {
-    const cellSize = state.cellSize;
+export function ringClick(params) {
+    const cellSize = params.state.cellSize;
     const grid = document.querySelector('.doodle-board');
     let maxOffset = Math.floor(Math.min(grid.offsetWidth, grid.offsetHeight) / (2 * cellSize));
     maxOffset = maxOffset > 4 ? 4 : maxOffset;
     let timeOffset = 0;  // ms
     let timeOffsetDelay = 100;
-    const selectedColor = randomColor({luminosity: state.luminosity});
+    const selectedColor = randomColor({luminosity: params.state.luminosity});
 
     for (let offset = 1; offset <= maxOffset; offset++) {
         setTimeout(() => {
-            const selectedSquares = getRingOfSquaresAroundTarget(target, offset);
+            const selectedSquares = getRingOfSquaresAroundTarget(params.target, offset);
             selectedSquares.forEach((square) => {
-                colorSquare(square, state, null, selectedColor, duration, easing);
+                const colorSquareParams = {
+                    "square": square,
+                    "state": params.state,
+                    "chosenColor": selectedColor,
+                    "duration": params.duration,
+                    "easing": params.easing,
+                    "colorFade": params.colorFade
+                };
+                colorSquare({...defaultColorSquareParams, ...colorSquareParams});
             });
 
         }, timeOffset += timeOffsetDelay);
@@ -48,20 +63,20 @@ export function ringClick(target, state, duration = null, easing = null) {
     }
 }
 
-export function columnOrRowClick(target, state, type = "col", before = false, duration = null, easing = null) {
-    const { row, col } = target.dataset;
+export function columnOrRowClick(params) {
+    const { row, col } = params.target.dataset;
     const rowAndCol = {
         "row": parseInt(row),
         "col": parseInt(col)
     };
-    const columnSquares = document.querySelectorAll(`[data-${type}="${rowAndCol[type]}"]`);
+    const columnSquares = document.querySelectorAll(`[data-${params.type}="${rowAndCol[params.type]}"]`);
     const beforeTarget = [];
     const afterTarget = [];
 
     columnSquares.forEach((squareEl) => {
         let squareRowOrCol = parseInt(squareEl.dataset.col);
         let comparisonRowOrCol = rowAndCol["col"];
-        if (type === "col") {
+        if (params.type === "col") {
             squareRowOrCol = parseInt(squareEl.dataset.row);
             comparisonRowOrCol = rowAndCol["row"];
         }
@@ -72,8 +87,8 @@ export function columnOrRowClick(target, state, type = "col", before = false, du
         }
     });
 
-    if (before) {
-        colorSquaresInSequence(beforeTarget.reverse(), state, duration, easing);
+    if (params.before) {
+        colorSquaresInSequence(beforeTarget.reverse(), params.state, params.duration, params.easing, params.colorFade);
     }
-    colorSquaresInSequence(afterTarget, state, duration, easing);
+    colorSquaresInSequence(afterTarget, params.state, params.duration, params.easing, params.colorFade);
 }

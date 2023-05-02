@@ -1,33 +1,44 @@
 import React, { useState, useContext, useEffect } from "react"
 const randomColor = require("randomcolor");
-import { GlobalStateContext } from "./DoodleState"
+import { GlobalStateContext, defaultState } from "./DoodleState"
 import ViewportResize from "./ViewportResize"
 import { numCols } from "../utils/util"
 import { colorSquaresInSequence, ringClick, columnOrRowClick } from "../utils/animationHelper"
 
 
-export function colorSquare(squareEl, state, callback = null, color = null, duration = null, easing = null) {
-    squareEl.addEventListener("transitionend", transitionEndHandler);
+export const defaultColorSquareParams = {
+    "square": null,
+    "state": null,
+    "callback": null,
+    "chosenColor": null,
+    "duration": null,
+    "easing": null,
+    "colorFade": null
+};
 
-    const chosenColor = color ? color : randomColor({luminosity: state.luminosity});
-    const chosenDuration = duration ? duration : state.autoDoodleAnimationDuration;
-    const chosenEasing = easing ? easing : "ease-out";
-    squareEl.style.transition = `background-color ${chosenDuration}s ${chosenEasing}`;
-    squareEl.style.backgroundColor = chosenColor;
+export function colorSquare(params) {
+    params.square.addEventListener("transitionend", transitionEndHandler);
+
+    const chosenColor = params.chosenColor ? params.chosenColor : randomColor({luminosity: params.state.luminosity});
+    const chosenDuration = params.duration ? params.duration : params.state.autoDoodleAnimationDuration;
+    const chosenEasing = params.easing ? params.easing : params.state.autoDoodleAnimationEasing;
+    const colorFade = params.colorFade ? params.colorFade : params.state.colorFade;
+    params.square.style.transition = `background-color ${chosenDuration}s ${chosenEasing}`;
+    params.square.style.backgroundColor = chosenColor;
 
     function transitionEndHandler() {
-        if (state.colorFade) {
-            squareEl.style.backgroundColor = "unset";
+        if (colorFade) {
+            params.square.style.backgroundColor = "unset";
         }
 
-        squareEl.addEventListener("transitionend", removeTransitionEndHandler);
+        params.square.addEventListener("transitionend", removeTransitionEndHandler);
     }
 
     function removeTransitionEndHandler() {
-        squareEl.removeEventListener("transitionend", transitionEndHandler);
+        params.square.removeEventListener("transitionend", transitionEndHandler);
 
-        if (callback) {
-            callback();
+        if (params.callback) {
+            params.callback();
         }
     }
 }
@@ -57,23 +68,38 @@ function DoodleSquare(props) {
             updateGlobalState("mouseDown", true);
             const duration = globalState.clickEffectAnimationDuration;
             const easing = globalState.clickEffectAnimationEasing;
+            const colorFade = globalState.colorFade;
+            const defaultClickParams = {
+                "target": e.target,
+                "state": globalState,
+                "duration": duration,
+                "easing": easing,
+                "colorFade": colorFade
+            };
+            let extraColumnOrRowParams = {
+                "type": "col",
+                "before": true
+            };
 
             switch (globalState.clickEffectMode) {
                 case "ring":
-                    ringClick(e.target, globalState, duration, easing);
+                    ringClick(defaultClickParams);
                     break;
                 case "rowAndCol":
-                    columnOrRowClick(e.target, globalState, "row", true, duration, easing);
-                    columnOrRowClick(e.target, globalState, "col", true, duration, easing);
+                    columnOrRowClick({...extraColumnOrRowParams, ...defaultClickParams});
+                    extraColumnOrRowParams.type = "row";
+                    columnOrRowClick({...extraColumnOrRowParams, ...defaultClickParams});
                     break;
                 case "row":
-                    columnOrRowClick(e.target, globalState, "row", true, duration, easing);
+                    extraColumnOrRowParams.type = "row";
+                    columnOrRowClick({...extraColumnOrRowParams, ...defaultClickParams});
                     break;
                 case "column":
-                    columnOrRowClick(e.target, globalState, "col", true, duration, easing);
+                    columnOrRowClick({...extraColumnOrRowParams, ...defaultClickParams});
                     break;
                 case "rain":
-                    columnOrRowClick(e.target, globalState, "col", false, duration, easing);
+                    extraColumnOrRowParams.before = false;
+                    columnOrRowClick({...extraColumnOrRowParams, ...defaultClickParams});
                     break;
                 default:
                     colorAdjacentSquares(e.target, 1, duration, easing);
@@ -105,7 +131,14 @@ function DoodleSquare(props) {
             const selector = `.doodle-square[data-row="${row}"][data-col="${col}"]`;
             const square = document.querySelector(selector);
             if (square) {
-                colorSquare(square, globalState, null, chosenColor, chosenDuration, chosenEasing);
+                const colorSquareParams = {
+                    "square": square,
+                    "state": globalState,
+                    "chosenColor": chosenColor,
+                    "duration": chosenDuration,
+                    "easing": chosenEasing
+                };
+                colorSquare({...defaultColorSquareParams, ...colorSquareParams});
             }
         });
     }

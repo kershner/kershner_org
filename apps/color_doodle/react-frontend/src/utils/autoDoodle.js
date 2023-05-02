@@ -1,4 +1,4 @@
-import { colorSquare } from "../components/DoodleBoard"
+import { colorSquare, defaultColorSquareParams } from "../components/DoodleBoard"
 import { numCols, numRows, shuffleArray } from "../utils/util"
 import { colorSquaresInSequence, columnOrRowClick, ringClick } from "../utils/animationHelper"
 import { effectTypes } from "../components/DoodleState"
@@ -11,6 +11,9 @@ export default class AutoDoodle {
         this.tempCollection = shuffleArray(Array.from(this.allSquares));
         this.currentlyFilling = true;
         this.effectTypes = shuffleArray(Object.values(effectTypes));
+
+        this.effectChangeChance = () => Math.random() < 0.10;
+        this.colorFadeChance = () => Math.random() < 0.01;
     }
 
     random(randomSquare, fill = false) {
@@ -22,32 +25,53 @@ export default class AutoDoodle {
             modifiedState.colorFade = !this.currentlyFilling;
         }
 
-        colorSquare(randomSquare, modifiedState, null, null, duration, easing);
+        const colorSquareParams = {
+            "square": randomSquare,
+            "state": modifiedState,
+            "duration": duration,
+            "easing": easing
+        };
+        colorSquare({...defaultColorSquareParams, ...colorSquareParams});
     }
 
-    effectChoice(effect, square, duration, easing) {
-        switch (effect) {
+    effectChoice(params) {
+        const defaultEffectParams = {
+            "target": params.square,
+            "state": this.state,
+            "duration": params.duration,
+            "easing": params.easing,
+            "colorFade": params.colorFade
+        };
+        let extraColumnOrRowParams = {
+            "type": "col",
+            "before": true
+        };
+
+        switch (params.effect) {
             case "ring":
-                ringClick(square, this.state, duration, easing);
+                ringClick(defaultEffectParams);
                 break;
             case "rowAndCol":
-                columnOrRowClick(square, this.state, "row", true, duration, easing);
-                columnOrRowClick(square, this.state, "col", true, duration, easing);
+                columnOrRowClick({...extraColumnOrRowParams, ...defaultEffectParams});
+                extraColumnOrRowParams.type = "row";
+                columnOrRowClick({...extraColumnOrRowParams, ...defaultEffectParams});
                 break;
             case "row":
-                columnOrRowClick(square, this.state, "row", true, duration, easing);
+                extraColumnOrRowParams.type = "row";
+                columnOrRowClick({...extraColumnOrRowParams, ...defaultEffectParams});
                 break;
             case "column":
-                columnOrRowClick(square, this.state, "col", true, duration, easing);
+                columnOrRowClick({...extraColumnOrRowParams, ...defaultEffectParams});
                 break;
             case "rain":
-                columnOrRowClick(square, this.state, "col", false, duration, easing);
+                extraColumnOrRowParams.before = false;
+                columnOrRowClick({...extraColumnOrRowParams, ...defaultEffectParams});
                 break;
             case "randomFill":
-                this.random(square, true);
+                this.random(params.square, true);
                 break;
             default:  // Random
-                this.random(square, false);
+                this.random(params.square, false);
                 break;
         }
     }
@@ -71,15 +95,21 @@ export default class AutoDoodle {
                 const duration = this.state.autoDoodleAnimationDuration;
                 const easing = this.state.autoDoodleAnimationEasing;
                 let chosenEffect = this.state.autoDoodleMode;
+                let colorFade = this.state.colorFade;
 
                 if (this.state.autoDoodleRandom) {
-                    const pct = 0.1;  // effect will switch 10% of the time
-                    const pctChance = Math.random() < pct;
-                    chosenEffect = pctChance ? this.effectTypes.shift() : this.effectTypes[0];
+                    chosenEffect = this.effectChangeChance ? this.effectTypes.shift() : this.effectTypes[0];
+                    colorFade = !!this.colorFadeChance;
                 }
 
-                this.effectChoice(chosenEffect, randomSquare, duration, easing);
-
+                const effectParams = {
+                    "square": randomSquare,
+                    "effect": chosenEffect,
+                    "duration": duration,
+                    "easing": easing,
+                    "colorFade": colorFade
+                };
+                this.effectChoice(effectParams);
             }, this.state.autoDoodleInterval);
         }
     }
