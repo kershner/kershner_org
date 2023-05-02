@@ -1,6 +1,6 @@
 import React, { useContext } from "react"
 import { GlobalStateContext, defaultState } from "./DoodleState"
-import { DoodleButton } from "./DoodleInputs"
+import { DoodleButton, GithubButton } from "./DoodleInputs"
 import { encodeParams, copyToClipboard, updateUrlParams, getNewGridNumCells } from "../utils/util"
 
 
@@ -43,7 +43,7 @@ export function CloseMenuButton() {
 function CopyUrlButton() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const buttonId = "copy-url";
-    const buttonName = "Share";
+    const buttonName = "Copy";
 
     function handleClick(e) {
         updateUrlParams(globalState);
@@ -93,13 +93,20 @@ export function ClearBoardButton() {
                          onClick={handleClick} />;
 }
 
-
 export function DoodleMenuButtonGroupTop() {
     return (
         <div className="doodle-button-group menu-buttons">
             <CopyUrlButton />
             <DefaultStateButton />
             <ClearBoardButton />
+        </div>
+    )
+}
+
+export function DoodleMenuButtonGroupBottom() {
+    return (
+        <div className="doodle-button-group footer-buttons">
+            <GithubButton />
         </div>
     )
 }
