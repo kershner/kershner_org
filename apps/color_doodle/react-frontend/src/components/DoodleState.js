@@ -12,6 +12,14 @@ export const effectTypes = {
     "rain": "rain",
     "ring": "ring"
 };
+
+export const luminosityOptions = {
+    "bright": "bright",
+    "light": "light",
+    "dark": "dark",
+    "all": "all"
+};
+
 export const defaultState = {
     numSquares: defaultNumSquares,
     cellSize: defaultCellSize,
@@ -23,19 +31,23 @@ export const defaultState = {
     autoDoodleAnimationDuration: 0.1,
     autoDoodleAnimationEasing: "ease-out",
     autoDoodleRandom: true,
-    autoDoodleRandomColorFade: true,
+    autoDoodleColorFade: true,
+    autoDoodleLuminosity: "light",
+    autoDoodleEnabled: false,
     backgroundColor: "#202123",
     luminosity: "light",
     clickEffectMode: "ring",
     clickEffectAnimationDuration: 0.1,
     clickEffectAnimationEasing: "ease-out",
+    clickEffectColorFade: true,
+    clickEffectLuminosity: "light",
     clickEffectEnabled: true,
     hoverEffectRadius: 0,
     hoverEffectAnimationDuration: 0.1,
     hoverEffectAnimationEasing: "ease-out",
+    hoverEffectColorFade: true,
+    hoverEffectLuminosity: "light",
     hoverEffectEnabled: true,
-    autoDoodle: false,
-    colorFade: true,
     mouseDown: false,
     // Menu States
     menuOpen: true,

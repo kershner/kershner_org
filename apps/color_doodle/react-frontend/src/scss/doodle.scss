@@ -63,7 +63,11 @@ body {
   display: flex;
   flex-direction: column;
   position: fixed;
-  width: 15rem;
+  width: 16rem;
+  @media (max-width: 480px) {
+    width: 15rem;
+  }
+
   top: 0;
   right: 0;
   height: 100%;

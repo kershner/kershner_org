@@ -2,17 +2,18 @@ import { colorSquare, defaultColorSquareParams } from "../components/DoodleBoard
 const randomColor = require("randomcolor");
 
 
-export function colorSquaresInSequence(collection, state, duration = "0.1", easing = "ease", colorFade = null) {
+export function colorSquaresInSequence(params) {
     let timeOffset = 0;  // ms
     let timeOffsetDelay = 100;
-    collection.forEach((element) => {
+    params.collection.forEach((element) => {
         setTimeout(() => {
             const colorSquareParams = {
                 "square": element,
-                "state": state,
-                "duration": duration,
-                "easing": easing,
-                "colorFade": colorFade
+                "state": params.state,
+                "duration": params.duration,
+                "easing": params.easing,
+                "colorFade": params.colorFade,
+                "luminosity": params.luminosity
             };
             colorSquare({...defaultColorSquareParams, ...colorSquareParams});
         }, timeOffset += timeOffsetDelay)
@@ -26,7 +27,7 @@ export function ringClick(params) {
     maxOffset = maxOffset > 4 ? 4 : maxOffset;
     let timeOffset = 0;  // ms
     let timeOffsetDelay = 100;
-    const selectedColor = randomColor({luminosity: params.state.luminosity});
+    const selectedColor = randomColor({luminosity: params.luminosity});
 
     for (let offset = 1; offset <= maxOffset; offset++) {
         setTimeout(() => {
@@ -38,7 +39,8 @@ export function ringClick(params) {
                     "chosenColor": selectedColor,
                     "duration": params.duration,
                     "easing": params.easing,
-                    "colorFade": params.colorFade
+                    "colorFade": params.colorFade,
+                    "luminosity": params.luminosity
                 };
                 colorSquare({...defaultColorSquareParams, ...colorSquareParams});
             });
@@ -87,8 +89,18 @@ export function columnOrRowClick(params) {
         }
     });
 
+    let defaultColorSquaresParams = {
+        "state": params.state,
+        "duration": params.duration,
+        "easing": params.easing,
+        "colorFade": params.colorFade
+    };
+
     if (params.before) {
-        colorSquaresInSequence(beforeTarget.reverse(), params.state, params.duration, params.easing, params.colorFade);
+        defaultColorSquaresParams["collection"] = beforeTarget.reverse();
+    } else {
+        defaultColorSquaresParams["collection"] = afterTarget;
     }
-    colorSquaresInSequence(afterTarget, params.state, params.duration, params.easing, params.colorFade);
+
+    colorSquaresInSequence(defaultColorSquaresParams);
 }

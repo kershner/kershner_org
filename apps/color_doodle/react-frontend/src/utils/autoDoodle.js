@@ -1,6 +1,6 @@
 import { colorSquare, defaultColorSquareParams } from "../components/DoodleBoard"
 import { numCols, numRows, shuffleArray } from "../utils/util"
-import { colorSquaresInSequence, columnOrRowClick, ringClick } from "../utils/animationHelper"
+import { columnOrRowClick, ringClick } from "../utils/animationHelper"
 import { effectTypes } from "../components/DoodleState"
 
 
@@ -11,9 +11,10 @@ export default class AutoDoodle {
         this.tempCollection = shuffleArray(Array.from(this.allSquares));
         this.currentlyFilling = true;
         this.effectTypes = shuffleArray(Object.values(effectTypes));
+        this.colorFade = this.state.autoDoodleColorFade;
 
         this.effectChangeChance = () => Math.random() < 0.10;
-        this.colorFadeChance = () => Math.random() < 0.01;
+        this.colorFadeChance = () => Math.random() < 0.10;
     }
 
     random(randomSquare, fill = false) {
@@ -40,7 +41,8 @@ export default class AutoDoodle {
             "state": this.state,
             "duration": params.duration,
             "easing": params.easing,
-            "colorFade": params.colorFade
+            "colorFade": params.colorFade,
+            "luminosity": params.luminosity
         };
         let extraColumnOrRowParams = {
             "type": "col",
@@ -81,7 +83,7 @@ export default class AutoDoodle {
      */
     run() {
         clearInterval(window.autoDoodleInterval);
-        if (this.state.autoDoodle) {
+        if (this.state.autoDoodleEnabled) {
             window.autoDoodleInterval = setInterval(() => {
                 if (!this.tempCollection.length) {
                     this.tempCollection = shuffleArray(Array.from(this.allSquares));
@@ -92,22 +94,21 @@ export default class AutoDoodle {
                 }
 
                 const randomSquare = this.tempCollection.shift();
-                const duration = this.state.autoDoodleAnimationDuration;
-                const easing = this.state.autoDoodleAnimationEasing;
                 let chosenEffect = this.state.autoDoodleMode;
-                let colorFade = this.state.colorFade;
+                let colorFade = this.state.autoDoodleColorFade;
 
                 if (this.state.autoDoodleRandom) {
-                    chosenEffect = this.effectChangeChance ? this.effectTypes.shift() : this.effectTypes[0];
-                    colorFade = !!this.colorFadeChance;
+                    chosenEffect = this.effectChangeChance() ? this.effectTypes.shift() : this.effectTypes[0];
+                    colorFade = colorFade ? this.colorFadeChance() : colorFade;
                 }
 
                 const effectParams = {
                     "square": randomSquare,
                     "effect": chosenEffect,
-                    "duration": duration,
-                    "easing": easing,
-                    "colorFade": colorFade
+                    "duration": this.state.autoDoodleAnimationDuration,
+                    "easing": this.state.autoDoodleAnimationEasing,
+                    "colorFade": colorFade,
+                    "luminosity": this.state.autoDoodleLuminosity
                 };
                 this.effectChoice(effectParams);
             }, this.state.autoDoodleInterval);

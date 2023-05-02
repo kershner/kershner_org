@@ -1,10 +1,10 @@
 import React, { useContext } from "react"
-import { GlobalStateContext, effectTypes } from "./DoodleState"
+import { GlobalStateContext, effectTypes, luminosityOptions } from "./DoodleState"
 import { getNewGridNumCells, updateUrlParams } from "../utils/util"
 import DoodleInput from "./DoodleInputs"
 
 
-// Generic animation helpers
+// Generic animation controls helpers
 export function AnimationEasingControl(props) {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const label = "Easing";
@@ -73,6 +73,51 @@ export function AnimationControls(props) {
     )
 }
 
+// Generic color controls helpers
+export function ColorFadeControl(props) {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const label = "Color fade";
+
+    function handleChange(e) {
+        const randomEnabled = !globalState[props.stateValue];
+        updateGlobalState(props.stateValue, randomEnabled, (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
+    return <DoodleInput inputType="checkbox"
+                        name={props.stateValue}
+                        label={label}
+                        handleChange={handleChange}
+                        checked={globalState[props.stateValue]}/>;
+}
+
+export function LuminosityControl(props) {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const label = "Luminosity";
+
+    function handleChange(e) {
+        updateGlobalState(props.stateValue, e.target.value, (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
+    return <DoodleInput inputType="select"
+                        name={props.stateValue}
+                        label={label}
+                        handleChange={handleChange}
+                        options={luminosityOptions}
+                        defaultValue={globalState[props.stateValue]}/>;
+}
+
+export function ColorControls(props) {
+    return (
+        <div className="input-row color-controls">
+            <LuminosityControl stateValue={props.luminosityStateValue}/>
+            <ColorFadeControl stateValue={props.colorFadeStateValue} />
+        </div>
+    )
+}
 
 // Grid controls
 export function CellSizeControl() {
@@ -199,7 +244,7 @@ export function BorderColorControl() {
 // Auto mode controls
 export function AutoDoodleControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "autoDoodle";
+    const controlName = "autoDoodleEnabled";
     const label = "Enabled";
 
     function handleChange(e) {
@@ -215,23 +260,10 @@ export function AutoDoodleControl() {
                         checked={globalState[controlName]}/>;
 }
 
-export function AutoDoodleColorFadeControl() {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "autoDoodleRandomColorFade";
-    const label = "Color fade";
-
-    function handleChange(e) {
-        const randomEnabled = !globalState[controlName];
-        updateGlobalState(controlName, randomEnabled, (newState) => {
-            updateUrlParams(newState);
-        });
-    }
-
-    return <DoodleInput inputType="checkbox"
-                        name={controlName}
-                        label={label}
-                        handleChange={handleChange}
-                        checked={globalState[controlName]}/>;
+export function AutoDoodleColorControls() {
+    return (
+        <ColorControls luminosityStateValue="autoDoodleLuminosity" colorFadeStateValue="autoDoodleColorFade"/>
+    )
 }
 
 export function AutoDoodleModeSelectControl() {
@@ -326,50 +358,6 @@ export function AutoDoodleAnimationControls() {
     )
 }
 
-// Color controls
-export function ColorFadeControl() {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "colorFade";
-    const label = "Fade";
-
-    function handleChange(e) {
-        updateGlobalState(controlName, !globalState[controlName], (newState) => {
-            updateUrlParams(newState);
-        });
-    }
-
-    return <DoodleInput inputType="checkbox"
-                        name={controlName}
-                        label={label}
-                        handleChange={handleChange}
-                        checked={globalState[controlName]}/>;
-}
-
-export function LuminosityControl() {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "luminosity";
-    const label = "Luminosity";
-    const options = {
-        "bright": "bright",
-        "light": "light",
-        "dark": "dark",
-        "all": "all"
-    };
-
-    function handleChange(e) {
-        updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
-        });
-    }
-
-    return <DoodleInput inputType="select"
-                        name={controlName}
-                        label={label}
-                        handleChange={handleChange}
-                        options={options}
-                        defaultValue={globalState[controlName]}/>;
-}
-
 export function BackgroundColorControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "backgroundColor";
@@ -438,6 +426,12 @@ export function ClickEffectAnimationControls() {
     )
 }
 
+export function ClickEffectColorControls() {
+    return (
+        <ColorControls luminosityStateValue="clickEffectLuminosity" colorFadeStateValue="clickEffectColorFade"/>
+    )
+}
+
 // Hover effect controls
 export function HoverEffectEnabledControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
@@ -494,5 +488,11 @@ export function HoverEffectAnimationControls() {
     return (
         <AnimationControls durationStateValue="hoverEffectAnimationDuration"
                            easingStateValue="hoverEffectAnimationEasing"/>
+    )
+}
+
+export function HoverEffectColorControls() {
+    return (
+        <ColorControls luminosityStateValue="hoverEffectLuminosity" colorFadeStateValue="hoverEffectColorFade"/>
     )
 }

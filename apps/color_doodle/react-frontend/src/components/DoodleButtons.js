@@ -76,29 +76,12 @@ export function DefaultStateButton() {
                          onClick={handleClick} />;
 }
 
-export function ClearBoardButton() {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const buttonId = "clear-board";
-    const buttonName = "Clear";
-
-    function handleClick(e) {
-        const allBtns = document.querySelectorAll(".doodle-square");
-        allBtns.forEach((btn) => {
-            btn.style.backgroundColor = "unset";
-        });
-    }
-
-    return <DoodleButton id={buttonId}
-                         value={buttonName}
-                         onClick={handleClick} />;
-}
-
 export function DoodleMenuButtonGroupTop() {
     return (
         <div className="doodle-button-group menu-buttons">
             <CopyUrlButton />
             <DefaultStateButton />
-            <ClearBoardButton />
+            <CloseMenuButton />
         </div>
     )
 }
