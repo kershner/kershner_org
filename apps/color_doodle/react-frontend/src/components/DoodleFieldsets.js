@@ -6,7 +6,7 @@ import {
     AutoModeControl, AutoDoodleIntervalControl, ColorFadeControl, AutoDoodleAnimationControls,
     LuminosityControl, BackgroundColorControl, ClickEffectEnabledControl, AnimationEasingControl,
     ClickEffectModeControl, ClickEffectAnimationControls, HoverEffectEnabledControl, HoverEffectRadiusControl,
-    HoverEffectAnimationControls
+    HoverEffectAnimationControls, AutoDoodleRandomControl
 } from "./DoodleControls"
 
 
@@ -100,6 +100,7 @@ export function AutoControlsFieldset() {
             <AutoModeControl />
             <AutoDoodleAnimationControls />
             <AutoDoodleIntervalControl />
+            <AutoDoodleRandomControl />
         </fieldset>
     )
 }

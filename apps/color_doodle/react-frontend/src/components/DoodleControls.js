@@ -283,6 +283,24 @@ export function AutoDoodleAnimationControls() {
     )
 }
 
+export function AutoDoodleRandomControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const controlName = "autoDoodleRandom";
+    const label = "Random";
+
+    function handleChange(e) {
+        updateGlobalState(controlName, !globalState[controlName], (newState) => {
+            updateUrlParams(newState);
+        });
+    }
+
+    return <DoodleInput inputType="checkbox"
+                        name={controlName}
+                        label={label}
+                        handleChange={handleChange}
+                        checked={globalState[controlName]}/>;
+}
+
 // Color controls
 export function ColorFadeControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
