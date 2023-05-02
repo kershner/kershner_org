@@ -99,9 +99,9 @@ export function columnOrRowClick(params) {
 
     if (params.before) {
         defaultColorSquaresParams["collection"] = beforeTarget.reverse();
-    } else {
-        defaultColorSquaresParams["collection"] = afterTarget;
+        colorSquaresInSequence(defaultColorSquaresParams);
     }
 
+    defaultColorSquaresParams["collection"] = afterTarget;
     colorSquaresInSequence(defaultColorSquaresParams);
 }
