@@ -180,7 +180,12 @@ export function BorderColorControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
+            // add a delay so the color picker onChange does not update URL params too often (causes crash)
+            window.updateBorderColorTimeout = setTimeout(() => {
+                if (newState.borderColor === e.target.value) {
+                    updateUrlParams(newState);
+                }
+            }, 100);
         });
     }
 
