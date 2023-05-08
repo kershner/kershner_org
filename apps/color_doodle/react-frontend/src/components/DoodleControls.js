@@ -1,6 +1,6 @@
 import React, { useContext } from "react"
 import { GlobalStateContext, effectTypes, luminosityOptions } from "./DoodleState"
-import { getNewGridNumCells, updateUrlParams } from "../utils/util"
+import { getNewGridNumCells, updateUrlParams, updateBackgroundColor } from "../utils/util"
 import DoodleInput from "./DoodleInputs"
 
 
@@ -120,6 +120,30 @@ export function ColorControls(props) {
 }
 
 // Grid controls
+export function BackgroundColorControl() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const controlName = "backgroundColor";
+    const label = "Background";
+    const choices = {
+        "light": "light",
+        "dark": "dark"
+    };
+
+    function handleChange(e) {
+        updateGlobalState(controlName, e.target.value, (newState) => {
+            updateUrlParams(newState);
+            updateBackgroundColor(newState);
+        });
+    }
+
+    return <DoodleInput inputType="radio"
+                        name={controlName}
+                        label={label}
+                        handleChange={handleChange}
+                        choices={choices}
+                        checkedProperty={controlName}/>;
+}
+
 export function CellSizeControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "cellSize";
@@ -356,29 +380,6 @@ export function AutoDoodleAnimationControls() {
         <AnimationControls durationStateValue="autoDoodleAnimationDuration"
                            easingStateValue="autoDoodleAnimationEasing"/>
     )
-}
-
-export function BackgroundColorControl() {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "backgroundColor";
-    const label = "Background";
-    const choices = {
-        "light": "#FFF",
-        "dark": "#202123"
-    };
-
-    function handleChange(e) {
-        updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
-        });
-    }
-
-    return <DoodleInput inputType="radio"
-                        name={controlName}
-                        label={label}
-                        handleChange={handleChange}
-                        choices={choices}
-                        checkedProperty={controlName}/>;
 }
 
 // Click effect controls

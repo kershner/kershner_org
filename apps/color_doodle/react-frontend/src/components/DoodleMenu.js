@@ -1,12 +1,12 @@
 import React, { useContext } from "react"
 import { GlobalStateContext } from "./DoodleState"
-import { DoodleMenuButtonGroupTop, CloseMenuButton, DoodleMenuButtonGroupBottom } from "./DoodleButtons"
+import { DoodleMenuButtonGroupTop, CloseMenuButton, DoodleMenuButtonGroupBottom, ExpandMenuButton } from "./DoodleButtons"
 import {
     GridControlsFieldset, ClickEffectControlsFieldset, AutoControlsFieldset, HoverEffectControlsFieldset
 } from "./DoodleFieldsets"
 
 
-export default function DoodleMenu() {
+export function DoodleMenu() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const cssStr = `doodle-controls ${globalState.menuOpen ? "" : "hidden"}`;
 
@@ -19,5 +19,14 @@ export default function DoodleMenu() {
             <GridControlsFieldset />
             <DoodleMenuButtonGroupBottom />
         </div>
+    )
+}
+
+export default function DoodleMenuContainer() {
+    return (
+        <>
+            <ExpandMenuButton />
+            <DoodleMenu />
+        </>
     )
 }

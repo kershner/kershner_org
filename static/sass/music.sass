@@ -40,7 +40,6 @@
 input[type=range]
   position: relative
   z-index: 1
-  -webkit-appearance: none
   width: 100%
 
   &:focus
@@ -143,7 +142,6 @@ input[type=range]
         display: inline-block
         width: 50%
         text-align: center
-        color: $grey
         font-size: 2.4em
         line-height: 1.5em
         +animate(0.2s)
@@ -251,6 +249,8 @@ input[type=range]
 
     .player-bottom
       display: flex
+      position: relative
+      z-index: 1
       justify-content: center
 
       // META CONTAINER

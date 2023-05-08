@@ -26,13 +26,6 @@ def home(request):
     return render(request, 'portfolio/home.html', template_vars)
 
 
-def update_theme(request):
-    body = json.loads(request.body)
-    theme = body['theme']
-    request.session['theme'] = theme
-    return JsonResponse({'success': True}, status=200)
-
-
 def music(request):
     songs = Song.objects.all().order_by('-position')
     songs_json = []

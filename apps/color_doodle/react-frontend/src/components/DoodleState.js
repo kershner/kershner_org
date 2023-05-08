@@ -21,7 +21,17 @@ export const luminosityOptions = {
     "all": "all"
 };
 
-export const defaultState = {
+const kershnerOrgDefaultState = {
+    cellSize: 80,
+    borderStyle: "hidden",
+    autoDoodleInterval: 1100,
+    autoDoodleAnimationDuration: 0.4,
+    autoDoodleEnabled: true,
+    menuOpen: false,
+    hoverEffectRadius: 1
+};
+
+export let defaultState = {
     numSquares: defaultNumSquares,
     cellSize: defaultCellSize,
     borderStyle: "solid",
@@ -35,7 +45,7 @@ export const defaultState = {
     autoDoodleColorFade: true,
     autoDoodleLuminosity: "light",
     autoDoodleEnabled: false,
-    backgroundColor: "#202123",
+    backgroundColor: "dark",
     luminosity: "light",
     clickEffectMode: "ring",
     clickEffectAnimationDuration: 0.1,
@@ -58,6 +68,8 @@ export const defaultState = {
     colorFieldsetOpen: false,
     gridFieldsetOpen: false
 };
+
+defaultState = {...defaultState,...kershnerOrgDefaultState};
 
 const GlobalStateContext = createContext({});
 

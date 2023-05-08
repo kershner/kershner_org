@@ -10,7 +10,6 @@ var portfolio = {
     'bigCallToAction'       : document.getElementsByClassName('big-call-to-action')[0],
     'cubeGrid'              : document.getElementsByClassName('cube-grid')[0],
     'moreProjectsBtn'       : document.getElementById('more-projects-btn'),
-    'darkModeClass'         : 'dark-mode',
     'currentColor'          : ''
 };
 
@@ -19,7 +18,6 @@ portfolio.init = function() {
 
     portfolio.rotateColors();
     portfolio.scrollEvents();
-    portfolio.themeToggle();
 };
 
 portfolio.scrollEvents = function() {
@@ -79,81 +77,17 @@ portfolio.addProject = function(projectIndex) {
 };
 
 portfolio.rotateColors = function() {
-    let particlesCanvas = 'particles-js-canvas-el';
-
     portfolio.changeColors();
-    setInterval(function() {
-        var particlesWrapper = document.getElementsByClassName(particlesCanvas)[0];
-        particlesWrapper.addEventListener('animationend', fadeoutCallback);
-        addClass(particlesWrapper, 'fade-out');
-    }, portfolio.colorChangeInterval);
-
-    function fadeoutCallback() {
-        particlesTeardown();
+    window.rotateColorsInterval = setInterval(() => {
         portfolio.changeColors();
-
-        var particlesWrapper = document.getElementsByClassName(particlesCanvas)[0];
-        particlesWrapper.removeEventListener('animationend', self);
-        particlesWrapper.addEventListener('animationend', fadeinCallback);
-        addClass(particlesWrapper, 'fade-in');
-    }
-
-    function fadeinCallback() {
-        var particlesWrapper = document.getElementsByClassName(particlesCanvas)[0];
-        particlesWrapper.removeEventListener('animationend', self);
-        removeClass(particlesWrapper, 'fade-out');
-        removeClass(particlesWrapper, 'fade-in');
-    }
-
-    function particlesTeardown() {
-        window.pJSDom[0].pJS.fn.vendors.destroypJS();
-        window['pJSDom'] = [];
-    }
+    }, portfolio.colorChangeInterval);
 };
 
 portfolio.changeColors = function() {
     document.documentElement.style.setProperty('--dynamic-color', portfolio.currentColor);
 
-    particlesInit(portfolio.currentColor);
-
     colorWave.color = portfolio.currentColor;
     colorWave.init();
 
     portfolio.currentColor = randomColor({luminosity: 'bright'});
-};
-
-portfolio.themeToggle = function() {
-    let toggle = document.getElementsByClassName('theme-switch')[0];
-    let bigWelcomeText = document.querySelectorAll('.welcome h1 a span');
-
-    toggle.addEventListener('click', function() {
-        let currentTheme = '';
-        if (hasClass(toggle, 'active')) {
-            // Remove dark mode
-            removeClass(toggle, 'active');
-            removeClass(document.body, portfolio.darkModeClass);
-        } else {
-            // Add dark mode
-            addClass(toggle, 'active');
-            addClass(document.body, portfolio.darkModeClass);
-            currentTheme = 'dark-mode'
-        }
-
-        bigWelcomeText.forEach(e => {
-            e.style.transition = '0.5s';
-            e.addEventListener('transitionend', () => {
-                // Remove the transition property to revert to default
-                e.style.transition = '';
-            });
-        });
-
-        const headers = {
-            'X-CSRFToken': getCookie('csrftoken')
-        };
-        fetchWrapper(portfolio.updateThemeUrl, 'post', {'theme': currentTheme}, headers, function(data) {
-            if (data['processed'] || data['error']) {
-                location.reload();
-            }
-        });
-    });
 };

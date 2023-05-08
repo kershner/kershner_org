@@ -74,6 +74,11 @@ export function updateUrlParams(state) {
 
     stateCopy = removeKeys(stateCopy, keysToRemove);
     history.replaceState(null, null, `?${encodeParams(stateCopy)}`);
+
+    // update footer link hrefs
+    document.querySelectorAll(".preserve-params").forEach((el) => {
+        el.href = `${el.href}?${encodeParams(stateCopy)}`;
+    })
 }
 
 export async function copyToClipboard(text) {
@@ -90,4 +95,20 @@ export function shuffleArray(array) {
         [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
+}
+
+export function updateBackgroundColor(state) {
+    const darkColor = "#202123";
+    const lightColor = "#FFFFFF";
+
+    switch (state.backgroundColor) {
+    case "dark":
+        document.body.style.backgroundColor = darkColor;
+        document.body.classList.add("dark-mode");
+        break;
+    case "light":
+        document.body.style.backgroundColor = lightColor;
+        document.body.classList.remove("dark-mode");
+        break;
+    }
 }

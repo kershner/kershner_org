@@ -8,11 +8,12 @@ $large-breakpoint: 1000px
 $light-black: lighten($black, 10%)
 $lighter-black: lighten($black, 78%)
 
+$portfolio-text-shadow: 1px 0.5px 3.5px $light-black
+
 body
   font-family: $primary-font
   color: $light-black
   overflow-x: hidden
-  +animation-prefix(background-color, 0.5s)
 
 .hidden
   display: none !important
@@ -62,63 +63,20 @@ a
 
 .welcome h1 a
   color: $light-black
-  text-decoration-color: var(--dynamic-color)
+  text-decoration: none
+
+  &:after
+    content: ""
+    position: absolute
+    z-index: -1
+    bottom: 0.2rem
+    left: 0
+    right: 0
+    height: 0.4rem
+    background-color: var(--dynamic-color)
 
   span
     transition: 0.2s
-    text-decoration: underline
-    text-decoration-color: var(--dynamic-color)
-
-#page-wrapper
-  .particles-js-canvas-el
-    position: fixed
-    top: 0
-    left: 0
-    z-index: 0
-
-  .theme-switch
-    position: absolute
-    top: 1.5rem
-    right: 1.5rem
-    z-index: 1
-    cursor: pointer
-    width: 70px
-    height: 30px
-    border-radius: 50px
-    background: transparent
-    @extend %dynamic-border-color
-    border-width: 2px !important
-
-    .switch
-      width: 24px
-      height: 24px
-      border-radius: 100%
-      position: absolute
-      top: 3px
-      left: 4px
-      transition: 0.5s all ease
-
-      .theme-icon
-        display: flex
-        padding: 0.25rem
-
-        svg
-          color: $white
-          width: 100%
-          height: 100%
-
-      .moon
-        display: none
-      .sun
-        display: block
-
-    &.active
-      .switch
-        transform: translateX(37px)
-        .sun
-          display: none
-        .moon
-          display: block
 
 // Welcome section
 .welcome-wrapper
@@ -134,6 +92,7 @@ a
       max-width: 100%
 
     h1
+      z-index: 1
       position: relative
       font-size: 2.5em
       margin: .5em auto
@@ -148,9 +107,7 @@ a
           @extend %btn-click
 
   .cube-grid
-    //@extend %red-border
     position: absolute
-    z-index: 1
     bottom: 0
     cursor: pointer
 
@@ -171,6 +128,8 @@ a
   .left-content
     width: 90%
     min-width: 300px
+    position: relative
+    z-index: 1
 
     .project-icon
       img
@@ -357,6 +316,8 @@ a
     @extend %generic-btn
 
 .cube-grid
+  position: relative
+  z-index: 5
   width: 40px
   height: 40px
   margin: 1em auto
@@ -436,6 +397,7 @@ a
 // Dark mode
 body.dark-mode
   color: $white
+  text-shadow: $portfolio-text-shadow
   background-color: $black
 
   .welcome h1 a
@@ -447,3 +409,6 @@ body.dark-mode
   .tech-tag
     background-color: $light-black !important
     color: $white !important
+
+  .player-wrapper
+    text-shadow: $portfolio-text-shadow
