@@ -2,8 +2,9 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const path = require('path');
 const baseDir = "./src/";
+const BrotliPlugin = require('brotli-webpack-plugin');
 
-//const publicUrl = "/static/dist";  // dev
+//const publicUrl = "/static/color_doodle_dist";  // dev
 const publicUrl  = "https://djfdm802jwooz.cloudfront.net/static/color_doodle_dist";
 
 module.exports = {
@@ -36,6 +37,12 @@ module.exports = {
             template: `${baseDir}/templates/doodle_index.html`,
             publicPath: publicUrl,
             filename: "color_doodle_index.html"
+        }),
+        new BrotliPlugin({
+            asset: '[path].br[query]',
+            test: /\.(js|css|html|svg)$/,
+            threshold: 10240,
+            minRatio: 0.8
         })
     ]
 };
