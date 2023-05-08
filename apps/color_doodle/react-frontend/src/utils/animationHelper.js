@@ -62,21 +62,24 @@ export function ringClick(params) {
     let timeOffset = 0;  // ms
     let timeOffsetDelay = 100;
     const selectedColor = randomColor({luminosity: params.luminosity});
+    let colorSquareParams = {
+        "square": params.target,
+        "state": params.state,
+        "chosenColor": selectedColor,
+        "duration": params.duration,
+        "easing": params.easing,
+        "colorFade": params.colorFade,
+        "luminosity": params.luminosity
+    };
 
+    colorSquare({...defaultColorSquareParams, ...colorSquareParams});
     for (let offset = 1; offset <= maxOffset; offset++) {
         setTimeout(() => {
             const selectedSquares = getRingOfSquaresAroundTarget(params.target, offset);
             selectedSquares.forEach((square) => {
-                const colorSquareParams = {
-                    "square": square,
-                    "state": params.state,
-                    "chosenColor": selectedColor,
-                    "duration": params.duration,
-                    "easing": params.easing,
-                    "colorFade": params.colorFade,
-                    "luminosity": params.luminosity
-                };
-                colorSquare({...defaultColorSquareParams, ...colorSquareParams});
+                let modifiedParams = {...colorSquareParams};
+                modifiedParams["square"] = square;
+                colorSquare({...defaultColorSquareParams, ...modifiedParams});
             });
 
         }, timeOffset += timeOffsetDelay);

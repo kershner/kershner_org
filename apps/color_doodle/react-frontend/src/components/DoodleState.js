@@ -67,8 +67,7 @@ if (!endpoint) {
         autoDoodleInterval: 1100,
         autoDoodleAnimationDuration: 0.4,
         autoDoodleEnabled: true,
-        menuOpen: false,
-        hoverEffectRadius: 1
+        menuOpen: false
     };
     defaultState = {...defaultState, ...kershnerOrgDefaultState};
 }
