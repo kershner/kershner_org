@@ -1,4 +1,5 @@
 const randomColor = require("randomcolor");
+import { numRows, numCols } from "./util"
 
 export const defaultColorSquareParams = {
     "square": null,
@@ -98,20 +99,65 @@ export function ringClick(params) {
     }
 }
 
-export function columnOrRowClick(params) {
-    const { row, col } = params.target.dataset;
-    const rowAndCol = {
-        "row": parseInt(row),
-        "col": parseInt(col)
-    };
-    const columnSquares = document.querySelectorAll(`[data-${params.type}="${rowAndCol[params.type]}"]`);
+export function waveClick(params) {
+    const row = params.square.dataset.row;
+    const col = params.square.dataset.col;
+    const totalRows = numRows(parseInt(params.state.cellSize));
+    const totalCols = numCols(parseInt(params.state.cellSize));
+    const waveSquares = selectDiagonalStairStepElements(row, col, totalRows, totalCols);
+
+    let timeOffset = 0;  // ms
+    let timeOffsetDelay = 100;
+
+    waveSquares.forEach((square) => {
+        setTimeout(() => {
+            const rowAndCol = {
+                "row": parseInt(square.dataset.row),
+                "col": parseInt(square.dataset.col)
+            };
+            const rowSquares = document.querySelectorAll(`[data-row="${rowAndCol["row"]}"]`);
+            const { beforeTarget, afterTarget } = getBeforeAndAfterSquare(rowSquares, rowAndCol, "row");
+            let waveParams = {
+                "square": square,
+                "state": params.state,
+                "duration": params.duration,
+                "easing": params.easing,
+                "colorFade": params.colorFade,
+                "luminosity": params.luminosity
+            };
+
+            waveParams["collection"] = beforeTarget.reverse();
+            colorSquaresInSequence(waveParams);
+            waveParams["collection"] = afterTarget;
+            colorSquaresInSequence(waveParams);
+        }, timeOffset += timeOffsetDelay);
+    });
+
+    function selectDiagonalStairStepElements(startRow, startCol, numRows, numCols) {
+        const selectedElements = [];
+        let row = startRow;
+        let col = startCol;
+
+        while (row < numRows && col < numCols) {
+            const element = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            if (element) {
+                selectedElements.push(element);
+            }
+            row++;
+            col++;
+        }
+
+        return selectedElements;
+    }
+}
+
+function getBeforeAndAfterSquare(columnSquares, rowAndCol, type) {
     const beforeTarget = [];
     const afterTarget = [];
-
     columnSquares.forEach((squareEl) => {
         let squareRowOrCol = parseInt(squareEl.dataset.col);
         let comparisonRowOrCol = rowAndCol["col"];
-        if (params.type === "col") {
+        if (type === "col") {
             squareRowOrCol = parseInt(squareEl.dataset.row);
             comparisonRowOrCol = rowAndCol["row"];
         }
@@ -122,6 +168,17 @@ export function columnOrRowClick(params) {
         }
     });
 
+    return { beforeTarget, afterTarget };
+}
+
+export function columnOrRowClick(params) {
+    const { row, col } = params.target.dataset;
+    const rowAndCol = {
+        "row": parseInt(row),
+        "col": parseInt(col)
+    };
+    const rowOrColumnSquares = document.querySelectorAll(`[data-${params.type}="${rowAndCol[params.type]}"]`);
+    const { beforeTarget, afterTarget } = getBeforeAndAfterSquare(rowOrColumnSquares, rowAndCol, params.type);
     let defaultColorSquaresParams = {
         "state": params.state,
         "duration": params.duration,
@@ -234,6 +291,9 @@ export function effectChoice(params) {
                 "offset": 1
             };
             colorAdjacentSquares({...blockParams, ...defaultEffectParams});
+            break;
+        case "wave":
+            waveClick(params);
             break;
         default:  // Random
             colorRandomSquare(params.square, false);

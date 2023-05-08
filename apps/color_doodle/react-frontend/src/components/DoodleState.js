@@ -10,7 +10,8 @@ export const effectTypes = {
     "column": "column",
     "row and column": "rowAndCol",
     "rain": "rain",
-    "ring": "ring"
+    "ring": "ring",
+    "wave": "wave"
 };
 
 export const luminosityOptions = {
