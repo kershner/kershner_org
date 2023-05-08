@@ -25,8 +25,8 @@
         {% if title %}<title>Tyler Kershner - {{ title }}</title>{% else %}<title>Tyler Kershner</title>{% endif %}
 
         <!-- react stuff -->
-        <script defer="" src="/static/color_doodle_dist/bundle.js"></script>
-        <link href="/static/color_doodle_dist/bundle.css" rel="stylesheet">
+        <script defer="" src="{% settings_value "BASE_S3_URL" %}/color_doodle_dist/bundle.js"></script>
+        <link href="{% settings_value "BASE_S3_URL" %}/color_doodle_dist/bundle.css" rel="stylesheet">
     </head>
 
     <body class="{% if request.GET.backgroundColor != "light" %}dark-mode{% endif %}">
