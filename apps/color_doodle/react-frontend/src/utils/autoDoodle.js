@@ -46,7 +46,8 @@ export default class AutoDoodle {
                     "easing": this.state.autoDoodleAnimationEasing,
                     "colorFade": colorFade ? this.colorFadeChance() : colorFade,
                     "luminosity": this.state.autoDoodleLuminosity,
-                    "state": this.state
+                    "state": this.state,
+                    "currentlyFilling": this.currentlyFilling
                 };
                 effectChoice(effectParams);
             }, this.state.autoDoodleInterval);

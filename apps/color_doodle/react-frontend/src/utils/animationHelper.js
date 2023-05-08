@@ -199,22 +199,23 @@ export function columnOrRowClick(params) {
     colorSquaresInSequence(defaultColorSquaresParams);
 }
 
-export function colorRandomSquare(randomSquare, fill = false) {
-    let modifiedState = {...this.state};
+export function colorRandomSquare(state, randomSquare, fill = false) {
+    let modifiedState = {...state};
     const duration = modifiedState.autoDoodleAnimationDuration;
     const easing = modifiedState.autoDoodleAnimationEasing;
 
     if (fill) {
-        modifiedState.colorFade = !this.currentlyFilling;
+        modifiedState.colorFade = !modifiedState.currentlyFilling;
     }
 
     const colorSquareParams = {
         "square": randomSquare,
         "state": modifiedState,
         "duration": duration,
-        "easing": easing
+        "easing": easing,
+        "colorFade": modifiedState.colorFade
     };
-    colorSquare({...defaultColorSquareParams, ...colorSquareParams});
+    colorSquare({...modifiedState, ...colorSquareParams});
 }
 
 export function colorAdjacentSquares(params) {
@@ -258,7 +259,8 @@ export function effectChoice(params) {
         "duration": params.duration,
         "easing": params.easing,
         "colorFade": params.colorFade,
-        "luminosity": params.luminosity
+        "luminosity": params.luminosity,
+        "currentlyFilling": params.currentlyFilling
     };
     let extraColumnOrRowParams = {
         "type": "col",
@@ -286,7 +288,7 @@ export function effectChoice(params) {
             columnOrRowClick({...extraColumnOrRowParams, ...defaultEffectParams});
             break;
         case "randomFill":
-            colorRandomSquare(params.square, true);
+            colorRandomSquare(defaultEffectParams, params.square, true);
             break;
         case "block":
             const blockParams = {
@@ -299,7 +301,7 @@ export function effectChoice(params) {
             waveClick(params);
             break;
         default:  // Random
-            colorRandomSquare(params.square, false);
+            colorRandomSquare(defaultEffectParams, params.square, false);
             break;
     }
 }
