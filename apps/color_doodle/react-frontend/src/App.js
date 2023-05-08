@@ -5,7 +5,7 @@ import DoodleBoard from "./components/DoodleBoard"
 import DoodleMenuContainer from "./components/DoodleMenu"
 import { GlobalStateProvider, GlobalStateContext } from "./components/DoodleState"
 import AutoDoodle from "./utils/autoDoodle"
-import { getNewGridNumCells, updateUrlParams } from "./utils/util"
+import { getNewGridNumCells, updateUrlParams, updateBackgroundColor } from "./utils/util"
 
 
 export default function App() {
@@ -15,6 +15,7 @@ export default function App() {
         // Code here will run only once on page load
         updateGlobalState("numSquares", getNewGridNumCells());
         updateUrlParams(globalState);
+        updateBackgroundColor(globalState);
     }, []);
 
     useEffect(() => {
@@ -34,7 +35,7 @@ export default function App() {
     )
 }
 
-const root = createRoot(document.getElementById("root"));
+const root = createRoot(document.getElementById("color-grid"));
 root.render(
     <GlobalStateProvider>
         <App />

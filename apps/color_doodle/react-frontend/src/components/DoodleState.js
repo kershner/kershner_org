@@ -21,16 +21,6 @@ export const luminosityOptions = {
     "all": "all"
 };
 
-const kershnerOrgDefaultState = {
-    cellSize: 80,
-    borderStyle: "hidden",
-    autoDoodleInterval: 1100,
-    autoDoodleAnimationDuration: 0.4,
-    autoDoodleEnabled: true,
-    menuOpen: false,
-    hoverEffectRadius: 1
-};
-
 export let defaultState = {
     numSquares: defaultNumSquares,
     cellSize: defaultCellSize,
@@ -69,7 +59,19 @@ export let defaultState = {
     gridFieldsetOpen: false
 };
 
-defaultState = {...defaultState,...kershnerOrgDefaultState};
+const endpoint = window.location.pathname.split('/')[1];
+if (!endpoint) {
+    const kershnerOrgDefaultState = {
+        cellSize: 80,
+        borderStyle: "hidden",
+        autoDoodleInterval: 1100,
+        autoDoodleAnimationDuration: 0.4,
+        autoDoodleEnabled: true,
+        menuOpen: false,
+        hoverEffectRadius: 1
+    };
+    defaultState = {...defaultState, ...kershnerOrgDefaultState};
+}
 
 const GlobalStateContext = createContext({});
 
