@@ -268,7 +268,7 @@ export function BorderColorControl() {
 // Auto mode controls
 export function AutoDoodleControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "autoDoodleEnabled";
+    const controlName = "autoOn";
     const label = "Enabled";
 
     function handleChange(e) {
@@ -286,13 +286,13 @@ export function AutoDoodleControl() {
 
 export function AutoDoodleColorControls() {
     return (
-        <ColorControls luminosityStateValue="autoDoodleLuminosity" colorFadeStateValue="autoDoodleColorFade"/>
+        <ColorControls luminosityStateValue="autoLum" colorFadeStateValue="autoFade"/>
     )
 }
 
 export function AutoDoodleModeSelectControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "autoDoodleMode";
+    const controlName = "autoMode";
     const label = "Mode";
     let effectOptions = {...effectTypes};
     delete effectOptions.block;
@@ -310,13 +310,13 @@ export function AutoDoodleModeSelectControl() {
                         label={label}
                         handleChange={handleChange}
                         options={effectOptions}
-                        disabled={globalState.autoDoodleRandom}
+                        disabled={globalState.autoRand}
                         defaultValue={globalState[controlName]}/>;
 }
 
 export function AutoDoodleRandomControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "autoDoodleRandom";
+    const controlName = "autoRand";
     const label = "Random";
 
     function handleChange(e) {
@@ -344,7 +344,7 @@ export function AutoDoodleModeControls() {
 
 export function AutoDoodleIntervalControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "autoDoodleInterval";
+    const controlName = "autoInt";
     const label = "Interval";
 
     function handleChange(e) {
@@ -377,15 +377,15 @@ export function AutoDoodleIntervalControl() {
 
 export function AutoDoodleAnimationControls() {
     return (
-        <AnimationControls durationStateValue="autoDoodleAnimationDuration"
-                           easingStateValue="autoDoodleAnimationEasing"/>
+        <AnimationControls durationStateValue="autoDur"
+                           easingStateValue="autoEase"/>
     )
 }
 
 // Click effect controls
 export function ClickEffectEnabledControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "clickEffectEnabled";
+    const controlName = "clickOn";
     const label = "Enabled";
 
     function handleChange(e) {
@@ -403,7 +403,7 @@ export function ClickEffectEnabledControl() {
 
 export function ClickEffectModeControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "clickEffectMode";
+    const controlName = "clickMode";
     const label = "Effect";
 
     function handleChange(e) {
@@ -422,21 +422,21 @@ export function ClickEffectModeControl() {
 
 export function ClickEffectAnimationControls() {
     return (
-        <AnimationControls durationStateValue="clickEffectAnimationDuration"
-                           easingStateValue="clickEffectAnimationEasing"/>
+        <AnimationControls durationStateValue="clickDur"
+                           easingStateValue="clickEase"/>
     )
 }
 
 export function ClickEffectColorControls() {
     return (
-        <ColorControls luminosityStateValue="clickEffectLuminosity" colorFadeStateValue="clickEffectColorFade"/>
+        <ColorControls luminosityStateValue="clickLum" colorFadeStateValue="clickFade"/>
     )
 }
 
 // Hover effect controls
 export function HoverEffectEnabledControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "hoverEffectEnabled";
+    const controlName = "hoverOn";
     const label = "Enabled";
 
     function handleChange(e) {
@@ -454,7 +454,7 @@ export function HoverEffectEnabledControl() {
 
 export function HoverEffectRadiusControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const controlName = "hoverEffectRadius";
+    const controlName = "hoverRadius";
     const label = "Radius";
 
     function handleChange(e) {
@@ -487,13 +487,13 @@ export function HoverEffectRadiusControl() {
 
 export function HoverEffectAnimationControls() {
     return (
-        <AnimationControls durationStateValue="hoverEffectAnimationDuration"
-                           easingStateValue="hoverEffectAnimationEasing"/>
+        <AnimationControls durationStateValue="hoverDur"
+                           easingStateValue="hoverEase"/>
     )
 }
 
 export function HoverEffectColorControls() {
     return (
-        <ColorControls luminosityStateValue="hoverEffectLuminosity" colorFadeStateValue="hoverEffectColorFade"/>
+        <ColorControls luminosityStateValue="hoverLum" colorFadeStateValue="hoverFade"/>
     )
 }

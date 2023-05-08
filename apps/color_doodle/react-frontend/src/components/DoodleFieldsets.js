@@ -36,7 +36,7 @@ function CollapsibleFieldsetHeader(props) {
 
 export function GridControlsFieldset() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const toggleStateValue = "gridFieldsetOpen";
+    const toggleStateValue = "gridOpen";
 
     return (
         <fieldset className={globalState[toggleStateValue] ? "expanded" : ""}>
@@ -52,7 +52,7 @@ export function GridControlsFieldset() {
 
 export function ClickEffectControlsFieldset() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const toggleStateValue = "clickEffectFieldsetOpen";
+    const toggleStateValue = "clickOpen";
 
     return (
         <fieldset className={globalState[toggleStateValue] ? "expanded" : ""}>
@@ -67,7 +67,7 @@ export function ClickEffectControlsFieldset() {
 
 export function HoverEffectControlsFieldset() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const toggleStateValue = "hoverEffectFieldsetOpen";
+    const toggleStateValue = "hoverOpen";
 
     return (
         <fieldset className={globalState[toggleStateValue] ? "expanded" : ""}>
@@ -82,7 +82,7 @@ export function HoverEffectControlsFieldset() {
 
 export function AutoControlsFieldset() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const toggleStateValue = "automationFieldsetOpen";
+    const toggleStateValue = "autoOpen";
 
     return (
         <fieldset className={globalState[toggleStateValue] ? "expanded" : ""}>

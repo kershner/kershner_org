@@ -14,8 +14,8 @@ export const defaultColorSquareParams = {
 export function colorSquare(params) {
     params.square.addEventListener("transitionend", transitionEndHandler);
     const chosenColor = params.chosenColor ? params.chosenColor : randomColor({luminosity: params.luminosity});
-    const chosenDuration = params.duration ? params.duration : params.state.autoDoodleAnimationDuration;
-    const chosenEasing = params.easing ? params.easing : params.state.autoDoodleAnimationEasing;
+    const chosenDuration = params.duration ? params.duration : params.state.autoDur;
+    const chosenEasing = params.easing ? params.easing : params.state.autoEase;
     params.square.style.transition = `background-color ${chosenDuration}s ${chosenEasing}`;
     params.square.style.backgroundColor = chosenColor;
 
@@ -201,8 +201,8 @@ export function columnOrRowClick(params) {
 
 export function colorRandomSquare(state, randomSquare, fill = false) {
     let modifiedState = {...state};
-    const duration = modifiedState.autoDoodleAnimationDuration;
-    const easing = modifiedState.autoDoodleAnimationEasing;
+    const duration = modifiedState.autoDur;
+    const easing = modifiedState.autoEase;
 
     if (fill) {
         modifiedState.colorFade = !modifiedState.currentlyFilling;

@@ -10,7 +10,7 @@ export default class AutoDoodle {
         this.tempCollection = shuffleArray(Array.from(this.allSquares));
         this.currentlyFilling = true;
         this.effectTypes = shuffleArray(Object.values(effectTypes));
-        this.colorFade = this.state.autoDoodleColorFade;
+        this.colorFade = this.state.autoFade;
 
         this.effectChangeChance = () => Math.random() < 0.10;
         this.colorFadeChance = () => Math.random() < 0.20;
@@ -21,7 +21,7 @@ export default class AutoDoodle {
      */
     run() {
         clearInterval(window.autoDoodleInterval);
-        if (this.state.autoDoodleEnabled) {
+        if (this.state.autoOn) {
             window.autoDoodleInterval = setInterval(() => {
                 if (!this.tempCollection.length) {
                     this.tempCollection = shuffleArray(Array.from(this.allSquares));
@@ -32,25 +32,25 @@ export default class AutoDoodle {
                 }
 
                 const randomSquare = this.tempCollection.shift();
-                let chosenEffect = this.state.autoDoodleMode;
-                let colorFade = this.state.autoDoodleColorFade;
+                let chosenEffect = this.state.autoMode;
+                let colorFade = this.state.autoFade;
 
-                if (this.state.autoDoodleRandom) {
+                if (this.state.autoRand) {
                     chosenEffect = this.effectChangeChance() ? this.effectTypes.shift() : this.effectTypes[0];
                 }
 
                 const effectParams = {
                     "square": randomSquare,
                     "effect": chosenEffect,
-                    "duration": this.state.autoDoodleAnimationDuration,
-                    "easing": this.state.autoDoodleAnimationEasing,
+                    "duration": this.state.autoDur,
+                    "easing": this.state.autoEase,
                     "colorFade": colorFade ? this.colorFadeChance() : colorFade,
-                    "luminosity": this.state.autoDoodleLuminosity,
+                    "luminosity": this.state.autoLum,
                     "state": this.state,
                     "currentlyFilling": this.currentlyFilling
                 };
                 effectChoice(effectParams);
-            }, this.state.autoDoodleInterval);
+            }, this.state.autoInt);
         }
     }
 }

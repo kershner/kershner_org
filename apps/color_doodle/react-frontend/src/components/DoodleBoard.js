@@ -17,29 +17,29 @@ function DoodleSquare(props) {
     };
 
     function handleMouseEnter(e) {
-        if (globalState.hoverEffectEnabled) {
+        if (globalState.hoverOn) {
             const params = {
                 "square": e.target,
-                "offset": parseInt(globalState.hoverEffectRadius),
-                "duration": globalState.hoverEffectAnimationDuration,
-                "easing": globalState.hoverEffectAnimationEasing,
-                "colorFade": globalState.hoverEffectColorFade,
-                "luminosity": globalState.hoverEffectLuminosity
+                "offset": parseInt(globalState.hoverRadius),
+                "duration": globalState.hoverDur,
+                "easing": globalState.hoverEase,
+                "colorFade": globalState.hoverFade,
+                "luminosity": globalState.hoverLum
             };
             colorAdjacentSquares(params);
         }
     }
 
     function handleMouseDown(e) {
-        if (globalState.clickEffectEnabled) {
+        if (globalState.clickOn) {
             updateGlobalState("mouseDown", true);
             const effectParams = {
                 "square": e.target,
-                "effect": globalState.clickEffectMode,
-                "duration": globalState.clickEffectAnimationDuration,
-                "easing": globalState.clickEffectAnimationEasing,
-                "colorFade": globalState.clickEffectColorFade,
-                "luminosity": globalState.clickEffectLuminosity,
+                "effect": globalState.clickMode,
+                "duration": globalState.clickDur,
+                "easing": globalState.clickEase,
+                "colorFade": globalState.clickFade,
+                "luminosity": globalState.clickLum,
                 "state": globalState
             };
             effectChoice(effectParams);
