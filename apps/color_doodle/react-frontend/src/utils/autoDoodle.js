@@ -13,7 +13,7 @@ export default class AutoDoodle {
         this.colorFade = this.state.autoFade;
 
         this.effectChangeChance = () => Math.random() < 0.10;
-        this.colorFadeChance = () => Math.random() < 0.60;
+        this.colorFadeChance = () => Math.random() < 0.70;
     }
 
     /**
