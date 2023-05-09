@@ -1,9 +1,9 @@
 import React, { useContext } from "react"
-import { GlobalStateContext } from "./DoodleState"
-import { DoodleMenuButtonGroupTop, CloseMenuButton, DoodleMenuButtonGroupBottom, ExpandMenuButton } from "./DoodleButtons"
+import { GlobalStateContext } from "./DoodleState.jsx"
+import { DoodleMenuButtonGroupTop, CloseMenuButton, DoodleMenuButtonGroupBottom, ExpandMenuButton } from "./DoodleButtons.jsx"
 import {
     GridControlsFieldset, ClickEffectControlsFieldset, AutoControlsFieldset, HoverEffectControlsFieldset
-} from "./DoodleFieldsets"
+} from "./DoodleFieldsets.jsx"
 
 
 export function DoodleMenu() {

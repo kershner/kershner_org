@@ -1,4 +1,4 @@
-import { defaultState } from "../components/DoodleState"
+import { defaultState } from "../components/DoodleState.jsx"
 
 
 export const numCols = (cellSize) => {

@@ -1,5 +1,5 @@
 import React, { useContext } from "react"
-import { GlobalStateContext } from "./DoodleState";
+import { GlobalStateContext } from "./DoodleState.jsx";
 
 
 function DoodleSelectOption(props) {

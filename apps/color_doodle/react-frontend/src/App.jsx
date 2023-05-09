@@ -1,9 +1,8 @@
 import React, { useEffect, useContext } from "react"
 import ReactDOM from 'react-dom';
-import { createRoot } from "react-dom/client"
-import DoodleBoard from "./components/DoodleBoard"
-import DoodleMenuContainer from "./components/DoodleMenu"
-import { GlobalStateProvider, GlobalStateContext } from "./components/DoodleState"
+import DoodleBoard from "./components/DoodleBoard.jsx"
+import DoodleMenuContainer from "./components/DoodleMenu.jsx"
+import { GlobalStateProvider, GlobalStateContext } from "./components/DoodleState.jsx"
 import AutoDoodle from "./utils/autoDoodle"
 import { getNewGridNumCells, updateUrlParams, updateBackgroundColor } from "./utils/util"
 
@@ -35,7 +34,7 @@ export default function App() {
     )
 }
 
-const root = createRoot(document.getElementById("color-grid"));
+const root = ReactDOM.createRoot(document.getElementById("color-grid"));
 root.render(
     <GlobalStateProvider>
         <App />

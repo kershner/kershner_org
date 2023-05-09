@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react"
-import { GlobalStateContext } from "./DoodleState"
+import { GlobalStateContext } from "./DoodleState.jsx"
 import { getNewGridNumCells } from "../utils/util"
 
 

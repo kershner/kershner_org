@@ -1,6 +1,6 @@
 import React, { useContext } from "react"
-import { GlobalStateContext, defaultState } from "./DoodleState"
-import { DoodleButton, GithubButton } from "./DoodleInputs"
+import { GlobalStateContext, defaultState } from "./DoodleState.jsx"
+import { DoodleButton, GithubButton } from "./DoodleInputs.jsx"
 import { encodeParams, copyToClipboard, updateUrlParams, getNewGridNumCells } from "../utils/util"
 
 

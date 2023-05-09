@@ -1,7 +1,7 @@
 import React, { useContext } from "react"
-import { GlobalStateContext, effectTypes, luminosityOptions } from "./DoodleState"
+import { GlobalStateContext, effectTypes, luminosityOptions } from "./DoodleState.jsx"
 import { getNewGridNumCells, updateUrlParams, updateBackgroundColor } from "../utils/util"
-import DoodleInput from "./DoodleInputs"
+import DoodleInput from "./DoodleInputs.jsx"
 
 
 // Generic animation controls helpers

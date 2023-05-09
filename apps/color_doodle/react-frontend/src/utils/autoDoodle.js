@@ -1,6 +1,6 @@
 import { shuffleArray } from "../utils/util"
 import { effectChoice } from "../utils/animationHelper"
-import { effectTypes } from "../components/DoodleState"
+import { effectTypes } from "../components/DoodleState.jsx"
 
 
 export default class AutoDoodle {

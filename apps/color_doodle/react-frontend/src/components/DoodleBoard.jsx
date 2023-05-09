@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from "react"
-import { GlobalStateContext } from "./DoodleState"
-import ViewportResize from "./ViewportResize"
+import { GlobalStateContext } from "./DoodleState.jsx"
+import ViewportResize from "./ViewportResize.jsx"
 import { numCols } from "../utils/util"
 import { effectChoice, colorAdjacentSquares } from "../utils/animationHelper"
 

@@ -3,13 +3,15 @@ const HtmlWebPackPlugin = require("html-webpack-plugin");
 const path = require('path');
 const baseDir = "./src/";
 const BrotliPlugin = require('brotli-webpack-plugin');
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
-//const publicUrl = "/static/color_doodle_dist";  // dev
-const publicUrl  = "https://djfdm802jwooz.cloudfront.net/static/color_doodle_dist";
+
+const publicUrl = "/static/color_doodle_dist";  // dev
+//const publicUrl  = "https://djfdm802jwooz.cloudfront.net/static/color_doodle_dist";
 
 module.exports = {
     entry: {
-      bundle: [`${baseDir}App.js`, `${baseDir}/scss/doodle.scss`]
+        bundle: [`${baseDir}App.jsx`, `${baseDir}/scss/doodle.scss`]
     },
     output: {
         path: path.resolve(__dirname, "./color_doodle_dist")
@@ -24,8 +26,8 @@ module.exports = {
                 }
             },
             {
-              test: /\.(scss|css)$/,
-              use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"]
+                test: /\.(scss|css)$/,
+                use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"]
             }
         ]
     },
@@ -43,6 +45,10 @@ module.exports = {
             test: /\.(js|css|html|svg)$/,
             threshold: 10240,
             minRatio: 0.8
+        }),
+        new CleanWebpackPlugin({
+            cleanAfterEveryBuildPatterns: ["static*.*", "!static1.js"],
+            verbose: true
         })
     ]
 };

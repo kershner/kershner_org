@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react"
-import { GlobalStateContext } from "./DoodleState"
+import { GlobalStateContext } from "./DoodleState.jsx"
 import { updateUrlParams } from "../utils/util"
 import {
     CellSizeControl, BorderStyleControl, BorderWidthControl, BorderColorControl, AutoDoodleControl,
@@ -8,7 +8,7 @@ import {
     ClickEffectModeControl, ClickEffectAnimationControls, HoverEffectEnabledControl, HoverEffectRadiusControl,
     HoverEffectAnimationControls, AutoDoodleRandomControl, AutoDoodleColorControls, ClickEffectColorControls,
     HoverEffectColorControls
-} from "./DoodleControls"
+} from "./DoodleControls.jsx"
 
 
 function CollapsibleFieldsetHeader(props) {
