@@ -94,6 +94,7 @@
 {% endblock %}
 
 {% block extra_javascripts %}
+<script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/svgInject.min.js"></script>
 <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/amplitude.min.js"></script>
 <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/noSleep.min.js"></script>
 <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/music.js"></script>
