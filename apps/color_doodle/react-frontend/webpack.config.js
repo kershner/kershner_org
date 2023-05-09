@@ -34,9 +34,9 @@ module.exports = {
             filename: "[name].css"
         }),
         new HtmlWebPackPlugin({
-            template: `${baseDir}/templates/doodle_index.html`,
+            template: `${baseDir}/templates/index.html`,
             publicPath: publicUrl,
-            filename: "color_doodle_index.html"
+            filename: "index.html"
         }),
         new BrotliPlugin({
             asset: '[path].br[query]',

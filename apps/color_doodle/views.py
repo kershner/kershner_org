@@ -10,7 +10,7 @@ class BaseDoodleView(ContextMixin):
 
 
 class DoodleHomeView(BaseDoodleView, View):
-    template = 'color_doodle_dist/color_doodle_index.html'
+    template = 'color_doodle_dist/index.html'
 
     def get(self, request):
         return TemplateResponse(request, self.template, self.get_context_data())
