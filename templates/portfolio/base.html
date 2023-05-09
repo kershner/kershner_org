@@ -88,9 +88,9 @@
         <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
         <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/randomColor.min.js"></script>
         <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/colorWave.js"></script>
-        <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/portfolio.js"></script>
+        <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/portfolio.js"></script>
         {% block javascripts %}
-        <script defer type="text/javascript">
+        <script type="text/javascript">
             if (document.readyState === 'complete') {
                 portfolio.init();
             } else {
