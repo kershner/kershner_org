@@ -64,7 +64,7 @@ music.init = function() {
             containerDiv.innerHTML = `
                 <div amplitude-playlist=${playlistString} amplitude-song-index=${i} class="song-info amplitude-play-pause">
                     <div class="song-thumbnail">
-                        <img src="${song.cover_art_url}">
+                        <img src="${song.cover_art_url}" alt="${song.name} by ${song.artist} thumbnail image" loading="lazy">
                         <div class="activity dynamic-color">
                         </div>
                     </div>
