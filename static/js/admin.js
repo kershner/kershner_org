@@ -1,16 +1,7 @@
 let customAdmin = {};
 
 customAdmin.init = function() {
-    customAdmin.randomColor();
     customAdmin.autoCompleteListFilters();
-};
-
-customAdmin.randomColor = function() {
-    let color = randomColor({luminosity: 'light'});
-    document.documentElement.style.setProperty('--primary', color);
-    document.documentElement.style.setProperty('--delete-button-bg', color);
-    document.documentElement.style.setProperty('--link-hover-color', color);
-    document.documentElement.style.setProperty('--delete-button-hover-bg', color);
 };
 
 customAdmin.autoCompleteListFilters = function() {
@@ -24,7 +15,6 @@ customAdmin.autoCompleteListFilters = function() {
     }
 
     let filters = changelistFilters.querySelectorAll('details');
-
     filters.forEach(element => {
         convertFilterToAutoComplete(element);
     });
