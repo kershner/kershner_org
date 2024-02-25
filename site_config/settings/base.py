@@ -47,11 +47,12 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'kershner.urls'
 
 DJANGO_TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates')
-COLOR_DOODLE_REACT_PATH = os.path.join(BASE_DIR, 'apps', 'color_doodle', 'react-frontend')
+STATIC_DIR_PATH = os.path.join(BASE_DIR, 'static')
+TEMPLATE_DIRS = [DJANGO_TEMPLATE_PATH, STATIC_DIR_PATH]
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [DJANGO_TEMPLATE_PATH, COLOR_DOODLE_REACT_PATH],
+        'DIRS': TEMPLATE_DIRS,
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -114,8 +115,7 @@ TIME_INPUT_FORMATS = ['%I:%M %p']
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-    COLOR_DOODLE_REACT_PATH
+    STATIC_DIR_PATH
 ]
 
 # AWS Config

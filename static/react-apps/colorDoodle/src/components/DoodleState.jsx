@@ -60,7 +60,7 @@ export let defaultState = {
 };
 
 const endpoint = window.location.pathname.split('/')[1];
-if (!endpoint || endpoint == "music") {
+if (!endpoint || endpoint === "music") {
     const kershnerOrgDefaultState = {
         cellSize: 80,
         borderStyle: "hidden",

@@ -6,8 +6,8 @@ const BrotliPlugin = require('brotli-webpack-plugin');
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 
-//const publicUrl = "/static/color_doodle_dist";  // dev
-const publicUrl  = "https://djfdm802jwooz.cloudfront.net/static/color_doodle_dist";
+// const publicUrl = "/static/react-apps/colorDoodle/color_doodle_dist";  // dev
+const publicUrl  = "https://djfdm802jwooz.cloudfront.net/static/react-apps/colorDoodle/color_doodle_dist";
 
 module.exports = {
     entry: {
