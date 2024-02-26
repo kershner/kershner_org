@@ -27,27 +27,16 @@ def home(request):
 
 
 def music(request):
-    songs = Song.objects.all().order_by('-position')
-    songs_json = []
-    for song in songs:
-        tmp = {
-            'name': song.title,
-            'artist': song.artist,
-            'year': song.year,
-            'type': song.type,
-            'url': song.file.url,
-            'cover_art_url': song.thumbnail_url_cloudfront(),
-            'youtube_url': song.youtube_link,
-            'duration': song.duration,
-            'timestamp': time.time()
-        }
-        songs_json.append(tmp)
-
     template_vars = {
-        'title': 'Music',
-        'songs_json': json.dumps(songs_json)
+        'title': 'Music'
     }
     return render(request, 'portfolio/music.html', template_vars)
+
+
+def get_songs_data(request):
+    songs = Song.objects.all().order_by('-position')
+    serialized_songs = [song.serialize() for song in songs]
+    return JsonResponse(serialized_songs, safe=False)
 
 
 def custom_error_view(request, exception=None):

@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.conf import settings
 from django.db import models
 from utility import util
+import time
 
 
 def song_upload(instance, filename):
@@ -54,7 +55,20 @@ class Song(models.Model):
 
     def thumbnail_url_cloudfront(self):
         return '{}/{}'.format(settings.BASE_S3_URL, self.thumbnail)
-
+    
+    def serialize(self):
+        return {
+            'id': self.id,
+            'name': self.title,
+            'artist': self.artist,
+            'year': self.year,
+            'type': self.type,
+            'url': self.file.url,
+            'cover_art_url': self.thumbnail_url_cloudfront(),
+            'youtube_url': self.youtube_link,
+            'duration': self.duration,
+            'timestamp': time.time()
+        }
 
 # Admin config for this model
 # https://docs.djangoproject.com/en/2.0/ref/contrib/admin/#django.contrib.admin.ModelAdmin

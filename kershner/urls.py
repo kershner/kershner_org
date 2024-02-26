@@ -18,6 +18,7 @@ handler400 = 'kershner.views.custom_error_view'
 urlpatterns = [
     path('', kersh_views.home, name='home'),
     path('music/', kersh_views.music, name='music'),
+    path('songs/', kersh_views.get_songs_data),
 
     # Philomania
     path('phil/', phil_views.philomania),
