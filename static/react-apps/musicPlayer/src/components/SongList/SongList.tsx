@@ -1,17 +1,19 @@
-import { useEffect } from 'react';
 import { useMusicPlayerData } from '../../providers/musicPlayerProvider';
+import { SongRow } from '../SongRow/SongRow';
+import './style.scss';
+
 
 export const SongList = () => {
     const { songs } = useMusicPlayerData();
 
-    useEffect(() => {
-        console.log(songs);
-    }, [songs])
-    
     return (
         <>
-            <div className=''>
-                <h1>poop</h1>
+            <div className='songList'>
+                {
+                    songs && songs.map((song, index) => (
+                        <SongRow key={index} song={song} />
+                    ))
+                }
             </div>
         </>
     )

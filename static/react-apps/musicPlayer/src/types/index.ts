@@ -5,8 +5,8 @@ export type Song = {
     year: string,
     type: string,
     url: string,
-    cover_art_url: string,
-    youtube_url: string | null,
+    thumbnailUrl: string,
+    youtubeUrl: string | '',
     duration: string,
     timestamp: number
 }

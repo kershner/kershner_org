@@ -1,6 +1,8 @@
+import { PlayerControls } from './components/PlayerControls/PlayerControls';
 import { useMusicPlayerData } from './providers/musicPlayerProvider';
 import { SongList } from './components/SongList/SongList';
 import { useEffect } from 'react';
+
 
 
 const App = () => {
@@ -11,7 +13,10 @@ const App = () => {
   }, []);
 
   return (
-    <SongList />
+    <>
+      <SongList />
+      <PlayerControls />
+    </>
   )
 }
 

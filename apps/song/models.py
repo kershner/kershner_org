@@ -64,8 +64,8 @@ class Song(models.Model):
             'year': self.year,
             'type': self.type,
             'url': self.file.url,
-            'cover_art_url': self.thumbnail_url_cloudfront(),
-            'youtube_url': self.youtube_link,
+            'thumbnailUrl': self.thumbnail_url_cloudfront(),
+            'youtubeUrl': self.youtube_link,
             'duration': self.duration,
             'timestamp': time.time()
         }

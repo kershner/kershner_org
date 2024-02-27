@@ -1,0 +1,56 @@
+.playerControls {
+    display: flex;
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    background: gray;
+    height: 10rem;
+
+    div {
+        // border: 1px solid red;
+    }
+
+    .nowPlaying {
+        position: relative;
+        display: flex;
+        align-items: end;
+        width: 20%;
+
+        .thumbnail {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+        }
+
+        .songInfo {
+            position: relative;
+
+            .songTitle {}
+
+            .songArtist {}
+        }
+    }
+
+    .controlsWrapper {
+        display: flex;
+        flex-direction: column;
+        width: 80%;
+        
+        .time {
+            display: flex;
+            height: 50%;
+        }
+        .controls {
+            display: flex;
+            height: 50%;
+        }   
+    }
+}

@@ -1,0 +1,21 @@
+.songRow {
+    cursor: pointer;
+    display: flex;
+    height: 5rem;
+    border: 1px solid yellow;
+    &:hover {
+        background-color: #FFF;
+    }
+
+    .songThumbnail {
+    }
+
+    .songName {
+    }
+    
+    .songLinks {
+        display: flex;
+    }
+    .songDuration {
+    }
+}

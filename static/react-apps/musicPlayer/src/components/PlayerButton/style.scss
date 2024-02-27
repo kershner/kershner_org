@@ -1,0 +1,9 @@
+.playerButton {
+    cursor: pointer;
+    height: auto;
+    max-width: 100%;
+
+    &:hover {
+        opacity: 0.5;
+    }
+}
