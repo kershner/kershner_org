@@ -6,14 +6,15 @@
     bottom: 0;
     width: 100%;
     height: 10rem;
-    border-top: 5px solid var(--dynamic-color);
+    border-top: 0.5rem solid var(--dynamic-color);
     transition: border $animation-speed ease;
 
     .nowPlaying {
         position: relative;
         display: flex;
         align-items: end;
-        width: 20%;
+        width: 30%;
+        color: #FFF;
 
         .thumbnail {
             position: absolute;
@@ -31,8 +32,12 @@
 
         .songInfo {
             position: relative;
+            padding: 0.25rem;
+            text-shadow: 1px 1px 3px #444;
 
-            .songTitle {}
+            .songTitle {
+                font-size: 1.5rem;
+            }
 
             .songArtist {}
         }
@@ -41,7 +46,7 @@
     .controlsWrapper {
         display: flex;
         flex-direction: column;
-        width: 75%;
+        width: 65%;
         
         .time {
             display: flex;
@@ -56,7 +61,7 @@
                 flex-grow: 1;
 
                 input[type=range] {
-                    -webkit-appearance: none; /* Removes default styling for WebKit */
+                    -webkit-appearance: none;
                     width: 100%;
                     height: 10px;
                     background: #ddd;
