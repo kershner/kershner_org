@@ -147,6 +147,16 @@ export const PlayerControls = () => {
                 </div>
 
                 <div className='controlsWrapper'>
+                    <div className='controls'>
+                        <PlayerButton alt={'Previous song'} icon={PrevIcon} callback={handlePrevClick} />
+                        {!playing ? (
+                            <PlayerButton alt={'Play song'} icon={PlayIcon} callback={handlePlayClick} />
+                        ) : (
+                            <PlayerButton alt={'Pause song'} icon={PauseIcon} callback={handlePlayClick} />
+                        )}
+                        <PlayerButton alt={'Next song'} icon={NextIcon} callback={handleNextClick} />
+                    </div>
+
                     <div className='time'>
                         <div className='currentTime'>00:00</div>
                         <div className='playerProgressBar'>
@@ -158,16 +168,6 @@ export const PlayerControls = () => {
                             onInput={handleProgressChange} />
                         </div>
                         <div className='duration'>{selectedSong?.duration}</div>
-                    </div>
-                    
-                    <div className='controls'>
-                        <PlayerButton alt={'Previous song'} icon={PrevIcon} callback={handlePrevClick} />
-                        {!playing ? (
-                            <PlayerButton alt={'Play song'} icon={PlayIcon} callback={handlePlayClick} />
-                        ) : (
-                            <PlayerButton alt={'Pause song'} icon={PauseIcon} callback={handlePlayClick} />
-                        )}
-                        <PlayerButton alt={'Next song'} icon={NextIcon} callback={handleNextClick} />
                     </div>
                 </div>
             </div>

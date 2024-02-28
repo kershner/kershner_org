@@ -2,7 +2,8 @@
   position: relative;
   z-index: 1;
   color: #FFF;
-  border: 1px solid red;
   max-height: 50rem;
-  overflow-y: scroll;
+  overflow: hidden;
 }
+
+$animation-speed: 0.2s;

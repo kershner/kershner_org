@@ -1,21 +1,52 @@
+@import '../../index.scss';
+
 .songRow {
     cursor: pointer;
     display: flex;
+    justify-content: space-between;
+    padding: 0 1rem;
+    margin-right: 0.2rem;
     height: 5rem;
-    border: 1px solid yellow;
-    &:hover {
-        background-color: #FFF;
+
+    &:not(:first-of-type) {
+        border-top: 1px solid var(--dynamic-color);
+        transition: border $animation-speed ease;
     }
 
-    .songThumbnail {
+    &:hover,
+    &.selected {
+        background-color: var(--dynamic-color);
+        transition: background-color $animation-speed ease;
     }
 
-    .songName {
-    }
-    
-    .songLinks {
+    .songRowColumn {
         display: flex;
-    }
-    .songDuration {
+
+        .songThumbnail {
+            width: 4rem;
+            height: 4rem;
+            object-fit: cover;
+            padding: 0.5rem;
+        }
+    
+        .songName {
+            font-size: 1rem;
+            align-self: center;
+        }
+        
+        .songLinks {
+            display: flex;
+            margin-right: 1rem;;
+            width: 7rem;
+    
+            .playerButton {
+                margin: 0 0.2rem;
+            }
+        }
+    
+        .songDuration {
+            font-size: 1rem;
+            align-self: center;
+        }
     }
 }
