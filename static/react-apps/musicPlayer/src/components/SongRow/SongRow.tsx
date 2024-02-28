@@ -16,17 +16,27 @@ export const SongRow: React.FC<SongRowProps> = (props) => {
 
     const handleClick = (e: React.MouseEvent) => {
         const clickedSongRow = e.target as HTMLElement;
-        const songId = Number(clickedSongRow.getAttribute('data-songId'));
-        const song = songs.filter(obj => obj.id === songId)[0];
-        setSelectedSong(song);
+        const songId = clickedSongRow.getAttribute('data-songId');
+        if (songId) {
+            const song = songs.filter(obj => obj.id === Number(songId))[0];
+            setSelectedSong(song);
+        }
     }
 
     const handleDownloadClick = (e: React.MouseEvent) => {
-        console.log('Download clicked!', e);
+        const clickedElement = (e.currentTarget as HTMLElement);
+        const clickedDataId = Number(clickedElement.getAttribute('data-id'));
+        const song = songs.filter(obj => obj.id === clickedDataId)[0];
+        const downloadUrl = song.url;
+        window.open(downloadUrl, '_blank');
     }
 
     const handleYouTubeClick = (e: React.MouseEvent) => {
-        console.log('YouTube clicked!', e);
+        const clickedElement = (e.currentTarget as HTMLElement);
+        const clickedDataId = Number(clickedElement.getAttribute('data-id'));
+        const song = songs.filter(obj => obj.id === clickedDataId)[0];
+        const youTubeUrl = song.youtubeUrl;
+        window.open(youTubeUrl, '_blank');
     }
 
     return (
@@ -42,9 +52,9 @@ export const SongRow: React.FC<SongRowProps> = (props) => {
                 <div className='songName'>{song.name}</div>
 
                 <div className='songLinks'>
-                    <PlayerButton alt={'Download song'} icon={DownloadIcon} callback={handleDownloadClick} />
+                    <PlayerButton dataId={song.id} alt={'Download song'} icon={DownloadIcon} callback={handleDownloadClick} />
                     {song.youtubeUrl && 
-                    <PlayerButton alt={'View song on YouTube'} icon={YoutubeIcon} callback={handleYouTubeClick} />}
+                    <PlayerButton dataId={song.id} alt={'View song on YouTube'} icon={YoutubeIcon} callback={handleYouTubeClick} />}
                 </div>
                 
                 <div className='songDuration'>{song.duration}</div>

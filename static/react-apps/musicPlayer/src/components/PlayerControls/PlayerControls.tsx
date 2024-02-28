@@ -1,23 +1,75 @@
 import { useMusicPlayerData } from '../../providers/musicPlayerProvider';
 import { PlayerButton } from '../PlayerButton/PlayerButton';
+import { useEffect, useRef, useState } from 'react';
 import PauseIcon from '../../assets/pause.svg';
 import PrevIcon from '../../assets/prev.svg';
 import PlayIcon from '../../assets/play.svg';
 import NextIcon from '../../assets/next.svg';
-import { useEffect, useRef } from 'react';
 import './style.scss';
 
 export const PlayerControls = () => {
-    const { selectedSong, playing, setPlaying } = useMusicPlayerData();
+    const { songs, selectedSong, setSelectedSong, playing, setPlaying } = useMusicPlayerData();
+    const [progressValue, setProgressValue] = useState(0);
+    const [isSliderDragging, setSliderDragging] = useState(false);
     const audioRef = useRef(new Audio());
 
-    const handlePrevClick = (e: React.MouseEvent) => {
-        console.log('Prev clicked!', e);
+    const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const currentTimeDiv = document.querySelector('.currentTime')
+        const duration = audioRef.current.duration;
+        const pctOfDuration = (parseInt(e.target.value) / 100) * duration;
+        const currentTimeFormatted = secondsToHMS(pctOfDuration);
+    
+        if (currentTimeDiv) {
+            currentTimeDiv.innerHTML = currentTimeFormatted;
+        }
+        setProgressValue(parseInt(e.target.value));
     }
 
-    const handlePlayClick = (e: React.MouseEvent) => {
-        console.log('Play clicked!', e);
+    const handleProgressChangeStart = () => {
+        setSliderDragging(true);
+    };
 
+    const handleProgressChangeEnd = () => {
+        const pctOfDuration = (progressValue / 100) * audioRef.current.duration;
+        audioRef.current.currentTime = pctOfDuration;
+        setSliderDragging(false);
+    };
+
+    const secondsToHMS = (seconds: number) => {
+        const hhmmss = new Date(seconds * 1000).toISOString().substr(11, 8);
+        return hhmmss.startsWith('00:') ? hhmmss.substr(3) : hhmmss;
+    }
+
+    const timeUpdateCallback = (e: Event) => {
+        const currentTimeDiv = document.querySelector('.currentTime')
+        if (!isSliderDragging && currentTimeDiv) {
+            const audioElement = (e.target as HTMLAudioElement)
+            const currentTime = audioElement.currentTime;
+            const duration = audioElement.duration;
+            const progressOutOf100 = (currentTime / duration) * 100;
+            const currentTimeFormatted = secondsToHMS(currentTime);
+            
+            if (!Number.isNaN(duration) && !Number.isNaN(currentTime)) {
+                currentTimeDiv.innerHTML = currentTimeFormatted;
+                setProgressValue(progressOutOf100);
+            }
+        }
+    }     
+
+    const handlePrevClick = () => {
+        if (selectedSong) {
+            const currentPosition = songs.findIndex((song) => song.id === selectedSong.id);
+            const numSongs = songs.length;
+            let prevPosition = currentPosition - 1;
+            if (prevPosition < 0) {
+                prevPosition = numSongs - 1;
+            }
+
+            setSelectedSong(songs[prevPosition]);
+        }
+    }
+
+    const handlePlayClick = () => {
         if (audioRef.current.paused) {
             playAudio();
         } else {
@@ -25,8 +77,17 @@ export const PlayerControls = () => {
         }
     }
 
-    const handleNextClick = (e: React.MouseEvent) => {
-        console.log('Next clicked!', e);
+    const handleNextClick = () => {
+        if (selectedSong) {
+            const currentPosition = songs.findIndex((song) => song.id === selectedSong.id);
+            const numSongs = songs.length;
+            let nextPosition = currentPosition + 1;
+            if (nextPosition === numSongs) {
+                nextPosition = 0;
+            }
+
+            setSelectedSong(songs[nextPosition]);
+        }
     }
 
     const playAudio = () => {
@@ -36,7 +97,8 @@ export const PlayerControls = () => {
             if (selectedSong.url !== audio.src) {
                 audio.src = selectedSong.url;
             }
-            audio.play()
+
+            audio.play()            
             .then(() => {
                 setPlaying(true);
             })
@@ -60,6 +122,14 @@ export const PlayerControls = () => {
         }
     }, [selectedSong]);
 
+    useEffect(() => {
+        const audioElement = audioRef.current;
+        audioElement.addEventListener('timeupdate', timeUpdateCallback);
+        return () => {
+          audioElement.removeEventListener('timeupdate', timeUpdateCallback);
+        };
+      }, [isSliderDragging]);
+
     return (
         <>
             <div className='playerControls'>
@@ -77,9 +147,14 @@ export const PlayerControls = () => {
 
                 <div className='controlsWrapper'>
                     <div className='time'>
-                        <div className='currentTime'>0:00</div>
-                        <div className='progress'>
-                            <input type="range" />
+                        <div className='currentTime'>00:00</div>
+                        <div className='playerProgressBar'>
+                            <input type="range" 
+                            value={progressValue}
+                            onChange={handleProgressChange} 
+                            onMouseDown={handleProgressChangeStart}
+                            onMouseUp={handleProgressChangeEnd}
+                            onInput={handleProgressChange} />
                         </div>
                         <div className='duration'>{selectedSong?.duration}</div>
                     </div>

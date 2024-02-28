@@ -3,6 +3,7 @@ import React from 'react';
 import './style.scss';
 
 interface PlayerButtonProps {
+    dataId?: number;
     alt: string;
     icon: string;
     callback?: (e:  React.MouseEvent) => void;
@@ -17,7 +18,7 @@ export const PlayerButton : React.FC<PlayerButtonProps> = (props) => {
     
     return (
         <>
-            <img className='playerButton' src={props.icon} alt={props.alt} onClick={handleClick} />
+            <img className='playerButton' src={props.icon} alt={props.alt} title={props.alt} data-id={props.dataId} onClick={handleClick} />
         </>
     )
 }
