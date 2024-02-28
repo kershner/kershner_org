@@ -11,7 +11,7 @@ interface SongRowProps {
 }
 
 export const SongRow: React.FC<SongRowProps> = (props) => {
-    const { songs, setSelectedSong } = useMusicPlayerData();
+    const { songs, setSelectedSong, setHasSelectedSong } = useMusicPlayerData();
     const song = props.song;
 
     const handleClick = (e: React.MouseEvent) => {
@@ -20,6 +20,7 @@ export const SongRow: React.FC<SongRowProps> = (props) => {
         if (songId) {
             const song = songs.filter(obj => obj.id === Number(songId))[0];
             setSelectedSong(song);
+            setHasSelectedSong(true);
         }
     }
 

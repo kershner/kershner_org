@@ -1,4 +1,3 @@
-// import { useMusicPlayerData } from '../../providers/musicPlayerProvider';
 import React from 'react';
 import './style.scss';
 

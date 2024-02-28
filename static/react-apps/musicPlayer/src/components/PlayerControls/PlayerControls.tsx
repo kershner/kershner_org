@@ -8,7 +8,7 @@ import NextIcon from '../../assets/next.svg';
 import './style.scss';
 
 export const PlayerControls = () => {
-    const { songs, selectedSong, setSelectedSong, playing, setPlaying } = useMusicPlayerData();
+    const { songs, selectedSong, setSelectedSong, playing, setPlaying, hasSelectedSong, setHasSelectedSong } = useMusicPlayerData();
     const [progressValue, setProgressValue] = useState(0);
     const [isSliderDragging, setSliderDragging] = useState(false);
     const audioRef = useRef(new Audio());
@@ -70,6 +70,7 @@ export const PlayerControls = () => {
     }
 
     const handlePlayClick = () => {
+        setHasSelectedSong(true);
         if (audioRef.current.paused) {
             playAudio();
         } else {
@@ -98,7 +99,7 @@ export const PlayerControls = () => {
                 audio.src = selectedSong.url;
             }
 
-            audio.play()            
+            audio.play()
             .then(() => {
                 setPlaying(true);
             })
@@ -106,7 +107,7 @@ export const PlayerControls = () => {
                 // Handle error eventually
             });
         }
-      };
+    };
 
     const pauseAudio = () => {
         if (selectedSong) {
@@ -117,10 +118,10 @@ export const PlayerControls = () => {
     }
 
     useEffect(() => {
-        if (selectedSong) {
+        if (hasSelectedSong) {
             playAudio();
         }
-    }, [selectedSong]);
+    }, [hasSelectedSong, selectedSong]);
 
     useEffect(() => {
         const audioElement = audioRef.current;
