@@ -1,7 +1,4 @@
 import { useMusicPlayerData } from '../../providers/musicPlayerProvider';
-// import { PlayerButton } from '../PlayerButton/PlayerButton';
-// import DownloadIcon from '../../assets/download.svg';
-// import YoutubeIcon from '../../assets/youtube.svg';
 import { Song } from '../../types/index';
 import React from 'react';
 import './style.scss';
@@ -24,22 +21,6 @@ export const SongRow: React.FC<SongRowProps> = (props) => {
         }
     }
 
-    // const handleDownloadClick = (e: React.MouseEvent) => {
-    //     const clickedElement = (e.currentTarget as HTMLElement);
-    //     const clickedDataId = Number(clickedElement.getAttribute('data-id'));
-    //     const song = songs.filter(obj => obj.id === clickedDataId)[0];
-    //     const downloadUrl = song.url;
-    //     window.open(downloadUrl, '_blank');
-    // }
-
-    // const handleYouTubeClick = (e: React.MouseEvent) => {
-    //     const clickedElement = (e.currentTarget as HTMLElement);
-    //     const clickedDataId = Number(clickedElement.getAttribute('data-id'));
-    //     const song = songs.filter(obj => obj.id === clickedDataId)[0];
-    //     const youTubeUrl = song.youtubeUrl;
-    //     window.open(youTubeUrl, '_blank');
-    // }
-
     return (
         <>
             <div className={`songRow ${selectedSong?.id === song.id ? 'selected' : ''}`} onClick={handleClick} data-songId={song.id}>
@@ -55,12 +36,6 @@ export const SongRow: React.FC<SongRowProps> = (props) => {
                 </div>
 
                 <div className='songRowColumn'>
-                    {/* <div className='songLinks'>
-                        <PlayerButton dataId={song.id} alt={'Download song'} icon={DownloadIcon} callback={handleDownloadClick} />
-                        {song.youtubeUrl && 
-                        <PlayerButton dataId={song.id} alt={'View song on YouTube'} icon={YoutubeIcon} callback={handleYouTubeClick} />}
-                    </div> */}
-                    
                     <div className='songDuration'>{song.duration}</div>
                 </div>
             </div>

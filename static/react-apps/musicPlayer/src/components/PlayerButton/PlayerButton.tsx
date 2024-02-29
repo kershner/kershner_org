@@ -2,6 +2,7 @@ import React from 'react';
 import './style.scss';
 
 interface PlayerButtonProps {
+    extraClassName?: string;
     dataId?: number;
     alt: string;
     icon: string;
@@ -17,7 +18,7 @@ export const PlayerButton : React.FC<PlayerButtonProps> = (props) => {
     
     return (
         <>
-            <button className='playerButton' title={props.alt} data-id={props.dataId} onClick={handleClick}>
+            <button className={`playerButton ${props.extraClassName ? props.extraClassName : ''}`} title={props.alt} data-id={props.dataId} onClick={handleClick}>
                 <img src={props.icon} alt={props.alt} />
             </button>
         </>

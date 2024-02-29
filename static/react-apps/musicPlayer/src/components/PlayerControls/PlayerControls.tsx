@@ -1,6 +1,9 @@
 import { useMusicPlayerData } from '../../providers/musicPlayerProvider';
 import { PlayerButton } from '../PlayerButton/PlayerButton';
 import { useEffect, useRef, useState } from 'react';
+import DownloadIcon from '../../assets/download.svg';
+import MenuIcon from '../../assets/burger-menu.svg';
+import YoutubeIcon from '../../assets/youtube.svg';
 import PauseIcon from '../../assets/pause.svg';
 import PrevIcon from '../../assets/prev.svg';
 import PlayIcon from '../../assets/play.svg';
@@ -131,43 +134,83 @@ export const PlayerControls = () => {
         };
       }, [isSliderDragging]);
 
+
+    const nowPlayingMenu = ((e: React.MouseEvent) => {
+        const targetElement = e.target as HTMLElement;
+        const nowPlayingOptions = document.querySelector('.nowPlayingOptions');
+        targetElement.classList.toggle('active');
+        nowPlayingOptions?.classList.toggle('active');
+    });
+
+    const handleDownloadClick = () => {
+        if (selectedSong) {
+            const downloadUrl = selectedSong.url;
+            window.open(downloadUrl, '_blank');
+        }
+    }
+
+    const handleYouTubeClick = () => {
+        if (selectedSong) {
+            const youtubeUrl = selectedSong.youtubeUrl;
+            window.open(youtubeUrl, '_blank');
+        }
+    }
+
     return (
         <>
-            <div className='playerControls'>
-                <div className='nowPlaying'>
-                    <div className='thumbnail'>
-                        {/* <img src={selectedSong?.thumbnailUrl} /> */}
-                        <img src={'https://djfdm802jwooz.cloudfront.net/static/music/thumbnails/3872fb38a3234c479fbaa1058ec93648.jpg'} />
-                    </div>
+            <div className='playerControls'>    
+                <hr className='playerControlsHr' />
+                
+                <div className='playerControlsInner'>                    
+                    <div className='nowPlaying'>
+                        <PlayerButton alt={'More info'} extraClassName={'nowPlayingMoreInfoBtn'} icon={MenuIcon} callback={nowPlayingMenu} />
 
-                    <div className='songInfo'>
-                        <div className='songTitle'>{selectedSong?.name}</div>
-                        <div className='songArtist'>{selectedSong?.artist}</div>
-                    </div>
-                </div>
+                        <div className='nowPlayingOptions'>
+                            <div className='nowPlayingOptionRow' onClick={handleDownloadClick}>
+                                <PlayerButton alt={'Download song'} icon={DownloadIcon} />
+                                <span>Download</span> 
+                            </div>
 
-                <div className='controlsWrapper'>
-                    <div className='controls'>
-                        <PlayerButton alt={'Previous song'} icon={PrevIcon} callback={handlePrevClick} />
-                        {!playing ? (
-                            <PlayerButton alt={'Play song'} icon={PlayIcon} callback={handlePlayClick} />
-                        ) : (
-                            <PlayerButton alt={'Pause song'} icon={PauseIcon} callback={handlePlayClick} />
-                        )}
-                        <PlayerButton alt={'Next song'} icon={NextIcon} callback={handleNextClick} />
-                    </div>
-
-                    <div className='time'>
-                        <div className='currentTime'>00:00</div>
-                        <div className='playerProgressBar'>
-                            <input type="range" 
-                            value={progressValue}
-                            onChange={handleProgressChange} 
-                            onMouseDown={handleProgressChangeStart}
-                            onMouseUp={handleProgressChangeEnd}
-                            onInput={handleProgressChange} />
+                            <div className='nowPlayingOptionRow' onClick={handleYouTubeClick}>
+                                <PlayerButton alt={'View song on YouTube'} icon={YoutubeIcon} />
+                                <span>View on YouTube</span> 
+                            </div>
                         </div>
-                        <div className='duration'>{selectedSong?.duration}</div>
+
+                        <div className='thumbnail'>
+                            {/* <img src={selectedSong?.thumbnailUrl} /> */}
+                            <img src={'https://djfdm802jwooz.cloudfront.net/static/music/thumbnails/3872fb38a3234c479fbaa1058ec93648.jpg'} />
+                        </div>
+
+                        <div className='songInfo'>
+                            <div className='songTitle'>{selectedSong?.name}</div>
+                            <div className='songArtist'>{selectedSong?.artist}</div>
+                        </div>
+                    </div>
+
+                    <div className='controlsWrapper'>
+                        <div className='controls'>
+                            <PlayerButton alt={'Previous song'} icon={PrevIcon} callback={handlePrevClick} />
+                            {!playing ? (
+                                <PlayerButton alt={'Play song'} icon={PlayIcon} callback={handlePlayClick} />
+                            ) : (
+                                <PlayerButton alt={'Pause song'} icon={PauseIcon} callback={handlePlayClick} />
+                            )}
+                            <PlayerButton alt={'Next song'} icon={NextIcon} callback={handleNextClick} />
+                        </div>
+
+                        <div className='time'>
+                            <div className='currentTime'>00:00</div>
+                            <div className='playerProgressBar'>
+                                <input type="range" 
+                                value={progressValue}
+                                onChange={handleProgressChange} 
+                                onMouseDown={handleProgressChangeStart}
+                                onMouseUp={handleProgressChangeEnd}
+                                onInput={handleProgressChange} />
+                            </div>
+                            <div className='duration'>{selectedSong?.duration}</div>
+                        </div>
                     </div>
                 </div>
             </div>
