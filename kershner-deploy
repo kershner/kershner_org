@@ -11,7 +11,9 @@ PYTHON="$VENVDIR/bin/python"
 PROD_SETTINGS="--settings=site_config.settings.prod"
 
 # react apps
-COLOR_DOODLE_DIR=$BASEDIR/static/react-apps/colorDoodle
+REACT_BASE_DIR=$BASEDIR/static/react-apps
+COLOR_DOODLE_DIR=$REACT_BASE_DIR/colorDoodle
+MUSIC_PLAYER_DIR=$REACT_BASE_DIR/musicPlayer
 
 echo '==========[ DEPLOYING KERSHNER.ORG ]=========='
 echo ''
@@ -41,6 +43,10 @@ echo ''
 
 echo '==========[ Compiling front end assets (react etc) ]=========='
 cd $COLOR_DOODLE_DIR
+npm install
+npm run build
+
+cd $MUSIC_PLAYER_DIR
 npm install
 npm run build
 

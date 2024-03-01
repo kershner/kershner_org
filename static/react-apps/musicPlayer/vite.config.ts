@@ -1,10 +1,13 @@
+import { reactAppsUrl } from '../utils/consts'
 import react from '@vitejs/plugin-react'
-import svgr from 'vite-plugin-svgr'
 import { defineConfig } from 'vite'
+import svgr from 'vite-plugin-svgr'
+
+const url = `${reactAppsUrl}musicPlayer/dist`;
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/static/react-apps/musicPlayer/dist',
+  base: url,
   plugins: [svgr(), react()],
   build: {
     rollupOptions: {
