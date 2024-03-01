@@ -31,6 +31,17 @@ function CollapsibleFieldsetHeader(props) {
     )
 }
 
+export function BackgroundColorFieldset() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const toggleStateValue = "clickOpen";
+
+    return (
+        <fieldset className="expanded">
+            <BackgroundColorControl />
+        </fieldset>
+    )
+}
+
 export function GridControlsFieldset() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const toggleStateValue = "gridOpen";
@@ -38,7 +49,6 @@ export function GridControlsFieldset() {
     return (
         <fieldset className={globalState[toggleStateValue] ? "expanded" : ""}>
             <CollapsibleFieldsetHeader name="Grid" stateValue={toggleStateValue}/>
-            <BackgroundColorControl />
             <CellSizeControl />
             <BorderStyleControl />
             <BorderWidthControl />

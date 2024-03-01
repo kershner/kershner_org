@@ -3,6 +3,24 @@ $black: #202123;
 body {
   margin: 0;
   padding: 0;
+
+  &.dark-mode {
+    .expand-menu-btn {
+      background: $black !important;
+      color: #FFF !important;
+      border-color: #FFF !important;
+    }
+  }
+}
+
+.expand-menu-btn {
+  position: fixed;
+  z-index: 3;
+  right: 1.5rem;
+  top: 1.5rem;
+  background: #FFF !important;
+  color: $black !important;
+  border: 1px solid $black !important;
 }
 
 #color-grid {
@@ -35,15 +53,6 @@ body {
   &:hover {
     background: #FFF;
     color: $black;
-  }
-
-  &.expand-menu-btn {
-    position: fixed;
-    z-index: 3;
-    right: 1.5rem;
-    top: 1.5rem;
-    background: $black;
-    color: #FFF;
   }
 
   &.close-menu-btn {
@@ -164,6 +173,7 @@ body {
     label {
       padding-left: 0.5rem;
       font-size: 0.9rem;
+      cursor: pointer;
     }
   }
 
@@ -210,6 +220,20 @@ body {
       &:hover {
         background-color: unset;
         fill: #FFF;
+      }
+    }
+  }
+
+  #backgroundColor {
+    display: flex;
+    .doodle-radio {
+
+      &:not(:first-of-type) {
+        margin-left: 0.5rem;
+      }
+      
+      label {
+        padding-left: 0.2rem;
       }
     }
   }
