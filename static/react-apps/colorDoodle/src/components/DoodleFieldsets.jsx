@@ -1,6 +1,5 @@
 import React, { useContext, useEffect } from "react"
 import { GlobalStateContext } from "./DoodleState.jsx"
-import { updateUrlParams } from "../utils/util"
 import {
     CellSizeControl, BorderStyleControl, BorderWidthControl, BorderColorControl, AutoDoodleControl,
     AutoDoodleModeControls, AutoDoodleIntervalControl, ColorFadeControl, AutoDoodleAnimationControls,
@@ -21,9 +20,7 @@ function CollapsibleFieldsetHeader(props) {
         statusIcon.textContent = open ? "▲" : "▼";
         fieldset.classList.toggle("expanded");
 
-        updateGlobalState(props.stateValue, open, (newState) => {
-            updateUrlParams(newState);
-        });
+        updateGlobalState(props.stateValue, open);
     }
 
     return (

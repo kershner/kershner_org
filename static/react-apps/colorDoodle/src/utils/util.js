@@ -59,26 +59,36 @@ export function parseParams() {
     return params;
 }
 
-export function updateUrlParams(state) {
-    // Pop out unnecessary system params
-    let stateCopy = {...state};
-    const keysToRemove = [
-        "numSquares",
-        "mouseDown"
-    ];
+export function removeQueryParams() {
+    const currentUrl = window.location.href;
+    const urlObject = new URL(currentUrl);
+    urlObject.search = '';
+    window.history.replaceState({}, document.title, urlObject.toString());
+}
 
-    function removeKeys(obj, keys) {
-        keys.forEach(key => delete obj[key]);
-        return obj;
-    }
+export function addOrUpdateQueryParam(key, value) {
+    const currentUrl = window.location.href;
+    const urlObject = new URL(currentUrl);
+    const queryParams = new URLSearchParams(urlObject.search);
+    queryParams.set(key, value);
+    urlObject.search = queryParams.toString();
+    window.history.replaceState({}, document.title, urlObject.toString());
+    
+    updateLinksWithQueryParams();
+}
 
-    stateCopy = removeKeys(stateCopy, keysToRemove);
-    history.replaceState(null, null, `?${encodeParams(stateCopy)}`);
-
-    // update footer link hrefs
+export function updateLinksWithQueryParams() {
+    const currentUrl = window.location.href;
+    const urlObject = new URL(currentUrl);
+    const queryParams = new URLSearchParams(urlObject.search);
+    
+    // Update footer link hrefs
     document.querySelectorAll(".preserve-params").forEach((el) => {
-        el.href = `${el.href}?${encodeParams(stateCopy)}`;
-    })
+        const href = el.href;
+        const urlObject = new URL(href);
+        const hrefWithOutQueryParams = urlObject.origin + urlObject.pathname;
+        el.href = `${hrefWithOutQueryParams}?${queryParams.toString()}`;
+    });
 }
 
 export async function copyToClipboard(text) {

@@ -1,19 +1,17 @@
 import React, { useContext } from "react"
 import { GlobalStateContext, defaultState } from "./DoodleState.jsx"
 import { DoodleButton, GithubButton } from "./DoodleInputs.jsx"
-import { encodeParams, copyToClipboard, updateUrlParams, getNewGridNumCells } from "../utils/util"
+import { copyToClipboard, getNewGridNumCells, removeQueryParams, updateLinksWithQueryParams } from "../utils/util"
 
 
 export function ExpandMenuButton() {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const { updateGlobalState } = useContext(GlobalStateContext);
     const buttonId = "expand-menu";
     const buttonName = "Settings";
     const extraCssClass = "expand-menu-btn";
 
     function handleClick(e) {
-        updateGlobalState("menuOpen", true, (newState)=> {
-            updateUrlParams(newState);
-        });
+        updateGlobalState("menuOpen", true);
     }
 
     return <DoodleButton id={buttonId}
@@ -23,15 +21,13 @@ export function ExpandMenuButton() {
 }
 
 export function CloseMenuButton() {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const { updateGlobalState } = useContext(GlobalStateContext);
     const buttonId = "close-menu";
     const buttonName = "Close";
     const extraCssClass = "close-menu-btn";
 
     function handleClick(e) {
-        updateGlobalState("menuOpen", false, (newState)=> {
-            updateUrlParams(newState);
-        });
+        updateGlobalState("menuOpen", false);
     }
 
     return <DoodleButton id={buttonId}
@@ -41,12 +37,11 @@ export function CloseMenuButton() {
 }
 
 function CopyUrlButton() {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const { globalState } = useContext(GlobalStateContext);
     const buttonId = "copy-url";
     const buttonName = "Copy";
 
     function handleClick(e) {
-        updateUrlParams(globalState);
         copyToClipboard(window.location.href);
         alert("URL copied!");
     }
@@ -57,7 +52,7 @@ function CopyUrlButton() {
 }
 
 export function DefaultStateButton() {
-    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const { updateGlobalState } = useContext(GlobalStateContext);
     const buttonId = "default-state";
     const buttonName = "Default";
 
@@ -65,10 +60,9 @@ export function DefaultStateButton() {
         Object.keys(defaultState).forEach(key => {
             updateGlobalState(key, defaultState[key]);
         });
-
-        updateGlobalState("numSquares", getNewGridNumCells(), (newState)=> {
-            updateUrlParams(newState);
-        });
+        updateGlobalState("numSquares", getNewGridNumCells());
+        removeQueryParams();
+        updateLinksWithQueryParams();
     }
 
     return <DoodleButton id={buttonId}

@@ -1,6 +1,6 @@
 import React, { useContext } from "react"
 import { GlobalStateContext, effectTypes, luminosityOptions } from "./DoodleState.jsx"
-import { getNewGridNumCells, updateUrlParams, updateBackgroundColor } from "../utils/util"
+import { getNewGridNumCells, addOrUpdateQueryParam, updateBackgroundColor } from "../utils/util"
 import DoodleInput from "./DoodleInputs.jsx"
 
 
@@ -19,8 +19,8 @@ export function AnimationEasingControl(props) {
     };
 
     function handleChange(e) {
-        updateGlobalState(props.stateValue, e.target.value, (newState) => {
-            updateUrlParams(newState);
+        updateGlobalState(props.stateValue, e.target.value, () => {
+            addOrUpdateQueryParam(props.stateValue, e.target.value);
         });
     }
 
@@ -35,25 +35,26 @@ export function AnimationEasingControl(props) {
 export function AnimationDurationControl(props) {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const label = "Animation";
+    const controlName = props.stateValue;
 
     function handleChange(e) {
-        updateGlobalState(props.stateValue, e.target.value);
+        updateGlobalState(controlName, e.target.value);
     }
 
     function handleMouseUp(e) {
-        updateGlobalState(props.stateValue, e.target.value, (newState) => {
-            updateUrlParams(newState);
+        updateGlobalState(controlName, e.target.value, (newState) => {
+            addOrUpdateQueryParam(controlName, newState[controlName]);
         });
     }
 
     function handleTouchEnd(e) {
         updateGlobalState(props.stateValue, e.target.value, (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, newState[controlName]);
         });
     }
 
     return <DoodleInput inputType="range"
-                        name={props.stateValue}
+                        name={controlName}
                         label={label}
                         step="0.1"
                         max="2"
@@ -61,7 +62,7 @@ export function AnimationDurationControl(props) {
                         handleChange={handleChange}
                         handleMouseUp={handleMouseUp}
                         handleTouchEnd={handleTouchEnd}
-                        value={globalState[props.stateValue]}/>;
+                        value={globalState[controlName]}/>;
 }
 
 export function AnimationControls(props) {
@@ -77,19 +78,20 @@ export function AnimationControls(props) {
 export function ColorFadeControl(props) {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const label = "Color fade";
+    const controlName = props.stateValue;
 
     function handleChange(e) {
         const randomEnabled = !globalState[props.stateValue];
-        updateGlobalState(props.stateValue, randomEnabled, (newState) => {
-            updateUrlParams(newState);
+        updateGlobalState(controlName, randomEnabled, (newState) => {
+            addOrUpdateQueryParam(controlName, randomEnabled);
         });
     }
 
     return <DoodleInput inputType="checkbox"
-                        name={props.stateValue}
+                        name={controlName}
                         label={label}
                         handleChange={handleChange}
-                        checked={globalState[props.stateValue]}/>;
+                        checked={globalState[controlName]}/>;
 }
 
 export function LuminosityControl(props) {
@@ -98,7 +100,7 @@ export function LuminosityControl(props) {
 
     function handleChange(e) {
         updateGlobalState(props.stateValue, e.target.value, (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(props.stateValue, e.target.value);
         });
     }
 
@@ -131,7 +133,7 @@ export function BackgroundColorControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, e.target.value);
             updateBackgroundColor(newState);
         });
     }
@@ -157,13 +159,13 @@ export function CellSizeControl() {
 
     function handleMouseUp(e) {
         updateGlobalState("numSquares", getNewGridNumCells(), (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, newState[controlName]);
         });
     }
 
     function handleTouchEnd(e) {
         updateGlobalState("numSquares", getNewGridNumCells(), (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, newState[controlName]);
         });
     }
 
@@ -197,7 +199,7 @@ export function BorderStyleControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, e.target.value);
         });
     }
 
@@ -220,13 +222,13 @@ export function BorderWidthControl() {
 
     function handleMouseUp(e) {
         updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, e.target.value);
         });
     }
 
     function handleTouchEnd(e) {
         updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, e.target.value);
         });
     }
 
@@ -252,7 +254,7 @@ export function BorderColorControl() {
             // add a delay so the color picker onChange does not update URL params too often (causes crash)
             window.updateBorderColorTimeout = setTimeout(() => {
                 if (newState.borderColor === e.target.value) {
-                    updateUrlParams(newState);
+                    addOrUpdateQueryParam(controlName, e.target.value);
                 }
             }, 100);
         });
@@ -273,7 +275,7 @@ export function AutoDoodleControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, !globalState[controlName], (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, newState[controlName]);
         });
     }
 
@@ -301,7 +303,7 @@ export function AutoDoodleModeSelectControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, e.target.value);
         });
     }
 
@@ -322,7 +324,7 @@ export function AutoDoodleRandomControl() {
     function handleChange(e) {
         const randomEnabled = !globalState[controlName];
         updateGlobalState(controlName, randomEnabled, (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, randomEnabled);
         });
     }
 
@@ -353,13 +355,13 @@ export function AutoDoodleIntervalControl() {
 
     function handleMouseUp(e) {
         updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, e.target.value);
         });
     }
 
     function handleTouchEnd(e) {
         updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, e.target.value);
         });
     }
 
@@ -390,7 +392,7 @@ export function ClickEffectEnabledControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, !globalState[controlName], (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, !globalState[controlName]);
         });
     }
 
@@ -408,7 +410,7 @@ export function ClickEffectModeControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, e.target.value);
         });
     }
 
@@ -441,7 +443,7 @@ export function HoverEffectEnabledControl() {
 
     function handleChange(e) {
         updateGlobalState(controlName, !globalState[controlName], (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, !globalState[controlName]);
         });
     }
 
@@ -463,13 +465,13 @@ export function HoverEffectRadiusControl() {
 
     function handleMouseUp(e) {
         updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, e.target.value);
         });
     }
 
     function handleTouchEnd(e) {
         updateGlobalState(controlName, e.target.value, (newState) => {
-            updateUrlParams(newState);
+            addOrUpdateQueryParam(controlName, e.target.value);
         });
     }
 
