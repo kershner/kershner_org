@@ -1,9 +1,10 @@
 {% extends 'portfolio/base.html' %}
+{% load kershner_tags %}
 
 {% block extra_head %}
 <!-- react music player -->
-<script type="module" crossorigin src="{% settings_value "BASE_S3_URL" %}/static/react-apps/musicPlayer/dist/assets/index.js"></script>
-<link rel="stylesheet" crossorigin href="{% settings_value "BASE_S3_URL" %}/static/react-apps/musicPlayer/dist/assets/index.css">
+<script type="module" crossorigin src="{% settings_value "BASE_S3_URL" %}/react-apps/musicPlayer/dist/assets/index.js"></script>
+<link rel="stylesheet" crossorigin href="{% settings_value "BASE_S3_URL" %}/react-apps/musicPlayer/dist/assets/index.css">
 {% endblock %}
 
 {% block content %}
