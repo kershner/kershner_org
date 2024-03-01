@@ -1,1 +1,1 @@
-export const songDataApiUrl: RequestInfo = '/songs';
+export const songDataApiUrl: RequestInfo = '/songs'

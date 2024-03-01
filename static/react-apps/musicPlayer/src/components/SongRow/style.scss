@@ -1,56 +1,57 @@
 @import '../../index.scss';
 
 .songRow {
-    cursor: pointer;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1rem;
+  margin-bottom: 0.2rem;
+  margin-right: 0.3rem;
+  height: 5rem;
+  transition: background-color $animation-speed ease;
+  border-radius: 0.5rem;
+  z-index: 1;
+
+  &:hover,
+  &.selected {
+    background-color: var(--dynamic-color);
+    transition: background-color 0.1s ease;
+    color: #fff;
+    text-shadow: $text-shadow;
+    .songName {
+      font-size: 1.4em !important;
+    }
+  }
+
+  .songRowColumn {
     display: flex;
-    justify-content: space-between;
-    padding: 0 1rem;
-    margin-bottom: 0.2rem;
-    margin-right: 0.3rem;
-    height: 5rem;
-    transition: background-color $animation-speed ease;
-    border-radius: 0.5rem;
 
-    &:hover,
-    &.selected {
-        background-color: var(--dynamic-color);
-        transition: background-color 0.1s ease;
-        color: #FFF;
-        text-shadow: $text-shadow;
-        .songName {
-            font-size: 1.4em !important;
-        }
+    .songThumbnail {
+      width: 4rem;
+      height: 4rem;
+      object-fit: cover;
+      padding: 0.5rem;
+      border-radius: 0.75rem;
     }
 
-    .songRowColumn {
-        display: flex;
-
-        .songThumbnail {
-            width: 4rem;
-            height: 4rem;
-            object-fit: cover;
-            padding: 0.5rem;
-            border-radius: 0.75rem;
-        }
-    
-        .songName {
-            font-size: 1rem;
-            align-self: center;
-        }
-        
-        .songLinks {
-            display: flex;
-            margin-right: 1rem;;
-            width: 7rem;
-    
-            .playerButton {
-                margin: 0 0.2rem;
-            }
-        }
-    
-        .songDuration {
-            font-size: 1rem;
-            align-self: center;            
-        }
+    .songName {
+      font-size: 1rem;
+      align-self: center;
     }
+
+    .songLinks {
+      display: flex;
+      margin-right: 1rem;
+      width: 7rem;
+
+      .playerButton {
+        margin: 0 0.2rem;
+      }
+    }
+
+    .songDuration {
+      font-size: 1rem;
+      align-self: center;
+    }
+  }
 }

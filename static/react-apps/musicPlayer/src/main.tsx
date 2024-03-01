@@ -1,4 +1,4 @@
-import { MusicPlayerProvider } from './providers/musicPlayerProvider';
+import { MusicPlayerProvider } from './providers/musicPlayerProvider'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
