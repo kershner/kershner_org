@@ -1,8 +1,9 @@
 {% extends 'portfolio/base.html' %}
 
 {% block extra_head %}
-<script type="module" crossorigin src="/static/react-apps/musicPlayer/dist/assets/index.js"></script>
-<link rel="stylesheet" crossorigin href="/static/react-apps/musicPlayer/dist/assets/index.css">
+<!-- react music player -->
+<script type="module" crossorigin src="{% settings_value "BASE_S3_URL" %}/static/react-apps/musicPlayer/dist/assets/index.js"></script>
+<link rel="stylesheet" crossorigin href="{% settings_value "BASE_S3_URL" %}/static/react-apps/musicPlayer/dist/assets/index.css">
 {% endblock %}
 
 {% block content %}
