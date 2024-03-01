@@ -1,7 +1,6 @@
 import { useMusicPlayerData } from '../../providers/musicPlayerProvider'
 import { PlayerButton } from '../PlayerButton/PlayerButton'
 import { playAudio, pauseAudio } from '../../utils/util'
-import { publicUrl } from '../../../../utils/consts'
 import DownloadIcon from '../../assets/download.svg'
 import MenuIcon from '../../assets/burger-menu.svg'
 import YoutubeIcon from '../../assets/youtube.svg'
@@ -173,7 +172,7 @@ export const PlayerControls = () => {
             </div>
 
             <div className="thumbnail">
-              <img src={`${publicUrl}${selectedSong?.thumbnailUrl}`} />
+              <img src={`${selectedSong?.thumbnailUrl}`} />
             </div>
 
             <div className="songInfo">

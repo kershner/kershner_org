@@ -1,6 +1,5 @@
 import { useMusicPlayerData } from '../../providers/musicPlayerProvider'
 import { playAudio, pauseAudio } from '../../utils/util'
-import { publicUrl } from '../../../../utils/consts'
 import { Song } from '../../types/index'
 import React from 'react'
 import './style.scss'
@@ -48,7 +47,7 @@ export const SongRow: React.FC<SongRowProps> = (props) => {
       >
         <div className="songRowColumn">
           <img
-            src={`${publicUrl}${song.thumbnailUrl}`}
+            src={`${song.thumbnailUrl}`}
             className="songThumbnail"
             alt={`Thumbnail for the song ${song.name} ${song.artist}`}
             loading="lazy"
