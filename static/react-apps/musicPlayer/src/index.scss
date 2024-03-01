@@ -1,0 +1,17 @@
+$animation-speed: 0.3s;
+$text-shadow: 1px 1px 2px #444;
+
+#kershner-music-player {
+  position: relative;
+  z-index: 1;
+  color: #444;
+  max-height: 50rem;
+  overflow: hidden;
+  font-family: 'Verdana', sans-serif;
+}
+
+body.dark-mode {
+  #kershner-music-player {
+    color: #fff;
+  }
+}

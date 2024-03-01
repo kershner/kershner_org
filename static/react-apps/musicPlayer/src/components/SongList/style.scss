@@ -1,0 +1,52 @@
+@import '../../index.scss';
+
+.songListFilters {
+  display: flex;
+  margin-bottom: 0.5rem;
+
+  .songListFilter {
+    display: flex;
+    flex-direction: column;
+    font-size: 2rem;
+    cursor: pointer;
+    margin: 0 0.75rem;
+
+    span {
+      margin-bottom: 0.2rem;
+    }
+
+    &:hover {
+      opacity: 0.5;
+    }
+
+    &.active {
+      font-weight: bold;
+
+      .songListFilterBottom {
+        height: 0.5rem;
+        background-color: var(--dynamic-color);
+        width: 100%;
+        border-radius: 0.5rem;
+      }
+    }
+  }
+}
+
+.songList {
+  height: 45vh;
+  overflow-y: scroll;
+
+  &::-webkit-scrollbar {
+    width: 12px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--dynamic-color);
+    border-radius: 6px;
+    transition: background-color $animation-speed ease;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}

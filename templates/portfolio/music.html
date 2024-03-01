@@ -1,7 +1,12 @@
 {% extends 'portfolio/base.html' %}
+
+{% block extra_head %}
+<script type="module" crossorigin src="/static/react-apps/musicPlayer/dist/assets/index.js"></script>
+<link rel="stylesheet" crossorigin href="/static/react-apps/musicPlayer/dist/assets/index.css">
+{% endblock %}
+
 {% block content %}
 {% load kershner_tags %}
-
 <div class="video-btn-wrapper">
     <div id="old-video-toggle" class="dynamic-color">Videos</div>
 </div>
@@ -12,94 +17,14 @@
 </div>
 
 <!-- Player -->
-<div class="player-wrapper">
-    <div class="player">
-        <!-- Playlist -->
-        <!-- Playlist Select -->
-        <div class="playlist-select">
-            <div class="playlist-option" data-type="loops">Loops</div>
-            <div class="playlist-option dynamic-color active" data-type="songs">Songs</div>
-            <div class="playlist-option old-songs-select" data-type="old-songs">Older</div>
-        </div>
-
-        <div class="playlist">
-            <!-- Loops Container -->
-            <div id="loops" class="hidden"></div>
-
-            <!-- Old Songs Container -->
-            <div id="old-songs" class="hidden"></div>
-
-            <!-- Songs Container -->
-            <div id="songs"></div>
-        </div>
-
-        <div class="player-bottom">
-            <!-- Meta Container -->
-            <div class="meta-container">
-                <div class="player-meta-container pop-up">
-                    <div class="sound-wave hidden">
-                        <div class="sound-wave-bar dynamic-color"></div>
-                        <div class="sound-wave-bar dynamic-color"></div>
-                        <div class="sound-wave-bar dynamic-color"></div>
-                        <div class="sound-wave-bar dynamic-color"></div>
-                        <div class="sound-wave-bar dynamic-color"></div>
-                        <div class="sound-wave-bar dynamic-color"></div>
-                        <div class="sound-wave-bar dynamic-color"></div>
-                        <div class="sound-wave-bar dynamic-color"></div>
-                        <div class="sound-wave-bar dynamic-color"></div>
-                        <div class="sound-wave-bar dynamic-color"></div>
-                    </div>
-                </div>
-
-                <div class="player-meta-container-song">
-                    <span amplitude-song-info="name" amplitude-main-song-info="true" class="now-playing-name"></span>
-                    <span amplitude-song-info="artist" amplitude-main-song-info="true" class="now-playing-artist"></span>
-                </div>
-            </div>
-
-            <!-- Controls Container -->
-            <div class="player-controls-container">
-                <!-- Time -->
-                <div class="player-time-container">
-                    <!-- Current Time -->
-                    <span class="current-time">
-                      <span class="amplitude-current-minutes" amplitude-main-current-minutes="true"></span>:<span class="amplitude-current-seconds" amplitude-main-current-seconds="true"></span>
-                    </span>
-
-                    <!-- Progress -->
-                    <div class="progress-container">
-                        <input type="range" class="amplitude-song-slider dynamic-color" amplitude-main-song-slider="true"/>
-                    </div>
-
-                    <!-- Duration -->
-                    <span class="duration">
-                      <span class="amplitude-duration-minutes" amplitude-main-duration-minutes="true"></span>:<span class="amplitude-duration-seconds" amplitude-main-duration-seconds="true"></span>
-                    </span>
-                </div>
-
-                <div class="player-control-container">
-                    <!-- Central Controls -->
-                    <div class="player-central-control-container">
-                        <div class="player-central-controls">
-                            <div class="amplitude-prev dynamic-color"></div>
-                            <div class="amplitude-play-pause dynamic-color" amplitude-main-play-pause="true"></div>
-                            <div class="amplitude-next dynamic-color"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<div class="music-player-wrapper">
+    <div id="kershner-music-player"></div>
+</div
 {% endblock %}
 
 {% block extra_javascripts %}
-<script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/svgInject.min.js"></script>
-<script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/amplitude.min.js"></script>
-<script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/noSleep.min.js"></script>
 <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/music.js"></script>
 <script type="text/javascript">
-    music.songs = {{ songs_json|safe }};
     music.init();
 </script>
 {% endblock %}
