@@ -1,0 +1,40 @@
+@import '../../../index.scss';
+
+.nowPlaying {
+  position: relative;
+  display: flex;
+  margin-top: 0.5rem;
+  margin-left: 0.5rem;
+  align-items: end;
+  width: 30%;
+  color: #fff;
+
+  .thumbnail {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 0.5rem;
+    }
+  }
+
+  .songInfo {
+    position: relative;
+    padding: 0.25rem;
+    padding: 0.5rem;
+    text-shadow: $text-shadow;
+
+    .songTitle {
+      font-size: 1.5rem;
+    }
+
+    .songArtist {
+    }
+  }
+}

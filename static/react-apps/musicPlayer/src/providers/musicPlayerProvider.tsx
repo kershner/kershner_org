@@ -7,9 +7,9 @@ import React, {
   useEffect,
   useRef,
 } from 'react'
-import { fetchWrapper } from '../utils/util'
+import { fetchWrapper } from '../../../utils/utils'
 import { songDataApiUrl } from '../routes'
-import { Song } from '../types'
+import { Song, Position } from '../types'
 
 interface MusicPlayerState {
   fetchInitialData: () => void
@@ -22,7 +22,15 @@ interface MusicPlayerState {
   setPlaying: React.Dispatch<SetStateAction<boolean>>
   hasSelectedSong: boolean
   setHasSelectedSong: React.Dispatch<SetStateAction<boolean>>
-  audioRef: React.MutableRefObject<HTMLAudioElement> // Add audioRef to the context
+  audioRef: React.MutableRefObject<HTMLAudioElement>
+  songOptionsMenuPosition: Position
+  setSongOptionsMenuPosition: React.Dispatch<SetStateAction<Position>>
+  showSongOptionsMenu: boolean
+  setShowSongOptionsMenu: React.Dispatch<SetStateAction<boolean>>
+  songOptionsMenuRightAlign: boolean
+  setSongOptionsMenuRightAlign: React.Dispatch<SetStateAction<boolean>>
+  chosenSongOptionsSong: Song | null
+  setChosenSongOptionsSong: React.Dispatch<SetStateAction<Song | null>>
 }
 const MusicPlayerContext = createContext({} as MusicPlayerState)
 
@@ -32,7 +40,11 @@ const MusicPlayerProvider = ({ children }: { children: React.ReactNode }) => {
   const [selectedSong, setSelectedSong] = useState<Song | null>(null)
   const [playing, setPlaying] = useState<boolean>(false)
   const [hasSelectedSong, setHasSelectedSong] = useState<boolean>(false)
-  const audioRef = useRef(new Audio()) // Initialize audioRef
+  const audioRef = useRef(new Audio())
+  const [songOptionsMenuPosition, setSongOptionsMenuPosition] = useState<Position>({ x: 0, y: 0 });
+  const [showSongOptionsMenu, setShowSongOptionsMenu] = useState<boolean>(false);
+  const [songOptionsMenuRightAlign, setSongOptionsMenuRightAlign] = useState<boolean>(false);
+  const [chosenSongOptionsSong, setChosenSongOptionsSong] = useState<Song | null>(null);
 
   const fetchInitialData = async () => {
     fetchWrapper(songDataApiUrl, 'GET', {}, {}, (songData: Song[]) => {
@@ -61,8 +73,16 @@ const MusicPlayerProvider = ({ children }: { children: React.ReactNode }) => {
       hasSelectedSong,
       setHasSelectedSong,
       audioRef,
+      songOptionsMenuPosition,
+      setSongOptionsMenuPosition,
+      showSongOptionsMenu,
+      setShowSongOptionsMenu,
+      songOptionsMenuRightAlign,
+      setSongOptionsMenuRightAlign,
+      chosenSongOptionsSong,
+      setChosenSongOptionsSong
     }),
-    [songs, filteredSongs, selectedSong, playing, hasSelectedSong],
+    [songs, filteredSongs, selectedSong, playing, hasSelectedSong, songOptionsMenuPosition, showSongOptionsMenu],
   )
 
   return (

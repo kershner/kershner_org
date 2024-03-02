@@ -1,0 +1,23 @@
+.songOptionRow {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  cursor: pointer;
+  padding-bottom: 0.25rem;
+  padding-left: 0.5rem;
+  padding-top: 0.5rem;
+  padding-right: 0.75rem;
+  &:not(:last-of-type) {
+    border-bottom: 1px solid #fff;
+  }
+  &:hover {
+    opacity: 0.6;
+  }
+
+  .playerButton {
+    margin-right: 0.5rem;
+    filter: drop-shadow(0px 1000px 0 #fff);
+    transform: translateY(-1000px);
+    max-width: 1.5rem;
+  }
+}

@@ -10,3 +10,8 @@ export type Song = {
   duration: string
   timestamp: number
 }
+
+export type Position = {
+  x: number
+  y: number
+}

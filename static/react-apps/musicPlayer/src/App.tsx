@@ -1,3 +1,4 @@
+import { SongOptionsMenu } from './components/SongOptions/SongOptionsMenu/SongOptionsMenu'
 import { PlayerControls } from './components/PlayerControls/PlayerControls'
 import { useMusicPlayerData } from './providers/musicPlayerProvider'
 import { SongList } from './components/SongList/SongList'
@@ -12,6 +13,7 @@ const App = () => {
 
   return (
     <>
+      <SongOptionsMenu />
       <SongList />
       <PlayerControls />
     </>

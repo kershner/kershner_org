@@ -1,9 +1,7 @@
 import { useMusicPlayerData } from '../../providers/musicPlayerProvider'
 import { PlayerButton } from '../PlayerButton/PlayerButton'
 import { playAudio, pauseAudio } from '../../utils/util'
-import DownloadIcon from '../../assets/download.svg'
-import MenuIcon from '../../assets/burger-menu.svg'
-import YoutubeIcon from '../../assets/youtube.svg'
+import { NowPlaying } from './NowPlaying/NowPlaying'
 import PauseIcon from '../../assets/pause.svg'
 import PrevIcon from '../../assets/prev.svg'
 import PlayIcon from '../../assets/play.svg'
@@ -121,65 +119,13 @@ export const PlayerControls = () => {
     }
   }, [isSliderDragging])
 
-  const nowPlayingMenu = (e: React.MouseEvent) => {
-    const targetElement = e.target as HTMLElement
-    const nowPlayingOptions = document.querySelector('.nowPlayingOptions')
-    targetElement.classList.toggle('active')
-    nowPlayingOptions?.classList.toggle('active')
-  }
-
-  const handleDownloadClick = () => {
-    if (selectedSong) {
-      const downloadUrl = selectedSong.url
-      window.open(downloadUrl, '_blank')
-    }
-  }
-
-  const handleYouTubeClick = () => {
-    if (selectedSong) {
-      const youtubeUrl = selectedSong.youtubeUrl
-      window.open(youtubeUrl, '_blank')
-    }
-  }
-
   return (
     <>
       <div className="playerControls">
         <hr className="playerControlsHr" />
 
         <div className="playerControlsInner">
-          <div className="nowPlaying">
-            <PlayerButton
-              alt={'More info'}
-              extraClassName={'nowPlayingMoreInfoBtn'}
-              icon={MenuIcon}
-              callback={nowPlayingMenu}
-            />
-
-            <div className="nowPlayingOptions">
-              <div
-                className="nowPlayingOptionRow"
-                onClick={handleDownloadClick}
-              >
-                <PlayerButton alt={'Download song'} icon={DownloadIcon} />
-                <span>Download</span>
-              </div>
-
-              <div className="nowPlayingOptionRow" onClick={handleYouTubeClick}>
-                <PlayerButton alt={'View song on YouTube'} icon={YoutubeIcon} />
-                <span>View on YouTube</span>
-              </div>
-            </div>
-
-            <div className="thumbnail">
-              <img src={`${selectedSong?.thumbnailUrl}`} />
-            </div>
-
-            <div className="songInfo">
-              <div className="songTitle">{selectedSong?.name}</div>
-              <div className="songArtist">{selectedSong?.artist}</div>
-            </div>
-          </div>
+          <NowPlaying />
 
           <div className="controlsWrapper">
             <div className="controls">

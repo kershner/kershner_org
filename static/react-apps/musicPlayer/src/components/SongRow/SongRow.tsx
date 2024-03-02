@@ -1,3 +1,4 @@
+import { SongOptionsBtn } from '../SongOptions/SongOptionsBtn/SongOptionsBtn'
 import { useMusicPlayerData } from '../../providers/musicPlayerProvider'
 import { playAudio, pauseAudio } from '../../utils/util'
 import { Song } from '../../types/index'
@@ -21,7 +22,7 @@ export const SongRow: React.FC<SongRowProps> = (props) => {
 
   const handleClick = (e: React.MouseEvent) => {
     const clickedSongRow = e.currentTarget
-    const songId = Number(clickedSongRow.getAttribute('data-songId'))
+    const songId = Number(clickedSongRow.getAttribute('data-songId'));
 
     if (songId) {
       if (selectedSong && songId === selectedSong.id) {
@@ -58,6 +59,7 @@ export const SongRow: React.FC<SongRowProps> = (props) => {
 
         <div className="songRowColumn">
           <div className="songDuration">{song.duration}</div>
+          <SongOptionsBtn />
         </div>
       </div>
     </>
