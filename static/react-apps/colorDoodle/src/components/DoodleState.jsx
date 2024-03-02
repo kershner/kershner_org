@@ -1,6 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react"
-import { calculateNumberOfCells } from "../utils/util"
-import { parseParams } from "../../../utils/utils"
+import { calculateNumberOfCells, parseParams } from "../utils/util"
 
 
 const defaultCellSize = 100;
@@ -77,7 +76,7 @@ const GlobalStateContext = createContext({});
 
 const GlobalStateProvider = ({ children }) => {
     // Parse URL parameters into the initial state
-    const paramDict = parseParams(defaultState);
+    const paramDict = parseParams();
     const defaultStateCopy = {...defaultState};
     const modifiedState = Object.assign(defaultStateCopy, paramDict);
     const [globalState, setGlobalState] = useState(modifiedState);
