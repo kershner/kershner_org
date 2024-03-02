@@ -24,14 +24,14 @@ interface MusicPlayerState {
   hasSelectedSong: boolean
   setHasSelectedSong: React.Dispatch<SetStateAction<boolean>>
   audioRef: React.MutableRefObject<HTMLAudioElement>
-  songOptionsMenuPosition: Position
-  setSongOptionsMenuPosition: React.Dispatch<SetStateAction<Position>>
-  showSongOptionsMenu: boolean
-  setShowSongOptionsMenu: React.Dispatch<SetStateAction<boolean>>
-  songOptionsMenuRightAlign: boolean
-  setSongOptionsMenuRightAlign: React.Dispatch<SetStateAction<boolean>>
-  chosenSongOptionsSong: Song | null
-  setChosenSongOptionsSong: React.Dispatch<SetStateAction<Song | null>>
+  optionsMenuPosition: Position
+  setOptionsMenuPosition: React.Dispatch<SetStateAction<Position>>
+  showOptionsMenu: boolean
+  setShowOptionsMenu: React.Dispatch<SetStateAction<boolean>>
+  optionsMenuRightAlign: boolean
+  setOptionsMenuRightAlign: React.Dispatch<SetStateAction<boolean>>
+  optionsSong: Song | null
+  setOptionsSong: React.Dispatch<SetStateAction<Song | null>>
 }
 const MusicPlayerContext = createContext({} as MusicPlayerState)
 
@@ -43,13 +43,14 @@ const MusicPlayerProvider = ({ children }: { children: React.ReactNode }) => {
   const [playing, setPlaying] = useState<boolean>(false)
   const [hasSelectedSong, setHasSelectedSong] = useState<boolean>(false)
   const audioRef = useRef(new Audio())
-  const [songOptionsMenuPosition, setSongOptionsMenuPosition] =
-    useState<Position>({ x: 0, y: 0 })
-  const [showSongOptionsMenu, setShowSongOptionsMenu] = useState<boolean>(false)
-  const [songOptionsMenuRightAlign, setSongOptionsMenuRightAlign] =
+  const [optionsMenuPosition, setOptionsMenuPosition] = useState<Position>({
+    x: 0,
+    y: 0,
+  })
+  const [showOptionsMenu, setShowOptionsMenu] = useState<boolean>(false)
+  const [optionsMenuRightAlign, setOptionsMenuRightAlign] =
     useState<boolean>(false)
-  const [chosenSongOptionsSong, setChosenSongOptionsSong] =
-    useState<Song | null>(null)
+  const [optionsSong, setOptionsSong] = useState<Song | null>(null)
 
   const fetchInitialData = async () => {
     fetchWrapper(songDataApiUrl, 'GET', {}, {}, (songData: Song[]) => {
@@ -73,14 +74,14 @@ const MusicPlayerProvider = ({ children }: { children: React.ReactNode }) => {
       hasSelectedSong,
       setHasSelectedSong,
       audioRef,
-      songOptionsMenuPosition,
-      setSongOptionsMenuPosition,
-      showSongOptionsMenu,
-      setShowSongOptionsMenu,
-      songOptionsMenuRightAlign,
-      setSongOptionsMenuRightAlign,
-      chosenSongOptionsSong,
-      setChosenSongOptionsSong,
+      optionsMenuPosition,
+      setOptionsMenuPosition,
+      showOptionsMenu,
+      setShowOptionsMenu,
+      optionsMenuRightAlign,
+      setOptionsMenuRightAlign,
+      optionsSong,
+      setOptionsSong,
     }),
     [
       songs,
@@ -88,8 +89,8 @@ const MusicPlayerProvider = ({ children }: { children: React.ReactNode }) => {
       selectedSong,
       playing,
       hasSelectedSong,
-      songOptionsMenuPosition,
-      showSongOptionsMenu,
+      optionsMenuPosition,
+      showOptionsMenu,
     ],
   )
 

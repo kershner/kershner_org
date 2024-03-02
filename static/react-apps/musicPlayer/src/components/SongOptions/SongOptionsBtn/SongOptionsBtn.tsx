@@ -8,12 +8,12 @@ export const SongOptionsBtn = () => {
   const {
     songs,
     selectedSong,
-    setSongOptionsMenuPosition,
-    showSongOptionsMenu,
-    setShowSongOptionsMenu,
-    setSongOptionsMenuRightAlign,
-    chosenSongOptionsSong,
-    setChosenSongOptionsSong,
+    setOptionsMenuPosition,
+    showOptionsMenu,
+    setShowOptionsMenu,
+    setOptionsMenuRightAlign,
+    optionsSong,
+    setOptionsSong,
   } = useMusicPlayerData()
 
   const getChosenSongId = (songRow: HTMLElement | null) => {
@@ -36,24 +36,24 @@ export const SongOptionsBtn = () => {
     const nextChosenSong = songs.filter(
       (obj) => obj.id === Number(chosenSongId),
     )[0]
-    const clickingSameBtn = nextChosenSong.id === chosenSongOptionsSong?.id
+    const clickingSameBtn = nextChosenSong.id === optionsSong?.id
     let toggleState = true
 
-    if (!clickingSameBtn && showSongOptionsMenu) {
+    if (!clickingSameBtn && showOptionsMenu) {
       toggleState = false
     }
 
-    setChosenSongOptionsSong(nextChosenSong)
-    setSongOptionsMenuPosition({ x: clientX, y: clientY })
+    setOptionsSong(nextChosenSong)
+    setOptionsMenuPosition({ x: clientX, y: clientY })
 
     if (!songRow) {
-      setSongOptionsMenuRightAlign(false)
+      setOptionsMenuRightAlign(false)
     } else {
-      setSongOptionsMenuRightAlign(true)
+      setOptionsMenuRightAlign(true)
     }
 
     if (toggleState) {
-      setShowSongOptionsMenu(!showSongOptionsMenu)
+      setShowOptionsMenu(!showOptionsMenu)
     }
   }
 

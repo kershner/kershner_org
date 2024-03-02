@@ -6,29 +6,29 @@ import './style.scss'
 
 export const SongOptionsMenu = () => {
   const {
-    songOptionsMenuPosition,
-    showSongOptionsMenu,
-    songOptionsMenuRightAlign,
-    chosenSongOptionsSong,
+    optionsMenuPosition,
+    showOptionsMenu,
+    optionsMenuRightAlign,
+    optionsSong,
   } = useMusicPlayerData()
   const menuPositionStyle = {
-    display: showSongOptionsMenu ? 'unset' : 'none',
-    top: songOptionsMenuPosition.y + 10,
-    [songOptionsMenuRightAlign ? 'right' : 'left']: songOptionsMenuRightAlign
-      ? window.innerWidth - (songOptionsMenuPosition.x + 10)
-      : songOptionsMenuPosition.x + 10,
+    display: showOptionsMenu ? 'unset' : 'none',
+    top: optionsMenuPosition.y + 10,
+    [optionsMenuRightAlign ? 'right' : 'left']: optionsMenuRightAlign
+      ? window.innerWidth - (optionsMenuPosition.x + 10)
+      : optionsMenuPosition.x + 10,
   }
 
   const handleDownloadClick = () => {
-    if (chosenSongOptionsSong) {
-      const downloadUrl = chosenSongOptionsSong.url
+    if (optionsSong) {
+      const downloadUrl = optionsSong.url
       window.open(downloadUrl, '_blank')
     }
   }
 
   const handleYouTubeClick = () => {
-    if (chosenSongOptionsSong) {
-      const youtubeUrl = chosenSongOptionsSong.youtubeUrl
+    if (optionsSong) {
+      const youtubeUrl = optionsSong.youtubeUrl
       window.open(youtubeUrl, '_blank')
     }
   }
