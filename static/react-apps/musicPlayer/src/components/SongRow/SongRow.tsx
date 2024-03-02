@@ -22,7 +22,7 @@ export const SongRow: React.FC<SongRowProps> = (props) => {
 
   const handleClick = (e: React.MouseEvent) => {
     const clickedSongRow = e.currentTarget
-    const songId = Number(clickedSongRow.getAttribute('data-songId'));
+    const songId = Number(clickedSongRow.getAttribute('data-songId'))
 
     if (songId) {
       if (selectedSong && songId === selectedSong.id) {

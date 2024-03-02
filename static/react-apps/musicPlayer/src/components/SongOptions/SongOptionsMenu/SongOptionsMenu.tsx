@@ -5,15 +5,20 @@ import YoutubeIcon from '../../../assets/youtube.svg'
 import './style.scss'
 
 export const SongOptionsMenu = () => {
-  const { songOptionsMenuPosition, showSongOptionsMenu, songOptionsMenuRightAlign, chosenSongOptionsSong } = useMusicPlayerData()
+  const {
+    songOptionsMenuPosition,
+    showSongOptionsMenu,
+    songOptionsMenuRightAlign,
+    chosenSongOptionsSong,
+  } = useMusicPlayerData()
   const menuPositionStyle = {
     display: showSongOptionsMenu ? 'unset' : 'none',
     top: songOptionsMenuPosition.y + 10,
     [songOptionsMenuRightAlign ? 'right' : 'left']: songOptionsMenuRightAlign
       ? window.innerWidth - (songOptionsMenuPosition.x + 10)
       : songOptionsMenuPosition.x + 10,
-  };
-  
+  }
+
   const handleDownloadClick = () => {
     if (chosenSongOptionsSong) {
       const downloadUrl = chosenSongOptionsSong.url
@@ -31,8 +36,16 @@ export const SongOptionsMenu = () => {
   return (
     <>
       <div className="songOptions" style={menuPositionStyle}>
-        <SongOptionsRow title='Download' icon={DownloadIcon} callback={handleDownloadClick} />
-        <SongOptionsRow title='View on YouTube' icon={YoutubeIcon} callback={handleYouTubeClick} />
+        <SongOptionsRow
+          title="Download"
+          icon={DownloadIcon}
+          callback={handleDownloadClick}
+        />
+        <SongOptionsRow
+          title="View on YouTube"
+          icon={YoutubeIcon}
+          callback={handleYouTubeClick}
+        />
       </div>
     </>
   )

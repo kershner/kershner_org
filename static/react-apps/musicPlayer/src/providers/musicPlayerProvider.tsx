@@ -41,10 +41,13 @@ const MusicPlayerProvider = ({ children }: { children: React.ReactNode }) => {
   const [playing, setPlaying] = useState<boolean>(false)
   const [hasSelectedSong, setHasSelectedSong] = useState<boolean>(false)
   const audioRef = useRef(new Audio())
-  const [songOptionsMenuPosition, setSongOptionsMenuPosition] = useState<Position>({ x: 0, y: 0 });
-  const [showSongOptionsMenu, setShowSongOptionsMenu] = useState<boolean>(false);
-  const [songOptionsMenuRightAlign, setSongOptionsMenuRightAlign] = useState<boolean>(false);
-  const [chosenSongOptionsSong, setChosenSongOptionsSong] = useState<Song | null>(null);
+  const [songOptionsMenuPosition, setSongOptionsMenuPosition] =
+    useState<Position>({ x: 0, y: 0 })
+  const [showSongOptionsMenu, setShowSongOptionsMenu] = useState<boolean>(false)
+  const [songOptionsMenuRightAlign, setSongOptionsMenuRightAlign] =
+    useState<boolean>(false)
+  const [chosenSongOptionsSong, setChosenSongOptionsSong] =
+    useState<Song | null>(null)
 
   const fetchInitialData = async () => {
     fetchWrapper(songDataApiUrl, 'GET', {}, {}, (songData: Song[]) => {
@@ -80,9 +83,17 @@ const MusicPlayerProvider = ({ children }: { children: React.ReactNode }) => {
       songOptionsMenuRightAlign,
       setSongOptionsMenuRightAlign,
       chosenSongOptionsSong,
-      setChosenSongOptionsSong
+      setChosenSongOptionsSong,
     }),
-    [songs, filteredSongs, selectedSong, playing, hasSelectedSong, songOptionsMenuPosition, showSongOptionsMenu],
+    [
+      songs,
+      filteredSongs,
+      selectedSong,
+      playing,
+      hasSelectedSong,
+      songOptionsMenuPosition,
+      showSongOptionsMenu,
+    ],
   )
 
   return (

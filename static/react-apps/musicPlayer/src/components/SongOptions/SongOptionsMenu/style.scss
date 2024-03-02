@@ -3,7 +3,7 @@
   z-index: 2;
   position: fixed;
   background-color: var(--dynamic-color);
-  transition: background-color .3s ease;
+  transition: background-color 0.3s ease;
   border: 1px solid #fff;
   border-radius: 0.3rem;
   &.active {
