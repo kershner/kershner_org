@@ -1,11 +1,7 @@
 .songOptionsBtn {
-  position: absolute;
-  left: 0.5rem;
-  top: 0.5rem;
   z-index: 1;
   width: 2rem;
-  padding: 0.3rem;
-  border-radius: 0.3rem 0.3rem 0 0;
+  padding: 0.25rem;
 
   &.active {
     background-color: var(--dynamic-color);

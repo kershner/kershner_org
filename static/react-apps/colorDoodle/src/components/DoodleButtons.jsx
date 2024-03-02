@@ -1,7 +1,8 @@
 import React, { useContext } from "react"
 import { GlobalStateContext, defaultState } from "./DoodleState.jsx"
 import { DoodleButton, GithubButton } from "./DoodleInputs.jsx"
-import { copyToClipboard, getNewGridNumCells, removeQueryParams, updateLinksWithQueryParams } from "../utils/util"
+import { getNewGridNumCells, removeQueryParams, updateLinksWithQueryParams } from "../utils/util"
+import { copyToClipboard } from '../../../utils/utils.js'
 
 
 export function ExpandMenuButton() {
