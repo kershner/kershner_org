@@ -1,18 +1,22 @@
 import { useMusicPlayerData } from '../../providers/musicPlayerProvider'
+import { applyFilter } from '../../utils/util'
 import { SongRow } from '../SongRow/SongRow'
-import { useState } from 'react'
 import './style.scss'
 
 export const SongList = () => {
-  const { songs, filteredSongs, setFilteredSongs } = useMusicPlayerData()
-  const [activeFilter, setActiveFilter] = useState('SO')
+  const {
+    songs,
+    filteredSongs,
+    setFilteredSongs,
+    activeFilter,
+    setActiveFilter,
+  } = useMusicPlayerData()
 
   const filterClicked = (e: React.MouseEvent) => {
     const targetElement = e.currentTarget
     const filterType = targetElement.getAttribute('data-filter-type')
     if (filterType) {
-      setFilteredSongs(songs.filter((song) => song.type === filterType))
-      setActiveFilter(filterType)
+      applyFilter(filterType, songs, setFilteredSongs, setActiveFilter)
     }
   }
 

@@ -32,3 +32,13 @@ export const pauseAudio = (
   audio.pause()
   setPlaying(false)
 }
+
+export const applyFilter = (
+  filterType: string,
+  songs: Song[],
+  setFilteredSongs: React.Dispatch<React.SetStateAction<Song[]>>,
+  setActiveFilter: React.Dispatch<React.SetStateAction<string>>,
+) => {
+  setFilteredSongs(songs.filter((song) => song.type === filterType))
+  setActiveFilter(filterType)
+}

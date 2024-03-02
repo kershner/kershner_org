@@ -40,25 +40,6 @@ export function encodeParams(params) {
         .join('&');
 }
 
-export function parseParams() {
-    let params = defaultState;
-
-    if (window.location.search !== "") {
-        const urlSearchParams = new URLSearchParams(window.location.search);
-        params = Object.fromEntries(urlSearchParams.entries());
-
-        // Convert true/false query params to actual JS bools
-        for (const key in params) {
-            const value = params[key];
-            if (value === "true" || value === "false") {
-                params[key] = value !== "false";
-            }
-        }
-    }
-
-    return params;
-}
-
 export function removeQueryParams() {
     const currentUrl = window.location.href;
     const urlObject = new URL(currentUrl);

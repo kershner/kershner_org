@@ -53,3 +53,26 @@ export const fetchWrapper = <T>(
       console.error(error)
     })
 }
+
+export function parseParams(defaultParams?: object | null) {
+  let params: { [key: string]: string | boolean } = {};
+
+  if (defaultParams) {
+    params = defaultParams as { [key: string]: string | boolean };;
+  }
+
+  if (window.location.search !== "") {
+      const urlSearchParams = new URLSearchParams(window.location.search);
+      params = Object.fromEntries(urlSearchParams.entries());
+
+      // Convert true/false query params to actual JS bools
+      for (const key in params) {
+          const value = params[key];
+          if (value === "true" || value === "false") {
+              params[key] = value !== "false";
+          }
+      }
+  }
+
+  return params;
+}

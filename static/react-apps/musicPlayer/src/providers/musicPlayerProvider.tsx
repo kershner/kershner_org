@@ -1,21 +1,22 @@
+import { fetchWrapper } from '../../../utils/utils'
+import { songDataApiUrl } from '../routes'
+import { Song, Position } from '../types'
 import React, {
   createContext,
   useContext,
   useMemo,
   useState,
   SetStateAction,
-  useEffect,
   useRef,
 } from 'react'
-import { fetchWrapper } from '../../../utils/utils'
-import { songDataApiUrl } from '../routes'
-import { Song, Position } from '../types'
 
 interface MusicPlayerState {
   fetchInitialData: () => void
   songs: Song[] | []
   filteredSongs: Song[] | []
   setFilteredSongs: React.Dispatch<SetStateAction<Song[]>>
+  activeFilter: string
+  setActiveFilter: React.Dispatch<SetStateAction<string>>
   selectedSong: Song | null
   setSelectedSong: React.Dispatch<SetStateAction<Song | null>>
   playing: boolean
@@ -37,6 +38,7 @@ const MusicPlayerContext = createContext({} as MusicPlayerState)
 const MusicPlayerProvider = ({ children }: { children: React.ReactNode }) => {
   const [songs, setSongs] = useState<Song[]>([])
   const [filteredSongs, setFilteredSongs] = useState<Song[]>([])
+  const [activeFilter, setActiveFilter] = useState<string>('SO')
   const [selectedSong, setSelectedSong] = useState<Song | null>(null)
   const [playing, setPlaying] = useState<boolean>(false)
   const [hasSelectedSong, setHasSelectedSong] = useState<boolean>(false)
@@ -56,19 +58,14 @@ const MusicPlayerProvider = ({ children }: { children: React.ReactNode }) => {
     })
   }
 
-  useEffect(() => {
-    const firstSong: Song | null = songs[0]
-    if (firstSong) {
-      setSelectedSong(firstSong)
-    }
-  }, [songs])
-
   const memoValue = useMemo(
     () => ({
       fetchInitialData,
       songs,
       filteredSongs,
       setFilteredSongs,
+      activeFilter,
+      setActiveFilter,
       selectedSong,
       setSelectedSong,
       playing,
