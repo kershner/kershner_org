@@ -1,8 +1,8 @@
 import { SongOptionsMenu } from './components/SongOptions/SongOptionsMenu/SongOptionsMenu'
 import { PlayerControls } from './components/PlayerControls/PlayerControls'
+import { applyFilter, scrollSongRowIntoView } from '../src/utils/util'
 import { useMusicPlayerData } from './providers/musicPlayerProvider'
 import { SongList } from './components/SongList/SongList'
-import { applyFilter } from '../src/utils/util'
 import { parseParams } from '../../utils/utils'
 import { Song } from '../src/types'
 import { useEffect } from 'react'
@@ -36,17 +36,7 @@ const App = () => {
 
       setSelectedSong(chosenSong)
       applyFilter(chosenSong.type, songs, setFilteredSongs, setActiveFilter)
-      setTimeout(() => {
-        const songRowToScroll = document.querySelector(
-          `.songRow[data-songid="${params.song}"]`,
-        )
-        if (songRowToScroll) {
-          songRowToScroll.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-          })
-        }
-      }, 100)
+      scrollSongRowIntoView(chosenSong.id)
     }
   }, [songs])
 

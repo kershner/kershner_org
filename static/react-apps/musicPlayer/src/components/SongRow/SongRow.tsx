@@ -1,8 +1,6 @@
 import { SongOptionsBtn } from '../SongOptions/SongOptionsBtn/SongOptionsBtn'
 import { useMusicPlayerData } from '../../providers/musicPlayerProvider'
 import { playAudio, pauseAudio } from '../../utils/util'
-import PauseIcon from '../../assets/pause.svg'
-import PlayIcon from '../../assets/play.svg'
 import { Song } from '../../types/index'
 import React from 'react'
 import './style.scss'
@@ -60,12 +58,6 @@ export const SongRow: React.FC<SongRowProps> = (props) => {
         </div>
 
         <div className="songRowColumn">
-          <div className="songRowStatusIcon">
-            { 
-              selectedSong?.id === song.id ? <img src={audioRef.current.paused? PlayIcon : PauseIcon} /> : '' 
-            }
-          </div>
-
           <div className="songDuration">{song.duration}</div>
           <SongOptionsBtn />
         </div>

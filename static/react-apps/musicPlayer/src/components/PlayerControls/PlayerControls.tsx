@@ -1,12 +1,13 @@
+import { playAudio, pauseAudio, applyFilter, scrollSongRowIntoView } from '../../utils/util'
 import { useMusicPlayerData } from '../../providers/musicPlayerProvider'
+import { NowPlaying } from './components/NowPlaying/NowPlaying'
 import { PlayerButton } from '../PlayerButton/PlayerButton'
-import { playAudio, pauseAudio } from '../../utils/util'
-import { NowPlaying } from './NowPlaying/NowPlaying'
 import PauseIcon from '../../assets/pause.svg'
 import PrevIcon from '../../assets/prev.svg'
 import PlayIcon from '../../assets/play.svg'
 import NextIcon from '../../assets/next.svg'
 import { useEffect, useState } from 'react'
+import { Song } from '../../types'
 import './style.scss'
 
 export const PlayerControls = () => {
@@ -19,6 +20,8 @@ export const PlayerControls = () => {
     hasSelectedSong,
     setHasSelectedSong,
     audioRef,
+    setFilteredSongs, 
+    setActiveFilter
   } = useMusicPlayerData()
   const [progressValue, setProgressValue] = useState(0)
   const [isSliderDragging, setSliderDragging] = useState(false)
@@ -66,6 +69,12 @@ export const PlayerControls = () => {
     }
   }
 
+  const playNextSong = (nextSong: Song) => {
+    setSelectedSong(nextSong)
+    applyFilter(nextSong.type, songs, setFilteredSongs, setActiveFilter)
+    scrollSongRowIntoView(nextSong.id)
+  }
+
   const handlePrevClick = () => {
     if (selectedSong) {
       const currentPosition = songs.findIndex(
@@ -77,7 +86,8 @@ export const PlayerControls = () => {
         prevPosition = numSongs - 1
       }
 
-      setSelectedSong(songs[prevPosition])
+      const nextSong = songs[prevPosition];
+      playNextSong(nextSong);
     }
   }
 
@@ -90,18 +100,23 @@ export const PlayerControls = () => {
     }
   }
 
-  const handleNextClick = () => {
+  const getNextSong = (songs: Song[], selectedSong: Song) => {
+    let nextPosition = 0
     if (selectedSong) {
       const currentPosition = songs.findIndex(
         (song) => song.id === selectedSong.id,
       )
-      const numSongs = songs.length
-      let nextPosition = currentPosition + 1
-      if (nextPosition === numSongs) {
+      nextPosition = currentPosition + 1
+      if (nextPosition === songs.length) {
         nextPosition = 0
       }
+    }
+    return songs[nextPosition];
+  }
 
-      setSelectedSong(songs[nextPosition])
+  const handleNextClick = () => {
+    if (selectedSong) {
+      playNextSong(getNextSong(songs, selectedSong));
     }
   }
 
@@ -118,6 +133,14 @@ export const PlayerControls = () => {
       audioElement.removeEventListener('timeupdate', timeUpdateCallback)
     }
   }, [isSliderDragging])
+
+  useEffect(() => {
+    const audioElement = audioRef.current
+    audioElement.addEventListener('ended', () => {
+      const nextBtn = document.querySelector('button[title="Next song"]') as HTMLElement;
+      nextBtn.click();
+    })
+  }, [])
 
   return (
     <>

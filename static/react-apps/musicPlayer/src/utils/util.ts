@@ -18,8 +18,8 @@ export const playAudio = (
       .then(() => {
         setPlaying(true)
       })
-      .catch(() => {
-        // Handle error eventually
+      .catch((e) => {
+        console.log('error playing audio: ', e);
       })
   }
 }
@@ -41,4 +41,18 @@ export const applyFilter = (
 ) => {
   setFilteredSongs(songs.filter((song) => song.type === filterType))
   setActiveFilter(filterType)
+}
+
+export const scrollSongRowIntoView = (songId: number) => {
+  setTimeout(() => {
+    const songRowToScroll = document.querySelector(
+      `.songRow[data-songid="${songId}"]`,
+    )
+    if (songRowToScroll) {
+      songRowToScroll.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      })
+    }
+  }, 100)
 }

@@ -1,5 +1,5 @@
-import { SongOptionsBtn } from '../../SongOptions/SongOptionsBtn/SongOptionsBtn'
-import { useMusicPlayerData } from '../../../providers/musicPlayerProvider'
+import { SongOptionsBtn } from '../../../SongOptions/SongOptionsBtn/SongOptionsBtn'
+import { useMusicPlayerData } from '../../../../providers/musicPlayerProvider'
 import './style.scss'
 
 export const NowPlaying = () => {

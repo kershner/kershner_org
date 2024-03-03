@@ -13,10 +13,12 @@
   border-radius: 0.5rem;
   z-index: 1;
 
+  &:hover {
+    transition: background-color 0.1s ease;
+  }
   &:hover,
   &.selected {
     background-color: var(--dynamic-color);
-    transition: background-color 0.1s ease;
     color: #fff;
     text-shadow: $text-shadow;
     .songName {
@@ -46,16 +48,6 @@
       }
     }
 
-    .songRowStatusIcon {
-      display: flex;
-      padding: 1rem;
-
-      img {
-        filter: drop-shadow(0px 1000px 0 #fff);
-        transform: translateY(-1000px);
-      }
-    }
-
     .songName {
       font-size: 1rem;
       align-self: center;
@@ -72,7 +64,7 @@
     }
 
     .songDuration {
-      font-size: 1rem;
+      font-size: 1.1rem;
       align-self: center;
     }
   }
