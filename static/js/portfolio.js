@@ -15,8 +15,6 @@ var portfolio = {
 portfolio.init = function() {
     portfolio.currentColor = randomColor({luminosity: 'light'});
     portfolio.rotateColors();
-    portfolio.scrollEvents();
-    addClass(portfolio.footer, 'fixed');
 };
 
 const projectsClickHandler = (e) => {
@@ -40,6 +38,7 @@ const updateFooterOnScroll = () => {
 }
 
 portfolio.scrollEvents = function() {
+    portfolio.footer.classList.add('fixed');
     updateFooterOnScroll();
 
     window.addEventListener('scroll', function(e) {

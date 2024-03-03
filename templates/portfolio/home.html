@@ -35,5 +35,6 @@
         portfolio.currentProjectIndex = {{ projects_per_page }};
         portfolio.moreProjectsBtn.addEventListener('click', portfolio.moreProjectsClickEvent);
         portfolio.projectsHtml = {{ projects_html|safe }};
+        portfolio.scrollEvents();
     </script>
 {% endblock %}
