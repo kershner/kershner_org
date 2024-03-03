@@ -6,38 +6,48 @@ var portfolio = {
     'colorChangeInterval'   : 10000,  // 10 seconds,
     'projectsWrapper'       : document.getElementsByClassName('projects-wrapper')[0],
     'projectWrappers'       : document.getElementsByClassName('project-wrapper'),
-    'bigName'               : document.getElementsByClassName('big-name')[0],
-    'bigCallToAction'       : document.getElementsByClassName('big-call-to-action')[0],
-    'cubeGrid'              : document.getElementsByClassName('cube-grid')[0],
     'moreProjectsBtn'       : document.getElementById('more-projects-btn'),
+    'footer'                : document.querySelector('.footer'),
+    'projectsLink'          : document.querySelector('a[title="Projects"]'),
     'currentColor'          : ''
 };
 
 portfolio.init = function() {
     portfolio.currentColor = randomColor({luminosity: 'light'});
-
     portfolio.rotateColors();
     portfolio.scrollEvents();
+    addClass(portfolio.footer, 'fixed');
 };
 
-portfolio.scrollEvents = function() {
-    window.addEventListener('scroll', function(e) {
-        addClass(portfolio.cubeGrid, 'hidden');
-        if (!window.scrollY > (portfolio.cubeGrid.offsetTop + portfolio.cubeGrid.offsetHeight)) {
-            removeClass(portfolio.cubeGrid, 'hidden');
-        }
+const projectsClickHandler = (e) => {
+    e.preventDefault();
+    window.scrollBy(0, 1);
+    setTimeout(_ => {
+        portfolio.projectsWrapper.scrollIntoView({block: 'start'});
+    }, 20);
+}
 
+const updateFooterOnScroll = () => {
+    const isAtTop = window.scrollY === 0;
+    portfolio.footer.classList.toggle('fixed', isAtTop);
+    
+    portfolio.projectsLink.removeEventListener('click', projectsClickHandler);
+    if (isAtTop) {
+        portfolio.projectsLink.addEventListener('click', projectsClickHandler);
+    }
+}
+
+portfolio.scrollEvents = function() {
+    updateFooterOnScroll();
+
+    window.addEventListener('scroll', function(e) {
+        updateFooterOnScroll();
+        
         if (portfolio.initialLoad) {
             portfolio.addProjects(0);
             portfolio.initialLoad = false;
         }
     });
-};
-
-portfolio.cubeClick = function() {
-    portfolio.cubeGrid.onclick = function() {
-        portfolio.projectsWrapper.scrollIntoView();
-    }
 };
 
 portfolio.moreProjectsClickEvent = function() {

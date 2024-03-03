@@ -38,44 +38,55 @@
     <!-- Footer -->
     {% block footer %}
         <div class="footer">
-            <div class="footer-links">
-                <div class="footer-link">
-                    {% if request.resolver_match.url_name == 'music' %}
-                    <a href="{% url 'home' %}" title="Home" class="preserve-params">
-                        Home
-                    </a>
-                    {% else %}
-                    <a href="{% url 'music' %}" title="Music" class="preserve-params">
-                        Music
-                    </a>
-                    {% endif %}
-                </div>
-
-                <div class="footer-link">
-                    <a href="https://www.github.com/kershner" target="_blank" title="Github">
-                        Github
-                    </a>
-                </div>
-
-                <div class="footer-link">
-                    <a href="mailto:tylerkershner@gmail.com" target="_blank" title="Email">
-                        Email
-                    </a>
-                </div>
-
-                <a href="https://github.com/kershner/kershner_org" class="dynamic-color" target="_blank" title="View this website's code">
-                    <div id="footer-cube" class="cube-grid">
-                        <div class="cube cube1 dynamic-color"></div>
-                        <div class="cube cube2 dynamic-color"></div>
-                        <div class="cube cube3 dynamic-color"></div>
-                        <div class="cube cube4 dynamic-color"></div>
-                        <div class="cube cube5 dynamic-color"></div>
-                        <div class="cube cube6 dynamic-color"></div>
-                        <div class="cube cube7 dynamic-color"></div>
-                        <div class="cube cube8 dynamic-color"></div>
-                        <div class="cube cube9 dynamic-color"></div>
+            <div class="footer-inner">
+                <div class="footer-links">
+                    <div class="footer-link-wrapper">
+                        <div class="footer-link">
+                            {% if request.resolver_match.url_name == 'home' %}
+                            <a href="{% url 'home' %}" title="Projects" class="preserve-params">
+                                Projects
+                            </a>
+                            {% else %}
+                            <a href="{% url 'home' %}" title="Home" class="preserve-params">
+                                Home
+                            </a>
+                            {% endif %}
+                        </div>
                     </div>
-                </a>
+
+                    <div class="footer-link-wrapper">
+                        <div class="footer-link">
+                            <a href="{% url 'music' %}" title="Music" class="preserve-params">
+                                Music
+                            </a>
+                        </div>
+
+                        <a class="github-icon-link" href="https://github.com/kershner/kershner_org" class="dynamic-color" target="_blank" title="View this website's code">
+                            <div>
+                                {% include 'portfolio/includes/github_icon.html' %}
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="footer-link-wrapper">
+                        <div class="footer-link">
+                            <a href="mailto:tylerkershner@gmail.com" target="_blank" title="Email">
+                                Email
+                            </a>
+                        </div>
+                    </div>
+                    
+
+                    
+
+                    
+                </div>
+
+                {% comment %} <a class="github-icon-link" href="https://github.com/kershner/kershner_org" class="dynamic-color" target="_blank" title="View this website's code">
+                    <div>
+                        {% include 'portfolio/includes/github_icon.html' %}
+                    </div>
+                </a> {% endcomment %}
             </div>
         </div>
         {% endblock %}
