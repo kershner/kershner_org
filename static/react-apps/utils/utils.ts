@@ -90,3 +90,18 @@ export function setQueryParam(key: string, value: string): void {
   currentURL.searchParams.set(key, value);
   window.history.replaceState({}, '', currentURL.toString());
 }
+
+export function updateLinksWithQueryParams() {
+  const currentUrl = window.location.href;
+  const urlObject = new URL(currentUrl);
+  const queryParams = new URLSearchParams(urlObject.search);
+  
+  // Update footer link hrefs
+  document.querySelectorAll('.preserve-params').forEach((el) => {
+      const anchorElement = el as HTMLAnchorElement;  
+      const href = anchorElement.href;
+      const urlObject = new URL(href);
+      const hrefWithOutQueryParams = urlObject.origin + urlObject.pathname;
+      anchorElement.href = `${hrefWithOutQueryParams}?${queryParams.toString()}`;
+  });
+}

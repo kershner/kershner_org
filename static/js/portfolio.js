@@ -31,9 +31,11 @@ const updateFooterOnScroll = () => {
     const isAtTop = window.scrollY === 0;
     portfolio.footer.classList.toggle('fixed', isAtTop);
     
-    portfolio.projectsLink.removeEventListener('click', projectsClickHandler);
-    if (isAtTop) {
-        portfolio.projectsLink.addEventListener('click', projectsClickHandler);
+    if (portfolio.projectsLink) {
+        portfolio.projectsLink.removeEventListener('click', projectsClickHandler);
+        if (isAtTop) {
+            portfolio.projectsLink.addEventListener('click', projectsClickHandler);
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-import { setQueryParam } from '../../../utils/utils'
+import { setQueryParam, updateLinksWithQueryParams } from '../../../utils/utils'
 import { SetStateAction } from 'react'
 import { Song } from '../types'
 
@@ -19,6 +19,7 @@ export const playAudio = (
       .then(() => {
         setPlaying(true)
         setQueryParam('song', selectedSong.id.toString())
+        updateLinksWithQueryParams();
       })
       .catch((e) => {
         console.log('error playing audio: ', e)
