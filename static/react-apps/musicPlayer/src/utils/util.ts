@@ -1,3 +1,4 @@
+import { setQueryParam } from '../../../utils/utils'
 import { SetStateAction } from 'react'
 import { Song } from '../types'
 
@@ -17,9 +18,10 @@ export const playAudio = (
       .play()
       .then(() => {
         setPlaying(true)
+        setQueryParam('song', selectedSong.id.toString())
       })
       .catch((e) => {
-        console.log('error playing audio: ', e);
+        console.log('error playing audio: ', e)
       })
   }
 }

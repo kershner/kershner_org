@@ -84,3 +84,9 @@ export async function copyToClipboard(text: string) {
       console.error('Failed to copy: ', err);
   }
 }
+
+export function setQueryParam(key: string, value: string): void {
+  const currentURL = new URL(window.location.href);
+  currentURL.searchParams.set(key, value);
+  window.history.replaceState({}, '', currentURL.toString());
+}

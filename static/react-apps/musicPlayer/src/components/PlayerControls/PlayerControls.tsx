@@ -1,4 +1,9 @@
-import { playAudio, pauseAudio, applyFilter, scrollSongRowIntoView } from '../../utils/util'
+import {
+  playAudio,
+  pauseAudio,
+  applyFilter,
+  scrollSongRowIntoView,
+} from '../../utils/util'
 import { useMusicPlayerData } from '../../providers/musicPlayerProvider'
 import { NowPlaying } from './components/NowPlaying/NowPlaying'
 import { PlayerButton } from '../PlayerButton/PlayerButton'
@@ -20,8 +25,8 @@ export const PlayerControls = () => {
     hasSelectedSong,
     setHasSelectedSong,
     audioRef,
-    setFilteredSongs, 
-    setActiveFilter
+    setFilteredSongs,
+    setActiveFilter,
   } = useMusicPlayerData()
   const [progressValue, setProgressValue] = useState(0)
   const [isSliderDragging, setSliderDragging] = useState(false)
@@ -86,8 +91,8 @@ export const PlayerControls = () => {
         prevPosition = numSongs - 1
       }
 
-      const nextSong = songs[prevPosition];
-      playNextSong(nextSong);
+      const nextSong = songs[prevPosition]
+      playNextSong(nextSong)
     }
   }
 
@@ -111,12 +116,12 @@ export const PlayerControls = () => {
         nextPosition = 0
       }
     }
-    return songs[nextPosition];
+    return songs[nextPosition]
   }
 
   const handleNextClick = () => {
     if (selectedSong) {
-      playNextSong(getNextSong(songs, selectedSong));
+      playNextSong(getNextSong(songs, selectedSong))
     }
   }
 
@@ -137,8 +142,10 @@ export const PlayerControls = () => {
   useEffect(() => {
     const audioElement = audioRef.current
     audioElement.addEventListener('ended', () => {
-      const nextBtn = document.querySelector('button[title="Next song"]') as HTMLElement;
-      nextBtn.click();
+      const nextBtn = document.querySelector(
+        'button[title="Next song"]',
+      ) as HTMLElement
+      nextBtn.click()
     })
   }, [])
 

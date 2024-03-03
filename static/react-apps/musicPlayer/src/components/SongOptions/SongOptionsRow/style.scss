@@ -9,7 +9,7 @@
   padding-left: 0.5rem;
   padding-top: 0.5rem;
   padding-right: 0.75rem;
-  color: #FFF;
+  color: #fff;
   text-shadow: $text-shadow;
 
   &:not(:last-of-type) {
@@ -24,7 +24,7 @@
     max-width: 1.5rem;
 
     img {
-      filter: drop-shadow(0px 1000px 0 #FFF);
+      filter: drop-shadow(0px 1000px 0 #fff);
       transform: translateY(-1000px);
     }
   }

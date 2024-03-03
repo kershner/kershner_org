@@ -29,9 +29,9 @@ export const SongOptionsMenu = () => {
       const queryParams = new URLSearchParams(window.location.search)
       queryParams.set('song', songId.toString())
       const newUrl = currentUrlWithoutParams + '?' + queryParams.toString()
-      
-      copyToClipboard(newUrl);
-      alert("URL copied!");
+
+      copyToClipboard(newUrl)
+      alert('URL copied!')
     }
   }
 
@@ -62,11 +62,13 @@ export const SongOptionsMenu = () => {
           icon={DownloadIcon}
           callback={handleDownloadClick}
         />
-        <SongOptionsRow
-          title="View on YouTube"
-          icon={YoutubeIcon}
-          callback={handleYouTubeClick}
-        />
+        {optionsSong?.youtubeUrl && (
+          <SongOptionsRow
+            title="View on YouTube"
+            icon={YoutubeIcon}
+            callback={handleYouTubeClick}
+          />
+        )}
       </div>
     </>
   )
