@@ -192,7 +192,9 @@ export const PlayerControls = () => {
                   value={progressValue}
                   onChange={handleProgressChange}
                   onMouseDown={handleProgressChangeStart}
+                  onTouchStart={handleProgressChangeStart}
                   onMouseUp={handleProgressChangeEnd}
+                  onTouchEnd={handleProgressChangeEnd}
                   onInput={handleProgressChange}
                 />
               </div>

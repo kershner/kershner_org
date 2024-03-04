@@ -19,7 +19,7 @@ export const playAudio = (
       .then(() => {
         setPlaying(true)
         setQueryParam('song', selectedSong.id.toString())
-        updateLinksWithQueryParams();
+        updateLinksWithQueryParams()
       })
       .catch((e) => {
         console.log('error playing audio: ', e)
