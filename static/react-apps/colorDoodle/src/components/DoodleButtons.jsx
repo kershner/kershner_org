@@ -2,7 +2,7 @@ import React, { useContext } from "react"
 import { GlobalStateContext, defaultState } from "./DoodleState.jsx"
 import { DoodleButton, GithubButton } from "./DoodleInputs.jsx"
 import { getNewGridNumCells, removeQueryParams, updateLinksWithQueryParams } from "../utils/util"
-import { copyToClipboard } from '../utils/util.js'
+import { copyToClipboard, addOrUpdateQueryParam } from '../utils/util.js'
 
 
 export function ExpandMenuButton() {
@@ -71,12 +71,72 @@ export function DefaultStateButton() {
                          onClick={handleClick} />;
 }
 
+export function RandomSettingsButton() {
+    const { updateGlobalState } = useContext(GlobalStateContext);
+    const buttonId = "random-state";
+    const buttonName = "Randomize";
+
+    function handleClick(e) {
+        function randomizeInputs(selector) {
+            const container = document.querySelector(selector);
+            const randomizedValues = {};
+          
+            const randomizeInput = (input) => {
+              const inputType = input.type.toLowerCase();
+              const inputName = input.name || input.id || inputType;
+              switch (inputType) {
+                case 'checkbox':
+                  input.checked = randomizedValues[inputName] = Math.random() < 0.5;
+                  break;
+                case 'range':
+                    const minValue = parseFloat(input.min);
+                    const maxValue = parseFloat(input.max);
+                    const randomValue = Math.random() * (maxValue - minValue) + minValue;
+                    input.value = randomizedValues[inputName] = randomValue.toFixed(2);
+                    break;
+                case 'select-one':
+                  const randomIndex = Math.floor(Math.random() * input.options.length);
+                  input.selectedIndex = randomIndex;
+                  randomizedValues[inputName] = input.options[randomIndex].value;
+                  break;
+                case 'color':
+                  const randomColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+                  input.value = randomizedValues[inputName] = randomColor;
+                  break;
+                default:
+                  break;
+              }
+            };
+          
+            const inputs = container.querySelectorAll('input, select');
+            inputs.forEach((input) => randomizeInput(input));
+            return randomizedValues;
+        }
+          
+        const randomizedValues = randomizeInputs('.doodle-controls');
+          
+        Object.keys(randomizedValues).forEach(key => {
+            updateGlobalState(key, randomizedValues[key]);
+            addOrUpdateQueryParam(key, randomizedValues[key]);
+        });
+
+        setTimeout(_ => {
+            updateGlobalState("numSquares", getNewGridNumCells());
+        }, 100);
+    }
+
+    return <DoodleButton id={buttonId}
+                         value={buttonName}
+                         onClick={handleClick} />;
+}
+
 export function DoodleMenuButtonGroupTop() {
     return (
         <div className="doodle-button-group menu-buttons">
             <CopyUrlButton />
             <DefaultStateButton />
             <CloseMenuButton />
+            <RandomSettingsButton />
         </div>
     )
 }

@@ -12,6 +12,12 @@ export function DoodleMenu() {
 
     return (
         <div className={cssStr}>
+            <fieldset className="doodle-title">
+                <div className="fieldset-label">
+                    <legend>Color grid settings</legend>
+                </div>
+            </fieldset>
+
             <DoodleMenuButtonGroupTop />
             <BackgroundColorFieldset />
             <AutoControlsFieldset />

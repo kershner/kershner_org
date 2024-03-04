@@ -73,6 +73,13 @@ body {
   }
 }
 
+.doodle-title {
+  .fieldset-label {
+    border-top: none !important;
+    cursor: unset !important;
+  }
+}
+
 .doodle-controls {
   display: flex;
   flex-direction: column;
@@ -89,7 +96,6 @@ body {
   right: 0;
   height: 100%;
   background-color: lighten($black, 8);
-  padding: 1.5rem 0;
   overflow-y: auto;
   border-radius: 0.2rem;
   color: #FFF;
@@ -204,6 +210,9 @@ body {
   }
 
   .menu-buttons {
+    margin: 0.5rem auto;
+    padding-left: 0.5rem;
+
     button {
       margin: 0.25rem;
     }
