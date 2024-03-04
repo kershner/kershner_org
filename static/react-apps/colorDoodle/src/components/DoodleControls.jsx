@@ -184,7 +184,7 @@ export function CellSizeControl() {
 export function BorderStyleControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "borderStyle";
-    const label = "Style";
+    const label = "Border style";
     const options = {
         "hidden": "hidden",
         "dotted": "dotted",
@@ -214,7 +214,7 @@ export function BorderStyleControl() {
 export function BorderWidthControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "borderWidth";
-    const label = "Width";
+    const label = "Border width";
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value);
@@ -247,7 +247,7 @@ export function BorderWidthControl() {
 export function BorderColorControl() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
     const controlName = "borderColor";
-    const label = "Color";
+    const label = "Border color";
 
     function handleChange(e) {
         updateGlobalState(controlName, e.target.value, (newState) => {
