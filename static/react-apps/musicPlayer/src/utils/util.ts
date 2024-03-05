@@ -59,3 +59,12 @@ export const scrollSongRowIntoView = (songId: number) => {
     }
   }, 100)
 }
+
+export const applyFullscreen = (fullscreen: boolean) => {
+  setQueryParam('fullscreen', String(fullscreen))
+  if (fullscreen) {
+    document.body.classList.add('fullscreen')
+  } else {
+    document.body.classList.remove('fullscreen')
+  }
+}

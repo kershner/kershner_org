@@ -32,6 +32,8 @@ interface MusicPlayerState {
   setOptionsMenuRightAlign: React.Dispatch<SetStateAction<boolean>>
   optionsSong: Song | null
   setOptionsSong: React.Dispatch<SetStateAction<Song | null>>
+  fullscreen: boolean
+  setFullscreen: React.Dispatch<SetStateAction<boolean>>
 }
 const MusicPlayerContext = createContext({} as MusicPlayerState)
 
@@ -51,6 +53,7 @@ const MusicPlayerProvider = ({ children }: { children: React.ReactNode }) => {
   const [optionsMenuRightAlign, setOptionsMenuRightAlign] =
     useState<boolean>(false)
   const [optionsSong, setOptionsSong] = useState<Song | null>(null)
+  const [fullscreen, setFullscreen] = useState<boolean>(false)
 
   const fetchInitialData = async () => {
     fetchWrapper(songDataApiUrl, 'GET', {}, {}, (songData: Song[]) => {
@@ -82,6 +85,8 @@ const MusicPlayerProvider = ({ children }: { children: React.ReactNode }) => {
       setOptionsMenuRightAlign,
       optionsSong,
       setOptionsSong,
+      fullscreen,
+      setFullscreen,
     }),
     [
       songs,
@@ -91,6 +96,7 @@ const MusicPlayerProvider = ({ children }: { children: React.ReactNode }) => {
       hasSelectedSong,
       optionsMenuPosition,
       showOptionsMenu,
+      fullscreen,
     ],
   )
 

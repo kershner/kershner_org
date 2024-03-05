@@ -42,3 +42,17 @@ body.dark-mode {
     }
   }
 }
+
+.fullscreen {
+  .songListFilters,
+  .songList,
+  .video-btn-wrapper,
+  .footer {
+    display: none;
+  }
+  .playerControls {
+    position: fixed;
+    width: 100%;
+    left: 0;
+  }
+}

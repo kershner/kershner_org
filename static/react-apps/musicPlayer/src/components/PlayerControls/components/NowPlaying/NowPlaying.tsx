@@ -1,14 +1,26 @@
 import { SongOptionsBtn } from '../../../SongOptions/SongOptionsBtn/SongOptionsBtn'
 import { useMusicPlayerData } from '../../../../providers/musicPlayerProvider'
+import { PlayerButton } from '../../../PlayerButton/PlayerButton'
+import FullscreenIcon from '../../../../assets/fullscreen.svg'
 import './style.scss'
 
 export const NowPlaying = () => {
-  const { selectedSong } = useMusicPlayerData()
+  const { selectedSong, setFullscreen, fullscreen } = useMusicPlayerData()
+
+  const fullscreenAction = () => {
+    setFullscreen(!fullscreen)
+  }
 
   return (
     <>
       <div className="nowPlaying">
         <SongOptionsBtn />
+        <PlayerButton
+          alt={'Fullscreen'}
+          extraClassName={'fullscreenBtn'}
+          icon={FullscreenIcon}
+          callback={fullscreenAction}
+        />
 
         <div className="thumbnail">
           <img src={`${selectedSong?.thumbnailUrl}`} />

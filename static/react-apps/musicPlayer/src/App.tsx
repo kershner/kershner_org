@@ -1,6 +1,10 @@
 import { SongOptionsMenu } from './components/SongOptions/SongOptionsMenu/SongOptionsMenu'
+import {
+  applyFilter,
+  scrollSongRowIntoView,
+  applyFullscreen,
+} from '../src/utils/util'
 import { PlayerControls } from './components/PlayerControls/PlayerControls'
-import { applyFilter, scrollSongRowIntoView } from '../src/utils/util'
 import { useMusicPlayerData } from './providers/musicPlayerProvider'
 import { SongList } from './components/SongList/SongList'
 import { parseParams } from '../../utils/utils'
@@ -14,6 +18,8 @@ const App = () => {
     setSelectedSong,
     setFilteredSongs,
     setActiveFilter,
+    setFullscreen,
+    fullscreen,
   } = useMusicPlayerData()
 
   // fetch song data once on load
@@ -38,7 +44,16 @@ const App = () => {
       applyFilter(chosenSong.type, songs, setFilteredSongs, setActiveFilter)
       scrollSongRowIntoView(chosenSong.id)
     }
+
+    const fullscreenParam = Boolean(params.fullscreen)
+    if (fullscreenParam) {
+      setFullscreen(fullscreenParam)
+    }
   }, [songs])
+
+  useEffect(() => {
+    applyFullscreen(fullscreen)
+  }, [fullscreen])
 
   return (
     <>
