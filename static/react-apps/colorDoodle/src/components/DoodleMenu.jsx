@@ -1,6 +1,6 @@
 import React, { useContext } from "react"
 import { GlobalStateContext } from "./DoodleState.jsx"
-import { DoodleMenuButtonGroupTop, DoodleMenuButtonGroupBottom, ExpandMenuButton } from "./DoodleButtons.jsx"
+import { DoodleMenuButtonGroupTop, DoodleMenuButtonGroupBottom, ExpandMenuButton, CloseMenuButton } from "./DoodleButtons.jsx"
 import {
     BackgroundColorFieldset, GridControlsFieldset, ClickEffectControlsFieldset, AutoControlsFieldset, HoverEffectControlsFieldset
 } from "./DoodleFieldsets.jsx"
@@ -15,6 +15,7 @@ export function DoodleMenu() {
             <fieldset className="doodle-title">
                 <div className="fieldset-label">
                     <legend>Color grid settings</legend>
+                    <CloseMenuButton />
                 </div>
             </fieldset>
 

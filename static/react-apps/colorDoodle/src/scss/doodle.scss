@@ -46,7 +46,7 @@ body {
   border: 1px solid #FFF;
   color: #FFF;
   background: transparent;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
 
@@ -77,6 +77,12 @@ body {
   .fieldset-label {
     border-top: none !important;
     cursor: unset !important;
+    font-size: 1.1rem;
+    align-items: center;
+  }
+  .doodle-button {
+    border: none;
+    font-weight: bold;
   }
 }
 

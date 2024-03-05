@@ -24,7 +24,7 @@ export function ExpandMenuButton() {
 export function CloseMenuButton() {
     const { updateGlobalState } = useContext(GlobalStateContext);
     const buttonId = "close-menu";
-    const buttonName = "Close";
+    const buttonName = "X";
     const extraCssClass = "close-menu-btn";
 
     function handleClick(e) {
@@ -74,7 +74,7 @@ export function DefaultStateButton() {
 export function RandomSettingsButton() {
     const { updateGlobalState } = useContext(GlobalStateContext);
     const buttonId = "random-state";
-    const buttonName = "Randomize";
+    const buttonName = "Random";
 
     function handleClick(e) {
         function randomizeInputs(selector) {
@@ -135,7 +135,6 @@ export function DoodleMenuButtonGroupTop() {
         <div className="doodle-button-group menu-buttons">
             <CopyUrlButton />
             <DefaultStateButton />
-            <CloseMenuButton />
             <RandomSettingsButton />
         </div>
     )
