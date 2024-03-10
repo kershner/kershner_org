@@ -1,4 +1,5 @@
 {% extends 'portfolio/base.html' %}
+{% load kershner_tags %}
 
 {% block content %}
 <div class="welcome-wrapper">
@@ -20,7 +21,8 @@
 
 <!-- Projects -->
 <a id="projects-wrapper-anchor"></a>
-<div class="projects-wrapper"></div>
+{% include "portfolio/includes/nav.html" %}
+<div class="projects-wrapper {% if request.GET.projectStyle == "grid" %}grid{% else %}list{% endif %}"></div>
 
 <!-- More Projects Btn -->
 <div class="more-projects-btn-wrapper" title="More projects">
@@ -30,10 +32,7 @@
 
 {% block extra_javascripts %}
     <script type="text/javascript">
-        portfolio.baseS3Url = '{{ base_s3_url }}';
         portfolio.projectsPerPage = {{ projects_per_page }};
-        portfolio.currentProjectIndex = {{ projects_per_page }};
-        portfolio.moreProjectsBtn.addEventListener('click', portfolio.moreProjectsClickEvent);
         portfolio.projectsHtml = {{ projects_html|safe }};
         portfolio.scrollEvents();
     </script>

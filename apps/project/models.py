@@ -46,6 +46,22 @@ class Project(models.Model):
 
     def __str__(self):
         return 'ID: %d | %s' % (self.id, self.title)
+    
+    def serialize(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'blurb': self.blurb,
+            'extra_notes': self.extra_notes,
+            'icon': self.icon.url,
+            'image_orientation': self.image_orientation,
+            'image_1': self.image_1.url if self.image_1 else '',
+            'image_2': self.image_2.url if self.image_2 else '',
+            'image_3': self.image_3.url if self.image_3 else '',
+            'drop_shadow': self.drop_shadow,
+            'site_url': self.site_url,
+            'position': self.position
+        }
 
     @property
     def project_technologies(self):

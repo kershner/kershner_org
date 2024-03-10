@@ -110,3 +110,24 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+function setQueryParam(key, value) {
+    const currentURL = new URL(window.location.href);
+    currentURL.searchParams.set(key, value);
+    window.history.replaceState({}, '', currentURL.toString());
+}
+  
+function updateLinksWithQueryParams() {
+    const currentUrl = window.location.href;
+    const urlObject = new URL(currentUrl);
+    const queryParams = new URLSearchParams(urlObject.search);
+
+    // Update footer link hrefs
+    document.querySelectorAll('.preserve-params').forEach((el) => {
+        const anchorElement = el;
+        const href = anchorElement.href;
+        const urlObject = new URL(href);
+        const hrefWithOutQueryParams = urlObject.origin + urlObject.pathname;
+        anchorElement.href = `${hrefWithOutQueryParams}?${queryParams.toString()}`;
+    });
+}

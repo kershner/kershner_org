@@ -138,7 +138,7 @@ FILE_UPLOAD_HANDLERS = ['django.core.files.uploadhandler.TemporaryFileUploadHand
 BASE_CLOUDFRONT_URL = f'https://{CLOUDFRONT_DOMAIN}/{AWS_LOCATION}/'
 
 # Misc site stuff
-PROJECTS_PER_PAGE = 3
+PROJECTS_PER_PAGE = 100
 FILE_UPLOAD_LIMIT_MB = 20
 EC2_IPS = PARAMETERS['ec2_ips'].split(',')
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

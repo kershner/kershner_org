@@ -1,0 +1,47 @@
+<div class="sticky-nav">
+    <div class="sticky-nav-inner">
+        <div class="sticky-nav-title color-wave" title="Home">
+            kershner.org
+        </div>
+
+        <div class="sticky-nav-controls">
+            <div class="sticky-nav-control sticky-search">
+                <input id="projectSearch" name="projectSearch" type="text" title="Filter projects" placeholder="Filter projects..."></input>
+                <button title="Clear filters" class="clearFiltersBtn hidden">X</button>
+                <ul class="suggestions hidden">
+                    {% for tech in technologies %}
+                        <li tabindex="0">{{tech}}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="sticky-nav-control">
+                <fieldset class="radio">
+                    <div class="radioButton" title="List view">
+                        <input type="radio" id="projectList" name="projectStyle" value="list" {% if request.GET.projectStyle == "list" or request.GET.projectStyle != "grid" %}checked{% endif %} />
+                        <span class="projectStyleIndicator"></span>
+                        <label for="projectList">
+                        <svg fill="#000000" width="256px" height="256px" viewBox="0 0 540 540" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M48 48a48 48 0 1 0 48 48 48 48 0 0 0-48-48zm0 160a48 48 0 1 0 48 48 48 48 0 0 0-48-48zm0 160a48 48 0 1 0 48 48 48 48 0 0 0-48-48zm448 16H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16zm0-320H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16V80a16 16 0 0 0-16-16zm0 160H176a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16z"/>
+                        </svg>
+                        </label>
+                    </div>
+
+                    <div class="radioButton" title="Grid view">
+                        <input type="radio" id="projectGrid" name="projectStyle" value="grid" {% if request.GET.projectStyle == "grid" %}checked{% endif %} />
+                        <span class="projectStyleIndicator"></span>
+                        <label for="projectGrid">
+                            <?xml version="1.0" encoding="utf-8"?>
+                            <svg fill="#000000" width="800px" height="800px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3.5 3.5H10.5V10.5H3.5V3.5Z"/>
+                                <path d="M3.5 13.5H10.5V20.5H3.5V13.5Z"/>
+                                <path d="M13.5 3.5H20.5V10.5H13.5V3.5Z"/>
+                                <path d="M13.5 13.5H20.5V20.5H13.5V13.5Z"/>
+                            </svg>
+                        </label>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+</div>

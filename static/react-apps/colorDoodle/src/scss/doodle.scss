@@ -8,7 +8,6 @@ body {
     .expand-menu-btn {
       background: $black !important;
       color: #FFF !important;
-      border-color: #FFF !important;
     }
   }
 }
@@ -17,10 +16,11 @@ body {
   position: fixed;
   z-index: 3;
   right: 1.5rem;
-  top: 1.5rem;
+  top: 0.6rem;
   background: #FFF !important;
   color: $black !important;
-  border: 1px solid $black !important;
+  border: 0.15rem solid var(--dynamic-color) !important;
+  transition: border-color 0.25s;
 }
 
 #color-grid {
