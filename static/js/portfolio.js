@@ -91,11 +91,14 @@ portfolio.projectFilter = function() {
 
 portfolio.searchSuggestions = function() {
     const suggestionFocusHandler = (e) => {
-        addOrRemoveFilterTerm(e.target.textContent);
+        if (e.type === 'click' || (e.type === 'keydown' && e.key === ' ')) {
+            addOrRemoveFilterTerm(e.target.textContent);
+        }
     }
 
     portfolio.suggestionsDiv.querySelectorAll('li').forEach((li) => {
         li.addEventListener('click', suggestionFocusHandler);
+        li.addEventListener('keydown', suggestionFocusHandler);
     });
 }
 

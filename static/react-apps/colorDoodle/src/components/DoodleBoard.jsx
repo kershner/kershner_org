@@ -60,6 +60,7 @@ function DoodleSquare(props) {
 
     return (
         <button style={divStyle}
+                tabIndex="-1"
                 className="doodle-square"
                 onMouseEnter={handleMouseEnter}
                 onMouseDown={handleMouseDown}
