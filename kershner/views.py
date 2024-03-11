@@ -1,11 +1,9 @@
-from apps.project.models import Project, ProjectTechnology
+from apps.project.models import Project, ProjectTag
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.shortcuts import render
 from apps.song.models import Song
 from django.conf import settings
-import time
-import json
 
 
 
@@ -16,14 +14,15 @@ def home(request):
         for project in projects
     ]
 
-    technologies = list(ProjectTechnology.objects.values_list('title', flat=True).distinct())
+    tags = list(ProjectTag.objects.values_list('name', flat=True).order_by('name').distinct())
+
     if 'theme' not in request.session:
         request.session['theme'] = 'dark-mode'
 
     template_vars = {
         'projects_per_page': settings.PROJECTS_PER_PAGE,
         'projects_html': projects_html,
-        'technologies': technologies
+        'tags': tags
     }
     return render(request, 'portfolio/home.html', template_vars)
 

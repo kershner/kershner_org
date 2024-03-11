@@ -9,8 +9,8 @@
                 <input id="projectSearch" name="projectSearch" type="text" title="Filter projects" placeholder="Filter projects..."></input>
                 <button title="Clear filters" class="clearFiltersBtn hidden">X</button>
                 <ul class="suggestions hidden">
-                    {% for tech in technologies %}
-                        <li tabindex="0">{{tech}}</li>
+                    {% for tag in tags %}
+                        <li tabindex="0">{{tag}}</li>
                     {% endfor %}
                 </ul>
             </div>

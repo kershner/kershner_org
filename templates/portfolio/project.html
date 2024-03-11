@@ -1,6 +1,6 @@
 {% load kershner_tags %}
 
-<div id="{% if project.position == 0 %}first-project{% endif %}" class="project-wrapper {{ project.image_orientation }}" data-position="{{ project.position }}">
+<div class="project-wrapper {{ project.image_orientation }}" data-position="{{ project.position }}">
     <div class="left-content">
         <div class="project-icon">
             <img src="{% settings_value "BASE_S3_URL" %}/{{ project.icon }}" alt="{{ project.title }} project icon">
@@ -12,8 +12,10 @@
         <hr align="left" class="dynamic-color">
     
         <div class="project-info">
-            <div class="project-technologies">
-                {% for tech in project.project_technologies %}
+            <div class="project-info-section">
+                <div class="project-info-section-title">Code</div>
+                <div class="project-info-section-tags">
+                    {% for tech in project.project_technologies %}
                     {% if tech.link %}
                     <a href="{{ tech.link }}" title="View the {{ tech.title }} code" target="_blank">
                         <div class="tech-tag">{{ tech.title }} {% include 'portfolio/includes/external_link_icon.html' %}</div>
@@ -21,7 +23,17 @@
                     {% else %}
                         <div class="tech-tag">{{ tech.title }}</div>
                     {% endif %}
-                {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="project-info-section">
+                <div class="project-info-section-title">Tags</div>
+                <div class="project-info-section-tags project-tags">
+                    {% for tag in project.tags.all %}
+                    <div class="tech-tag">{{ tag }}</div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
         

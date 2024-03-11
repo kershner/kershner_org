@@ -14,7 +14,8 @@ let portfolio = {
     'suggestionsDiv'        : document.querySelector('.suggestions'),
     'clearFiltersBtn'       : document.querySelector('.clearFiltersBtn'),
     'currentColor'          : '',
-    'debouceTimeout'        : undefined
+    'debouceTimeout'        : undefined,
+    'currentFilterTerms'    : []
 };
 
 portfolio.init = function() {
@@ -39,14 +40,19 @@ portfolio.addProjectHtml = function () {
     portfolio.projectsWrapper.offsetHeight;
     portfolio.projectsWrapper.style.transition = 'opacity 0.2s ease-in-out';
     portfolio.projectsWrapper.style.opacity = 1;
+    
+    updateTechTagClasses();
+    projectTagClickEvents();
+    colorWave.init();
+
     setTimeout(() => {
         portfolio.projectsWrapper.style.transition = '';
     }, 200);
 }
 
 portfolio.projectFilter = function() {
-    portfolio.projectSearch.addEventListener('input', inputHandler);
-    portfolio.projectSearch.addEventListener('change', inputHandler);
+    portfolio.projectSearch.addEventListener('input', searchFilterInputHandler);
+    portfolio.projectSearch.addEventListener('change', searchFilterInputHandler);
 
     portfolio.projectSearch.addEventListener('focus', (e) => {
         portfolio.projectSearch.classList.add('suggestions-active');
@@ -76,6 +82,7 @@ portfolio.projectFilter = function() {
 
     portfolio.clearFiltersBtn.addEventListener('click', (e) => {
         portfolio.projectSearch.value = '';
+        portfolio.currentFilterTerms = [];
         portfolio.filteredProjects = portfolio.projectsHtml;
         portfolio.addProjectHtml();
     });
@@ -83,13 +90,11 @@ portfolio.projectFilter = function() {
 
 portfolio.searchSuggestions = function() {
     const suggestionFocusHandler = (e) => {
-        portfolio.projectSearch.value = e.target.textContent;
-        portfolio.projectSearch.dispatchEvent(new Event('input'));
+        addOrRemoveFilterTerm(e.target.textContent);
     }
 
     portfolio.suggestionsDiv.querySelectorAll('li').forEach((li) => {
         li.addEventListener('click', suggestionFocusHandler);
-        li.addEventListener('focus', suggestionFocusHandler);
     });
 }
 
@@ -163,20 +168,91 @@ const showHideSuggestions = (action) => {
     }
 }
 
-const inputHandler = (e) => {
+const searchFilterInputHandler = (e) => {
     clearTimeout(portfolio.debouceTimeout);
-    portfolio.debouceTimeout = setTimeout(() => {
-        const searchValue = e.target.value;
-        if (searchValue) {
-            portfolio.clearFiltersBtn.classList.remove('hidden');
-        } else {
-            portfolio.clearFiltersBtn.classList.add('hidden');
-        }
 
-        if (searchValue.length > 2) {
-            portfolio.filteredProjects = portfolio.projectsHtml.filter(htmlString => htmlString.includes(searchValue));
-            portfolio.addProjectHtml();
-            document.getElementById('projects-wrapper-anchor').scrollIntoView({block: 'start'});
+    portfolio.debouceTimeout = setTimeout(() => {
+        const searchValue = e.target.value.split(',').map(term => term.trim()).filter(Boolean);
+        const { clearFiltersBtn, projectsHtml, addProjectHtml } = portfolio;
+
+        clearFiltersBtn.classList.toggle('hidden', !searchValue.length);
+
+        portfolio.currentFilterTerms = searchValue;
+        let filteredHtmlEntries;
+        const selectors = ['.project-tags', '.project-blurb', '.project-title'];
+
+        filteredHtmlEntries = searchValue.flatMap(term => {
+            return filterHtmlEntries(projectsHtml, term, selectors, true);
+        });
+
+        const htmlSet = new Set(filteredHtmlEntries);
+        const uniqueHtmlArray = [...htmlSet];
+
+        if (!uniqueHtmlArray.length && searchValue.length) {
+            portfolio.projectsWrapper.innerHTML = `<div class='no-projects-found'>No projects matching filter values: <span>${searchValue.join(', ')}</span></div>`;
+        } else if (!areArraysEqual(filteredHtmlEntries, portfolio.filteredProjects)) {
+            portfolio.filteredProjects = uniqueHtmlArray.length ? uniqueHtmlArray : portfolio.projectsHtml;
+            addProjectHtml();
+            document.getElementById('projects-wrapper-anchor').scrollIntoView({ block: 'start' });
         }
     }, 300);
 }
+
+const filterHtmlEntries = (htmlList, substring, selectors, strict = false) => {
+    const targetTextMatcher = strict
+        ? new RegExp(`\\b${substring}\\b`, 'i')
+        : new RegExp(substring, 'i');
+
+    return htmlList
+        .filter(htmlString => {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlString;
+
+            return selectors.some(selector => {
+                const targetElement = tempDiv.querySelector(selector);
+                const targetText = targetElement ? targetElement.textContent.toLowerCase() : '';
+                return targetTextMatcher.test(targetText);
+            });
+        })
+        .map(filteredHtml => {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = filteredHtml;
+            return tempDiv.innerHTML;
+        });
+}
+
+const updateTechTagClasses = () => {
+    const techTags = document.querySelectorAll('.tech-tag');    
+    techTags.forEach(tag => {
+        const tagText = tag.textContent.toLowerCase();
+        const shouldApplyClass = portfolio.currentFilterTerms.length && portfolio.currentFilterTerms.some(substring =>
+            tagText.includes(substring.toLowerCase())
+        );
+
+        if (shouldApplyClass) {
+            tag.classList.add('dynamic-color');
+        } else {
+            tag.classList.remove('dynamic-color');
+        }
+    });
+}
+
+const projectTagClickEvents = () => {
+    document.querySelectorAll('.project-tags .tech-tag').forEach((tag) => {
+        tag.addEventListener('click', (e) => {
+            addOrRemoveFilterTerm(e.target.textContent);
+        });
+    });
+}
+
+const addOrRemoveFilterTerm = (text) => {
+    const index = portfolio.currentFilterTerms.indexOf(text);
+    if (index !== -1) {
+        portfolio.currentFilterTerms.splice(index, 1);
+    } else {
+        portfolio.currentFilterTerms.push(text);
+    }
+
+    portfolio.projectSearch.value = portfolio.currentFilterTerms;
+    portfolio.projectSearch.dispatchEvent(new Event('input'));
+} 

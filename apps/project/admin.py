@@ -1,6 +1,15 @@
-from apps.project.models import Project, ProjectTechnology
+from apps.project.models import Project, ProjectTechnology, ProjectTag
 from django.template.loader import render_to_string
 from django.contrib import admin
+from django import forms
+
+
+class ProjectTagInline(admin.TabularInline):
+    autocomplete_fields = ['projecttag']
+    model = Project.tags.through
+    extra = 1
+    verbose_name = 'Tag'
+    verbose_name_plural = 'Tags'
 
 
 class ProjectTechnologyInline(admin.TabularInline):
@@ -11,9 +20,11 @@ class ProjectTechnologyInline(admin.TabularInline):
     verbose_name_plural = 'Project Technologies'
 
 
+@admin.register(ProjectTag)
+class ProjectTagAdmin(admin.ModelAdmin):
+     search_fields = ['name']
 
-# Admin config for this model
-# https://docs.djangoproject.com/en/4.1/ref/contrib/admin/#django.contrib.admin.ModelAdmin
+
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('title', 'id', 'created_at', 'position', 'change_position')
@@ -22,7 +33,8 @@ class ProjectAdmin(admin.ModelAdmin):
     show_full_result_count = True
     readonly_fields = ['position']
     ordering  = ('position',)
-    inlines = [ProjectTechnologyInline]
+    exclude = ('tags',) 
+    inlines = [ProjectTechnologyInline, ProjectTagInline]
 
     @staticmethod
     def change_position(obj):

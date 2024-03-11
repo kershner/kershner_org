@@ -10,6 +10,18 @@ $lighter-black: lighten($black, 78%)
 
 $portfolio-text-shadow: 1px 0.5px 3.5px $light-black
 
+$default-animation-speed: 0.2s
+
+%tag-style
+  margin-right: .25rem
+  margin-top: .25rem
+  padding: .4rem .75rem
+  border-radius: 0.9rem
+  font-size: 0.8rem
+  line-height: 0.8rem
+  color: $light-black
+  background-color: $lighter-black
+
 %dynamic-border-bottom
   content: ""
   position: absolute
@@ -19,7 +31,12 @@ $portfolio-text-shadow: 1px 0.5px 3.5px $light-black
   right: 0
   background-color: var(--dynamic-color)
   border-radius: 0.3rem
-  transition: background-color 0.2s
+  transition: background-color $default-animation-speed
+
+.dynamic-color
+  background: var(--dynamic-color) !important
+  text-shadow: $portfolio-text-shadow !important
+  color: $white !important
 
 .sticky-nav
   position: relative
@@ -136,7 +153,7 @@ $portfolio-text-shadow: 1px 0.5px 3.5px $light-black
               bottom: -0.2rem
               border-radius: 0.15rem
               opacity: 0
-              transition: background 0.2s
+              transition: background $default-animation-speed
 
             input[type="radio"]:checked + .projectStyleIndicator 
               opacity: 1
@@ -158,7 +175,7 @@ body
   color: $purple
 
 a
-  +animate(0.2s)
+  +animate($default-animation-speed)
   color: $purple
 
   &:hover
@@ -207,7 +224,7 @@ a
     height: 0.5rem
 
   span
-    transition: color 0.2s, border 0.2s
+    transition: color $default-animation-speed, border $default-animation-speed
 
 // Welcome section
 .welcome-wrapper
@@ -284,6 +301,16 @@ a
           height: 100%
           object-fit: cover
 
+.no-projects-found
+  position: relative
+  z-index: 1
+  font-size: 1.3rem
+
+  span
+    display: block
+    color: var(--dynamic-color)
+    transition: color $default-animation-speed
+
 .project-wrapper
   display: flex
   flex-direction: row
@@ -340,30 +367,33 @@ a
       .project-info-value
         display: inline-block
 
-      .project-technologies
+      .project-info-section
         z-index: 1
         position: relative
         display: flex
+        flex-direction: column
         flex-wrap: wrap
         margin-top: 0.5rem
 
-        .tech-tag
-          margin-right: .25rem
-          margin-top: .25rem
-          padding: .4rem .75rem
-          border-radius: 0.9rem
-          font-size: 0.8rem
-          line-height: 0.8rem
-          color: $light-black
-          background-color: $lighter-black
+        .project-info-section-title
+          font-size: 0.9rem
+          padding-left: 0.25rem
 
-          svg
-            float: right
-            width: 0.9rem
-            margin-left: 0.1rem
+        .project-info-section-tags
+          display: flex
+          flex-wrap: wrap
+          
+          .tech-tag
+            @extend %tag-style
 
-        a .tech-tag
-          @include hover-state
+            svg
+              float: right
+              width: 0.9rem
+              margin-left: 0.1rem
+          
+          a .tech-tag,
+          &.project-tags .tech-tag
+            @include hover-state
 
     a
       text-decoration: none
@@ -384,7 +414,7 @@ a
     div
       display: inline-block
       margin: .5em
-      +animate(0.2s)
+      +animate($default-animation-speed)
       pointer-events: auto
 
       &:first-child,
@@ -560,9 +590,9 @@ body.dark-mode
   .footer a
     color: $white !important
 
-  .tech-tag
-    background-color: $light-black !important
-    color: $white !important
+  .project-wrapper .left-content .project-info .project-info-section .project-info-section-tags .tech-tag
+    background-color: $light-black
+    color: $white
 
   .player-wrapper
     text-shadow: $portfolio-text-shadow
