@@ -1,4 +1,5 @@
 let portfolio = {
+    'initialLoad'           : true,
     'projectsPerPage'       : 0,
     'projectsHtml'          : [],
     'filteredProjects'      : [],
@@ -29,7 +30,6 @@ portfolio.init = function() {
     });
 
     portfolio.filteredProjects = portfolio.projectsHtml;
-    portfolio.addProjectHtml();
 };
 
 portfolio.addProjectHtml = function () {
@@ -38,11 +38,12 @@ portfolio.addProjectHtml = function () {
 
     portfolio.projectsWrapper.style.opacity = 0;
     portfolio.projectsWrapper.offsetHeight;
-    portfolio.projectsWrapper.style.transition = 'opacity 0.2s ease-in-out';
+    portfolio.projectsWrapper.style.transition = 'opacity 0.1s ease-in-out';
     portfolio.projectsWrapper.style.opacity = 1;
     
     updateTechTagClasses();
     projectTagClickEvents();
+    
     colorWave.init();
 
     setTimeout(() => {
@@ -114,9 +115,18 @@ portfolio.scrollEvents = function() {
     portfolio.footer.classList.add('fixed');
     updateFooterOnScroll();
     const originalOffset = portfolio.stickyNav.offsetTop + portfolio.stickyNav.offsetHeight;
+    if (portfolio.initialLoad &&  window.scrollY > 0) {
+        portfolio.filteredProjects = portfolio.projectsHtml;
+        portfolio.initialLoad = false;
+        portfolio.addProjectHtml();
+    }
 
     window.addEventListener('scroll', function(e) {
         const scrollPosition = window.scrollY;
+        if (portfolio.initialLoad) {
+            portfolio.initialLoad = false;
+            portfolio.addProjectHtml();
+        }
         updateFooterOnScroll();
         if (scrollPosition >= originalOffset) {
             portfolio.stickyNav.classList.add('fixed');

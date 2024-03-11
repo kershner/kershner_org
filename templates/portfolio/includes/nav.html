@@ -10,7 +10,7 @@
                 <button title="Clear filters" class="clearFiltersBtn hidden">X</button>
                 <ul class="suggestions hidden">
                     {% for tag in tags %}
-                        <li tabindex="0">{{tag}}</li>
+                        <li title="Filter by {{ tag }}" tabindex="0">{{tag}}</li>
                     {% endfor %}
                 </ul>
             </div>
