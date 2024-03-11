@@ -86,15 +86,15 @@
         <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/colorWave.js"></script>
         <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/portfolio.js"></script>
         {% block javascripts %}
-        <script type="text/javascript">
-            if (document.readyState === 'complete') {
-                portfolio.init();
-            } else {
-                document.addEventListener('DOMContentLoaded', portfolio.init);
-            }
-        </script>
+            {% block extra_javascripts %}{% endblock %}
 
-        {% block extra_javascripts %}{% endblock %}
+            <script type="text/javascript">
+                if (document.readyState === 'complete') {
+                    portfolio.init();
+                } else {
+                    document.addEventListener('DOMContentLoaded', portfolio.init);
+                }
+            </script>
         {% endblock %}
 
         {% include 'portfolio/includes/google_analytics_tag.html' %}

@@ -35,5 +35,13 @@
         portfolio.projectsPerPage = {{ projects_per_page }};
         portfolio.projectsHtml = {{ projects_html|safe }};
         portfolio.scrollEvents();
+        portfolio.projectStyleToggles();
+        portfolio.projectFilter();
+        portfolio.searchSuggestions();
+        portfolio.stickyNav.querySelector('.sticky-nav-title').addEventListener('click', (e) => {
+            window.scrollTo(0, 0);
+        });
+
+        portfolio.filteredProjects = portfolio.projectsHtml;
     </script>
 {% endblock %}

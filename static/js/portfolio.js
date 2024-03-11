@@ -22,14 +22,6 @@ let portfolio = {
 portfolio.init = function() {
     portfolio.currentColor = randomColor({luminosity: 'light'});
     portfolio.rotateColors();
-    portfolio.projectStyleToggles();
-    portfolio.projectFilter();
-    portfolio.searchSuggestions();
-    portfolio.stickyNav.querySelector('.sticky-nav-title').addEventListener('click', (e) => {
-        window.scrollTo(0, 0);
-    });
-
-    portfolio.filteredProjects = portfolio.projectsHtml;
 };
 
 portfolio.addProjectHtml = function () {
