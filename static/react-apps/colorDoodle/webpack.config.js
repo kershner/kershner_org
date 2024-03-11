@@ -11,7 +11,7 @@ const publicUrl  = "https://djfdm802jwooz.cloudfront.net/static/react-apps/color
 
 module.exports = {
     entry: {
-        bundle: [`${baseDir}App.jsx`, `${baseDir}/scss/doodle.scss`]
+        colorDoodle: [`${baseDir}App.jsx`, `${baseDir}/scss/doodle.scss`]
     },
     output: {
         path: path.resolve(__dirname, "./color_doodle_dist")
