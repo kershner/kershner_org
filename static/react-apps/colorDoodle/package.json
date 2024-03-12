@@ -1,8 +1,8 @@
 {
-  "name": "react-frontend",
+  "name": "color-doodle",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "colorDoodle.js",
   "scripts": {
     "build": "webpack --mode=production",
     "build-dev": "webpack --mode=development"
@@ -25,7 +25,8 @@
     "react-dom": "^18.2.0",
     "sass": "^1.62.0",
     "sass-loader": "^13.2.2",
-    "webpack": "^5.80.0"
+    "webpack": "^5.80.0",
+    "webpack-bundle-analyzer": "^4.10.1"
   },
   "dependencies": {
     "webpack-cli": "^5.0.2"

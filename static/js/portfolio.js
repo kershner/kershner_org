@@ -36,10 +36,9 @@ portfolio.addProjectHtml = function () {
     updateTechTagClasses();
     projectTagClickEvents();
     
-    colorWave.init();
-
     setTimeout(() => {
         portfolio.projectsWrapper.style.transition = '';
+        colorWave.init();
     }, 200);
 }
 

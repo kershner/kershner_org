@@ -4,6 +4,7 @@ const path = require('path');
 const baseDir = "./src/";
 const BrotliPlugin = require('brotli-webpack-plugin');
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 
 // const publicUrl = "/static/react-apps/colorDoodle/color_doodle_dist";  // dev
@@ -49,6 +50,7 @@ module.exports = {
         new CleanWebpackPlugin({
             cleanAfterEveryBuildPatterns: ["static*.*", "!static1.js"],
             verbose: true
-        })
+        }),
+        // new BundleAnalyzerPlugin()
     ]
 };
