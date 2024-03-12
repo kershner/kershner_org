@@ -3,6 +3,38 @@ import { GlobalStateContext, effectTypes, luminosityOptions } from "./DoodleStat
 import { getNewGridNumCells, addOrUpdateQueryParam, updateBackgroundColor } from "../utils/util"
 import DoodleInput from "./DoodleInputs.jsx"
 
+export function GridBrightnessControl(props) {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const label = "Grid brightness";
+    const controlName = "gridBrightness";
+
+    function handleChange(e) {
+        updateGlobalState(controlName, e.target.value);
+    }
+
+    function handleMouseUp(e) {
+        updateGlobalState(controlName, e.target.value, (newState) => {
+            addOrUpdateQueryParam(controlName, newState[controlName]);
+        });
+    }
+
+    function handleTouchEnd(e) {
+        updateGlobalState(props.stateValue, e.target.value, (newState) => {
+            addOrUpdateQueryParam(controlName, newState[controlName]);
+        });
+    }
+
+    return <DoodleInput inputType="range"
+                        name={controlName}
+                        label={label}
+                        step="0.1"
+                        max="1"
+                        min="0.1"
+                        handleChange={handleChange}
+                        handleMouseUp={handleMouseUp}
+                        handleTouchEnd={handleTouchEnd}
+                        value={globalState[controlName]}/>;
+}
 
 // Generic animation controls helpers
 export function AnimationEasingControl(props) {

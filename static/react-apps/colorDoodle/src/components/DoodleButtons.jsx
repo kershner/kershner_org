@@ -80,6 +80,7 @@ export function RandomSettingsButton() {
         function randomizeInputs(selector) {
             const container = document.querySelector(selector);
             const randomizedValues = {};
+            const exclude = ['gridBrightness', 'backgroundColor'];
           
             const randomizeInput = (input) => {
               const inputType = input.type.toLowerCase();
@@ -107,9 +108,17 @@ export function RandomSettingsButton() {
                   break;
               }
             };
-          
+            
+            exclude.forEach(key => {
+                delete randomizedValues[key];
+            });
+
             const inputs = container.querySelectorAll('input, select');
-            inputs.forEach((input) => randomizeInput(input));
+            inputs.forEach((input) => {
+                if (!exclude.includes(input.name)) {
+                  randomizeInput(input);
+                }
+            });
             return randomizedValues;
         }
           

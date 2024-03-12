@@ -27,14 +27,13 @@
     </head>
 
     <body class="{% if request.GET.backgroundColor != "light" %}dark-mode{% endif %}">
-        <!-- color grid react component -->
-        <div id="color-grid"></div>
-
         <!-- Content-->
         <div id="page-wrapper">
             {% block content %}{% endblock %}
         </div>
 
+        <!-- color grid react component -->
+        <div id="color-grid"></div>
     <!-- Footer -->
     {% block footer %}
         <div class="footer">

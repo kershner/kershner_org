@@ -2,11 +2,10 @@ import React, { useContext, useEffect } from "react"
 import { GlobalStateContext } from "./DoodleState.jsx"
 import {
     CellSizeControl, BorderStyleControl, BorderWidthControl, BorderColorControl, AutoDoodleControl,
-    AutoDoodleModeControls, AutoDoodleIntervalControl, ColorFadeControl, AutoDoodleAnimationControls,
-    LuminosityControl, BackgroundColorControl, ClickEffectEnabledControl, AnimationEasingControl,
-    ClickEffectModeControl, ClickEffectAnimationControls, HoverEffectEnabledControl, HoverEffectRadiusControl,
-    HoverEffectAnimationControls, AutoDoodleRandomControl, AutoDoodleColorControls, ClickEffectColorControls,
-    HoverEffectColorControls
+    AutoDoodleModeControls, AutoDoodleIntervalControl, AutoDoodleAnimationControls,
+    BackgroundColorControl, ClickEffectEnabledControl, ClickEffectModeControl, ClickEffectAnimationControls, HoverEffectEnabledControl, HoverEffectRadiusControl,
+    HoverEffectAnimationControls, AutoDoodleColorControls, ClickEffectColorControls,
+    HoverEffectColorControls, GridBrightnessControl
 } from "./DoodleControls.jsx"
 
 
@@ -28,6 +27,15 @@ function CollapsibleFieldsetHeader(props) {
             <legend>{props.name}</legend>
             <span>{globalState[props.stateValue] ? "▲" : "▼"}</span>
         </div>
+    )
+}
+
+export function GridBrightnessFieldset() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    return (
+        <fieldset className="expanded">
+            <GridBrightnessControl />
+        </fieldset>
     )
 }
 

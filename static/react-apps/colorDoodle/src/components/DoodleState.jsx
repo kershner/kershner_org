@@ -50,6 +50,7 @@ export let defaultState = {
     hoverLum: "light",
     hoverOn: true,
     mouseDown: false,
+    gridBrightness: 1.0,
     // Menu States
     menuOpen: true,
     autoOpen: true,

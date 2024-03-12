@@ -99,8 +99,10 @@ function DoodleSquares() {
 }
 
 export default function DoodleBoard() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+
     return (
-        <div className="doodle-board">
+        <div className="doodle-board" style={{ filter: `brightness(${globalState.gridBrightness})` }}>
             <ViewportResize />
             <DoodleSquares />
         </div>
