@@ -58,6 +58,10 @@ function DoodleSquare(props) {
         handleMouseUp(e);
     }
 
+    function handleRightClick(e) {
+        e.preventDefault();
+    };
+
     return (
         <button style={divStyle}
                 tabIndex="-1"
@@ -67,6 +71,7 @@ function DoodleSquare(props) {
                 onMouseUp={handleMouseUp}
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
+                onContextMenu={handleRightClick}
             {...props.dataAttrs} >
         </button>
     );

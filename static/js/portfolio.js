@@ -27,17 +27,11 @@ portfolio.init = function() {
 portfolio.addProjectHtml = function () {
     const combinedProjectsHtml = portfolio.filteredProjects.map(html => html).join('');
     portfolio.projectsWrapper.innerHTML = combinedProjectsHtml;
-
-    portfolio.projectsWrapper.style.opacity = 0;
-    portfolio.projectsWrapper.offsetHeight;
-    portfolio.projectsWrapper.style.transition = 'opacity 0.1s ease-in-out';
-    portfolio.projectsWrapper.style.opacity = 1;
     
     updateTechTagClasses();
     projectTagClickEvents();
     
     setTimeout(() => {
-        portfolio.projectsWrapper.style.transition = '';
         colorWave.init();
     }, 200);
 }
@@ -244,6 +238,7 @@ const updateTechTagClasses = () => {
 const projectTagClickEvents = () => {
     document.querySelectorAll('.project-tags .tech-tag').forEach((tag) => {
         tag.addEventListener('click', (e) => {
+            e.target.classList.toggle('dynamic-color');
             addOrRemoveFilterTerm(e.target.textContent);
         });
     });
