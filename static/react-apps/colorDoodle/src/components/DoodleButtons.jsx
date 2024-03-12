@@ -3,6 +3,7 @@ import { GlobalStateContext, defaultState } from "./DoodleState.jsx"
 import { DoodleButton, GithubButton } from "./DoodleInputs.jsx"
 import { getNewGridNumCells, removeQueryParams, updateLinksWithQueryParams } from "../utils/util"
 import { copyToClipboard, addOrUpdateQueryParam } from '../utils/util.js'
+import { colorAllSquares } from '../utils/animationHelper.js'
 
 
 export function ExpandMenuButton() {
@@ -123,7 +124,14 @@ export function RandomSettingsButton() {
         }
           
         const randomizedValues = randomizeInputs('.doodle-controls');
-          
+
+        // Open all the menus
+        randomizedValues['autoOpen'] = true;
+        randomizedValues['clickOpen'] = true;
+        randomizedValues['hoverOpen'] = true;
+        randomizedValues['colorOpen'] = true;
+        randomizedValues['gridOpen'] = true;
+        
         Object.keys(randomizedValues).forEach(key => {
             updateGlobalState(key, randomizedValues[key]);
             addOrUpdateQueryParam(key, randomizedValues[key]);
@@ -132,6 +140,24 @@ export function RandomSettingsButton() {
         setTimeout(_ => {
             updateGlobalState("numSquares", getNewGridNumCells());
         }, 100);
+    }
+
+    return <DoodleButton id={buttonId}
+                         value={buttonName}
+                         onClick={handleClick} />;
+}
+
+export function ClearBoardButton() {
+    const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const buttonId = "clear-board";
+    const buttonName = "Clear";
+
+    function handleClick(e) {
+        const params = {
+            'state': globalState,
+            'chosenColor': 'red'
+        }
+        colorAllSquares(params);
     }
 
     return <DoodleButton id={buttonId}

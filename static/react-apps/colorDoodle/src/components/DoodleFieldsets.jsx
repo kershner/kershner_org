@@ -7,6 +7,7 @@ import {
     HoverEffectAnimationControls, AutoDoodleColorControls, ClickEffectColorControls,
     HoverEffectColorControls, GridBrightnessControl
 } from "./DoodleControls.jsx"
+import { ClearBoardButton } from "./DoodleButtons.jsx";
 
 
 function CollapsibleFieldsetHeader(props) {
@@ -32,8 +33,12 @@ function CollapsibleFieldsetHeader(props) {
 
 export function GridBrightnessFieldset() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
+    const customStyles = {
+        paddingRight: '0.5rem',
+        paddingLeft: '0.75rem',
+    }
     return (
-        <fieldset className="expanded">
+        <fieldset className="expanded" style={customStyles}>
             <GridBrightnessControl />
         </fieldset>
     )
@@ -41,11 +46,17 @@ export function GridBrightnessFieldset() {
 
 export function BackgroundColorFieldset() {
     const { globalState, updateGlobalState } = useContext(GlobalStateContext);
-    const toggleStateValue = "clickOpen";
+    const customFieldsetStyles = {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        paddingRight: '0.5rem'
+    }
 
     return (
-        <fieldset className="expanded">
+        <fieldset className="expanded" style={customFieldsetStyles}>
             <BackgroundColorControl />
+            <ClearBoardButton />
         </fieldset>
     )
 }

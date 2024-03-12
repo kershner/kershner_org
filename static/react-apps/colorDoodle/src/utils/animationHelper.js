@@ -36,6 +36,18 @@ export function colorSquare(params) {
     }
 }
 
+export function colorAllSquares(params) {
+    const allSquares = document.querySelectorAll('.doodle-square');
+    allSquares.forEach(square => {
+        const colorSquareParams = {
+            "state": params.state,
+            "square": square,
+            "chosenColor": 'unset'
+        };
+        colorSquare({...defaultColorSquareParams, ...colorSquareParams});
+    });
+}
+
 export function colorSquaresInSequence(params) {
     let timeOffset = 0;  // ms
     let timeOffsetDelay = 100;
