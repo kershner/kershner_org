@@ -53,19 +53,19 @@
     
     <div class="right-content {% if project.drop_shadow %}drop-shadow{% endif %}">
         <div class="project-img-1 {% if not project.image_1 %}hidden{% endif %}">
-            <a href="{% settings_value "BASE_S3_URL" %}/{{ project.image_1 }}" target="_blank" title="{{ project.title }} first project image">
+            <a href="{{ project.site_url }}" target="_blank" title="{{ project.title }} first project image">
                 <img src="{% settings_value "BASE_S3_URL" %}/{{ project.image_1 }}" alt="{{ project.title }} first project image" loading="lazy">
             </a>
         </div>
 
         <div class="project-img-2 {% if not project.image_2 %}hidden{% endif %}">
-            <a href="{% settings_value "BASE_S3_URL" %}/{{ project.image_2 }}" target="_blank" title="{{ project.title }} second project image">
+            <a href="{{ project.site_url }}" target="_blank" title="{{ project.title }} second project image">
                 <img src="{% settings_value "BASE_S3_URL" %}/{{ project.image_2 }}" alt="{{ project.title }} second project image" loading="lazy">
             </a>
         </div>
 
         <div class="project-img-3 {% if not project.image_3 %}hidden{% endif %}">
-            <a href="{% settings_value "BASE_S3_URL" %}/{{ project.image_3 }}" target="_blank" title="{{ project.title }} third project image">
+            <a href="{{ project.site_url }}" target="_blank" title="{{ project.title }} third project image">
                 <img src="{% settings_value "BASE_S3_URL" %}/{{ project.image_3 }}" alt="{{ project.title }} third project image" loading="lazy">
             </a>
         </div>
