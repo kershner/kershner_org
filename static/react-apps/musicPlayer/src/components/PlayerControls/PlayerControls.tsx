@@ -7,11 +7,11 @@ import {
 import { useMusicPlayerData } from '../../providers/musicPlayerProvider'
 import { NowPlaying } from './components/NowPlaying/NowPlaying'
 import { PlayerButton } from '../PlayerButton/PlayerButton'
-import PauseIcon from '../../assets/pause.svg'
-import PrevIcon from '../../assets/prev.svg'
-import PlayIcon from '../../assets/play.svg'
-import NextIcon from '../../assets/next.svg'
+import { ImPrevious } from 'react-icons/im'
 import { useEffect, useState } from 'react'
+import { ImPause } from 'react-icons/im'
+import { ImPlay2 } from 'react-icons/im'
+import { ImNext } from 'react-icons/im'
 import { Song } from '../../types'
 import './style.scss'
 
@@ -161,25 +161,25 @@ export const PlayerControls = () => {
             <div className="controls">
               <PlayerButton
                 alt={'Previous song'}
-                icon={PrevIcon}
+                icon={ImPrevious}
                 callback={handlePrevClick}
               />
               {!playing ? (
                 <PlayerButton
                   alt={'Play song'}
-                  icon={PlayIcon}
+                  icon={ImPlay2}
                   callback={handlePlayClick}
                 />
               ) : (
                 <PlayerButton
                   alt={'Pause song'}
-                  icon={PauseIcon}
+                  icon={ImPause}
                   callback={handlePlayClick}
                 />
               )}
               <PlayerButton
                 alt={'Next song'}
-                icon={NextIcon}
+                icon={ImNext}
                 callback={handleNextClick}
               />
             </div>

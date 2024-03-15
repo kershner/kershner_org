@@ -42,9 +42,10 @@
       left: unset;
       top: unset;
 
-      img {
-        filter: drop-shadow(0px 1000px 0 #fff);
-        transform: translateY(-1000px);
+      svg, 
+      path {
+        fill: #fff !important;
+        stroke: #fff !important;
       }
     }
 

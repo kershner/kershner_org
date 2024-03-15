@@ -79,13 +79,17 @@
 
       .controls {
         display: flex;
+        margin: 0 auto;
         height: 50%;
-        justify-content: center;
+        width: 100%;
+        max-width: 18rem;
         padding: 1rem 0;
         padding-bottom: 0.5rem;
 
         .playerButton {
           margin: 0 0.25rem;
+          height: 100%;
+          width: 100%;
         }
       }
     }

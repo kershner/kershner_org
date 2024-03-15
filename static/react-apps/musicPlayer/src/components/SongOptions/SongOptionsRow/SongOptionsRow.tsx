@@ -1,9 +1,10 @@
 import { PlayerButton } from '../../PlayerButton/PlayerButton'
+import { IconType } from 'react-icons'
 import './style.scss'
 
 interface SongOptionsRowProps {
   title: string
-  icon: string
+  icon: IconType
   callback?: (e: React.MouseEvent) => void
 }
 

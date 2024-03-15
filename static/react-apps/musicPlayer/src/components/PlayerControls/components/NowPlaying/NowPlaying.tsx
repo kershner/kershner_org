@@ -1,7 +1,7 @@
 import { SongOptionsBtn } from '../../../SongOptions/SongOptionsBtn/SongOptionsBtn'
 import { useMusicPlayerData } from '../../../../providers/musicPlayerProvider'
 import { PlayerButton } from '../../../PlayerButton/PlayerButton'
-import FullscreenIcon from '../../../../assets/fullscreen.svg'
+import { AiOutlineFullscreen } from 'react-icons/ai'
 import './style.scss'
 
 export const NowPlaying = () => {
@@ -18,7 +18,7 @@ export const NowPlaying = () => {
         <PlayerButton
           alt={'Fullscreen'}
           extraClassName={'fullscreenBtn'}
-          icon={FullscreenIcon}
+          icon={AiOutlineFullscreen}
           callback={fullscreenAction}
         />
 

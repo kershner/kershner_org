@@ -1,7 +1,7 @@
 import { useMusicPlayerData } from '../../../providers/musicPlayerProvider'
 import { PlayerButton } from '../../PlayerButton/PlayerButton'
-import MenuIcon from '../../../assets/burger-menu.svg'
 import { parents } from '../../../../../utils/utils'
+import { IoMenu } from 'react-icons/io5'
 import './style.scss'
 
 export const SongOptionsBtn = () => {
@@ -62,7 +62,7 @@ export const SongOptionsBtn = () => {
       <PlayerButton
         alt={'More info'}
         extraClassName={'songOptionsBtn'}
-        icon={MenuIcon}
+        icon={IoMenu}
         callback={songOptionsMenu}
       />
     </>

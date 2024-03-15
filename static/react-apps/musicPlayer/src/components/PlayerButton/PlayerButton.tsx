@@ -1,3 +1,4 @@
+import { IconType } from 'react-icons'
 import React from 'react'
 import './style.scss'
 
@@ -5,7 +6,7 @@ interface PlayerButtonProps {
   extraClassName?: string
   dataId?: number
   alt: string
-  icon: string
+  icon: IconType
   callback?: (e: React.MouseEvent) => void
 }
 
@@ -24,7 +25,7 @@ export const PlayerButton: React.FC<PlayerButtonProps> = (props) => {
         data-id={props.dataId}
         onClick={handleClick}
       >
-        <img src={props.icon} alt={props.alt} />
+        {React.createElement(props.icon, { size: 'auto' })}
       </button>
     </>
   )
