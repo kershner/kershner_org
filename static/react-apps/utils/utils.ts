@@ -85,9 +85,13 @@ export async function copyToClipboard(text: string) {
   }
 }
 
-export function setQueryParam(key: string, value: string): void {
+export function setQueryParam(key: string, value: string | boolean): void {
   const currentURL = new URL(window.location.href);
-  currentURL.searchParams.set(key, value);
+  if (value === '' || value === null || value === undefined || value === false || value === 'false') {
+    currentURL.searchParams.delete(key);
+  } else {
+    currentURL.searchParams.set(key, value.toString());
+  }
   window.history.replaceState({}, '', currentURL.toString());
 }
 
