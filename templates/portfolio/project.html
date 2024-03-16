@@ -6,7 +6,7 @@
             <img src="{% settings_value "BASE_S3_URL" %}/{{ project.icon }}" alt="{{ project.title }} project icon" loading="lazy">
         </div>
     
-        <div class="project-title color-wave">{{ project.title }}</div>
+        <div class="project-title color-wave" tabindex="0">{{ project.title }}</div>
         <div class="project-blurb">{{ project.blurb }}</div>
     
         <hr align="left" class="dynamic-color">
@@ -21,7 +21,7 @@
                         <div class="tech-tag">{{ tech.title }} {% include 'portfolio/includes/external_link_icon.html' %}</div>
                     </a>
                     {% else %}
-                        <div class="tech-tag">{{ tech.title }}</div>
+                        <div class="tech-tag" tabindex="0" title="{{ tech.title }}">{{ tech.title }}</div>
                     {% endif %}
                     {% endfor %}
                 </div>
@@ -31,7 +31,7 @@
                 <div class="project-info-section-title">Tags</div>
                 <div class="project-info-section-tags project-tags">
                     {% for tag in project.tags.all %}
-                    <div class="tech-tag" title="Filter by {{ tag }}">{{ tag }}</div>
+                    <div class="tech-tag" tabindex="0" title="Filter by {{ tag }}">{{ tag }}</div>
                     {% endfor %}
                 </div>
             </div>
