@@ -14,6 +14,7 @@ import { useEffect } from 'react'
 const App = () => {
   const {
     fetchInitialData,
+    audioRef,
     songs,
     setSelectedSong,
     setFilteredSongs,
@@ -44,6 +45,7 @@ const App = () => {
         chosenSong = songs[0]
       }
 
+      audioRef.current.src = chosenSong.url
       setSelectedSong(chosenSong)
       applyFilter(chosenSong.type, songs, setFilteredSongs, setActiveFilter)
       scrollSongRowIntoView(chosenSong.id)
