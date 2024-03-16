@@ -116,3 +116,16 @@
     }
   }
 }
+
+.fullscreen {
+  .playerControls {
+    position: fixed;
+    width: 100%;
+    left: 0;
+
+    .playerControlsInner {
+      align-self: center;
+      max-width: 70rem;
+    }
+  }
+}
