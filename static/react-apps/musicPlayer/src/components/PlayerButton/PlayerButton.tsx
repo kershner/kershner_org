@@ -25,7 +25,7 @@ export const PlayerButton: React.FC<PlayerButtonProps> = (props) => {
         data-id={props.dataId}
         onClick={handleClick}
       >
-        {React.createElement(props.icon, { size: 'auto' })}
+        {React.createElement(props.icon)}
       </button>
     </>
   )

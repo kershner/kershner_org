@@ -125,6 +125,29 @@ export const PlayerControls = () => {
     }
   }
 
+  const handleKeyDown = (event: KeyboardEvent) => {
+    switch (event.code) {
+      case 'Space':
+        handlePlayClick();
+        break;
+      case 'ArrowLeft':
+        handlePrevClick();
+        break;
+      case 'ArrowRight':
+        handleNextClick();
+        break;
+      default:
+        break;
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedSong])
+
   useEffect(() => {
     if (hasSelectedSong) {
       playAudio(audioRef, selectedSong, setPlaying)
