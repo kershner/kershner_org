@@ -2,6 +2,7 @@
 
 .songOptionRow {
   display: flex;
+  align-items: flex-start;
   position: relative;
   cursor: pointer;
   padding: 0.5rem;
@@ -16,11 +17,9 @@
   }
 
   .playerButton {
-    margin-right: 0.5rem;
-    max-width: 1.5rem;
-
     svg,
     path {
+      width: 1.25rem;
       fill: #fff;
       stroke: #fff;
     }

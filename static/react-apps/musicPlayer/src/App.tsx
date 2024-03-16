@@ -6,8 +6,8 @@ import {
 } from '../src/utils/util'
 import { PlayerControls } from './components/PlayerControls/PlayerControls'
 import { useMusicPlayerData } from './providers/musicPlayerProvider'
+import { parseParams, setQueryParam } from '../../utils/utils'
 import { SongList } from './components/SongList/SongList'
-import { parseParams } from '../../utils/utils'
 import { Song } from '../src/types'
 import { useEffect } from 'react'
 
@@ -20,6 +20,10 @@ const App = () => {
     setActiveFilter,
     setFullscreen,
     fullscreen,
+    setRepeat,
+    repeat,
+    setShuffle,
+    shuffle,
   } = useMusicPlayerData()
 
   // fetch song data once on load
@@ -49,11 +53,29 @@ const App = () => {
     if (fullscreenParam) {
       setFullscreen(fullscreenParam)
     }
+
+    const repeatParam = Boolean(params.repeat)
+    if (repeatParam) {
+      setRepeat(repeatParam)
+    }
+
+    const shuffleParam = Boolean(params.shuffle)
+    if (shuffleParam) {
+      setShuffle(shuffleParam)
+    }
   }, [songs])
 
   useEffect(() => {
     applyFullscreen(fullscreen)
   }, [fullscreen])
+
+  useEffect(() => {
+    setQueryParam('shuffle', String(shuffle))
+  }, [shuffle])
+
+  useEffect(() => {
+    setQueryParam('repeat', String(repeat))
+  }, [repeat])
 
   return (
     <>

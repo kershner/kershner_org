@@ -34,6 +34,10 @@ interface MusicPlayerState {
   setOptionsSong: React.Dispatch<SetStateAction<Song | null>>
   fullscreen: boolean
   setFullscreen: React.Dispatch<SetStateAction<boolean>>
+  shuffle: boolean
+  setShuffle: React.Dispatch<SetStateAction<boolean>>
+  repeat: boolean
+  setRepeat: React.Dispatch<SetStateAction<boolean>>
 }
 const MusicPlayerContext = createContext({} as MusicPlayerState)
 
@@ -54,6 +58,8 @@ const MusicPlayerProvider = ({ children }: { children: React.ReactNode }) => {
     useState<boolean>(false)
   const [optionsSong, setOptionsSong] = useState<Song | null>(null)
   const [fullscreen, setFullscreen] = useState<boolean>(false)
+  const [shuffle, setShuffle] = useState<boolean>(false)
+  const [repeat, setRepeat] = useState<boolean>(false)
 
   const fetchInitialData = async () => {
     fetchWrapper(songDataApiUrl, 'GET', {}, {}, (songData: Song[]) => {
@@ -87,6 +93,10 @@ const MusicPlayerProvider = ({ children }: { children: React.ReactNode }) => {
       setOptionsSong,
       fullscreen,
       setFullscreen,
+      shuffle,
+      setShuffle,
+      repeat,
+      setRepeat,
     }),
     [
       songs,
@@ -97,6 +107,8 @@ const MusicPlayerProvider = ({ children }: { children: React.ReactNode }) => {
       optionsMenuPosition,
       showOptionsMenu,
       fullscreen,
+      shuffle,
+      repeat,
     ],
   )
 

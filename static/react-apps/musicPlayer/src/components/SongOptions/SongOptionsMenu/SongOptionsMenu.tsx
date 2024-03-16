@@ -1,9 +1,7 @@
 import { useMusicPlayerData } from '../../../providers/musicPlayerProvider'
+import { BsLink45Deg, BsYoutube, BsDownload } from 'react-icons/bs'
 import { SongOptionsRow } from '../SongOptionsRow/SongOptionsRow'
 import { copyToClipboard } from '../../../../../utils/utils'
-import { IoCloudDownload } from 'react-icons/io5'
-import { IoLogoYoutube } from 'react-icons/io5'
-import { IoLink } from 'react-icons/io5'
 import './style.scss'
 
 export const SongOptionsMenu = () => {
@@ -54,18 +52,18 @@ export const SongOptionsMenu = () => {
       <div className="songOptions" style={menuPositionStyle}>
         <SongOptionsRow
           title="Get link"
-          icon={IoLink}
+          icon={BsLink45Deg}
           callback={handleGetLinkClick}
         />
         <SongOptionsRow
           title="Download"
-          icon={IoCloudDownload}
+          icon={BsDownload}
           callback={handleDownloadClick}
         />
         {optionsSong?.youtubeUrl && (
           <SongOptionsRow
             title="View on YouTube"
-            icon={IoLogoYoutube}
+            icon={BsYoutube}
             callback={handleYouTubeClick}
           />
         )}

@@ -7,11 +7,15 @@ import {
 import { useMusicPlayerData } from '../../providers/musicPlayerProvider'
 import { NowPlaying } from './components/NowPlaying/NowPlaying'
 import { PlayerButton } from '../PlayerButton/PlayerButton'
-import { ImPrevious } from 'react-icons/im'
 import { useEffect, useState } from 'react'
-import { ImPause } from 'react-icons/im'
-import { ImPlay2 } from 'react-icons/im'
-import { ImNext } from 'react-icons/im'
+import {
+  BsArrowRepeat,
+  BsShuffle,
+  BsPlayCircle,
+  BsSkipEndCircle,
+  BsSkipStartCircle,
+  BsPauseCircle,
+} from 'react-icons/bs'
 import { Song } from '../../types'
 import './style.scss'
 
@@ -27,6 +31,10 @@ export const PlayerControls = () => {
     audioRef,
     setFilteredSongs,
     setActiveFilter,
+    shuffle,
+    setShuffle,
+    repeat,
+    setRepeat,
   } = useMusicPlayerData()
   const [progressValue, setProgressValue] = useState(0)
   const [isSliderDragging, setSliderDragging] = useState(false)
@@ -80,6 +88,21 @@ export const PlayerControls = () => {
     scrollSongRowIntoView(nextSong.id)
   }
 
+  const getNextSong = (songs: Song[], selectedSong: Song) => {
+    let nextPosition = 0
+    if (selectedSong) {
+      const currentPosition = songs.findIndex(
+        (song) => song.id === selectedSong.id,
+      )
+      nextPosition = currentPosition + 1
+      if (nextPosition === songs.length) {
+        nextPosition = 0
+      }
+    }
+
+    return songs[nextPosition]
+  }
+
   const handlePrevClick = () => {
     if (selectedSong) {
       const currentPosition = songs.findIndex(
@@ -105,47 +128,47 @@ export const PlayerControls = () => {
     }
   }
 
-  const getNextSong = (songs: Song[], selectedSong: Song) => {
-    let nextPosition = 0
-    if (selectedSong) {
-      const currentPosition = songs.findIndex(
-        (song) => song.id === selectedSong.id,
-      )
-      nextPosition = currentPosition + 1
-      if (nextPosition === songs.length) {
-        nextPosition = 0
-      }
-    }
-    return songs[nextPosition]
-  }
-
   const handleNextClick = () => {
     if (selectedSong) {
-      playNextSong(getNextSong(songs, selectedSong))
+      if (shuffle) {
+        const randomSong = songs[Math.floor(Math.random() * songs.length)]
+        playNextSong(getNextSong(songs, randomSong))
+      } else {
+        playNextSong(getNextSong(songs, selectedSong))
+      }
     }
+  }
+
+  const handleShuffleClick = () => {
+    setShuffle(!shuffle)
+  }
+
+  const handleRepeatClick = () => {
+    setRepeat(!repeat)
   }
 
   const handleKeyDown = (event: KeyboardEvent) => {
     switch (event.code) {
       case 'Space':
-        handlePlayClick();
-        break;
+        event.preventDefault()
+        handlePlayClick()
+        break
       case 'ArrowLeft':
-        handlePrevClick();
-        break;
+        handlePrevClick()
+        break
       case 'ArrowRight':
-        handleNextClick();
-        break;
+        handleNextClick()
+        break
       default:
-        break;
+        break
     }
   }
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown)
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+      window.removeEventListener('keydown', handleKeyDown)
+    }
   }, [selectedSong])
 
   useEffect(() => {
@@ -162,15 +185,25 @@ export const PlayerControls = () => {
     }
   }, [isSliderDragging])
 
+  // Song end behavior
   useEffect(() => {
     const audioElement = audioRef.current
-    audioElement.addEventListener('ended', () => {
-      const nextBtn = document.querySelector(
-        'button[title="Next song"]',
-      ) as HTMLElement
-      nextBtn.click()
-    })
-  }, [])
+    const audioEndedCallback = () => {
+      if (repeat) {
+        playAudio(audioRef, selectedSong, setPlaying)
+      } else {
+        const nextBtn = document.querySelector(
+          'button[title="Next song"]',
+        ) as HTMLElement
+        nextBtn.click()
+      }
+    }
+
+    audioElement.addEventListener('ended', audioEndedCallback)
+    return () => {
+      audioElement.removeEventListener('ended', audioEndedCallback)
+    }
+  }, [repeat])
 
   return (
     <>
@@ -184,25 +217,25 @@ export const PlayerControls = () => {
             <div className="controls">
               <PlayerButton
                 alt={'Previous song'}
-                icon={ImPrevious}
+                icon={BsSkipStartCircle}
                 callback={handlePrevClick}
               />
               {!playing ? (
                 <PlayerButton
                   alt={'Play song'}
-                  icon={ImPlay2}
+                  icon={BsPlayCircle}
                   callback={handlePlayClick}
                 />
               ) : (
                 <PlayerButton
                   alt={'Pause song'}
-                  icon={ImPause}
+                  icon={BsPauseCircle}
                   callback={handlePlayClick}
                 />
               )}
               <PlayerButton
                 alt={'Next song'}
-                icon={ImNext}
+                icon={BsSkipEndCircle}
                 callback={handleNextClick}
               />
             </div>
@@ -222,6 +255,22 @@ export const PlayerControls = () => {
                 />
               </div>
               <div className="duration">{selectedSong?.duration}</div>
+            </div>
+
+            <div className="extraControls">
+              <PlayerButton
+                alt={'Shuffle'}
+                icon={BsShuffle}
+                callback={handleShuffleClick}
+                extraClassName={shuffle ? 'active' : ''}
+              />
+
+              <PlayerButton
+                alt={'Repeat'}
+                icon={BsArrowRepeat}
+                callback={handleRepeatClick}
+                extraClassName={repeat ? 'active' : ''}
+              />
             </div>
           </div>
         </div>
