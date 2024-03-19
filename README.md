@@ -48,7 +48,7 @@ ___
    - [Python](https://github.com/kershner/kershner_org/tree/master/apps/ai_quiz), [JavaScript](https://github.com/kershner/kershner_org/blob/master/static/js/aiQuiz.js)
 3. **[Music Player](https://kershner.org/music/)**
    - [JavaScript](https://github.com/kershner/kershner_org/tree/master/static/react-apps/musicPlayer)
-4. **[[Ominous Whoosher]](https://kershner.org/whoosh/)**
+4. **[[ominous whoosher]](https://kershner.org/whoosh/)**
    - [Python](https://github.com/kershner/kershner_org/tree/master/apps/whoosh), [JavaScript](https://github.com/kershner/kershner_org/blob/master/static/js/whoosh.js)
 5. **[ScreenBloom (website)](https://kershner.org/screenbloom/)**
    - [Python](https://github.com/kershner/kershner_org/tree/master/apps/screenbloom)
