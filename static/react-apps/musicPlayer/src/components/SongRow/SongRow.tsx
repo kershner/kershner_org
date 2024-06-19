@@ -1,4 +1,3 @@
-import { SongOptionsBtn } from '../SongOptions/SongOptionsBtn/SongOptionsBtn'
 import { useMusicPlayerData } from '../../providers/musicPlayerProvider'
 import { playAudio, pauseAudio } from '../../utils/util'
 import { Song } from '../../types/index'
@@ -59,7 +58,6 @@ export const SongRow: React.FC<SongRowProps> = (props) => {
 
         <div className="songRowColumn">
           <div className="songDuration">{song.duration}</div>
-          <SongOptionsBtn />
         </div>
       </div>
     </>
