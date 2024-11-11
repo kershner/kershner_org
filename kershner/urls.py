@@ -1,3 +1,4 @@
+from apps.public_api_explorer.urls import public_api_explorer_patterns
 from apps.screenbloom.views import screenbloom_landing
 from apps.color_doodle.urls import doodle_patterns
 from apps.steamtime.urls import steamtime_patterns
@@ -41,6 +42,9 @@ urlpatterns = [
 
     # SteamTime
     path('steamtime/', include(steamtime_patterns)),
+
+    # public-api-explorer
+    path('public-api-explorer/', include(public_api_explorer_patterns)),
 
     # Admin Stuff
     path('kersh-zone/move-project-position/<project_id>/<direction>', project_views.MoveProjectPositionView.as_view(),
