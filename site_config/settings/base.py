@@ -14,7 +14,6 @@ PARAMETERS = util.get_parameters()
 MAIN_APP_NAME = 'kershner'
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = PARAMETERS['csrf_secret_key']
 
@@ -73,7 +72,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'kershner.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -89,7 +87,6 @@ CACHES = {
 }
 
 # Password validation
-# https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -106,7 +103,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Internationalization
-# https://docs.djangoproject.com/en/2.1/topics/i18n/
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'America/New_York'
 USE_I18N = True
@@ -115,10 +111,10 @@ USE_TZ = True
 TIME_INPUT_FORMATS = ['%I:%M %p']
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.0/howto/static-files/
 STATICFILES_DIRS = [
     STATIC_DIR_PATH
 ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/collectstaticfiles')
 
 # AWS Config
 AWS_S3_OBJECT_PARAMETERS = {
