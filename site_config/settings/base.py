@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'apps.ai_quiz',
     'apps.color_doodle',
     'storages',
+    'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -169,3 +170,11 @@ OPENAI_API_KEY = PARAMETERS['openai_api_key']
 
 # AI Quizzes
 QUIZ_LIMIT_PER_DAY = 10
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}

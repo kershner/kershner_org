@@ -6,6 +6,7 @@ from apps.project import views as project_views
 from apps.ai_quiz.urls import ai_quiz_patterns
 from apps.whoosh.urls import whoosh_patterns
 import apps.philomania.views as phil_views
+from apps.api.urls import api_patterns
 from django.urls import include, path
 from . import views as kersh_views
 from apps.bacon.views import bacon
@@ -45,6 +46,9 @@ urlpatterns = [
 
     # public-api-explorer
     path('public-api-explorer/', include(public_api_explorer_patterns)),
+
+    # API
+    path('api/', include(api_patterns)), 
 
     # Admin Stuff
     path('kersh-zone/move-project-position/<project_id>/<direction>', project_views.MoveProjectPositionView.as_view(),
