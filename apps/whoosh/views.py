@@ -1,11 +1,10 @@
 from django.contrib.auth.decorators import user_passes_test
 from apps.whoosh.forms import WhooshForm, DoppelgangerForm
 from django.template.response import TemplateResponse
-from django.views.generic.base import ContextMixin
 from apps.whoosh.serializers import WhooshSerializer
-from rest_framework.response import Response
+from django.views.generic.base import ContextMixin
 from apps.whoosh.tasks import process_whoosh
-from rest_framework.views import APIView
+from apps.api.views import BaseListAPIView
 from django.views.generic import View
 from apps.whoosh.models import Whoosh
 from django.shortcuts import redirect
@@ -152,11 +151,6 @@ def save_whoosh(request, whoosh_id):
     return redirect(reprocess_whoosh, whoosh_id=whoosh_id)
 
 
-class WhooshListAPIView(APIView):
-    def get_queryset(self):
-        return Whoosh.objects.all()
-
-    def get(self, request):
-        queryset = self.get_queryset()
-        serializer = WhooshSerializer(queryset, many=True)
-        return Response(serializer.data)
+class WhooshListAPIView(BaseListAPIView):
+    queryset = Whoosh.objects.all()
+    serializer_class = WhooshSerializer

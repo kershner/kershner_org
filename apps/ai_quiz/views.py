@@ -4,9 +4,8 @@ from apps.ai_quiz.serializers import AiQuizSerializer
 from django.template.response import TemplateResponse
 from django.views.generic.base import ContextMixin
 from django.http import JsonResponse, HttpResponse
-from rest_framework.response import Response
 from apps.ai_quiz.tasks import process_quiz
-from rest_framework.views import APIView
+from apps.api.views import BaseListAPIView
 from apps.ai_quiz.models import AiQuiz
 from django.views.generic import View
 from django.shortcuts import redirect
@@ -195,13 +194,6 @@ class AiQuizExport(BaseAiQuizView):
         return response
 
 
-class AiQuizListAPIView(APIView):
-    def get_queryset(self):
-        return AiQuiz.objects.prefetch_related(
-            'aiquizquestion_set__aiquizanswer_set'
-        )
-
-    def get(self, request):
-        queryset = self.get_queryset()
-        serializer = AiQuizSerializer(queryset, many=True)
-        return Response(serializer.data)
+class AiQuizListAPIView(BaseListAPIView):
+    queryset = AiQuiz.objects.prefetch_related('aiquizquestion_set__aiquizanswer_set')
+    serializer_class = AiQuizSerializer
