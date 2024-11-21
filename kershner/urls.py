@@ -59,8 +59,7 @@ urlpatterns = [
     path('public-api-explorer', include(public_api_explorer_patterns)),
 
     # API
-    path('api/', include(api_patterns)), 
-    path('api', include(api_patterns)), 
+    path('api/', include(api_patterns)),
 
     # Admin Stuff
     path('kersh-zone/move-project-position/<project_id>/<direction>', project_views.MoveProjectPositionView.as_view(),
