@@ -44,29 +44,14 @@ export const fetchWrapper = <T>(
   }
 
   fetch(endpoint, callParams)
-    .then((response) =>
-      response.text().then((data) => ({
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok,
-        data,
-      }))
-    )
-    .then(({ status, statusText, ok, data }) => {
-      if (!ok) {
-        console.error(`Error ${status} ${statusText}:`, data);
-      } else {
-        try {
-          const parsedResponse = JSON.parse(data);
-          callback(parsedResponse);
-        } catch (err) {
-          console.error('Response is not valid JSON:', data);
-        }
-      }
+    .then((response) => response.text())
+    .then((data) => {
+      const parsedResponse = JSON.parse(data)
+      callback(parsedResponse)
     })
     .catch((error) => {
-      console.error('Fetch failed:', error);
-    });
+      console.error(error)
+    })
 }
 
 export function parseParams(defaultParams?: object | null) {

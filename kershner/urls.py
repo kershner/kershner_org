@@ -23,6 +23,7 @@ urlpatterns = [
     # TODO - replace old serializer routes with new DRF stuff
     path('projects/', kersh_views.get_projects_data),
     path('songs/', kersh_views.get_songs_data),
+    path('songs', kersh_views.get_songs_data),
 
     # Music player
     path('music/', kersh_views.music, name='music'),
