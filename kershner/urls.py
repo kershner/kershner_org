@@ -19,12 +19,14 @@ handler400 = 'kershner.views.custom_error_view'
 
 urlpatterns = [
     path('', kersh_views.home, name='home'),
+    
+    # TODO - replace old serializer routes with new DRF stuff
     path('projects/', kersh_views.get_projects_data),
-    path('projects', kersh_views.get_projects_data),
+    path('songs/', kersh_views.get_songs_data),
+
+    # Music player
     path('music/', kersh_views.music, name='music'),
     path('music', kersh_views.music, name='music'),
-    path('songs/', kersh_views.get_songs_data),
-    path('songs', kersh_views.get_songs_data),
 
     # Philomania
     path('phil/', phil_views.philomania),

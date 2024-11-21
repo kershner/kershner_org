@@ -56,6 +56,9 @@ class Song(models.Model):
     def thumbnail_url_cloudfront(self):
         return '{}/{}'.format(settings.BASE_S3_URL, self.thumbnail)
     
+    def file_url_cloudfront(self):
+        return '{}/{}'.format(settings.BASE_S3_URL, self.file)
+    
     def serialize(self):
         return {
             'id': self.id,
@@ -63,7 +66,7 @@ class Song(models.Model):
             'artist': self.artist,
             'year': self.year,
             'type': self.type,
-            'url': self.file.url,
+            'url': self.file_url_cloudfront(),
             'thumbnailUrl': self.thumbnail_url_cloudfront(),
             'youtubeUrl': self.youtube_link,
             'duration': self.duration,
