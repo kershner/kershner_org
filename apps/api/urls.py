@@ -25,7 +25,7 @@ class APIRootView(APIView):
         })
 
 api_patterns = [
-    path('', APIRootView.as_view(), name='api-root'),
+    path('/', APIRootView.as_view(), name='api-root'),
 ]
 
 for endpoint, view, name in ENDPOINTS:
