@@ -114,7 +114,7 @@ TIME_INPUT_FORMATS = ['%I:%M %p']
 STATICFILES_DIRS = [
     STATIC_DIR_PATH
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/collectstaticfiles')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static/collectstaticfiles')
 
 # AWS Config
 AWS_S3_OBJECT_PARAMETERS = {
