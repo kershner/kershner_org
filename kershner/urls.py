@@ -20,35 +20,47 @@ handler400 = 'kershner.views.custom_error_view'
 urlpatterns = [
     path('', kersh_views.home, name='home'),
     path('projects/', kersh_views.get_projects_data),
+    path('projects', kersh_views.get_projects_data),
     path('music/', kersh_views.music, name='music'),
+    path('music', kersh_views.music, name='music'),
     path('songs/', kersh_views.get_songs_data),
+    path('songs', kersh_views.get_songs_data),
 
     # Philomania
     path('phil/', phil_views.philomania),
+    path('phil', phil_views.philomania),
 
     # [ominous whoosher]
     path('whoosh/', include(whoosh_patterns)),
+    path('whoosh', include(whoosh_patterns)),
 
     # AI Quiz
     path('quiz/', include(ai_quiz_patterns)),
+    path('quiz', include(ai_quiz_patterns)),
 
     # Color Doodle
     path('doodle/', include(doodle_patterns)),
+    path('doodle', include(doodle_patterns)),
 
     # ScreenBloom landing page
     path('screenbloom/', screenbloom_landing),
+    path('screenbloom', screenbloom_landing),
 
     # Page for Bacon
     path('bacon/', bacon),
+    path('bacon', bacon),
 
     # SteamTime
     path('steamtime/', include(steamtime_patterns)),
+    path('steamtime', include(steamtime_patterns)),
 
     # public-api-explorer
     path('public-api-explorer/', include(public_api_explorer_patterns)),
+    path('public-api-explorer', include(public_api_explorer_patterns)),
 
     # API
     path('api/', include(api_patterns)), 
+    path('api', include(api_patterns)), 
 
     # Admin Stuff
     path('kersh-zone/move-project-position/<project_id>/<direction>', project_views.MoveProjectPositionView.as_view(),
