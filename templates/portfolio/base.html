@@ -33,12 +33,7 @@
         </div>
 
         {# color grid react component #}
-        {% if is_mobile %}
-        {# Smaller cell size for mobile #}
-        <div id="color-grid" data-default-state='{"cellSize": 50, "borderStyle": "hidden", "autoInt": 1100, "autoDur": 0.4, "autoOn": true, "menuOpen": false}'></div>
-        {% else %}
-        <div id="color-grid" data-default-state='{"cellSize": 80, "borderStyle": "hidden", "autoInt": 1100, "autoDur": 0.4, "autoOn": true, "menuOpen": false}'></div>
-        {% endif %}
+        <div id="color-grid" data-default-state='{"borderStyle": "hidden", "autoInt": 1100, "autoDur": 0.4, "autoOn": true, "menuOpen": false}'></div>
 
     {# Footer #}
     {% block footer %}
@@ -92,14 +87,11 @@
         <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/portfolio.js"></script>
         {% block javascripts %}
             {% block extra_javascripts %}{% endblock %}
-
             <script type="text/javascript">
-                if (document.readyState === 'complete') {
-                    portfolio.init();
-                } else {
-                    document.addEventListener('DOMContentLoaded', portfolio.init);
-                }
-            </script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    portfolio.init("{% settings_value 'BASE_S3_URL' %}");
+                });
+            </script>               
         {% endblock %}
 
         {% include 'portfolio/includes/google_analytics_tag.html' %}

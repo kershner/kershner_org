@@ -19,9 +19,10 @@ let portfolio = {
     'currentFilterTerms'    : []
 };
 
-portfolio.init = function() {
+portfolio.init = function(baseS3Url) {
     portfolio.currentColor = randomColor({luminosity: 'light'});
     portfolio.rotateColors();
+    portfolio.colorGridInit(baseS3Url);
 };
 
 portfolio.addProjectHtml = function () {
@@ -137,6 +138,48 @@ portfolio.changeColors = function() {
     colorWave.init();
     portfolio.currentColor = randomColor({luminosity: 'bright'});
 };
+
+portfolio.colorGridInit = function(baseS3Url) {
+    const colorGrid = document.getElementById('color-grid');
+    if (!colorGrid) return;
+
+    const isMobile = window.innerWidth <= 768;
+    colorGrid.setAttribute(
+        'data-default-state',
+        JSON.stringify({
+            cellSize: isMobile ? 40 : 80,
+            borderStyle: "hidden",
+            autoInt: 1100,
+            autoDur: 0.4,
+            autoOn: true,
+            menuOpen: false,
+        })
+    );
+
+    const baseColorGridPath = `${baseS3Url}/react-apps/colorDoodle/color_doodle_dist`;
+    const colorGridResources = [
+        {
+            type: 'link',
+            attributes: {
+                rel: 'stylesheet',
+                href: `${baseColorGridPath}/colorDoodle.css`,
+            },
+        },
+        {
+            type: 'script',
+            attributes: {
+                src: `${baseColorGridPath}/colorDoodle.js.br`,
+                defer: true,
+            },
+        },
+    ];
+
+    colorGridResources.forEach(({ type, attributes }) => {
+        const el = document.createElement(type);
+        Object.entries(attributes).forEach(([key, value]) => el.setAttribute(key, value));
+        document.head.appendChild(el);
+    });
+}
 
 const projectsClickHandler = (e) => {
     e.preventDefault();
@@ -254,4 +297,4 @@ const addOrRemoveFilterTerm = (text) => {
 
     portfolio.projectSearch.value = portfolio.currentFilterTerms;
     portfolio.projectSearch.dispatchEvent(new Event('input'));
-} 
+}
