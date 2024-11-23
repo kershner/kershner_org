@@ -12,6 +12,7 @@ from django.shortcuts import redirect
 from django.utils import timezone
 from django.conf import settings
 from utility import util
+import requests
 import datetime
 import csv
 
@@ -88,12 +89,24 @@ class BaseAiQuizView(AiQuizContentMixin, View):
 
 class AiQuizHomeView(BaseAiQuizView):
     template = 'ai_quiz/home.html'
+    recaptcha_url = 'https://www.google.com/recaptcha/api/siteverify'
 
     def get(self, request):
         return TemplateResponse(request, self.template, self.get_context_data())
 
     def post(self, request):
+        recaptcha_data = {
+            'secret': settings.CAPTCHA_V2_SECRET_KEY,
+            'response': request.POST.get('g-recaptcha-response')
+        }
+        recaptcha_response = requests.post(self.recaptcha_url, data=recaptcha_data)
+        recaptcha_result = recaptcha_response.json()
+
         self.form = AiQuizForm(request.POST)
+
+        # Add error to form if reCAPTCHA fails
+        if not recaptcha_result.get('success'):
+            self.form.add_error(None, 'reCAPTCHA validation failed. Please try again.')
 
         if self.form.is_valid() or request.user.is_superuser:
             # Check if a quiz already exists with these settings
@@ -109,7 +122,8 @@ class AiQuizHomeView(BaseAiQuizView):
 
             return redirect('view-ai-quiz', quiz_id=existing_quiz.uniq_id)
 
-        return TemplateResponse(request, self.template, self.get_context_data())
+        return TemplateResponse(request, self.template, self.get_context_data(form=self.form))
+
 
 
 class AiQuizViewer(BaseAiQuizView):
