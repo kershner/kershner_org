@@ -7,6 +7,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="Tyler Kershner's website.">
 
+        <link rel="preconnect" href="https://{% settings_value "CLOUDFRONT_DOMAIN" %}">
+
         {# Favicon #}
         <link rel="apple-touch-icon" sizes="180x180" href="{% settings_value "BASE_S3_URL" %}/img/favicon/apple-touch-icon.png">
         <link rel="icon" type="image/png" sizes="32x32" href="{% settings_value "BASE_S3_URL" %}/img/favicon/favicon-32x32.png">
