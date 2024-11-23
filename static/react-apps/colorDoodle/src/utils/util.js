@@ -41,18 +41,21 @@ export function encodeParams(params) {
 }
 
 export function parseParams() {
-    let params = defaultState;
+    if (window.location.search === "") {
+        return {}; // No query params, return an empty object
+    }
 
-    if (window.location.search !== "") {
-        const urlSearchParams = new URLSearchParams(window.location.search);
-        params = Object.fromEntries(urlSearchParams.entries());
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const params = Object.fromEntries(urlSearchParams.entries());
 
-        // Convert true/false query params to actual JS bools
-        for (const key in params) {
-            const value = params[key];
-            if (value === "true" || value === "false") {
-                params[key] = value !== "false";
-            }
+    // Convert true/false query params to actual JS bools
+    for (const key in params) {
+        const value = params[key];
+        if (value === "true" || value === "false") {
+            params[key] = value !== "false";
+        } else if (!isNaN(value)) {
+            // Convert numeric strings to numbers
+            params[key] = parseFloat(value);
         }
     }
 

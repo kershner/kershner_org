@@ -1,6 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from "react"
-import { calculateNumberOfCells, parseParams } from "../utils/util"
-
+import { calculateNumberOfCells, parseParams } from "../utils/util";
+import React, { createContext, useState } from "react";
 
 const defaultCellSize = 100;
 const defaultNumSquares = calculateNumberOfCells(defaultCellSize);
@@ -21,7 +20,7 @@ export const luminosityOptions = {
     "all": "all"
 };
 
-export let defaultState = {
+export const defaultState = {
     numSquares: defaultNumSquares,
     cellSize: defaultCellSize,
     borderStyle: "solid",
@@ -60,31 +59,30 @@ export let defaultState = {
     gridOpen: false
 };
 
-const endpoint = window.location.pathname.split('/')[1];
-if (!endpoint || endpoint === "music") {
-    const kershnerOrgDefaultState = {
-        cellSize: 80,
-        borderStyle: "hidden",
-        autoInt: 1100,
-        autoDur: 0.4,
-        autoOn: true,
-        menuOpen: false
-    };
-    defaultState = {...defaultState, ...kershnerOrgDefaultState};
-}
-
 const GlobalStateContext = createContext({});
 
 const GlobalStateProvider = ({ children }) => {
-    // Parse URL parameters into the initial state
     const paramDict = parseParams();
-    const defaultStateCopy = {...defaultState};
-    const modifiedState = Object.assign(defaultStateCopy, paramDict);
-    const [globalState, setGlobalState] = useState(modifiedState);
+    const defaultStateCopy = { ...defaultState };
+
+    // Read the custom default state from the React root data attribute
+    const rootElement = document.getElementById("color-grid");
+    const customDefaultState = rootElement?.dataset.defaultState
+        ? JSON.parse(rootElement.dataset.defaultState)
+        : {};
+
+    // Merge states with explicit precedence: paramDict > customDefaultState > defaultStateCopy
+    const initialState = {
+        ...defaultStateCopy,         // Baseline defaults
+        ...customDefaultState,       // Overrides defaults
+        ...paramDict                 // Takes highest precedence
+    };
+
+    const [globalState, setGlobalState] = useState(initialState);
 
     const updateGlobalState = (key, value, callback) => {
         setGlobalState(prevState => {
-            const newState = {...prevState, [key]: value};
+            const newState = { ...prevState, [key]: value };
             if (callback) callback(newState);
             return newState;
         });
@@ -98,3 +96,4 @@ const GlobalStateProvider = ({ children }) => {
 };
 
 export { GlobalStateContext, GlobalStateProvider };
+

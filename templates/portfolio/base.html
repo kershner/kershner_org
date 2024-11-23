@@ -7,34 +7,40 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="Tyler Kershner's website.">
 
-        <!-- Favicon -->
+        {# Favicon #}
         <link rel="apple-touch-icon" sizes="180x180" href="{% settings_value "BASE_S3_URL" %}/img/favicon/apple-touch-icon.png">
         <link rel="icon" type="image/png" sizes="32x32" href="{% settings_value "BASE_S3_URL" %}/img/favicon/favicon-32x32.png">
         <link rel="icon" type="image/png" sizes="16x16" href="{% settings_value "BASE_S3_URL" %}/img/favicon/favicon-16x16.png">
         <link rel="manifest" href="{% settings_value "BASE_S3_URL" %}/img/favicon/site.webmanifest">
         <link rel="mask-icon" href="{% settings_value "BASE_S3_URL" %}/img/favicon/safari-pinned-tab.svg" color="#5bbad5">
 
-        <!-- CSS -->
+        {# CSS #}
         <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/main.css">
         {% block extra_head %}{% endblock %}
 
-        <!-- Title -->
+        {# Title #}
         {% if title %}<title>Tyler Kershner - {{ title }}</title>{% else %}<title>Tyler Kershner</title>{% endif %}
 
-        <!-- react color grid stuff -->
+        {# react color grid stuff #}
         <script defer src="{% settings_value "BASE_S3_URL" %}/react-apps/colorDoodle/color_doodle_dist/colorDoodle.js.br"></script>
         <link href="{% settings_value "BASE_S3_URL" %}/react-apps/colorDoodle/color_doodle_dist/colorDoodle.css" rel="stylesheet">
     </head>
 
     <body class="{% if request.GET.backgroundColor != "light" %}dark-mode{% endif %}">
-        <!-- Content-->
+        {# Content#}
         <div id="page-wrapper">
             {% block content %}{% endblock %}
         </div>
 
-        <!-- color grid react component -->
-        <div id="color-grid"></div>
-    <!-- Footer -->
+        {# color grid react component #}
+        {% if is_mobile %}
+        {# Smaller cell size for mobile #}
+        <div id="color-grid" data-default-state='{"cellSize": 50, "borderStyle": "hidden", "autoInt": 1100, "autoDur": 0.4, "autoOn": true, "menuOpen": false}'></div>
+        {% else %}
+        <div id="color-grid" data-default-state='{"cellSize": 80, "borderStyle": "hidden", "autoInt": 1100, "autoDur": 0.4, "autoOn": true, "menuOpen": false}'></div>
+        {% endif %}
+
+    {# Footer #}
     {% block footer %}
         <div class="footer">
             <div class="footer-inner">
@@ -79,7 +85,7 @@
         </div>
         {% endblock %}
 
-        <!-- JS -->
+        {# JS #}
         <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
         <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/randomColor.min.js"></script>
         <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/colorWave.js"></script>
