@@ -155,30 +155,6 @@ portfolio.colorGridInit = function(baseS3Url) {
             menuOpen: false,
         })
     );
-
-    const baseColorGridPath = `${baseS3Url}/react-apps/colorDoodle/color_doodle_dist`;
-    const colorGridResources = [
-        {
-            type: 'link',
-            attributes: {
-                rel: 'stylesheet',
-                href: `${baseColorGridPath}/colorDoodle.css`,
-            },
-        },
-        {
-            type: 'script',
-            attributes: {
-                src: `${baseColorGridPath}/colorDoodle.js.br`,
-                defer: true,
-            },
-        },
-    ];
-
-    colorGridResources.forEach(({ type, attributes }) => {
-        const el = document.createElement(type);
-        Object.entries(attributes).forEach(([key, value]) => el.setAttribute(key, value));
-        document.head.appendChild(el);
-    });
 }
 
 const projectsClickHandler = (e) => {
