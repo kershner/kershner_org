@@ -14,32 +14,15 @@ class ProjectTag(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     name = models.CharField(max_length=255, unique=True, null=False, blank=False)
     
-    def serialize(self):
-        return {
-            'id': self.id,
-            'created_at': str(self.created_at),
-            'project': self.project.title,
-            'title': self.title,
-            'link': self.link
-        }
-
     def __str__(self):
         return self.name
 
 
 class ProjectTechnology(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
-    project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
+    project = models.ForeignKey('project.Project', on_delete=models.CASCADE, related_name='technologies')
     title = models.CharField(max_length=255, null=False, blank=False)
     link = models.URLField(null=True, blank=True)
-    def serialize(self):
-        return {
-            'id': self.id,
-            'created_at': str(self.created_at),
-            'project': self.project.title,
-            'title': self.title,
-            'link': self.link
-        }
 
     def __str__(self):
         return self.title
@@ -72,36 +55,6 @@ class Project(models.Model):
 
     def __str__(self):
         return 'ID: %d | %s' % (self.id, self.title)
-    
-    def serialize(self):
-        return {
-            'id': self.id,
-            'created_at': str(self.created_at),
-            'title': self.title,
-            'blurb': self.blurb,
-            'extra_notes': self.extra_notes,
-            'icon': self.icon.url,
-            'image_orientation': self.image_orientation,
-            'image_1': self.image_1.url if self.image_1 else '',
-            'image_2': self.image_2.url if self.image_2 else '',
-            'image_3': self.image_3.url if self.image_3 else '',
-            'drop_shadow': self.drop_shadow,
-            'site_url': self.site_url,
-            'position': self.position,
-            'technologies': [tech.serialize() for tech in self.project_technologies],
-            'tags': [tag.serialize() for tag in self.tags],
-        }
-
-    @property
-    def project_technologies(self):
-        return ProjectTechnology.objects.filter(project=self).order_by('id').all()
-
-    @property
-    def tech_has_links(self):
-        for tech in self.project_technologies:
-            if tech.link:
-                return True
-        return False
 
     def move_position(self, direction):
         all_projects = list(Project.objects.order_by('position').all())

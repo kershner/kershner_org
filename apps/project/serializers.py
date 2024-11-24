@@ -16,12 +16,8 @@ class ProjectTechnologySerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
     tags = ProjectTagSerializer(many=True)
-    technologies = serializers.SerializerMethodField()
+    technologies = ProjectTechnologySerializer(many=True)
 
     class Meta:
         model = Project
         fields = '__all__'
-
-    def get_technologies(self, obj):
-        technologies = obj.project_technologies
-        return ProjectTechnologySerializer(technologies, many=True).data

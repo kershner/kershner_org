@@ -1,3 +1,4 @@
+from apps.project.serializers import ProjectSerializer
 from apps.project.models import Project, ProjectTag
 from django.template.loader import render_to_string
 from django.http import JsonResponse
@@ -9,9 +10,10 @@ from django.conf import settings
 
 def home(request):
     projects = Project.objects.order_by('position').all()
+    projects_serializer = ProjectSerializer(projects, many=True)
     projects_html = [
         render_to_string('portfolio/project.html', context={'project': project})
-        for project in projects
+        for project in projects_serializer.data
     ]
 
     tags = list(ProjectTag.objects.values_list('name', flat=True).order_by('name').distinct())
@@ -25,11 +27,6 @@ def home(request):
         'tags': tags
     }
     return render(request, 'portfolio/home.html', template_vars)
-
-def get_projects_data(request):
-    projects = Project.objects.all().order_by('-position')
-    serialized_projects = [project.serialize() for project in projects]
-    return JsonResponse(serialized_projects, safe=False)
 
 def music(request):
     template_vars = {
