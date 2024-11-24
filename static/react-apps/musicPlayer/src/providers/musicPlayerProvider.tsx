@@ -1,5 +1,3 @@
-import { fetchWrapper } from '../../../utils/utils'
-import { songDataApiUrl } from '../routes'
 import { Song, Position } from '../types'
 import React, {
   createContext,
@@ -11,7 +9,7 @@ import React, {
 } from 'react'
 
 interface MusicPlayerState {
-  fetchInitialData: () => void
+  getInitialData: () => void
   songs: Song[] | []
   filteredSongs: Song[] | []
   setFilteredSongs: React.Dispatch<SetStateAction<Song[]>>
@@ -61,16 +59,21 @@ const MusicPlayerProvider = ({ children }: { children: React.ReactNode }) => {
   const [shuffle, setShuffle] = useState<boolean>(false)
   const [repeat, setRepeat] = useState<boolean>(false)
 
-  const fetchInitialData = async () => {
-    fetchWrapper(songDataApiUrl, 'GET', {}, {}, (songData: Song[]) => {
-      setSongs(songData)
-      setFilteredSongs(songData)
-    })
+  const getInitialData = async () => {
+    const rootElementId = 'kershner-music-player';
+    const rootElement = document.getElementById(rootElementId);
+    if (!rootElement) {
+      console.error(`React root element #${rootElementId} not found.`);
+      return;
+    }
+    const songsData = rootElement.dataset.songs ? JSON.parse(rootElement.dataset.songs) : [];
+    setSongs(songsData);
+    setFilteredSongs(songsData);
   }
 
   const memoValue = useMemo(
     () => ({
-      fetchInitialData,
+      getInitialData,
       songs,
       filteredSongs,
       setFilteredSongs,

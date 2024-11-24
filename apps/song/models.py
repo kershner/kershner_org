@@ -52,29 +52,9 @@ class Song(models.Model):
 
     def __str__(self):
         return 'ID: %d | %s' % (self.id, self.title)
-
-    def thumbnail_url_cloudfront(self):
-        return '{}/{}'.format(settings.BASE_S3_URL, self.thumbnail)
     
-    def file_url_cloudfront(self):
-        return '{}/{}'.format(settings.BASE_S3_URL, self.file)
-    
-    def serialize(self):
-        return {
-            'id': self.id,
-            'name': self.title,
-            'artist': self.artist,
-            'year': self.year,
-            'type': self.type,
-            'url': self.file_url_cloudfront(),
-            'thumbnailUrl': self.thumbnail_url_cloudfront(),
-            'youtubeUrl': self.youtube_link,
-            'duration': self.duration,
-            'timestamp': time.time()
-        }
 
 # Admin config for this model
-# https://docs.djangoproject.com/en/2.0/ref/contrib/admin/#django.contrib.admin.ModelAdmin
 @admin.register(Song)
 class SongAdmin(admin.ModelAdmin):
     list_display = ('title', 'id', 'created_at', 'position', 'duration')

@@ -35,14 +35,14 @@ export const SongOptionsMenu = () => {
 
   const handleDownloadClick = () => {
     if (optionsSong) {
-      const downloadUrl = optionsSong.url
+      const downloadUrl = optionsSong.file
       window.open(downloadUrl, '_blank')
     }
   }
 
   const handleYouTubeClick = () => {
     if (optionsSong) {
-      const youtubeUrl = optionsSong.youtubeUrl
+      const youtubeUrl = optionsSong.youtube_link;
       window.open(youtubeUrl, '_blank')
     }
   }
@@ -60,7 +60,7 @@ export const SongOptionsMenu = () => {
           icon={BsDownload}
           callback={handleDownloadClick}
         />
-        {optionsSong?.youtubeUrl && (
+        {optionsSong?.youtube_link && (
           <SongOptionsRow
             title="View on YouTube"
             icon={BsYoutube}

@@ -1,11 +1,11 @@
 from apps.project.serializers import ProjectSerializer
 from apps.project.models import Project, ProjectTag
 from django.template.loader import render_to_string
-from django.http import JsonResponse
+from apps.song.serializers import SongSerializer
 from django.shortcuts import render
 from apps.song.models import Song
 from django.conf import settings
-
+import json
 
 
 def home(request):
@@ -29,16 +29,13 @@ def home(request):
     return render(request, 'portfolio/home.html', template_vars)
 
 def music(request):
+    songs = Song.objects.all().order_by('-position')
+    songs_serializer = SongSerializer(songs, many=True)
     template_vars = {
-        'title': 'Music'
+        'title': 'Music',
+        'songs': json.dumps(songs_serializer.data)
     }
     return render(request, 'portfolio/music.html', template_vars)
-
-
-def get_songs_data(request):
-    songs = Song.objects.all().order_by('-position')
-    serialized_songs = [song.serialize() for song in songs]
-    return JsonResponse(serialized_songs, safe=False)
 
 
 def custom_error_view(request, exception=None):

@@ -1,12 +1,12 @@
 export type Song = {
   id: number
-  name: string
+  title: string
   artist: string
   year: string
   type: string
-  url: string
-  thumbnailUrl: string
-  youtubeUrl: string | ''
+  file: string
+  thumbnail: string
+  youtube_link: string | ''
   duration: string
   timestamp: number
 }

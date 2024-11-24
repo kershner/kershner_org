@@ -10,8 +10,8 @@ export const playAudio = (
   if (selectedSong) {
     const audio = audioRef.current
     audio.pause()
-    if (selectedSong.url !== audio.src) {
-      audio.src = selectedSong.url
+    if (selectedSong.file !== audio.src) {
+      audio.src = selectedSong.file
     }
 
     audio

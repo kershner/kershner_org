@@ -8,7 +8,6 @@
 {% endblock %}
 
 {% block content %}
-{% load kershner_tags %}
 <div class="video-btn-wrapper">
     <div id="old-video-toggle" class="dynamic-color">Videos</div>
 </div>
@@ -20,8 +19,8 @@
 
 <!-- Player -->
 <div class="music-player-wrapper">
-    <div id="kershner-music-player"></div>
-</div
+    <div id="kershner-music-player" data-songs='{{ songs|safe }}'></div>
+</div>
 {% endblock %}
 
 {% block extra_javascripts %}

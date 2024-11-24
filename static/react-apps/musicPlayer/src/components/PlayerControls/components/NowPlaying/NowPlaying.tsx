@@ -23,11 +23,11 @@ export const NowPlaying = () => {
         />
 
         <div className="thumbnail">
-          <img src={`${selectedSong?.thumbnailUrl}`} />
+          <img src={`${selectedSong?.thumbnail}`} />
         </div>
 
         <div className="songInfo">
-          <div className="songTitle">{selectedSong?.name}</div>
+          <div className="songTitle">{selectedSong?.title}</div>
           <div className="songArtist">{selectedSong?.artist}</div>
         </div>
       </div>

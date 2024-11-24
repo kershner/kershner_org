@@ -47,13 +47,13 @@ export const SongRow: React.FC<SongRowProps> = (props) => {
       >
         <div className="songRowColumn">
           <img
-            src={`${song.thumbnailUrl}`}
+            src={`${song.thumbnail}`}
             className="songThumbnail"
-            alt={`Thumbnail for the song ${song.name} ${song.artist}`}
+            alt={`Thumbnail for the song ${song.title} ${song.artist}`}
             loading="lazy"
           />
 
-          <div className="songName">{song.name}</div>
+          <div className="songName">{song.title}</div>
         </div>
 
         <div className="songRowColumn">

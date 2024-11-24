@@ -13,7 +13,7 @@ import { useEffect } from 'react'
 
 const App = () => {
   const {
-    fetchInitialData,
+    getInitialData,
     audioRef,
     songs,
     setSelectedSong,
@@ -27,9 +27,8 @@ const App = () => {
     shuffle,
   } = useMusicPlayerData()
 
-  // fetch song data once on load
   useEffect(() => {
-    fetchInitialData()
+    getInitialData()
   }, [])
 
   // Code that runs once songs have been fetched
@@ -45,7 +44,7 @@ const App = () => {
         chosenSong = songs[0]
       }
 
-      audioRef.current.src = chosenSong.url
+      audioRef.current.src = chosenSong.file
       setSelectedSong(chosenSong)
       applyFilter(chosenSong.type, songs, setFilteredSongs, setActiveFilter)
       scrollSongRowIntoView(chosenSong.id)
