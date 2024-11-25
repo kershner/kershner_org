@@ -19,6 +19,9 @@ let portfolio = {
     'currentFilterTerms'    : []
 };
 
+const mobileBreakpoint = 768;
+const isMobile = window.innerWidth <= mobileBreakpoint;
+
 portfolio.init = function(baseS3Url) {
     portfolio.currentColor = randomColor({luminosity: 'light'});
     portfolio.rotateColors();
@@ -89,15 +92,26 @@ portfolio.searchSuggestions = function() {
 }
 
 portfolio.projectStyleToggles = function() {
+    const setProjectStyle = (newValue) => {
+        portfolio.projectsWrapper.classList.remove('grid', 'list');
+        portfolio.projectsWrapper.classList.add(newValue);
+        setQueryParam('style', newValue);
+        updateLinksWithQueryParams();
+    }
+
     portfolio.styleToggles.forEach(radio => {
         radio.addEventListener('change', (e) => {
-            const newValue = e.target.value;
-            portfolio.projectsWrapper.classList.remove('grid', 'list');
-            portfolio.projectsWrapper.classList.add(newValue);
-            setQueryParam('projectStyle', newValue);
-            updateLinksWithQueryParams();
+            const newProjectStyle = e.target.value;
+            setProjectStyle(newProjectStyle);
         });
     });
+
+    // Initial state
+    const queryParamStyle = new URLSearchParams(window.location.search).get('style');
+    const defaultStyle = isMobile ? 'grid' : 'list';
+    const initialProjectStyle = queryParamStyle ? queryParamStyle : defaultStyle;
+    setProjectStyle(initialProjectStyle);
+    [...portfolio.styleToggles].find(radio => radio.value === initialProjectStyle).checked = true;
 }
 
 portfolio.scrollEvents = function() {
@@ -142,8 +156,6 @@ portfolio.changeColors = function() {
 portfolio.colorGridInit = function(baseS3Url) {
     const colorGrid = document.getElementById('color-grid');
     if (!colorGrid) return;
-
-    const isMobile = window.innerWidth <= 768;
     colorGrid.setAttribute(
         'data-default-state',
         JSON.stringify({
