@@ -283,12 +283,15 @@ a
       flex-direction: column-reverse
       width: calc(98% - 10px)
       margin-bottom: 8rem
+
+      .left-content
+        max-width: 100%
       
       @media (min-width: $med-breakpoint)
           margin-bottom: 3rem
-          width: calc(48% - 10px)
+          width: calc(45% - 10px)
       @media (min-width: $large-breakpoint)
-          width: calc(31% - 10px)
+          width: calc(30% - 10px)
 
       .right-content
         display: block
@@ -304,7 +307,7 @@ a
         margin-bottom: 0.5rem
         margin-top: 0
         height: 20rem
-        width: 20rem
+        width: 100%
         padding-top: 0
         transition: none
         img
@@ -330,13 +333,13 @@ a
   margin-bottom: 5em
   @media (min-width: $large-breakpoint)
     margin-bottom: 15em
-  padding-left: 1em
+  padding: 0 1rem
   max-width: 1280px
   pointer-events: none
 
   .left-content
-    width: 90%
     min-width: 300px
+    max-width: 33%
     position: relative
 
     .project-icon
@@ -510,9 +513,6 @@ a
         &.project-img-1
           img
             display: block
-
-    .left-content
-        width: 33.33%
 
     &.portrait
       .right-content

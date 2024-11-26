@@ -108,10 +108,10 @@ portfolio.projectStyleToggles = function() {
 
     // Initial state
     const queryParamStyle = new URLSearchParams(window.location.search).get('style');
-    const defaultStyle = isMobile ? 'grid' : 'list';
-    const initialProjectStyle = queryParamStyle ? queryParamStyle : defaultStyle;
-    setProjectStyle(initialProjectStyle);
-    [...portfolio.styleToggles].find(radio => radio.value === initialProjectStyle).checked = true;
+    if (queryParamStyle) {
+        setProjectStyle(queryParamStyle);
+        [...portfolio.styleToggles].find(radio => radio.value === queryParamStyle).checked = true;
+    }
 }
 
 portfolio.scrollEvents = function() {
