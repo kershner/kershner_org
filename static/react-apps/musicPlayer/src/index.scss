@@ -3,10 +3,12 @@ $text-shadow: 1px 1px 2px #444;
 $box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.15);
 
 #kershner-music-player {
+  display: flex;
+  flex-direction: column;
   position: relative;
   z-index: 1;
+  height: 78vh;
   color: #444;
-  max-height: 50rem;
   overflow: hidden;
   font-family: 'Verdana', sans-serif;
 
