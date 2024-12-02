@@ -1,8 +1,9 @@
 import { calculateNumberOfCells, parseParams } from "../utils/util";
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, useEffect } from "react";
 
 const defaultCellSize = 100;
 const defaultNumSquares = calculateNumberOfCells(defaultCellSize);
+
 export const effectTypes = {
     "block": "block",
     "row": "row",
@@ -20,7 +21,8 @@ export const luminosityOptions = {
     "all": "all"
 };
 
-export const defaultState = {
+// Base default state
+const baseDefaultState = {
     numSquares: defaultNumSquares,
     cellSize: defaultCellSize,
     borderStyle: "solid",
@@ -59,26 +61,32 @@ export const defaultState = {
     gridOpen: false
 };
 
-const GlobalStateContext = createContext({});
-
-const GlobalStateProvider = ({ children }) => {
-    const paramDict = parseParams();
-    const defaultStateCopy = { ...defaultState };
-
-    // Read the custom default state from the React root data attribute
+// Dynamic default state getter
+export const getDefaultState = () => {
     const rootElement = document.getElementById("color-grid");
     const customDefaultState = rootElement?.dataset.defaultState
         ? JSON.parse(rootElement.dataset.defaultState)
         : {};
 
-    // Merge states with explicit precedence: paramDict > customDefaultState > defaultStateCopy
-    const initialState = {
-        ...defaultStateCopy,         // Baseline defaults
-        ...customDefaultState,       // Overrides defaults
-        ...paramDict                 // Takes highest precedence
+    return {
+        ...baseDefaultState,
+        ...customDefaultState
     };
+};
 
-    const [globalState, setGlobalState] = useState(initialState);
+const GlobalStateContext = createContext({});
+
+const GlobalStateProvider = ({ children }) => {
+    const paramDict = parseParams();
+    const [globalState, setGlobalState] = useState(getDefaultState());
+
+    useEffect(() => {
+        // Dynamically update the state if custom defaults are added later
+        setGlobalState(prevState => ({
+            ...getDefaultState(),
+            ...paramDict // Highest precedence
+        }));
+    }, []); // Runs once after the component mounts
 
     const updateGlobalState = (key, value, callback) => {
         setGlobalState(prevState => {
@@ -96,4 +104,3 @@ const GlobalStateProvider = ({ children }) => {
 };
 
 export { GlobalStateContext, GlobalStateProvider };
-

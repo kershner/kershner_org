@@ -1,5 +1,5 @@
 import React, { useContext } from "react"
-import { GlobalStateContext, defaultState } from "./DoodleState.jsx"
+import { GlobalStateContext, getDefaultState } from "./DoodleState.jsx"
 import { DoodleButton, GithubButton } from "./DoodleInputs.jsx"
 import { getNewGridNumCells, removeQueryParams, updateLinksWithQueryParams } from "../utils/util"
 import { copyToClipboard, addOrUpdateQueryParam } from '../utils/util.js'
@@ -57,6 +57,7 @@ export function DefaultStateButton() {
     const { updateGlobalState } = useContext(GlobalStateContext);
     const buttonId = "default-state";
     const buttonName = "Default";
+    const defaultState = getDefaultState();
 
     function handleClick(e) {
         Object.keys(defaultState).forEach(key => {

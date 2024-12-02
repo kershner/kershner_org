@@ -1,4 +1,4 @@
-import { defaultState } from "../components/DoodleState.jsx"
+import { getDefaultState } from "../components/DoodleState.jsx"
 
 
 export const numCols = (cellSize) => {
@@ -29,7 +29,7 @@ export function getNewGridNumCells() {
     try {
         cellSize = getComputedButtonSize();
     } catch (e) {
-        cellSize = defaultState.cellSize;
+        cellSize = getDefaultState().cellSize;
     }
     return calculateNumberOfCells(cellSize);
 }

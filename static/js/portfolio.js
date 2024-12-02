@@ -25,7 +25,7 @@ const isMobile = window.innerWidth <= mobileBreakpoint;
 portfolio.init = function(baseS3Url) {
     portfolio.currentColor = randomColor({luminosity: 'light'});
     portfolio.rotateColors();
-    portfolio.colorGridInit(baseS3Url);
+    portfolio.colorGridInit();
 };
 
 portfolio.addProjectHtml = function () {
@@ -153,7 +153,7 @@ portfolio.changeColors = function() {
     portfolio.currentColor = randomColor({luminosity: 'bright'});
 };
 
-portfolio.colorGridInit = function(baseS3Url) {
+portfolio.colorGridInit = function() {
     const colorGrid = document.getElementById('color-grid');
     if (!colorGrid) return;
     colorGrid.setAttribute(
