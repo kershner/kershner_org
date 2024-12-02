@@ -51,7 +51,9 @@ $default-animation-speed: 0.1s
   body.dark-mode &
     color: $white !important
     background-color: $black !important
-
+    &:hover
+      background-color: var(--dynamic-color) !important
+      
 .dynamic-color
   background: var(--dynamic-color) !important
   text-shadow: $portfolio-text-shadow !important
