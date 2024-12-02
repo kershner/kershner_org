@@ -10,7 +10,7 @@ $lighter-black: lighten($black, 78%)
 
 $portfolio-text-shadow: 1px 0.5px 1.5px $light-black
 
-$default-animation-speed: 0.2s
+$default-animation-speed: 0.1s
 
 %tag-style
   margin-right: .25rem
@@ -32,6 +32,24 @@ $default-animation-speed: 0.2s
   background-color: var(--dynamic-color)
   border-radius: 0.3rem
   transition: background-color $default-animation-speed
+
+%dynamic-color-btn
+  font-weight: bold
+  border-radius: 1rem
+  background-color: unset !important
+  border: 2px solid var(--dynamic-color)
+  color: $light-black !important
+  text-shadow: none !important
+  box-shadow: none !important
+  transition: background-color $default-animation-speed !important
+  z-index: 3
+  &:hover
+    color: $white !important
+    background-color: var(--dynamic-color) !important
+    text-shadow: $portfolio-text-shadow !important
+
+  body.dark-mode &
+    color: $white !important
 
 .dynamic-color
   background: var(--dynamic-color) !important
@@ -165,15 +183,6 @@ $default-animation-speed: 0.2s
               width: 100%
               fill: var(--dynamic-color)
 
-        .api-link
-          padding: 0.25rem 1rem
-          font-weight: bold
-          font-size: 0.6rem
-          text-decoration: none
-          color: var(--dynamic-color)
-          border: 2px solid var(--dynamic-color)
-          border-radius: 1rem
-          text-shadow: none
 body
   font-family: $primary-font
   color: $light-black
@@ -430,8 +439,7 @@ a
         margin: 0
         margin-top: 3rem
         pointer-events: auto
-        @media (min-width: $med-breakpoint)
-          display: inline-block !important
+        @extend %dynamic-color-btn
 
   .right-content
     display: none
@@ -551,13 +559,20 @@ a
 .footer
   padding: 2em 0
   padding-bottom: 0.5rem
-  width: 100%
-  
+  width: auto
+  margin: 0 auto
+  pointer-events: none
+
   &.fixed
     position: fixed
     bottom: 0
+    left: 0
+    right: 0
+    display: flex
+    justify-content: center
 
   .footer-inner
+    pointer-events: auto
     display: flex
     flex-direction: column
     align-items: center
@@ -592,28 +607,25 @@ a
           @extend %dynamic-border-bottom
           height: 0.17em
   
-  .github-icon-link
-    z-index: 1
-    position: relative
-    @include hover-state
+  .footer-extras
+    display: flex
+    flex-direction: row
+    align-items: center
+    margin: 1rem 0
     
-    div
-      margin-top: 1.5rem
-      width: 2.2rem
-
-      svg
-        fill: var(--dynamic-color)
-        transition: fill 0.75s
+    a
+      text-decoration: none
+      padding: 0.25rem 1rem
+      font-size: 0.6rem
+      margin-right: 0.5rem
+      @extend %dynamic-color-btn
 
 .portfolio
-  .expand-menu-btn 
-    color: var(--dynamic-color) !important
+  .expand-menu-btn
     font-size: 0.9rem
-    font-weight: bold
     padding: .25rem .75rem
-    border-radius: 1rem
-    text-shadow: none
     line-height: 1.15rem
+    @extend %dynamic-color-btn
     
 // Dark mode
 body.dark-mode
@@ -648,5 +660,8 @@ body.dark-mode
 
   &.portfolio
     .expand-menu-btn
-      color: var(--dynamic-color) !important
+      background-color: unset !important
+      &:hover
+        background-color: var(--dynamic-color) !important
+      
     
