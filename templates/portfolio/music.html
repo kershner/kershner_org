@@ -2,25 +2,26 @@
 {% load kershner_tags %}
 
 {% block extra_head %}
-<!-- react music player -->
+{# react music player #}
 <script type="module" crossorigin src="{% settings_value "BASE_S3_URL" %}/react-apps/musicPlayer/dist/kershPlayer.js"></script>
 <link rel="stylesheet" crossorigin href="{% settings_value "BASE_S3_URL" %}/react-apps/musicPlayer/dist/kershPlayer.css">
 {% endblock %}
 
 {% block content %}
+{# Player #}
+<div class="music-player-wrapper">
+    <div id="kershner-music-player" data-songs='{{ songs|safe }}'></div>
+</div>
+
 <div class="video-btn-wrapper">
     <div id="old-video-toggle" class="dynamic-color">Videos</div>
 </div>
 
-<!-- YouTube embed -->
+{# YouTube embed #}
 <div class="outer-music-video-wrapper hidden">
     <div class="music-video-wrapper"></div>
 </div>
 
-<!-- Player -->
-<div class="music-player-wrapper">
-    <div id="kershner-music-player" data-songs='{{ songs|safe }}'></div>
-</div>
 {% endblock %}
 
 {% block extra_javascripts %}
