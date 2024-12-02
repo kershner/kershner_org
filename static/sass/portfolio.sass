@@ -8,7 +8,7 @@ $large-breakpoint: 1000px
 $light-black: lighten($black, 10%)
 $lighter-black: lighten($black, 78%)
 
-$portfolio-text-shadow: 1px 0.5px 3.5px $light-black
+$portfolio-text-shadow: 1px 0.5px 1.5px $light-black
 
 $default-animation-speed: 0.2s
 
@@ -164,6 +164,15 @@ $default-animation-speed: 0.2s
               height: 100%
               width: 100%
               fill: var(--dynamic-color)
+
+        .api-link
+          padding: 0.25rem 0.75rem
+          font-weight: bold
+          font-size: 0.9rem
+          text-decoration: none
+          color: $white
+          background-color: var(--dynamic-color)
+          border-radius: 0.75rem
 body
   font-family: $primary-font
   color: $light-black
