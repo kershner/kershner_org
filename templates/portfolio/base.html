@@ -27,14 +27,14 @@
         <link href="{% settings_value "BASE_S3_URL" %}/react-apps/colorDoodle/color_doodle_dist/colorDoodle.css" rel="stylesheet">
     </head>
 
-    <body class="{% if request.GET.backgroundColor != "light" %}dark-mode{% endif %}">
+    <body class="portfolio {% if request.GET.backgroundColor != "light" %}dark-mode{% endif %}">
         {# Content#}
         <div id="page-wrapper">
             {% block content %}{% endblock %}
         </div>
 
         {# color grid react component #}
-        <div id="color-grid"></div>
+        <div id="color-grid" class="portfolio-color-grid"></div>
 
     {# Footer #}
     {% block footer %}

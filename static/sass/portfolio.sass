@@ -166,13 +166,14 @@ $default-animation-speed: 0.2s
               fill: var(--dynamic-color)
 
         .api-link
-          padding: 0.25rem 0.75rem
+          padding: 0.25rem 1rem
           font-weight: bold
-          font-size: 0.9rem
+          font-size: 0.6rem
           text-decoration: none
-          color: $white
-          background-color: var(--dynamic-color)
-          border-radius: 0.75rem
+          color: var(--dynamic-color)
+          border: 2px solid var(--dynamic-color)
+          border-radius: 1rem
+          text-shadow: none
 body
   font-family: $primary-font
   color: $light-black
@@ -604,6 +605,16 @@ a
         fill: var(--dynamic-color)
         transition: fill 0.75s
 
+.portfolio
+  .expand-menu-btn 
+    color: var(--dynamic-color) !important
+    font-size: 0.9rem
+    font-weight: bold
+    padding: .25rem .75rem
+    border-radius: 1rem
+    text-shadow: none
+    line-height: 1.15rem
+    
 // Dark mode
 body.dark-mode
   color: $white
@@ -634,4 +645,8 @@ body.dark-mode
     .clearFiltersBtn
       background-color: lighten($black, 6) !important
       color: $lighter-black
+
+  &.portfolio
+    .expand-menu-btn
+      color: var(--dynamic-color) !important
     
