@@ -1,4 +1,4 @@
-import { calculateNumberOfCells, parseParams } from "../utils/util";
+import { calculateNumberOfCells, parseParams, getNewGridNumCells } from "../utils/util";
 import React, { createContext, useState, useEffect } from "react";
 
 const defaultCellSize = 100;
@@ -84,8 +84,9 @@ const GlobalStateProvider = ({ children }) => {
         // Dynamically update the state if custom defaults are added later
         setGlobalState(prevState => ({
             ...getDefaultState(),
-            ...paramDict // Highest precedence
+            ...paramDict, // Highest precedence
         }));
+        updateGlobalState("numSquares", getNewGridNumCells());
     }, []); // Runs once after the component mounts
 
     const updateGlobalState = (key, value, callback) => {

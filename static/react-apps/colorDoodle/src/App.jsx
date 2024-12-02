@@ -13,7 +13,6 @@ export default function App() {
 
     useEffect(() => {
         // Code here will run only once on page load
-        updateGlobalState("numSquares", getNewGridNumCells());
         updateBackgroundColor(globalState);
         updateLinksWithQueryParams();
     }, []);
