@@ -24,12 +24,13 @@ export function calculateNumberOfCells(cellSize) {
     return totalCells;
 }
 
-export function getNewGridNumCells() {
-    let cellSize;
-    try {
-        cellSize = getComputedButtonSize();
-    } catch (e) {
-        cellSize = getDefaultState().cellSize;
+export function getNewGridNumCells(cellSize) {
+    if (cellSize === undefined) {
+        try {
+            cellSize = getComputedButtonSize();
+        } catch (e) {
+            cellSize = getDefaultState().cellSize;
+        }
     }
     return calculateNumberOfCells(cellSize);
 }

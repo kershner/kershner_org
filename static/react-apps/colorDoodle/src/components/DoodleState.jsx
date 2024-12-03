@@ -80,13 +80,15 @@ const GlobalStateProvider = ({ children }) => {
     const paramDict = parseParams();
     const [globalState, setGlobalState] = useState(getDefaultState());
 
+    const defaultState = {
+        ...getDefaultState(),
+        ...paramDict,
+    }
+
     useEffect(() => {
         // Dynamically update the state if custom defaults are added later
-        setGlobalState(prevState => ({
-            ...getDefaultState(),
-            ...paramDict, // Highest precedence
-        }));
-        updateGlobalState("numSquares", getNewGridNumCells());
+        setGlobalState(prevState => (defaultState));
+        updateGlobalState("numSquares", getNewGridNumCells(defaultState.cellSize));
     }, []); // Runs once after the component mounts
 
     const updateGlobalState = (key, value, callback) => {
