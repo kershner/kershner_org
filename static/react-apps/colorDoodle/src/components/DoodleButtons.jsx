@@ -2,7 +2,7 @@ import React, { useContext } from "react"
 import { GlobalStateContext, getDefaultState } from "./DoodleState.jsx"
 import { DoodleButton, GithubButton } from "./DoodleInputs.jsx"
 import { getNewGridNumCells, removeQueryParams, updateLinksWithQueryParams } from "../utils/util"
-import { copyToClipboard, addOrUpdateQueryParam } from '../utils/util.js'
+import { copyToClipboard, addOrUpdateQueryParam, updateBackgroundColor } from '../utils/util.js'
 import { colorAllSquares } from '../utils/animationHelper.js'
 
 
@@ -64,6 +64,7 @@ export function DefaultStateButton() {
             updateGlobalState(key, defaultState[key]);
         });
         updateGlobalState("numSquares", getNewGridNumCells());
+        updateBackgroundColor(defaultState);
         removeQueryParams();
         updateLinksWithQueryParams();
     }
