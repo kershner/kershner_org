@@ -26,9 +26,6 @@ def create_daggerwalk_log(request):
     try:
         data = json.loads(request.body)
         
-        real_time_utc = datetime.strptime(data['realTimeUtc'], '%Y-%m-%d %H:%M:%S UTC')
-        real_time_utc = timezone.make_aware(real_time_utc, pytz.UTC)
-        
         log_entry = DaggerwalkLog.objects.create(
             world_x=data['worldX'],
             world_z=data['worldZ'],
@@ -41,7 +38,6 @@ def create_daggerwalk_log(request):
             player_y=data['playerY'],
             player_z=data['playerZ'],
             date=data['date'],
-            real_time_utc=real_time_utc,
             weather=data['weather'],
             current_song=data.get('currentSong')
         )

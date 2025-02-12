@@ -6,9 +6,9 @@ from urllib.parse import urlencode
 
 @admin.register(DaggerwalkLog)
 class DaggerwalkLogAdmin(admin.ModelAdmin):
-    list_display = ('real_time_utc', 'coordinates', 'region', 'location', 'formatted_date', 'weather', 'view_on_map_link')
-    list_filter = ('region', 'location', 'location_type', 'weather', 'real_time_utc',)
-    search_fields = ('region', 'location', 'location_type', 'weather', 'real_time_utc',)
+    list_display = ('created_at', 'coordinates', 'region', 'location', 'formatted_date', 'weather', 'view_on_map_link')
+    list_filter = ('region', 'location', 'location_type', 'weather', 'created_at',)
+    search_fields = ('region', 'location', 'location_type', 'weather', 'created_at',)
     
     def get_readonly_fields(self, request, obj=None):
         return [f.name for f in self.model._meta.fields] + ['view_on_map_link']
@@ -39,13 +39,6 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
     formatted_date.admin_order_field = 'date'
     formatted_date.short_description = 'Game Date'
 
-    def real_time_utc(self, obj):
-        if obj.real_time_utc:
-            return obj.real_time_utc.strftime('%Y-%m-%d %I:%M:%S %p')
-        return None
-    real_time_utc.admin_order_field = 'real_time_utc'
-    real_time_utc.short_description = 'Time (UTC)'
-
     def view_on_map_link(self, obj):
         if obj.region and obj.map_pixel_x is not None and obj.map_pixel_y is not None:
             base_url = reverse('daggerwalk')
@@ -63,6 +56,12 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
     view_on_map_link.short_description = 'View'
     
     fieldsets = (
+        ('General', {
+            'fields': (
+              'id',
+              'created_at',
+            ),
+        }),
         ('Location', {
             'fields': (
                 'region', 
@@ -81,9 +80,11 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
         ('Time & Environment', {
             'fields': (
                 'date',
-                'real_time_utc',
                 'weather',
                 'current_song'
             ),
         })
     )
+
+    def has_add_permission(self, request):
+        return False

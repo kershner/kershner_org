@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class DaggerwalkLog(models.Model):
     # World coordinates
     world_x = models.IntegerField(help_text="X coordinate in world space")
@@ -21,19 +22,18 @@ class DaggerwalkLog(models.Model):
 
     # Time information
     date = models.CharField(max_length=255, help_text="In-game date and time")
-    real_time_utc = models.DateTimeField(help_text="Real-world UTC timestamp")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="Timestamp when this log entry was created")
 
     # Environment
     weather = models.CharField(max_length=255, help_text="Current weather condition")
     current_song = models.CharField(max_length=255, null=True, blank=True, help_text="Currently playing background music")
 
     class Meta:
-        ordering = ['-real_time_utc']
         verbose_name = 'Daggerwalk Log'
         verbose_name_plural = 'Daggerwalk Logs'
 
     def __str__(self):
-        return f"{self.region} at {self.real_time_utc.strftime('%Y-%m-%d %H:%M:%S')} UTC"
+        return f"{self.region} at {self.created_at}"
 
     @property
     def coordinates_tuple(self):
