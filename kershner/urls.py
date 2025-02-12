@@ -58,7 +58,7 @@ urlpatterns = [
     path('public-api-explorer', include(public_api_explorer_patterns)),
 
     # Daggerwalk
-    path('daggerwak/', include(daggerwalk_patterns)),
+    path('daggerwalk/', include(daggerwalk_patterns)),
     path('daggerwalk', include(daggerwalk_patterns)),
 
     # API

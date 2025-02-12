@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'apps.whoosh',
     'apps.ai_quiz',
     'apps.color_doodle',
+    'apps.daggerwalk',
     'storages',
     'django_filters',
     'rest_framework',

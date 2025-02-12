@@ -3,4 +3,5 @@ from django.urls import path
 
 daggerwalk_patterns = [
     path('', daggerwalk_views.DaggerwalkHomeView.as_view(), name='daggerwalk'),
+    path('log/', daggerwalk_views.create_daggerwalk_log, name='daggerwalk_log'),
 ]
