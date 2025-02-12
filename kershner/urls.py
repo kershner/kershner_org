@@ -1,5 +1,6 @@
 from apps.public_api_explorer.urls import public_api_explorer_patterns
 from apps.screenbloom.views import screenbloom_landing
+from apps.daggerwalk.urls import daggerwalk_patterns
 from apps.color_doodle.urls import doodle_patterns
 from apps.steamtime.urls import steamtime_patterns
 from apps.project import views as project_views
@@ -55,6 +56,10 @@ urlpatterns = [
     # public-api-explorer
     path('public-api-explorer/', include(public_api_explorer_patterns)),
     path('public-api-explorer', include(public_api_explorer_patterns)),
+
+    # Daggerwalk
+    path('daggerwak/', include(daggerwalk_patterns)),
+    path('daggerwalk', include(daggerwalk_patterns)),
 
     # API
     path('api/', include(api_patterns)),

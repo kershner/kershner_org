@@ -1,0 +1,34 @@
+{% load kershner_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daggerfall Map Viewer</title>
+    
+    <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/daggerwalk.css">
+</head>
+<body>
+    <div id="loading" class="loading">Loading map data...</div>
+    
+    <div id="worldMapView" class="view-container hidden" data-base-url="{% settings_value "BASE_S3_URL" %}">
+        <div class="map-container">
+            <img id="worldMap" src="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/daggerfall_world_map.png" alt="Daggerfall World Map">
+            <canvas id="overlay"></canvas>
+        </div>
+    </div>
+
+    <div id="regionMapView" class="view-container hidden">
+        <div class="map-container">
+            <img id="regionMap" src="" alt="Region Map">
+            <div id="marker" class="marker"></div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+      window.BASE_S3_URL = '{% settings_value "BASE_S3_URL" %}';
+    </script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk.js"></script>
+</body>
+</html>
