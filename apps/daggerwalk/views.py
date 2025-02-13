@@ -30,32 +30,32 @@ class DaggerwalkHomeView(View):
         return render(request, self.template_path, ctx)
 
 class DaggerwalkLogsView(View):
+    use_sampling = True
+    step = 3
+
     def get(self, request):
         region = request.GET.get('region')
+
         if not region:
             return JsonResponse({'error': 'Region parameter is required'}, status=400)
 
-        # Get all logs ordered by most recent first
-        logs = DaggerwalkLog.objects.order_by('-created_at')
-        
-        # Find the first log with matching region
-        first_matching_log = logs.filter(region=region).first()
-        if not first_matching_log:
-            return JsonResponse([], safe=False)
-            
-        # Get the created_at timestamp of the first matching log
-        target_timestamp = first_matching_log.created_at
-        
-        # Get all consecutive logs with the same region up until we hit a different region
-        matching_logs = []
-        for log in logs.filter(created_at__lte=target_timestamp):
-            if log.region == region:
-                matching_logs.append(log)
-            else:
-                break
-                
-        data = [model_to_dict(log) for log in matching_logs]
-        return JsonResponse(data, safe=False)
+        queryset = list(DaggerwalkLog.objects.filter(region=region).order_by('created_at'))
+
+        if self.use_sampling:
+            total_logs = len(queryset)
+            if total_logs == 0:
+                return JsonResponse([], safe=False)
+
+            # Select every nth row and ensure the last row is included
+            sampled_logs = queryset[::self.step]
+            if queryset[-1] not in sampled_logs:
+                sampled_logs.append(queryset[-1])
+
+            logs = sampled_logs
+        else:
+            logs = queryset
+
+        return JsonResponse([model_to_dict(log) for log in logs], safe=False)
     
 @csrf_exempt
 @require_http_methods(["POST"])
