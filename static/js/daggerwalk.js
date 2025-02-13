@@ -240,13 +240,34 @@ class MapViewer {
   getSelectedRegionPart(regionData, x, y) {
     if (!regionData) return null;
     
-    if (regionData.multi_part) {
-      return regionData.parts.find(part => 
-        x >= part.offset.x && y >= part.offset.y
-      ) || regionData.parts[0];
+    // If it's not a multi-part region, return the region data as is
+    if (!regionData.multi_part) {
+      return regionData;
     }
     
-    return regionData;
+    // For multi-part regions, ensure we have parts array
+    if (!regionData.parts || !regionData.parts.length) {
+      return regionData;
+    }
+  
+    // Find the part whose offset range contains our x,y coordinates
+    const selectedPart = regionData.parts.find(part => {
+      // Each part covers a section of the game world starting at its offset
+      // For example in Dragontail Mountains:
+      // FMAPAI01 covers x >= 583, y >= 279 but x < 680, y < 340
+      // FMAPBI01 covers x >= 680, y >= 279 but x < next_part, y < 340
+      // FMAPCI01 covers x >= 583, y >= 340
+      // FMAPDI01 covers x >= 680, y >= 340
+      
+      // Check if coordinates are past this part's starting point
+      const xInRange = x >= part.offset.x;
+      const yInRange = y >= part.offset.y;
+      
+      return xInRange && yInRange;
+    });
+    
+    // Default to first part if no match found
+    return selectedPart || regionData.parts[0];
   }
 
   clearMarkers() {
@@ -370,45 +391,28 @@ class MapViewer {
         this.ctx.strokeStyle = 'white';
         this.ctx.lineWidth = 2;
 
-        // Split markers into segments based on reset
-        let currentSegment = [];
-        const segments = [];
+        // Draw lines between markers, breaking only when drawing TO a reset marker
+        for (let i = 0; i < sortedMarkers.length - 1; i++) {
+            const current = sortedMarkers[i];
+            const next = sortedMarkers[i + 1];
 
-        sortedMarkers.forEach(marker => {
-            if (marker.reset) {
-                if (currentSegment.length > 0) {
-                    segments.push(currentSegment);
-                }
-                currentSegment = [marker];
-            } else {
-                currentSegment.push(marker);
+            // Skip drawing the line if the next marker is a reset
+            if (current.reset || next.reset) {
+                continue;
             }
-        });
-        
-        // Add the last segment if it exists
-        if (currentSegment.length > 0) {
-            segments.push(currentSegment);
+
+            if (current.center && next.center) {
+                const fromX = current.center.x * scale.scaleX + scale.offsetX;
+                const fromY = current.center.y * scale.scaleY + scale.offsetY;
+                const toX = next.center.x * scale.scaleX + scale.offsetX;
+                const toY = next.center.y * scale.scaleY + scale.offsetY;
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(fromX, fromY);
+                this.ctx.lineTo(toX, toY);
+                this.ctx.stroke();
+            }
         }
-
-        // Draw lines for each segment
-        segments.forEach(segment => {
-            for (let i = 0; i < segment.length - 1; i++) {
-                const current = segment[i];
-                const next = segment[i + 1];
-
-                if (current.center && next.center) {
-                    const fromX = current.center.x * scale.scaleX + scale.offsetX;
-                    const fromY = current.center.y * scale.scaleY + scale.offsetY;
-                    const toX = next.center.x * scale.scaleX + scale.offsetX;
-                    const toY = next.center.y * scale.scaleY + scale.offsetY;
-
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(fromX, fromY);
-                    this.ctx.lineTo(toX, toY);
-                    this.ctx.stroke();
-                }
-            }
-        });
     }
 
     // Draw all markers
