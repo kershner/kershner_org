@@ -6,8 +6,8 @@ from urllib.parse import urlencode
 
 @admin.register(DaggerwalkLog)
 class DaggerwalkLogAdmin(admin.ModelAdmin):
-    list_display = ('created_at', 'view_on_map_link', 'coordinates', 'region', 'location', 'formatted_date', 'weather')
-    list_filter = ('region', 'location', 'location_type', 'weather', 'created_at',)
+    list_display = ('created_at', 'view_on_map_link', 'coordinates', 'region', 'location', 'formatted_date', 'weather', 'reset')
+    list_filter = ('region', 'location', 'location_type', 'weather', 'created_at', 'reset',)
     search_fields = ('region', 'location', 'location_type', 'weather', 'created_at',)
     
     def get_readonly_fields(self, request, obj=None):
@@ -60,6 +60,7 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
             'fields': (
               'id',
               'created_at',
+              'reset',
               'view_on_map_link'
             ),
         }),

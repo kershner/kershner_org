@@ -177,29 +177,39 @@ class MapViewer {
   }
 
   addAllWorldMapMarkers() {
-    this.clearWorldMapMarkers();
-    for (let i = 0; i < window.REGION_MARKERS.length; i++) {
-      this.addWorldMapMarker({
-        'regionName': window.REGION_MARKERS[i],
-        'order': i
-      });
-    }
+      this.clearWorldMapMarkers();
+      for (let i = 0; i < window.REGION_DATA.length; i++) {
+        this.addWorldMapMarker({
+          'regionName': window.REGION_DATA[i].region,
+          'latestDate': window.REGION_DATA[i].latest_date,
+          'reset': window.REGION_DATA[i].latest_reset,
+          'location': window.REGION_DATA[i].latest_location,
+          'weather': window.REGION_DATA[i].latest_weather,
+          'currentSong': window.REGION_DATA[i].latest_current_song,
+          'order': i
+        });
+      }
   }
 
   addWorldMapMarker(markerData) {
-    // Add marker to Map
-    this.worldMapMarkers.set(markerData.regionName, {
-      order: markerData.order,
-      regionName: markerData.regionName
-    });
-    
-    // Force redraw
-    this.drawProvinceShapes();
+      // Add marker to Map with all the new data
+      this.worldMapMarkers.set(markerData.regionName, {
+          order: markerData.order,
+          regionName: markerData.regionName,
+          latestDate: markerData.latestDate,
+          reset: markerData.reset,
+          location: markerData.location,
+          weather: markerData.weather,
+          currentSong: markerData.currentSong
+      });
+      
+      // Force redraw
+      this.drawProvinceShapes();
   }
 
   clearWorldMapMarkers() {
-    this.worldMapMarkers.clear();
-    this.drawProvinceShapes();
+      this.worldMapMarkers.clear();
+      this.drawProvinceShapes();
   }
 
   addMarker(regionName, x, y) {
@@ -360,22 +370,45 @@ class MapViewer {
         this.ctx.strokeStyle = 'white';
         this.ctx.lineWidth = 2;
 
-        for (let i = 0; i < sortedMarkers.length - 1; i++) {
-            const current = sortedMarkers[i];
-            const next = sortedMarkers[i + 1];
+        // Split markers into segments based on reset
+        let currentSegment = [];
+        const segments = [];
 
-            if (current.center && next.center) {
-                const fromX = current.center.x * scale.scaleX + scale.offsetX;
-                const fromY = current.center.y * scale.scaleY + scale.offsetY;
-                const toX = next.center.x * scale.scaleX + scale.offsetX;
-                const toY = next.center.y * scale.scaleY + scale.offsetY;
-
-                this.ctx.beginPath();
-                this.ctx.moveTo(fromX, fromY);
-                this.ctx.lineTo(toX, toY);
-                this.ctx.stroke();
+        sortedMarkers.forEach(marker => {
+            if (marker.reset) {
+                if (currentSegment.length > 0) {
+                    segments.push(currentSegment);
+                }
+                currentSegment = [marker];
+            } else {
+                currentSegment.push(marker);
             }
+        });
+        
+        // Add the last segment if it exists
+        if (currentSegment.length > 0) {
+            segments.push(currentSegment);
         }
+
+        // Draw lines for each segment
+        segments.forEach(segment => {
+            for (let i = 0; i < segment.length - 1; i++) {
+                const current = segment[i];
+                const next = segment[i + 1];
+
+                if (current.center && next.center) {
+                    const fromX = current.center.x * scale.scaleX + scale.offsetX;
+                    const fromY = current.center.y * scale.scaleY + scale.offsetY;
+                    const toX = next.center.x * scale.scaleX + scale.offsetX;
+                    const toY = next.center.y * scale.scaleY + scale.offsetY;
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(fromX, fromY);
+                    this.ctx.lineTo(toX, toY);
+                    this.ctx.stroke();
+                }
+            }
+        });
     }
 
     // Draw all markers

@@ -13,18 +13,31 @@ class DaggerwalkHomeView(View):
     template_path = 'daggerwalk/index.html'
 
     def get(self, request):
-        # Get distinct regions with their most recent timestamps
-        region_markers = (
+        # Get distinct regions with their most recent data
+        region_data = (
             DaggerwalkLog.objects
             .values('region')
-            .annotate(latest_date=Max('created_at'))
+            .annotate(
+                latest_date=Max('created_at'),
+                latest_reset=Max('reset'),
+                latest_location=Max('location'),
+                latest_weather=Max('weather'),
+                latest_current_song=Max('current_song')
+            )
             .order_by('-latest_date')
-            .values_list('region', flat=True)
+            .values(
+                'region',
+                'latest_date',
+                'latest_reset',
+                'latest_location',
+                'latest_weather',
+                'latest_current_song'
+            )
             .distinct()[:10]
         )
 
         ctx = {
-            'region_markers': json.dumps(list(region_markers))
+            'region_data': json.dumps(list(region_data), default=str)
         }
         print(ctx)
         return render(request, self.template_path, ctx)
@@ -77,7 +90,8 @@ def create_daggerwalk_log(request):
             player_z=data['playerZ'],
             date=data['date'],
             weather=data['weather'],
-            current_song=data.get('currentSong')
+            current_song=data.get('currentSong'),
+            reset=data.get('reset')
         )
         
         return JsonResponse({

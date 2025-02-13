@@ -28,7 +28,7 @@
 
     <script type="text/javascript">
       window.BASE_S3_URL = '{% settings_value "BASE_S3_URL" %}';
-      window.REGION_MARKERS = {{ region_markers|safe }};
+      window.REGION_DATA = {{ region_data|safe }};
     </script>
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk.js"></script>
 </body>

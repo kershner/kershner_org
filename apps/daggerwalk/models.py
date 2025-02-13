@@ -28,6 +28,8 @@ class DaggerwalkLog(models.Model):
     weather = models.CharField(max_length=255, help_text="Current weather condition")
     current_song = models.CharField(max_length=255, null=True, blank=True, help_text="Currently playing background music")
 
+    reset = models.BooleanField(default=False, help_text="Indicates if the log started at a new location")
+
     class Meta:
         verbose_name = 'Daggerwalk Log'
         verbose_name_plural = 'Daggerwalk Logs'
