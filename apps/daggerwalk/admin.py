@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 
 @admin.register(DaggerwalkLog)
 class DaggerwalkLogAdmin(admin.ModelAdmin):
-    list_display = ('created_at', 'coordinates', 'region', 'location', 'formatted_date', 'weather', 'view_on_map_link')
+    list_display = ('created_at', 'view_on_map_link', 'coordinates', 'region', 'location', 'formatted_date', 'weather')
     list_filter = ('region', 'location', 'location_type', 'weather', 'created_at',)
     search_fields = ('region', 'location', 'location_type', 'weather', 'created_at',)
     
@@ -49,7 +49,7 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
             })
             url = f'{base_url}?{query_params}'
             return format_html(
-                '<a href="{}" class="button default" target="_blank" style="white-space: nowrap;">View on Map</a>',
+                '<a href="{}" class="button default" target="_blank" style="white-space: nowrap; text-decoration: none;">Map</a>',
                 url
             )
         return '-'
@@ -60,6 +60,7 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
             'fields': (
               'id',
               'created_at',
+              'view_on_map_link'
             ),
         }),
         ('Location', {
@@ -67,7 +68,6 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
                 'region', 
                 'location', 
                 'location_type',
-                'view_on_map_link',
             ),
         }),
         ('Coordinates', {

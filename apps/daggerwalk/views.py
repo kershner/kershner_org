@@ -1,11 +1,11 @@
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
+from django.forms.models import model_to_dict
 from django.views.generic import View
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.utils import timezone
 from .models import DaggerwalkLog
-from datetime import datetime
+from django.db.models import Max
 import json
 
 
@@ -13,16 +13,54 @@ class DaggerwalkHomeView(View):
     template_path = 'daggerwalk/index.html'
 
     def get(self, request):
-        ctx = {}
+        # Get distinct regions with their most recent timestamps
+        region_markers = (
+            DaggerwalkLog.objects
+            .values('region')
+            .annotate(latest_date=Max('created_at'))
+            .order_by('-latest_date')
+            .values_list('region', flat=True)
+            .distinct()[:10]
+        )
+
+        ctx = {
+            'region_markers': json.dumps(list(region_markers))
+        }
+        print(ctx)
         return render(request, self.template_path, ctx)
+
+class DaggerwalkLogsView(View):
+    def get(self, request):
+        region = request.GET.get('region')
+        if not region:
+            return JsonResponse({'error': 'Region parameter is required'}, status=400)
+
+        # Get all logs ordered by most recent first
+        logs = DaggerwalkLog.objects.order_by('-created_at')
+        
+        # Find the first log with matching region
+        first_matching_log = logs.filter(region=region).first()
+        if not first_matching_log:
+            return JsonResponse([], safe=False)
+            
+        # Get the created_at timestamp of the first matching log
+        target_timestamp = first_matching_log.created_at
+        
+        # Get all consecutive logs with the same region up until we hit a different region
+        matching_logs = []
+        for log in logs.filter(created_at__lte=target_timestamp):
+            if log.region == region:
+                matching_logs.append(log)
+            else:
+                break
+                
+        data = [model_to_dict(log) for log in matching_logs]
+        return JsonResponse(data, safe=False)
     
-
-import pytz
-from django.utils import timezone
-
 @csrf_exempt
 @require_http_methods(["POST"])
 def create_daggerwalk_log(request):
+    # TODO - add auth
     try:
         data = json.loads(request.body)
         

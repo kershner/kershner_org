@@ -34,8 +34,3 @@ class DaggerwalkLog(models.Model):
 
     def __str__(self):
         return f"{self.region} at {self.created_at}"
-
-    @property
-    def coordinates_tuple(self):
-        """Returns a tuple of player coordinates for easy access"""
-        return (self.player_x, self.player_y, self.player_z)

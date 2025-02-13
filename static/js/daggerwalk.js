@@ -1,315 +1,487 @@
-// Initialize empty objects for the data
-let provinceShapes = {};
-let regionMap = {};
-
-let mapWidth, mapHeight;
-let worldMapView = document.getElementById('worldMapView');
-let regionMapView = document.getElementById('regionMapView');
-let worldMap = document.getElementById('worldMap');
-let canvas = document.getElementById('overlay');
-let ctx = canvas.getContext('2d');
-let loadingElement = document.getElementById('loading');
-
-// Add variables to track mouse position
-let mouseX = 0;
-let mouseY = 0;
-let hoveredProvince = null;
-
-// Function to load JSON data
-async function loadMapData() {
-    try {
-        const [shapesResponse, regionsResponse] = await Promise.all([
-            fetch('https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/province_shapes.json'),
-            fetch('https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/region_fmap_mapping.json')
-        ]);
-
-        if (!shapesResponse.ok || !regionsResponse.ok) {
-            throw new Error('Failed to fetch map data');
-        }
-
-        provinceShapes = await shapesResponse.json();
-        regionMap = await regionsResponse.json();
-
-        // Hide loading message and show world map
-        loadingElement.classList.add('hidden');
-        worldMapView.classList.remove('hidden');
-
-        // Initialize the map after data is loaded
-        initializeMap();
-    } catch (error) {
-        console.error('Error loading map data:', error);
-        loadingElement.textContent = 'Error loading map data. Please refresh the page.';
-        loadingElement.classList.add('error');
-    }
-}
-
-function initializeMap() {
-    handleUrlParams();
+class MapViewer {
+  constructor() {
+    this.provinceShapes = {};
+    this.regionMap = {};
+    this.mousePos = { x: 0, y: 0 };
+    this.hoveredProvince = null;
+    this.fetchTimer = null;
+    this.worldMapMarkers = new Map();
+    this.markerSize = 32;
+    this.markerImage = new Image();
+    this.regionCenters = {};
     
-    // Set up world map sizing
-    worldMap.onload = function() {
-        mapWidth = worldMap.naturalWidth;
-        mapHeight = worldMap.naturalHeight;
-        canvas.width = worldMap.width;
-        canvas.height = worldMap.height;
-        drawProvinceShapes();
+    // DOM elements
+    this.elements = {
+      worldMapView: document.getElementById('worldMapView'),
+      regionMapView: document.getElementById('regionMapView'),
+      worldMap: document.getElementById('worldMap'),
+      regionMap: document.getElementById('regionMap'),
+      canvas: document.getElementById('overlay'),
+      loading: document.getElementById('loading')
+    };
+    
+    this.ctx = this.elements.canvas.getContext('2d');
+    
+    // Constants
+    this.config = {
+      regionFetchInterval: 20000,
+      baseS3Url: window.BASE_S3_URL,
+      dataUrls: {
+        shapes: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/province_shapes.json',
+        regions: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/region_fmap_mapping.json'
+      }
     };
 
-    // Trigger onload if image is already loaded
-    if (worldMap.complete) {
-        worldMap.onload();
+    this.bindEvents();
+  }
+
+  async init() {
+    await this.loadMapData();
+    this.calculateRegionCenters();
+    this.handleUrlParams();
+    this.initializeMap();
+  }
+
+  async loadMapData() {
+    try {
+      const [shapesResponse, regionsResponse] = await Promise.all([
+        fetch(this.config.dataUrls.shapes),
+        fetch(this.config.dataUrls.regions)
+      ]);
+
+      if (!shapesResponse.ok || !regionsResponse.ok) {
+        throw new Error('Failed to fetch map data');
+      }
+
+      this.provinceShapes = await shapesResponse.json();
+      this.regionMap = await regionsResponse.json();
+
+      this.elements.loading.classList.add('hidden');
+      this.elements.worldMapView.classList.remove('hidden');
+    } catch (error) {
+      console.error('Error loading map data:', error);
+      this.elements.loading.textContent = 'Error loading map data. Please refresh the page.';
+      this.elements.loading.classList.add('error');
     }
-}
+  }
 
-function calculateRegionMapScale(img) {
-    const originalWidth = img.naturalWidth;
-    const currentWidth = img.clientWidth;
-    return currentWidth / originalWidth;
-}
-
-// Handle URL parameters on load
-function handleUrlParams() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const region = urlParams.get('region');
-    const x = urlParams.get('x');
-    const y = urlParams.get('y');
-
-    if (region && regionMap[region]) {
-        showRegionMap(region, x, y);
-    }
-}
-
-// View switching functions
-function showWorldMap() {
-    worldMapView.classList.remove('hidden');
-    regionMapView.classList.add('hidden');
-    history.pushState({}, '', window.location.pathname);
-}
-
-function showRegionMap(regionName, x, y) {
-    if (!regionMap[regionName]) return;
-
-    worldMapView.classList.add('hidden');
-    regionMapView.classList.remove('hidden');
-    
-    const regionData = regionMap[regionName];
-    let selectedPart;
-
-    if (regionData.multi_part) {
-        if (x && y) {
-            selectedPart = regionData.parts.find(part => 
-                x >= part.offset.x && y >= part.offset.y
-            ) || regionData.parts[0];
-        } else {
-            selectedPart = regionData.parts[0];
-        }
-        document.getElementById('regionMap').src = `${window.BASE_S3_URL}/img/daggerwalk/maps/${selectedPart.fmap_image}`;
-    } else {
-        selectedPart = regionData;
-        document.getElementById('regionMap').src = `${window.BASE_S3_URL}/img/daggerwalk/maps/${regionData.fmap_image}`;
-    }
-
-    if (x && y) {
-        const regionImg = document.getElementById('regionMap');
+  calculateRegionCenters() {
+    Object.entries(this.provinceShapes).forEach(([provinceName, points]) => {
+      if (this.regionMap[provinceName]) {
+        // Calculate centroid using the polygon area method
+        let area = 0;
+        let cx = 0;
+        let cy = 0;
+        const len = points.length;
         
-        regionImg.onload = () => {
-            const scaleFactor = calculateRegionMapScale(regionImg);
-            const scale = (selectedPart.fmap_image === 'FMAP0I19.PNG') ? 4 : 1;
-            
-            const screenX = (x - selectedPart.offset.x) * scale * scaleFactor;
-            const screenY = (y - selectedPart.offset.y) * scale * scaleFactor;
-            
-            const marker = document.getElementById('marker');
-            marker.style.left = `${screenX}px`;
-            marker.style.top = `${screenY}px`;
-            marker.classList.remove('hidden');
+        for (let i = 0; i < len; i++) {
+          const j = (i + 1) % len;
+          const [xi, yi] = points[i];
+          const [xj, yj] = points[j];
+          
+          const factor = (xi * yj - xj * yi);
+          area += factor;
+          cx += (xi + xj) * factor;
+          cy += (yi + yj) * factor;
+        }
+        
+        area /= 2;
+        const areaFactor = 1 / (6 * area);
+        
+        this.regionCenters[provinceName] = {
+          x: Math.abs(cx * areaFactor),
+          y: Math.abs(cy * areaFactor)
         };
+      }
+    });
+  }
+
+  initializeMap() {
+    const onLoad = () => {
+      this.mapDimensions = {
+        width: this.elements.worldMap.naturalWidth,
+        height: this.elements.worldMap.naturalHeight
+      };
+      this.elements.canvas.width = this.elements.worldMap.width;
+      this.elements.canvas.height = this.elements.worldMap.height;
+      this.drawProvinceShapes();
+    };
+
+    if (this.elements.worldMap.complete) {
+      onLoad();
     } else {
-        document.getElementById('marker').classList.add('hidden');
+      this.elements.worldMap.onload = onLoad;
+    }
+  }
+
+  handleUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    const region = params.get('region');
+    const x = params.get('x');
+    const y = params.get('y');
+
+    if (region && this.regionMap[region]) {
+      this.showRegionMap(region, x, y);
+      x && y ? this.addMarker(region, x, y) : this.fetchDaggerwalkLogs(region);
+    }
+  }
+
+  async fetchDaggerwalkLogs(region) {
+    try {
+      const response = await fetch(`/daggerwalk/logs/?region=${encodeURIComponent(region)}`);
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+      
+      const data = await response.json();
+      this.clearMarkers();
+      data.forEach(log => this.addMarker(log.region, log.map_pixel_x, log.map_pixel_y));
+
+      this.startLogPolling(region);
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+    }
+  }
+
+  startLogPolling(region) {
+    this.stopLogPolling();
+    this.fetchTimer = setInterval(
+      () => this.fetchDaggerwalkLogs(region),
+      this.config.regionFetchInterval
+    );
+  }
+
+  stopLogPolling() {
+    if (this.fetchTimer) {
+      clearInterval(this.fetchTimer);
+      this.fetchTimer = null;
+    }
+  }
+
+  showWorldMap() {
+    this.elements.worldMapView.classList.remove('hidden');
+    this.elements.regionMapView.classList.add('hidden');
+    this.stopLogPolling();
+    history.pushState({}, '', window.location.pathname);
+    this.addAllWorldMapMarkers();
+  }
+
+  showRegionMap(regionName, x, y) {
+    if (!this.regionMap[regionName]) return;
+
+    this.elements.worldMapView.classList.add('hidden');
+    this.elements.regionMapView.classList.remove('hidden');
+
+    const regionData = this.regionMap[regionName];
+    const selectedPart = this.getSelectedRegionPart(regionData, x, y);
+    const newSrc = `${this.config.baseS3Url}/img/daggerwalk/maps/${selectedPart.fmap_image}`;
+
+    if (this.elements.regionMap.src !== newSrc) {
+      this.elements.regionMap.src = newSrc;
     }
 
-    const params = new URLSearchParams();
-    params.set('region', regionName);
-    if (x) params.set('x', x);
-    if (y) params.set('y', y);
-    history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
-}
+    this.clearMarkers();
+  }
 
-// Handle back/forward browser navigation
-window.onpopstate = handleUrlParams;
-
-// Ray casting algorithm for point-in-polygon detection
-function isPointInPolygon(x, y, polygon, tolerance = 5) {
-    for (let dx = -tolerance; dx <= tolerance; dx++) {
-        for (let dy = -tolerance; dy <= tolerance; dy++) {
-            if (isPointInPolygonCore(x + dx, y + dy, polygon)) {
-                return true;
-            }
-        }
+  addAllWorldMapMarkers() {
+    this.clearWorldMapMarkers();
+    for (let i = 0; i < window.REGION_MARKERS.length; i++) {
+      this.addWorldMapMarker({
+        'regionName': window.REGION_MARKERS[i],
+        'order': i
+      });
     }
-    return false;
-}
+  }
 
-function isPointInPolygonCore(x, y, polygon) {
-    let inside = false;
-    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-        const xi = polygon[i][0], yi = polygon[i][1];
-        const xj = polygon[j][0], yj = polygon[j][1];
-        
-        const intersect = ((yi > y) !== (yj > y))
-            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-        if (intersect) inside = !inside;
+  addWorldMapMarker(markerData) {
+    // Add marker to Map
+    this.worldMapMarkers.set(markerData.regionName, {
+      order: markerData.order,
+      regionName: markerData.regionName
+    });
+    
+    // Force redraw
+    this.drawProvinceShapes();
+  }
+
+  clearWorldMapMarkers() {
+    this.worldMapMarkers.clear();
+    this.drawProvinceShapes();
+  }
+
+  addMarker(regionName, x, y) {
+    if (!x || !y) return;
+
+    requestAnimationFrame(() => {
+      const regionData = this.regionMap[regionName];
+      if (!regionData) return;
+
+      const selectedPart = this.getSelectedRegionPart(regionData, x, y);
+      const mapContainer = document.querySelector('#regionMapView .map-container');
+
+      const placeMarker = () => {
+        const scaleFactor = this.calculateRegionMapScale();
+        const scale = selectedPart.fmap_image === 'FMAP0I19.PNG' ? 4 : 1;
+        const screenX = (x - selectedPart.offset.x) * scale * scaleFactor;
+        const screenY = (y - selectedPart.offset.y) * scale * scaleFactor;
+
+        const marker = document.createElement('div');
+        marker.classList.add('marker');
+        marker.style.left = `${screenX}px`;
+        marker.style.top = `${screenY}px`;
+        mapContainer.appendChild(marker);
+      };
+
+      if (this.elements.regionMap.complete) {
+        placeMarker();
+      } else {
+        this.elements.regionMap.addEventListener('load', placeMarker, { once: true });
+      }
+    });
+  }
+
+  getSelectedRegionPart(regionData, x, y) {
+    if (!regionData) return null;
+    
+    if (regionData.multi_part) {
+      return regionData.parts.find(part => 
+        x >= part.offset.x && y >= part.offset.y
+      ) || regionData.parts[0];
     }
-    return inside;
-}
+    
+    return regionData;
+  }
 
-function getMapScale() {
-    const img = document.getElementById('worldMap');
+  clearMarkers() {
+    document.querySelectorAll('#regionMapView .marker').forEach(marker => marker.remove());
+  }
+
+  calculateRegionMapScale() {
+    return this.elements.regionMap.clientWidth / this.elements.regionMap.naturalWidth;
+  }
+
+  getMapScale() {
+    const img = this.elements.worldMap;
     const containerWidth = img.clientWidth;
     const containerHeight = img.clientHeight;
     
-    let renderedWidth, renderedHeight;
-    const imageAspectRatio = mapWidth / mapHeight;
+    const imageAspectRatio = this.mapDimensions.width / this.mapDimensions.height;
     const containerAspectRatio = containerWidth / containerHeight;
 
+    let renderedWidth, renderedHeight;
     if (containerAspectRatio > imageAspectRatio) {
-        renderedHeight = containerHeight;
-        renderedWidth = containerHeight * imageAspectRatio;
+      renderedHeight = containerHeight;
+      renderedWidth = containerHeight * imageAspectRatio;
     } else {
-        renderedWidth = containerWidth;
-        renderedHeight = containerWidth / imageAspectRatio;
+      renderedWidth = containerWidth;
+      renderedHeight = containerWidth / imageAspectRatio;
     }
-
-    const xOffset = (containerWidth - renderedWidth) / 2;
-    const yOffset = (containerHeight - renderedHeight) / 2;
 
     return {
-        scaleX: renderedWidth / mapWidth,
-        scaleY: renderedHeight / mapHeight,
-        offsetX: xOffset,
-        offsetY: yOffset
+      scaleX: renderedWidth / this.mapDimensions.width,
+      scaleY: renderedHeight / this.mapDimensions.height,
+      offsetX: (containerWidth - renderedWidth) / 2,
+      offsetY: (containerHeight - renderedHeight) / 2
     };
-}
+  }
 
-function drawProvinceShapes() {
+  isPointInPolygon(x, y, polygon, tolerance = 5) {
+    for (let dx = -tolerance; dx <= tolerance; dx++) {
+      for (let dy = -tolerance; dy <= tolerance; dy++) {
+        if (this.isPointInPolygonCore(x + dx, y + dy, polygon)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  isPointInPolygonCore(x, y, polygon) {
+    let inside = false;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      const [xi, yi] = polygon[i];
+      const [xj, yj] = polygon[j];
+      
+      const intersect = ((yi > y) !== (yj > y)) &&
+        (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  drawProvinceShapes() {
     const container = document.querySelector('.map-container');
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientHeight;
+    this.elements.canvas.width = container.clientWidth;
+    this.elements.canvas.height = container.clientHeight;
     
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const scale = getMapScale();
+    this.ctx.clearRect(0, 0, this.elements.canvas.width, this.elements.canvas.height);
+    this.elements.worldMap.style.cursor = this.hoveredProvince ? 'pointer' : 'default';
 
-    worldMap.style.cursor = hoveredProvince ? 'pointer' : 'default';
+    const scale = this.getMapScale();
 
-    Object.entries(provinceShapes).forEach(([province, points]) => {
-        if (province === hoveredProvince) {
-            ctx.fillStyle = 'white';
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = 3;
-            ctx.font = 'bold 16px Arial';
-            
-            const textMetrics = ctx.measureText(province);
-            const textWidth = textMetrics.width;
-            const textHeight = 16;
-            const padding = 10;
-            
-            let textX = mouseX + padding;
-            let textY = mouseY + padding;
-            
-            const rightEdge = canvas.width - textWidth - padding;
-            const bottomEdge = canvas.height - textHeight - padding;
-            
-            if (textX > rightEdge) {
-                textX = mouseX - 5;
-                ctx.textAlign = 'right';
-            } else {
-                ctx.textAlign = 'left';
-            }
-            
-            if (textY > bottomEdge) {
-                textY = mouseY - textHeight - padding;
-                ctx.textBaseline = 'bottom';
-            } else {
-                ctx.textBaseline = 'top';
-            }
-            
-            ctx.strokeText(province, textX, textY);
-            ctx.fillText(province, textX, textY);
+    // Draw connecting lines with arrows if we have multiple markers
+    if (this.worldMapMarkers.size > 1) {
+      // Convert Map to array and sort by order
+      const sortedMarkers = Array.from(this.worldMapMarkers.entries())
+        .map(([region, data]) => ({
+          region,
+          ...data,
+          center: this.regionCenters[region]
+        }))
+        .sort((a, b) => a.order - b.order);
+
+      // Draw lines connecting markers in order
+      this.ctx.strokeStyle = 'white';
+      this.ctx.fillStyle = 'white';
+      this.ctx.lineWidth = 2;
+
+      for (let i = 0; i < sortedMarkers.length - 1; i++) {
+        const current = sortedMarkers[i];
+        const next = sortedMarkers[i + 1];
+        
+        if (current.center && next.center) {
+          const fromX = current.center.x * scale.scaleX + scale.offsetX;
+          const fromY = current.center.y * scale.scaleY + scale.offsetY;
+          const toX = next.center.x * scale.scaleX + scale.offsetX;
+          const toY = next.center.y * scale.scaleY + scale.offsetY;
+          
+          this.ctx.beginPath();
+          this.ctx.moveTo(fromX, fromY);
+          this.ctx.lineTo(toX, toY);
+          this.ctx.stroke();
         }
-    });
-}
+      }
+    }
 
-// Event Listeners
-worldMap.addEventListener('mousemove', function(event) {
+    // Draw the markers
+    for (const [region, marker] of this.worldMapMarkers) {
+      const center = this.regionCenters[region];
+      if (center) {
+        const x = center.x * scale.scaleX + scale.offsetX;
+        const y = center.y * scale.scaleY + scale.offsetY;
+        
+        // Create circular clipping path
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, this.markerSize / 2, 0, 2 * Math.PI);
+        this.ctx.clip();
+        
+        // Draw the image inside the circle
+        const image = this.markerImage;
+        this.ctx.drawImage(
+          image,
+          x - this.markerSize / 2,
+          y - this.markerSize / 2,
+          this.markerSize,
+          this.markerSize
+        );
+        
+        this.ctx.restore();
+        
+        // Draw circle border
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, this.markerSize / 2, 0, 2 * Math.PI);
+        this.ctx.strokeStyle = 'white';
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+      }
+    }
+
+    if (this.hoveredProvince) {
+      this.drawProvinceLabel();
+    }
+  }
+
+  drawProvinceLabel() {
+    this.ctx.fillStyle = 'white';
+    this.ctx.strokeStyle = 'black';
+    this.ctx.lineWidth = 3;
+    this.ctx.font = 'bold 16px Arial';
+    
+    const textMetrics = this.ctx.measureText(this.hoveredProvince);
+    const textWidth = textMetrics.width;
+    const textHeight = 16;
+    const padding = 10;
+    
+    let textX = this.mousePos.x + padding;
+    let textY = this.mousePos.y + padding;
+    
+    if (textX > this.elements.canvas.width - textWidth - padding) {
+      textX = this.mousePos.x - 5;
+      this.ctx.textAlign = 'right';
+    } else {
+      this.ctx.textAlign = 'left';
+    }
+    
+    if (textY > this.elements.canvas.height - textHeight - padding) {
+      textY = this.mousePos.y - textHeight - padding;
+      this.ctx.textBaseline = 'bottom';
+    } else {
+      this.ctx.textBaseline = 'top';
+    }
+    
+    this.ctx.strokeText(this.hoveredProvince, textX, textY);
+    this.ctx.fillText(this.hoveredProvince, textX, textY);
+  }
+
+  bindEvents() {
+    this.elements.worldMap.addEventListener('mousemove', this.handleMouseMove.bind(this));
+    this.elements.worldMap.addEventListener('mouseleave', this.handleMouseLeave.bind(this));
+    this.elements.worldMap.addEventListener('mousedown', () => this.drawProvinceShapes());
+    this.elements.worldMap.addEventListener('mouseup', () => this.drawProvinceShapes());
+    this.elements.worldMap.addEventListener('click', this.handleWorldMapClick.bind(this));
+    this.elements.regionMap.addEventListener('click', () => this.showWorldMap());
+    window.onpopstate = () => this.handleUrlParams();
+  }
+
+  handleMouseMove(event) {
     const rect = event.target.getBoundingClientRect();
-    const scale = getMapScale();
+    const scale = this.getMapScale();
     
-    mouseX = event.clientX - rect.left;
-    mouseY = event.clientY - rect.top;
+    this.mousePos = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    };
     
-    const x = (mouseX - scale.offsetX) / scale.scaleX;
-    const y = (mouseY - scale.offsetY) / scale.scaleY;
+    const x = (this.mousePos.x - scale.offsetX) / scale.scaleX;
+    const y = (this.mousePos.y - scale.offsetY) / scale.scaleY;
     
-    let found = null;
-    for (const [province, points] of Object.entries(provinceShapes)) {
-        if (isPointInPolygon(x, y, points, 5)) {
-            found = province;
-            break;
-        }
+    const found = Object.entries(this.provinceShapes).find(([_, points]) => 
+      this.isPointInPolygon(x, y, points, 5)
+    )?.[0] || null;
+
+    if (found !== this.hoveredProvince) {
+      this.hoveredProvince = found;
+      this.drawProvinceShapes();
+    } else if (this.hoveredProvince) {
+      this.drawProvinceShapes();
     }
+  }
 
-    if (found !== hoveredProvince) {
-        hoveredProvince = found;
-        drawProvinceShapes();
-    } else if (hoveredProvince) {
-        drawProvinceShapes();
-    }
-});
+  handleMouseLeave() {
+    this.hoveredProvince = null;
+    this.drawProvinceShapes();
+  }
 
-worldMap.addEventListener('mouseleave', function() {
-    hoveredProvince = null;
-    drawProvinceShapes();
-});
-
-worldMap.addEventListener('mousedown', function(event) {
-    if (hoveredProvince) {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-        drawProvinceShapes();
-    }
-});
-
-worldMap.addEventListener('mouseup', function(event) {
-    if (hoveredProvince) {
-        drawProvinceShapes();
-    }
-});
-
-worldMap.addEventListener('click', function(event) {
+  handleWorldMapClick(event) {
     const rect = event.target.getBoundingClientRect();
-    const scale = getMapScale();
+    const scale = this.getMapScale();
     
     const x = Math.round((event.clientX - rect.left - scale.offsetX) / scale.scaleX);
     const y = Math.round((event.clientY - rect.top - scale.offsetY) / scale.scaleY);
     
-    if (hoveredProvince && regionMap[hoveredProvince]) {
-        showRegionMap(hoveredProvince, x, y);
+    if (this.hoveredProvince && this.regionMap[this.hoveredProvince]) {
+      this.showRegionMap(this.hoveredProvince, x, y);
+      this.fetchDaggerwalkLogs(this.hoveredProvince);
+      const params = new URLSearchParams(window.location.search);
+      params.set('region', this.hoveredProvince);
+      history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
     }
-});
+  }
+}
 
-document.getElementById('regionMap').addEventListener('click', showWorldMap);
-
-window.addEventListener('resize', () => {
-    drawProvinceShapes();
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    const region = urlParams.get('region');
-    const x = urlParams.get('x');
-    const y = urlParams.get('y');
-    
-    if (region && x && y) {
-        showRegionMap(region, x, y);
-    }
-});
-
-// Start loading data when the page loads
-window.onload = loadMapData;
+// Initialize the map viewer
+window.onload = async () => {
+  const mapViewer = new MapViewer();
+  mapViewer.markerImage.src = `${mapViewer.config.baseS3Url}/img/daggerwalk/Daggerwalk.ico`;
+  await mapViewer.init();
+  mapViewer.addAllWorldMapMarkers();
+};
