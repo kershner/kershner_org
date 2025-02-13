@@ -27,7 +27,7 @@ class MapViewer {
       regionFetchInterval: 20000,
       baseS3Url: window.BASE_S3_URL,
       dataUrls: {
-        shapes: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/province_shapes.json',
+        shapes: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/province_shapes_optimized.json',
         regions: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/region_fmap_mapping.json'
       }
     };
@@ -68,29 +68,24 @@ class MapViewer {
   calculateRegionCenters() {
     Object.entries(this.provinceShapes).forEach(([provinceName, points]) => {
       if (this.regionMap[provinceName]) {
-        // Calculate centroid using the polygon area method
-        let area = 0;
-        let cx = 0;
-        let cy = 0;
-        const len = points.length;
-        
-        for (let i = 0; i < len; i++) {
-          const j = (i + 1) % len;
-          const [xi, yi] = points[i];
-          const [xj, yj] = points[j];
-          
-          const factor = (xi * yj - xj * yi);
-          area += factor;
-          cx += (xi + xj) * factor;
-          cy += (yi + yj) * factor;
-        }
-        
-        area /= 2;
-        const areaFactor = 1 / (6 * area);
-        
+        // Remove duplicate points
+        const uniquePoints = points.filter((point, index) => {
+          const nextPoint = points[index + 1];
+          return !nextPoint || point[0] !== nextPoint[0] || point[1] !== nextPoint[1];
+        });
+
+        // Calculate bounding box
+        const xValues = uniquePoints.map(([x, _]) => x);
+        const yValues = uniquePoints.map(([_, y]) => y);
+        const minX = Math.min(...xValues);
+        const maxX = Math.max(...xValues);
+        const minY = Math.min(...yValues);
+        const maxY = Math.max(...yValues);
+
+        // Use center of bounding box for more reliable placement
         this.regionCenters[provinceName] = {
-          x: Math.abs(cx * areaFactor),
-          y: Math.abs(cy * areaFactor)
+          x: (minX + maxX) / 2,
+          y: (minY + maxY) / 2
         };
       }
     });
@@ -302,6 +297,8 @@ class MapViewer {
   }
 
   drawProvinceShapes() {
+    const DEBUG = false; // Toggle this to show/hide shape outlines
+
     // Pulse effect settings
     const PULSE_DURATION = 1500; // Time in milliseconds (lower = faster pulse)
     const PULSE_INTENSITY = 0.2; // How much it grows (0.3 = 30% bigger)
@@ -315,6 +312,34 @@ class MapViewer {
 
     const scale = this.getMapScale();
 
+    // Draw debug outlines if DEBUG is true
+    if (DEBUG) {
+        Object.entries(this.provinceShapes).forEach(([provinceName, points]) => {
+            this.ctx.beginPath();
+            points.forEach(([x, y], index) => {
+                const screenX = x * scale.scaleX + scale.offsetX;
+                const screenY = y * scale.scaleY + scale.offsetY;
+                if (index === 0) {
+                    this.ctx.moveTo(screenX, screenY);
+                } else {
+                    this.ctx.lineTo(screenX, screenY);
+                }
+            });
+            this.ctx.closePath();
+            
+            // Add a semi-transparent outline
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            this.ctx.lineWidth = 1;
+            this.ctx.stroke();
+            
+            // If this is the hovered province, highlight it
+            if (provinceName === this.hoveredProvince) {
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+                this.ctx.fill();
+            }
+        });
+    }
+
     // Get the most recent marker
     const markersArray = Array.from(this.worldMapMarkers.values());
     const lastMarker = markersArray[0];
@@ -325,75 +350,75 @@ class MapViewer {
 
     // Draw connecting lines between markers
     if (this.worldMapMarkers.size > 1) {
-      const sortedMarkers = markersArray
-        .map(marker => ({
-          ...marker,
-          center: this.regionCenters[marker.regionName]
-        }))
-        .sort((a, b) => a.order - b.order);
+        const sortedMarkers = markersArray
+            .map(marker => ({
+                ...marker,
+                center: this.regionCenters[marker.regionName]
+            }))
+            .sort((a, b) => a.order - b.order);
 
-      this.ctx.strokeStyle = 'white';
-      this.ctx.lineWidth = 2;
+        this.ctx.strokeStyle = 'white';
+        this.ctx.lineWidth = 2;
 
-      for (let i = 0; i < sortedMarkers.length - 1; i++) {
-        const current = sortedMarkers[i];
-        const next = sortedMarkers[i + 1];
+        for (let i = 0; i < sortedMarkers.length - 1; i++) {
+            const current = sortedMarkers[i];
+            const next = sortedMarkers[i + 1];
 
-        if (current.center && next.center) {
-          const fromX = current.center.x * scale.scaleX + scale.offsetX;
-          const fromY = current.center.y * scale.scaleY + scale.offsetY;
-          const toX = next.center.x * scale.scaleX + scale.offsetX;
-          const toY = next.center.y * scale.scaleY + scale.offsetY;
+            if (current.center && next.center) {
+                const fromX = current.center.x * scale.scaleX + scale.offsetX;
+                const fromY = current.center.y * scale.scaleY + scale.offsetY;
+                const toX = next.center.x * scale.scaleX + scale.offsetX;
+                const toY = next.center.y * scale.scaleY + scale.offsetY;
 
-          this.ctx.beginPath();
-          this.ctx.moveTo(fromX, fromY);
-          this.ctx.lineTo(toX, toY);
-          this.ctx.stroke();
+                this.ctx.beginPath();
+                this.ctx.moveTo(fromX, fromY);
+                this.ctx.lineTo(toX, toY);
+                this.ctx.stroke();
+            }
         }
-      }
     }
 
     // Draw all markers
     for (const [region, marker] of this.worldMapMarkers) {
-      const center = this.regionCenters[region];
-      if (center) {
-        const x = center.x * scale.scaleX + scale.offsetX;
-        const y = center.y * scale.scaleY + scale.offsetY;
+        const center = this.regionCenters[region];
+        if (center) {
+            const x = center.x * scale.scaleX + scale.offsetX;
+            const y = center.y * scale.scaleY + scale.offsetY;
 
-        const isRecent = marker === lastMarker;
-        const markerSize = isRecent ? this.markerSize * pulseScale : this.markerSize; // Apply pulse effect
+            const isRecent = marker === lastMarker;
+            const markerSize = isRecent ? this.markerSize * pulseScale : this.markerSize; // Apply pulse effect
 
-        this.ctx.save();
-        this.ctx.beginPath();
-        this.ctx.arc(x, y, markerSize / 2, 0, 2 * Math.PI);
-        this.ctx.clip();
+            this.ctx.save();
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, markerSize / 2, 0, 2 * Math.PI);
+            this.ctx.clip();
 
-        this.ctx.drawImage(
-          this.markerImage,
-          x - markerSize / 2,
-          y - markerSize / 2,
-          markerSize,
-          markerSize
-        );
+            this.ctx.drawImage(
+                this.markerImage,
+                x - markerSize / 2,
+                y - markerSize / 2,
+                markerSize,
+                markerSize
+            );
 
-        this.ctx.restore();
+            this.ctx.restore();
 
-        // Draw marker border
-        this.ctx.beginPath();
-        this.ctx.arc(x, y, markerSize / 2, 0, 2 * Math.PI);
-        this.ctx.strokeStyle = 'white';
-        this.ctx.lineWidth = 2;
-        this.ctx.stroke();
-      }
+            // Draw marker border
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, markerSize / 2, 0, 2 * Math.PI);
+            this.ctx.strokeStyle = 'white';
+            this.ctx.lineWidth = 2;
+            this.ctx.stroke();
+        }
     }
 
     // Draw hovered province label if applicable
     if (this.hoveredProvince) {
-      this.drawProvinceLabel();
+        this.drawProvinceLabel();
     }
 
     requestAnimationFrame(() => this.drawProvinceShapes()); // Keep animation running smoothly
-  }
+}
 
   drawProvinceLabel() {
     this.ctx.fillStyle = 'white';
@@ -449,16 +474,52 @@ class MapViewer {
     const x = (this.mousePos.x - scale.offsetX) / scale.scaleX;
     const y = (this.mousePos.y - scale.offsetY) / scale.scaleY;
     
-    const found = Object.entries(this.provinceShapes).find(([_, points]) => 
-      this.isPointInPolygon(x, y, points, 5)
-    )?.[0] || null;
+    // Find all regions containing this point
+    const containingRegions = Object.entries(this.provinceShapes)
+      .filter(([_, points]) => this.isPointInPolygon(x, y, points, 5))
+      .map(([name]) => name);
 
-    if (found !== this.hoveredProvince) {
-      this.hoveredProvince = found;
-      this.drawProvinceShapes();
+    // If we found any regions, select the smallest one (child)
+    // by comparing their bounding boxes
+    if (containingRegions.length > 0) {
+      const smallestRegion = containingRegions.reduce((smallest, current) => {
+        if (!smallest) return current;
+        
+        const currentPoints = this.provinceShapes[current];
+        const smallestPoints = this.provinceShapes[smallest];
+        
+        // Calculate bounding boxes
+        const currentBounds = this.calculateBounds(currentPoints);
+        const smallestBounds = this.calculateBounds(smallestPoints);
+        
+        // Compare areas
+        const currentArea = (currentBounds.maxX - currentBounds.minX) * 
+                          (currentBounds.maxY - currentBounds.minY);
+        const smallestArea = (smallestBounds.maxX - smallestBounds.minX) * 
+                           (smallestBounds.maxY - smallestBounds.minY);
+        
+        return currentArea < smallestArea ? current : smallest;
+      }, null);
+
+      if (smallestRegion !== this.hoveredProvince) {
+        this.hoveredProvince = smallestRegion;
+        this.drawProvinceShapes();
+      }
     } else if (this.hoveredProvince) {
+      this.hoveredProvince = null;
       this.drawProvinceShapes();
     }
+  }
+
+  calculateBounds(points) {
+    const xs = points.map(p => p[0]);
+    const ys = points.map(p => p[1]);
+    return {
+      minX: Math.min(...xs),
+      maxX: Math.max(...xs),
+      minY: Math.min(...ys),
+      maxY: Math.max(...ys)
+    };
   }
 
   handleMouseLeave() {
@@ -473,6 +534,7 @@ class MapViewer {
     const x = Math.round((event.clientX - rect.left - scale.offsetX) / scale.scaleX);
     const y = Math.round((event.clientY - rect.top - scale.offsetY) / scale.scaleY);
     
+    // Use the currently hovered province (which will be the smallest one at that point)
     if (this.hoveredProvince && this.regionMap[this.hoveredProvince]) {
       this.showRegionMap(this.hoveredProvince, x, y);
       this.fetchDaggerwalkLogs(this.hoveredProvince);
