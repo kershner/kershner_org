@@ -209,32 +209,26 @@ class MapViewer {
 
   addMarker(regionName, x, y) {
     if (!x || !y) return;
-
+  
     requestAnimationFrame(() => {
       const regionData = this.regionMap[regionName];
       if (!regionData) return;
-
+  
       const selectedPart = this.getSelectedRegionPart(regionData, x, y);
       const mapContainer = document.querySelector('#regionMapView .map-container');
-
-      const placeMarker = () => {
-        const scaleFactor = this.calculateRegionMapScale();
-        const scale = selectedPart.fmap_image === 'FMAP0I19.PNG' ? 4 : 1;
-        const screenX = (x - selectedPart.offset.x) * scale * scaleFactor;
-        const screenY = (y - selectedPart.offset.y) * scale * scaleFactor;
-
-        const marker = document.createElement('div');
-        marker.classList.add('marker');
-        marker.style.left = `${screenX}px`;
-        marker.style.top = `${screenY}px`;
-        mapContainer.appendChild(marker);
-      };
-
-      if (this.elements.regionMap.complete) {
-        placeMarker();
-      } else {
-        this.elements.regionMap.addEventListener('load', placeMarker, { once: true });
-      }
+  
+      document.querySelectorAll('.marker').forEach(marker => marker.classList.remove('recent'));
+  
+      const scaleFactor = this.calculateRegionMapScale();
+      const scale = selectedPart.fmap_image === 'FMAP0I19.PNG' ? 4 : 1;
+      const screenX = (x - selectedPart.offset.x) * scale * scaleFactor;
+      const screenY = (y - selectedPart.offset.y) * scale * scaleFactor;
+  
+      const marker = document.createElement('div');
+      marker.classList.add('marker', 'recent');
+      marker.style.left = `${screenX}px`;
+      marker.style.top = `${screenY}px`;
+      mapContainer.appendChild(marker);
     });
   }
 
@@ -308,41 +302,49 @@ class MapViewer {
   }
 
   drawProvinceShapes() {
+    // Pulse effect settings
+    const PULSE_DURATION = 1500; // Time in milliseconds (lower = faster pulse)
+    const PULSE_INTENSITY = 0.2; // How much it grows (0.3 = 30% bigger)
+    const PULSE_MIN_SCALE = 1.0; // Base size (1.0 = no scaling at min pulse)
     const container = document.querySelector('.map-container');
     this.elements.canvas.width = container.clientWidth;
     this.elements.canvas.height = container.clientHeight;
-    
+
     this.ctx.clearRect(0, 0, this.elements.canvas.width, this.elements.canvas.height);
     this.elements.worldMap.style.cursor = this.hoveredProvince ? 'pointer' : 'default';
 
     const scale = this.getMapScale();
 
-    // Draw connecting lines with arrows if we have multiple markers
+    // Get the most recent marker
+    const markersArray = Array.from(this.worldMapMarkers.values());
+    const lastMarker = markersArray[0];
+
+    // Calculate the pulse effect for the most recent marker
+    const pulseTime = (Date.now() % PULSE_DURATION) / PULSE_DURATION; // Normalized cycle time
+    const pulseScale = PULSE_MIN_SCALE + PULSE_INTENSITY * Math.sin(pulseTime * Math.PI * 2); // Smooth pulse
+
+    // Draw connecting lines between markers
     if (this.worldMapMarkers.size > 1) {
-      // Convert Map to array and sort by order
-      const sortedMarkers = Array.from(this.worldMapMarkers.entries())
-        .map(([region, data]) => ({
-          region,
-          ...data,
-          center: this.regionCenters[region]
+      const sortedMarkers = markersArray
+        .map(marker => ({
+          ...marker,
+          center: this.regionCenters[marker.regionName]
         }))
         .sort((a, b) => a.order - b.order);
 
-      // Draw lines connecting markers in order
       this.ctx.strokeStyle = 'white';
-      this.ctx.fillStyle = 'white';
       this.ctx.lineWidth = 2;
 
       for (let i = 0; i < sortedMarkers.length - 1; i++) {
         const current = sortedMarkers[i];
         const next = sortedMarkers[i + 1];
-        
+
         if (current.center && next.center) {
           const fromX = current.center.x * scale.scaleX + scale.offsetX;
           const fromY = current.center.y * scale.scaleY + scale.offsetY;
           const toX = next.center.x * scale.scaleX + scale.offsetX;
           const toY = next.center.y * scale.scaleY + scale.offsetY;
-          
+
           this.ctx.beginPath();
           this.ctx.moveTo(fromX, fromY);
           this.ctx.lineTo(toX, toY);
@@ -351,43 +353,46 @@ class MapViewer {
       }
     }
 
-    // Draw the markers
+    // Draw all markers
     for (const [region, marker] of this.worldMapMarkers) {
       const center = this.regionCenters[region];
       if (center) {
         const x = center.x * scale.scaleX + scale.offsetX;
         const y = center.y * scale.scaleY + scale.offsetY;
-        
-        // Create circular clipping path
+
+        const isRecent = marker === lastMarker;
+        const markerSize = isRecent ? this.markerSize * pulseScale : this.markerSize; // Apply pulse effect
+
         this.ctx.save();
         this.ctx.beginPath();
-        this.ctx.arc(x, y, this.markerSize / 2, 0, 2 * Math.PI);
+        this.ctx.arc(x, y, markerSize / 2, 0, 2 * Math.PI);
         this.ctx.clip();
-        
-        // Draw the image inside the circle
-        const image = this.markerImage;
+
         this.ctx.drawImage(
-          image,
-          x - this.markerSize / 2,
-          y - this.markerSize / 2,
-          this.markerSize,
-          this.markerSize
+          this.markerImage,
+          x - markerSize / 2,
+          y - markerSize / 2,
+          markerSize,
+          markerSize
         );
-        
+
         this.ctx.restore();
-        
-        // Draw circle border
+
+        // Draw marker border
         this.ctx.beginPath();
-        this.ctx.arc(x, y, this.markerSize / 2, 0, 2 * Math.PI);
+        this.ctx.arc(x, y, markerSize / 2, 0, 2 * Math.PI);
         this.ctx.strokeStyle = 'white';
         this.ctx.lineWidth = 2;
         this.ctx.stroke();
       }
     }
 
+    // Draw hovered province label if applicable
     if (this.hoveredProvince) {
       this.drawProvinceLabel();
     }
+
+    requestAnimationFrame(() => this.drawProvinceShapes()); // Keep animation running smoothly
   }
 
   drawProvinceLabel() {
