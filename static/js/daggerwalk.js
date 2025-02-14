@@ -115,12 +115,21 @@ class MapViewer {
     const y = params.get('y');
 
     if (region && this.regionMap[region]) {
-        await this.showRegionMap(region, x, y);
-
         if (x && y) {
-            this.addLogMarker(region, x, y);
+            // If we have specific coordinates, use those
+            const regionData = this.regionMap[region];
+            const selectedPart = this.getSelectedRegionPart(regionData, parseInt(x), parseInt(y));
+            
+            await this.showRegionMap(region, parseInt(x), parseInt(y), selectedPart);
+            this.addLogMarker(region, parseInt(x), parseInt(y), selectedPart);
+            
+            // Update URL
+            const params = new URLSearchParams(window.location.search);
+            params.set('region', region);
+            history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
         } else {
-            this.fetchDaggerwalkLogs(region);
+            // Otherwise fetch all logs
+            await this.fetchDaggerwalkLogs(region);
         }
     }
   }
@@ -131,21 +140,34 @@ class MapViewer {
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       
       const data = await response.json();
-      const mostRecentLog = data[data.length - 1];
-      
-      if (mostRecentLog) {
-        await this.showRegionMap(
+      if (!data.length) return;
+
+      const sortedData = [...data].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      const mostRecentLog = sortedData[0];
+      const regionData = this.regionMap[region];
+      const selectedPart = this.getSelectedRegionPart(regionData, mostRecentLog.map_pixel_x, mostRecentLog.map_pixel_y);
+
+      await this.showRegionMap(
           region, 
           mostRecentLog.map_pixel_x, 
-          mostRecentLog.map_pixel_y
-        );
-        this.clearLogMarkers();
-        data.forEach(log => this.addLogMarker(log.region, log.map_pixel_x, log.map_pixel_y));
-      }
+          mostRecentLog.map_pixel_y,
+          selectedPart
+      );
+
+      this.clearLogMarkers();
+
+      const filteredLogs = sortedData.filter(log => {
+          const logPart = this.getSelectedRegionPart(regionData, log.map_pixel_x, log.map_pixel_y);
+          return logPart.fmap_image === selectedPart.fmap_image;
+      });
+
+      filteredLogs.forEach(log => {
+          this.addLogMarker(log.region, log.map_pixel_x, log.map_pixel_y, selectedPart);
+      });
 
       this.startLogPolling(region);
     } catch (error) {
-      console.error('Error fetching logs:', error);
+        console.error('Error fetching logs:', error);
     }
   }
 
@@ -172,33 +194,40 @@ class MapViewer {
     this.addAllWorldMapMarkers();
   }
 
-  async showRegionMap(regionName, x, y) {
+  async showRegionMap(regionName, x, y, forcePart = null) {
     if (!this.regionMap[regionName]) return Promise.resolve();
 
     this.elements.worldMapView.classList.add('hidden');
     this.elements.regionMapView.classList.remove('hidden');
 
     const regionData = this.regionMap[regionName];
+    const selectedPart = forcePart || 
+        (x && y ? this.getSelectedRegionPart(regionData, x, y) : regionData.parts[0]);
     
-    // Get the correct FMAP part based on coordinates
-    const selectedPart = x && y ? 
-      this.getSelectedRegionPart(regionData, x, y) : 
-      (regionData.parts ? regionData.parts[0] : regionData);
-      
     const newSrc = `${this.config.baseS3Url}/img/daggerwalk/maps/${selectedPart.fmap_image}`;
 
     return new Promise((resolve) => {
-      if (this.elements.regionMap.src !== newSrc) {
         this.elements.regionMap.onload = () => {
-          this.clearLogMarkers();
-          resolve();
+            this.clearLogMarkers();
+            resolve();
         };
         this.elements.regionMap.src = newSrc;
-      } else {
-        this.clearLogMarkers();
-        resolve();
-      }
     });
+  }
+
+  // Helper method to check if point is within part bounds
+  isPointWithinPart(x, y, part) {
+    if (!part.offset) return false;
+    
+    const MAP_WIDTH = 92;
+    const MAP_HEIGHT = 80;
+    
+    const startX = part.offset.x;
+    const startY = part.offset.y;
+    const endX = startX + MAP_WIDTH;
+    const endY = startY + MAP_HEIGHT;
+    
+    return x >= startX && x < endX && y >= startY && y < endY;
   }
 
   addAllWorldMapMarkers() {
@@ -228,28 +257,29 @@ class MapViewer {
     this.drawProvinceShapes();
   }
 
-  addLogMarker(regionName, x, y) {
+  addLogMarker(regionName, x, y, forcePart = null) {
     if (!x || !y) return;
   
     requestAnimationFrame(() => {
-      const regionData = this.regionMap[regionName];
-      if (!regionData) return;
+        const regionData = this.regionMap[regionName];
+        if (!regionData) return;
   
-      const selectedPart = this.getSelectedRegionPart(regionData, x, y);
-      const mapContainer = document.querySelector('#regionMapView .map-container');
+        const selectedPart = forcePart || this.getSelectedRegionPart(regionData, x, y);
+        if (!selectedPart || !selectedPart.offset) return;
+
+        const mapContainer = document.querySelector('#regionMapView .map-container');
+        document.querySelectorAll('.marker').forEach(marker => marker.classList.remove('recent'));
   
-      document.querySelectorAll('.marker').forEach(marker => marker.classList.remove('recent'));
+        const scaleFactor = this.elements.regionMap.clientWidth / this.elements.regionMap.naturalWidth;
+        const scale = selectedPart.fmap_image === 'FMAP0I19.PNG' ? 4 : 1;
+        const adjustedX = (x - selectedPart.offset.x) * scale * scaleFactor;
+        const adjustedY = (y - selectedPart.offset.y) * scale * scaleFactor;
   
-      const scaleFactor = this.elements.regionMap.clientWidth / this.elements.regionMap.naturalWidth;
-      const scale = selectedPart.fmap_image === 'FMAP0I19.PNG' ? 4 : 1;
-      const screenX = (x - selectedPart.offset.x) * scale * scaleFactor;
-      const screenY = (y - selectedPart.offset.y) * scale * scaleFactor;
-  
-      const marker = document.createElement('div');
-      marker.classList.add('marker', 'recent');
-      marker.style.left = `${screenX}px`;
-      marker.style.top = `${screenY}px`;
-      mapContainer.appendChild(marker);
+        const marker = document.createElement('div');
+        marker.classList.add('marker', 'recent');
+        marker.style.left = `${adjustedX}px`;
+        marker.style.top = `${adjustedY}px`;
+        mapContainer.appendChild(marker);
     });
   }
 
@@ -258,46 +288,50 @@ class MapViewer {
   }
 
   getSelectedRegionPart(regionData, x, y) {
-    if (!regionData || !regionData.multi_part) {
-      return regionData;
-    }
-    if (!regionData.parts || !regionData.parts.length) {
-      return regionData;
+    if (!regionData?.multi_part || !regionData?.parts?.length) {
+        return regionData;
     }
 
+    x = parseInt(x);
+    y = parseInt(y);
+    
     const MAP_WIDTH = 92;
     const MAP_HEIGHT = 80;
     
-    // Find which part contains the point
-    const selectedPart = regionData.parts.find(part => {
-      const startX = part.offset.x;
-      const startY = part.offset.y;
-      const endX = startX + MAP_WIDTH;
-      const endY = startY + MAP_HEIGHT;
-      
-      return x >= startX && x < endX && y >= startY && y < endY;
+    // Try to find exact part match
+    const exactPart = regionData.parts.find(part => {
+        if (!part.offset) return false;
+        const startX = part.offset.x;
+        const startY = part.offset.y;
+        return x >= startX && x < (startX + MAP_WIDTH) && 
+               y >= startY && y < (startY + MAP_HEIGHT);
     });
     
-    // If no part contains the point, find the closest one
-    if (!selectedPart && x && y) {
-      return regionData.parts.reduce((closest, part) => {
-        if (!closest) return part;
-        
-        const closestDist = Math.hypot(
-          x - closest.offset.x - MAP_WIDTH/2,
-          y - closest.offset.y - MAP_HEIGHT/2
-        );
-        
-        const thisDist = Math.hypot(
-          x - part.offset.x - MAP_WIDTH/2,
-          y - part.offset.y - MAP_HEIGHT/2
-        );
-        
-        return thisDist < closestDist ? part : closest;
-      });
+    if (exactPart) return exactPart;
+    
+    // Find closest part if no exact match
+    if (!isNaN(x) && !isNaN(y)) {
+        return regionData.parts.reduce((closest, part) => {
+            if (!closest || !part.offset) return closest || part;
+            
+            const closestCenter = {
+                x: closest.offset.x + MAP_WIDTH/2,
+                y: closest.offset.y + MAP_HEIGHT/2
+            };
+            
+            const thisCenter = {
+                x: part.offset.x + MAP_WIDTH/2,
+                y: part.offset.y + MAP_HEIGHT/2
+            };
+            
+            const closestDist = Math.hypot(x - closestCenter.x, y - closestCenter.y);
+            const thisDist = Math.hypot(x - thisCenter.x, y - thisCenter.y);
+            
+            return thisDist < closestDist ? part : closest;
+        }, null);
     }
     
-    return selectedPart || regionData.parts[0];
+    return regionData.parts[0];
   }
 
   getMapScale() {
