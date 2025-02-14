@@ -246,10 +246,39 @@ class MapViewer {
   getSelectedRegionPart(regionData, x, y) {
     if (!regionData || !regionData.multi_part) return regionData;
     if (!regionData.parts || !regionData.parts.length) return regionData;
-  
-    const selectedPart = regionData.parts.find(part => 
-      x >= part.offset.x && y >= part.offset.y
-    );
+
+    // Each FMAP is 92x80 pixels (standard size for Daggerfall maps)
+    const MAP_WIDTH = 92;
+    const MAP_HEIGHT = 80;
+    
+    // Find which part contains the point
+    const selectedPart = regionData.parts.find(part => {
+      const startX = part.offset.x;
+      const startY = part.offset.y;
+      const endX = startX + MAP_WIDTH;
+      const endY = startY + MAP_HEIGHT;
+      
+      return x >= startX && x < endX && y >= startY && y < endY;
+    });
+    
+    // If no part contains the point, find the closest one
+    if (!selectedPart && x && y) {
+      return regionData.parts.reduce((closest, part) => {
+        if (!closest) return part;
+        
+        const closestDist = Math.hypot(
+          x - closest.offset.x - MAP_WIDTH/2,
+          y - closest.offset.y - MAP_HEIGHT/2
+        );
+        
+        const thisDist = Math.hypot(
+          x - part.offset.x - MAP_WIDTH/2,
+          y - part.offset.y - MAP_HEIGHT/2
+        );
+        
+        return thisDist < closestDist ? part : closest;
+      });
+    }
     
     return selectedPart || regionData.parts[0];
   }
