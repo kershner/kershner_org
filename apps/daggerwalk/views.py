@@ -44,7 +44,7 @@ class DaggerwalkHomeView(View):
 
 class DaggerwalkLogsView(View):
     use_sampling = True
-    step = 3
+    step = 5
 
     def get(self, request):
         region = request.GET.get('region')

@@ -131,8 +131,17 @@ class MapViewer {
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       
       const data = await response.json();
-      this.clearLogMarkers();
-      data.forEach(log => this.addLogMarker(log.region, log.map_pixel_x, log.map_pixel_y));
+      const mostRecentLog = data[data.length - 1];
+      
+      if (mostRecentLog) {
+        await this.showRegionMap(
+          region, 
+          mostRecentLog.map_pixel_x, 
+          mostRecentLog.map_pixel_y
+        );
+        this.clearLogMarkers();
+        data.forEach(log => this.addLogMarker(log.region, log.map_pixel_x, log.map_pixel_y));
+      }
 
       this.startLogPolling(region);
     } catch (error) {
@@ -163,27 +172,32 @@ class MapViewer {
     this.addAllWorldMapMarkers();
   }
 
-  showRegionMap(regionName, x, y) {
+  async showRegionMap(regionName, x, y) {
     if (!this.regionMap[regionName]) return Promise.resolve();
 
     this.elements.worldMapView.classList.add('hidden');
     this.elements.regionMapView.classList.remove('hidden');
 
     const regionData = this.regionMap[regionName];
-    const selectedPart = this.getSelectedRegionPart(regionData, x, y);
+    
+    // Get the correct FMAP part based on coordinates
+    const selectedPart = x && y ? 
+      this.getSelectedRegionPart(regionData, x, y) : 
+      (regionData.parts ? regionData.parts[0] : regionData);
+      
     const newSrc = `${this.config.baseS3Url}/img/daggerwalk/maps/${selectedPart.fmap_image}`;
 
     return new Promise((resolve) => {
-        if (this.elements.regionMap.src !== newSrc) {
-            this.elements.regionMap.onload = () => {
-                this.clearLogMarkers();
-                resolve();
-            };
-            this.elements.regionMap.src = newSrc;
-        } else {
-            this.clearLogMarkers();
-            resolve();
-        }
+      if (this.elements.regionMap.src !== newSrc) {
+        this.elements.regionMap.onload = () => {
+          this.clearLogMarkers();
+          resolve();
+        };
+        this.elements.regionMap.src = newSrc;
+      } else {
+        this.clearLogMarkers();
+        resolve();
+      }
     });
   }
 
@@ -244,10 +258,13 @@ class MapViewer {
   }
 
   getSelectedRegionPart(regionData, x, y) {
-    if (!regionData || !regionData.multi_part) return regionData;
-    if (!regionData.parts || !regionData.parts.length) return regionData;
+    if (!regionData || !regionData.multi_part) {
+      return regionData;
+    }
+    if (!regionData.parts || !regionData.parts.length) {
+      return regionData;
+    }
 
-    // Each FMAP is 92x80 pixels (standard size for Daggerfall maps)
     const MAP_WIDTH = 92;
     const MAP_HEIGHT = 80;
     
