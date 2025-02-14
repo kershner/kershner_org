@@ -49,13 +49,11 @@ canvas
 .error 
   color: #ff6b6b
 
-
 // Marker base styles
 %marker-base
   position: absolute
-  width: 8px
-  height: 8px
-  border-radius: 50%
+  transform: translate(-50%, -50%)
+  pointer-events: none
 
 // Mixin for pulse animation
 @mixin pulse-animation($scale: 1.5, $opacity: 1.0, $duration: 1.5s)
@@ -70,19 +68,47 @@ canvas
       transform: translate(-50%, -50%) scale(1)
 
 // Styles for regional and world map markers
+%marker-base
+  position: absolute
+  transform: translate(-50%, -50%)
+  pointer-events: none
+
+// Mixin for pulse animation
+@mixin pulse-animation($scale: 1.5, $opacity: 1.0, $duration: 1.5s)
+  animation: pulse $duration infinite ease-in-out
+
+  @keyframes pulse
+    0%
+      transform: translate(-50%, -50%) scale(1)
+    50%
+      transform: translate(-50%, -50%) scale($scale)
+    100%
+      transform: translate(-50%, -50%) scale(1)
+
+// Styles for regional and world map markers
+$marker-size: 6px
+$marker-recent-size: 16px
+$marker-world-size: 24px
+
 .marker, .world-marker
   @extend %marker-base
 
 .marker
+  width: $marker-size
+  height: $marker-size
+  border-radius: 50%
   background-color: red
 
   &.recent
+    width: $marker-recent-size
+    height: $marker-recent-size
     @include pulse-animation
 
 .world-marker
-  height: 24px
-  width: 24px
+  height: $marker-world-size
+  width: $marker-world-size
   border: 1px solid white
+  border-radius: 50%
 
   &.recent
     @include pulse-animation($scale: 1.7, $opacity: 0.5)
