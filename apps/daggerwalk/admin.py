@@ -1,8 +1,8 @@
 from apps.daggerwalk.models import DaggerwalkLog
-from django.contrib import admin
 from django.utils.html import format_html
-from django.urls import reverse
 from urllib.parse import urlencode
+from django.contrib import admin
+from django.urls import reverse
 
 @admin.register(DaggerwalkLog)
 class DaggerwalkLogAdmin(admin.ModelAdmin):
@@ -11,7 +11,7 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
     search_fields = ('region', 'location', 'location_type', 'weather', 'created_at',)
     
     def get_readonly_fields(self, request, obj=None):
-        custom_fields = ['view_on_map_link', 'delete_previous_button']
+        custom_fields = ['view_on_map_link', 'delete_previous_button', 'world_coordinates', 'map_pixel_coordinates', 'player_coordinates']
         return [f.name for f in self.model._meta.fields] + custom_fields
     
     def coordinates(self, obj):
@@ -19,6 +19,24 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
             return f"{obj.map_pixel_x}, {obj.map_pixel_y}"
         return '-'
     coordinates.short_description = 'Map X,Y'
+
+    def world_coordinates(self, obj):
+        if obj.world_x is not None and obj.world_z is not None:
+            return f"X: {obj.world_x}, Y: {obj.world_z}"
+        return '-'
+    world_coordinates.short_description = 'World'
+
+    def map_pixel_coordinates(self, obj):
+        if obj.map_pixel_x is not None and obj.map_pixel_y is not None:
+            return f"X: {obj.map_pixel_x}, Y: {obj.map_pixel_y}"
+        return '-'
+    map_pixel_coordinates.short_description = 'Map Pixel'
+
+    def player_coordinates(self, obj):
+        if obj.player_x is not None and obj.player_y is not None:
+            return f"X: {obj.player_x}, Y: {obj.player_y}, Z: {obj.player_z}"
+        return '-'
+    player_coordinates.short_description = 'Player'
 
     def formatted_date(self, obj):
         if obj.date:
@@ -79,7 +97,6 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
               'created_at',
               'reset',
               'view_on_map_link',
-              'delete_previous_button'
             ),
         }),
         ('Location', {
@@ -91,9 +108,9 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
         }),
         ('Coordinates', {
             'fields': (
-                ('world_x', 'world_z'),
-                ('map_pixel_x', 'map_pixel_y'),
-                ('player_x', 'player_y', 'player_z')
+                'world_coordinates',
+                'map_pixel_coordinates',
+                'player_coordinates'
             ),
         }),
         ('Time & Environment', {
@@ -102,6 +119,10 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
                 'weather',
                 'current_song'
             ),
+        }),
+        ('Delete', {
+            'classes': ('collapse',),
+            'fields': ('delete_previous_button',),
         })
     )
 
