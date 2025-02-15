@@ -11,7 +11,8 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
     search_fields = ('region', 'location', 'location_type', 'weather', 'created_at',)
     
     def get_readonly_fields(self, request, obj=None):
-        return [f.name for f in self.model._meta.fields] + ['view_on_map_link']
+        custom_fields = ['view_on_map_link', 'delete_previous_button']
+        return [f.name for f in self.model._meta.fields] + custom_fields
     
     def coordinates(self, obj):
         if obj.map_pixel_x is not None and obj.map_pixel_y is not None:
@@ -49,11 +50,27 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
             })
             url = f'{base_url}?{query_params}'
             return format_html(
-                '<a href="{}" class="button default" target="_blank" style="white-space: nowrap; text-decoration: none;">Map</a>',
+                '<a href="{}" class="button" target="_blank">Map</a>',
                 url
             )
         return '-'
     view_on_map_link.short_description = 'View'
+
+    def delete_previous_button(self, obj):
+        url = reverse('delete_previous_logs', args=[obj.id])
+        js = f"""
+            if(confirm('Delete all logs before this one?')) {{
+                fetch('{url}', {{
+                    method: 'POST',
+                    headers: {{'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value}}
+                }}).then(() => location.reload());
+            }}
+        """
+        return format_html(
+            '<a class="button" onclick="{}" href="#">Delete Previous</a>',
+            js
+        )
+    delete_previous_button.short_description = 'Delete previous logs'
     
     fieldsets = (
         ('General', {
@@ -61,7 +78,8 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
               'id',
               'created_at',
               'reset',
-              'view_on_map_link'
+              'view_on_map_link',
+              'delete_previous_button'
             ),
         }),
         ('Location', {

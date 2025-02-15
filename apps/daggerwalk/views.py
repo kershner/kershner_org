@@ -1,8 +1,10 @@
+from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.forms.models import model_to_dict
 from django.views.generic import View
 from django.http import JsonResponse
+from django.contrib import messages
 from django.shortcuts import render
 from .models import DaggerwalkLog
 from django.db.models import Max
@@ -116,4 +118,11 @@ def create_daggerwalk_log(request):
         return JsonResponse({
             'status': 'error',
             'message': f'An error occurred: {str(e)}'
-        }, status=500)
+        }, status=500) 
+
+@staff_member_required
+def delete_previous_logs(request, log_id):
+   if request.method == 'POST':
+       deleted, details = DaggerwalkLog.objects.filter(id__lt=log_id).delete()
+       messages.success(request, f'{deleted} logs deleted')
+       return JsonResponse({'status': 'ok'})

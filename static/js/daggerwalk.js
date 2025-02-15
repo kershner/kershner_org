@@ -33,6 +33,7 @@ class MapViewer {
       worldMapView: document.getElementById('worldMapView'),
       regionMapView: document.getElementById('regionMapView'),
       worldMap: document.getElementById('worldMap'),
+      regionName: document.getElementById('regionName'),
       regionMap: document.getElementById('regionMap'),
       canvas: document.getElementById('overlay'),
       loading: document.getElementById('loading')
@@ -204,6 +205,8 @@ class MapViewer {
     this.elements.regionMapView.classList.add('hidden');
     this.stopLogPolling();
     history.pushState({}, '', window.location.pathname);
+    this.clearLogMarkers();
+    this.elements.regionName.textContent = '';
     this.addAllWorldMapMarkers();
   }
 
@@ -219,6 +222,7 @@ class MapViewer {
     
     return new Promise((resolve) => {
       this.elements.regionMap.onload = () => {
+        this.elements.regionName.textContent = regionName;
         this.clearLogMarkers();
         resolve();
       };
