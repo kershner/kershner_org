@@ -1,18 +1,34 @@
 class MapViewer {
   constructor() {
-    this.provinceShapes = {};
-    this.regionMap = {};
-    this.mousePos = { x: 0, y: 0 };
-    this.hoveredProvince = null;
-    this.fetchTimer = null;
-    this.worldMapMarkers = new Map();
-    this.markerSize = 32;
-    this.markerImage = new Image();
-    this.regionCenters = {};
-    this.worldMapMarkerLineColor = 'white';
-    this.worldMapMarkerLineOpacity = 0.8;
-    
-    // DOM elements
+    this.state = {
+      provinceShapes: {},
+      regionMap: {},
+      mousePos: { x: 0, y: 0 },
+      hoveredProvince: null,
+      fetchTimer: null,
+      worldMapMarkers: new Map(),
+      regionCenters: {},
+      mapDimensions: { width: 0, height: 0 }
+    };
+
+    this.config = {
+      markerSize: 32,
+      regionFetchInterval: 20000,
+      baseS3Url: window.BASE_S3_URL,
+      worldMapMarkerStyle: {
+        lineColor: 'white',
+        lineOpacity: 0.8
+      },
+      dataUrls: {
+        shapes: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/province_shapes_optimized.json',
+        regions: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/region_fmap_mapping.json'
+      },
+      mapConstants: {
+        width: 92,
+        height: 80
+      }
+    };
+
     this.elements = {
       worldMapView: document.getElementById('worldMapView'),
       regionMapView: document.getElementById('regionMapView'),
@@ -21,19 +37,9 @@ class MapViewer {
       canvas: document.getElementById('overlay'),
       loading: document.getElementById('loading')
     };
-    
-    this.ctx = this.elements.canvas.getContext('2d');
-    
-    // Constants
-    this.config = {
-      regionFetchInterval: 20000,
-      baseS3Url: window.BASE_S3_URL,
-      dataUrls: {
-        shapes: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/province_shapes_optimized.json',
-        regions: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/region_fmap_mapping.json'
-      }
-    };
 
+    this.ctx = this.elements.canvas.getContext('2d');
+    this.markerImage = new Image();
     this.bindEvents();
   }
 
@@ -55,8 +61,8 @@ class MapViewer {
         throw new Error('Failed to fetch map data');
       }
 
-      this.provinceShapes = await shapesResponse.json();
-      this.regionMap = await regionsResponse.json();
+      this.state.provinceShapes = await shapesResponse.json();
+      this.state.regionMap = await regionsResponse.json();
 
       this.elements.loading.classList.add('hidden');
       this.elements.worldMapView.classList.remove('hidden');
@@ -68,31 +74,28 @@ class MapViewer {
   }
 
   calculateRegionCenters() {
-    Object.entries(this.provinceShapes).forEach(([provinceName, points]) => {
-      if (this.regionMap[provinceName]) {
-        const uniquePoints = points.filter((point, index) => {
-          const nextPoint = points[index + 1];
-          return !nextPoint || point[0] !== nextPoint[0] || point[1] !== nextPoint[1];
-        });
-
-        const xValues = uniquePoints.map(([x, _]) => x);
-        const yValues = uniquePoints.map(([_, y]) => y);
-        const minX = Math.min(...xValues);
-        const maxX = Math.max(...xValues);
-        const minY = Math.min(...yValues);
-        const maxY = Math.max(...yValues);
-
-        this.regionCenters[provinceName] = {
-          x: (minX + maxX) / 2,
-          y: (minY + maxY) / 2
+    Object.entries(this.state.provinceShapes).forEach(([provinceName, points]) => {
+      if (this.state.regionMap[provinceName]) {
+        const uniquePoints = this.getUniquePoints(points);
+        const bounds = this.calculateBounds(uniquePoints);
+        this.state.regionCenters[provinceName] = {
+          x: (bounds.minX + bounds.maxX) / 2,
+          y: (bounds.minY + bounds.maxY) / 2
         };
       }
     });
   }
 
+  getUniquePoints(points) {
+    return points.filter((point, index) => {
+      const nextPoint = points[index + 1];
+      return !nextPoint || point[0] !== nextPoint[0] || point[1] !== nextPoint[1];
+    });
+  }
+
   initializeMap() {
     const onLoad = () => {
-      this.mapDimensions = {
+      this.state.mapDimensions = {
         width: this.elements.worldMap.naturalWidth,
         height: this.elements.worldMap.naturalHeight
       };
@@ -111,27 +114,26 @@ class MapViewer {
   async handleUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const region = params.get('region');
-    const x = params.get('x');
-    const y = params.get('y');
+    const x = parseInt(params.get('x'));
+    const y = parseInt(params.get('y'));
 
-    if (region && this.regionMap[region]) {
-        if (x && y) {
-            // If we have specific coordinates, use those
-            const regionData = this.regionMap[region];
-            const selectedPart = this.getSelectedRegionPart(regionData, parseInt(x), parseInt(y));
-            
-            await this.showRegionMap(region, parseInt(x), parseInt(y), selectedPart);
-            this.addLogMarker(region, parseInt(x), parseInt(y), selectedPart);
-            
-            // Update URL
-            const params = new URLSearchParams(window.location.search);
-            params.set('region', region);
-            history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
-        } else {
-            // Otherwise fetch all logs
-            await this.fetchDaggerwalkLogs(region);
-        }
+    if (region && this.state.regionMap[region]) {
+      if (!isNaN(x) && !isNaN(y)) {
+        const regionData = this.state.regionMap[region];
+        const selectedPart = this.getSelectedRegionPart(regionData, x, y);
+        await this.showRegionMap(region, x, y, selectedPart);
+        this.addLogMarker(region, x, y, selectedPart);
+        this.updateUrl(region);
+      } else {
+        await this.fetchDaggerwalkLogs(region);
+      }
     }
+  }
+
+  updateUrl(region) {
+    const params = new URLSearchParams(window.location.search);
+    params.set('region', region);
+    history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
   }
 
   async fetchDaggerwalkLogs(region) {
@@ -142,47 +144,58 @@ class MapViewer {
       const data = await response.json();
       if (!data.length) return;
 
-      const sortedData = [...data].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      const mostRecentLog = sortedData[0];
-      const regionData = this.regionMap[region];
-      const selectedPart = this.getSelectedRegionPart(regionData, mostRecentLog.map_pixel_x, mostRecentLog.map_pixel_y);
+      const mostRecentLog = data[data.length - 1];
+      const regionData = this.state.regionMap[region];
+      const selectedPart = this.getSelectedRegionPart(
+        regionData, 
+        parseInt(mostRecentLog.map_pixel_x),
+        parseInt(mostRecentLog.map_pixel_y)
+      );
 
       await this.showRegionMap(
-          region, 
-          mostRecentLog.map_pixel_x, 
-          mostRecentLog.map_pixel_y,
-          selectedPart
+        region,
+        parseInt(mostRecentLog.map_pixel_x),
+        parseInt(mostRecentLog.map_pixel_y),
+        selectedPart
       );
 
       this.clearLogMarkers();
-
-      const filteredLogs = sortedData.filter(log => {
-          const logPart = this.getSelectedRegionPart(regionData, log.map_pixel_x, log.map_pixel_y);
-          return logPart.fmap_image === selectedPart.fmap_image;
-      });
-
-      filteredLogs.forEach(log => {
-          this.addLogMarker(log.region, log.map_pixel_x, log.map_pixel_y, selectedPart);
-      });
+      data.forEach(log => this.addLogMarker(
+        log.region, 
+        parseInt(log.map_pixel_x), 
+        parseInt(log.map_pixel_y), 
+        selectedPart,
+        this.createMarkerData(log)
+      ));
 
       this.startLogPolling(region);
     } catch (error) {
-        console.error('Error fetching logs:', error);
+      console.error('Error fetching logs:', error);
     }
+  }
+
+  createMarkerData(log) {
+    return {
+      timestamp: log.timestamp,
+      weather: log.weather,
+      currentSong: log.current_song,
+      location: log.location,
+      reset: log.reset
+    };
   }
 
   startLogPolling(region) {
     this.stopLogPolling();
-    this.fetchTimer = setInterval(
+    this.state.fetchTimer = setInterval(
       () => this.fetchDaggerwalkLogs(region),
       this.config.regionFetchInterval
     );
   }
 
   stopLogPolling() {
-    if (this.fetchTimer) {
-      clearInterval(this.fetchTimer);
-      this.fetchTimer = null;
+    if (this.state.fetchTimer) {
+      clearInterval(this.state.fetchTimer);
+      this.state.fetchTimer = null;
     }
   }
 
@@ -195,91 +208,97 @@ class MapViewer {
   }
 
   async showRegionMap(regionName, x, y, forcePart = null) {
-    if (!this.regionMap[regionName]) return Promise.resolve();
+    if (!this.state.regionMap[regionName]) return;
 
     this.elements.worldMapView.classList.add('hidden');
     this.elements.regionMapView.classList.remove('hidden');
 
-    const regionData = this.regionMap[regionName];
+    const regionData = this.state.regionMap[regionName];
     const selectedPart = forcePart || 
-        (x && y ? this.getSelectedRegionPart(regionData, x, y) : regionData.parts[0]);
+      (x && y ? this.getSelectedRegionPart(regionData, x, y) : regionData.parts[0]);
     
-    const newSrc = `${this.config.baseS3Url}/img/daggerwalk/maps/${selectedPart.fmap_image}`;
-
     return new Promise((resolve) => {
-        this.elements.regionMap.onload = () => {
-            this.clearLogMarkers();
-            resolve();
-        };
-        this.elements.regionMap.src = newSrc;
+      this.elements.regionMap.onload = () => {
+        this.clearLogMarkers();
+        resolve();
+      };
+      this.elements.regionMap.src = `${this.config.baseS3Url}/img/daggerwalk/maps/${selectedPart.fmap_image}`;
     });
-  }
-
-  // Helper method to check if point is within part bounds
-  isPointWithinPart(x, y, part) {
-    if (!part.offset) return false;
-    
-    const MAP_WIDTH = 92;
-    const MAP_HEIGHT = 80;
-    
-    const startX = part.offset.x;
-    const startY = part.offset.y;
-    const endX = startX + MAP_WIDTH;
-    const endY = startY + MAP_HEIGHT;
-    
-    return x >= startX && x < endX && y >= startY && y < endY;
   }
 
   addAllWorldMapMarkers() {
     this.clearWorldMapMarkers();
     if (window.REGION_DATA) {
-      window.REGION_DATA.forEach((data, i) => {
-        this.addWorldMapMarker({
-          regionName: data.region,
-          latestDate: data.latest_date,
-          reset: data.latest_reset,
-          location: data.latest_location,
-          weather: data.latest_weather,
-          currentSong: data.latest_current_song,
-          order: i
-        });
-      });
+      window.REGION_DATA.forEach((data, i) => this.addWorldMapMarker({
+        regionName: data.region,
+        latestDate: data.latest_date,
+        reset: data.latest_reset,
+        location: data.latest_location,
+        weather: data.latest_weather,
+        currentSong: data.latest_current_song,
+        order: i
+      }));
     }
   }
 
   addWorldMapMarker(markerData) {
-    this.worldMapMarkers.set(markerData.regionName, markerData);
+    this.state.worldMapMarkers.set(markerData.regionName, markerData);
     this.drawProvinceShapes();
   }
 
   clearWorldMapMarkers() {
-    this.worldMapMarkers.clear();
+    this.state.worldMapMarkers.clear();
     this.drawProvinceShapes();
   }
 
-  addLogMarker(regionName, x, y, forcePart = null) {
+  addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
     if (!x || !y) return;
   
     requestAnimationFrame(() => {
-        const regionData = this.regionMap[regionName];
-        if (!regionData) return;
+      const regionData = this.state.regionMap[regionName];
+      if (!regionData) return;
   
-        const selectedPart = forcePart || this.getSelectedRegionPart(regionData, x, y);
-        if (!selectedPart || !selectedPart.offset) return;
+      const selectedPart = forcePart || this.getSelectedRegionPart(regionData, x, y);
+      if (!selectedPart?.offset) return;
 
-        const mapContainer = document.querySelector('#regionMapView .map-container');
-        document.querySelectorAll('.marker').forEach(marker => marker.classList.remove('recent'));
-  
-        const scaleFactor = this.elements.regionMap.clientWidth / this.elements.regionMap.naturalWidth;
-        const scale = selectedPart.fmap_image === 'FMAP0I19.PNG' ? 4 : 1;
-        const adjustedX = (x - selectedPart.offset.x) * scale * scaleFactor;
-        const adjustedY = (y - selectedPart.offset.y) * scale * scaleFactor;
-  
-        const marker = document.createElement('div');
-        marker.classList.add('marker', 'recent');
-        marker.style.left = `${adjustedX}px`;
-        marker.style.top = `${adjustedY}px`;
-        mapContainer.appendChild(marker);
+      const marker = this.createMarkerElement(x, y, regionName, selectedPart, markerData);
+      const mapContainer = document.querySelector('#regionMapView .map-container');
+      document.querySelectorAll('.marker').forEach(m => m.classList.remove('recent'));
+      mapContainer.appendChild(marker);
+    });
+  }
+
+  createMarkerElement(x, y, regionName, selectedPart, markerData) {
+    const scaleFactor = this.elements.regionMap.clientWidth / this.elements.regionMap.naturalWidth;
+    const scale = selectedPart.fmap_image === 'FMAP0I19.PNG' ? 4 : 1;
+    const adjustedX = (x - selectedPart.offset.x) * scale * scaleFactor;
+    const adjustedY = (y - selectedPart.offset.y) * scale * scaleFactor;
+
+    const marker = document.createElement('div');
+    marker.classList.add('marker', 'recent');
+    marker.style.left = `${adjustedX}px`;
+    marker.style.top = `${adjustedY}px`;
+
+    this.setMarkerDataAttributes(marker, { x, y, regionName, ...markerData });
+    return marker;
+  }
+
+  setMarkerDataAttributes(marker, data) {
+    const flattenObject = (obj, prefix = '') => {
+      return Object.entries(obj).reduce((acc, [key, value]) => {
+        const newKey = prefix ? `${prefix}-${key}` : key;
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+          return { ...acc, ...flattenObject(value, newKey) };
+        }
+        return { ...acc, [newKey]: value };
+      }, {});
+    };
+
+    const flattenedData = flattenObject(data);
+    Object.entries(flattenedData).forEach(([key, value]) => {
+      if (value != null) {
+        marker.dataset[key] = String(value);
+      }
     });
   }
 
@@ -289,49 +308,54 @@ class MapViewer {
 
   getSelectedRegionPart(regionData, x, y) {
     if (!regionData?.multi_part || !regionData?.parts?.length) {
-        return regionData;
+      return regionData;
     }
 
-    x = parseInt(x);
-    y = parseInt(y);
+    const { width: MAP_WIDTH, height: MAP_HEIGHT } = this.config.mapConstants;
     
-    const MAP_WIDTH = 92;
-    const MAP_HEIGHT = 80;
-    
-    // Try to find exact part match
     const exactPart = regionData.parts.find(part => {
-        if (!part.offset) return false;
-        const startX = part.offset.x;
-        const startY = part.offset.y;
-        return x >= startX && x < (startX + MAP_WIDTH) && 
-               y >= startY && y < (startY + MAP_HEIGHT);
+      if (!part.offset) return false;
+      const { x: startX, y: startY } = part.offset;
+      return x >= startX && x < (startX + MAP_WIDTH) && 
+             y >= startY && y < (startY + MAP_HEIGHT);
     });
     
     if (exactPart) return exactPart;
     
-    // Find closest part if no exact match
     if (!isNaN(x) && !isNaN(y)) {
-        return regionData.parts.reduce((closest, part) => {
-            if (!closest || !part.offset) return closest || part;
-            
-            const closestCenter = {
-                x: closest.offset.x + MAP_WIDTH/2,
-                y: closest.offset.y + MAP_HEIGHT/2
-            };
-            
-            const thisCenter = {
-                x: part.offset.x + MAP_WIDTH/2,
-                y: part.offset.y + MAP_HEIGHT/2
-            };
-            
-            const closestDist = Math.hypot(x - closestCenter.x, y - closestCenter.y);
-            const thisDist = Math.hypot(x - thisCenter.x, y - thisCenter.y);
-            
-            return thisDist < closestDist ? part : closest;
-        }, null);
+      return this.findClosestPart(regionData.parts, x, y, MAP_WIDTH, MAP_HEIGHT);
     }
     
     return regionData.parts[0];
+  }
+
+  findClosestPart(parts, x, y, mapWidth, mapHeight) {
+    return parts.reduce((best, part) => {
+      if (!part.offset) return best;
+      
+      const { distance, outsideScore } = this.calculatePartMetrics(
+        part, x, y, mapWidth, mapHeight
+      );
+
+      if (!best || outsideScore < best.score || 
+          (outsideScore === best.score && distance < best.distance)) {
+        return { part, distance, score: outsideScore };
+      }
+      return best;
+    }, null)?.part;
+  }
+
+  calculatePartMetrics(part, x, y, mapWidth, mapHeight) {
+    const centerX = part.offset.x + mapWidth/2;
+    const centerY = part.offset.y + mapHeight/2;
+    const distance = Math.hypot(x - centerX, y - centerY);
+    
+    const xOutside = x < part.offset.x ? part.offset.x - x :
+                    x >= (part.offset.x + mapWidth) ? x - (part.offset.x + mapWidth) : 0;
+    const yOutside = y < part.offset.y ? part.offset.y - y :
+                    y >= (part.offset.y + mapHeight) ? y - (part.offset.y + mapHeight) : 0;
+    
+    return { distance, outsideScore: xOutside + yOutside };
   }
 
   getMapScale() {
@@ -339,7 +363,7 @@ class MapViewer {
     const containerWidth = img.clientWidth;
     const containerHeight = img.clientHeight;
     
-    const imageAspectRatio = this.mapDimensions.width / this.mapDimensions.height;
+    const imageAspectRatio = this.state.mapDimensions.width / this.state.mapDimensions.height;
     const containerAspectRatio = containerWidth / containerHeight;
 
     let renderedWidth, renderedHeight;
@@ -352,8 +376,8 @@ class MapViewer {
     }
 
     return {
-      scaleX: renderedWidth / this.mapDimensions.width,
-      scaleY: renderedHeight / this.mapDimensions.height,
+      scaleX: renderedWidth / this.state.mapDimensions.width,
+      scaleY: renderedHeight / this.state.mapDimensions.height,
       offsetX: (containerWidth - renderedWidth) / 2,
       offsetY: (containerHeight - renderedHeight) / 2
     };
@@ -384,47 +408,42 @@ class MapViewer {
   }
 
   drawProvinceShapes() {
-    // Set up canvas
-    const container = document.querySelector('.map-container');
-    this.elements.canvas.width = container.clientWidth;
-    this.elements.canvas.height = container.clientHeight;
-    this.ctx.clearRect(0, 0, this.elements.canvas.width, this.elements.canvas.height);
-    this.elements.worldMap.style.cursor = this.hoveredProvince ? 'pointer' : 'default';
-
+    this.setupCanvas();
     const scale = this.getMapScale();
-    const markersArray = Array.from(this.worldMapMarkers.values());
+    const markersArray = Array.from(this.state.worldMapMarkers.values());
     const lastMarker = markersArray[0];
+    const pulseScale = this.calculatePulseScale();
 
-    // Pulse effect settings
-    const pulseTime = (Date.now() % 1500) / 1500;
-    const pulseScale = 1.0 + 0.2 * Math.sin(pulseTime * Math.PI * 2);
-
-    // Draw connecting lines between markers
-    if (this.worldMapMarkers.size > 1) {
+    if (this.state.worldMapMarkers.size > 1) {
       this.drawConnectingLines(markersArray, scale);
     }
 
-    // Draw world map markers
     this.drawWorldMapMarkers(markersArray, scale, pulseScale, lastMarker);
 
-    // Draw province label if hovering
-    if (this.hoveredProvince) {
+    if (this.state.hoveredProvince) {
       this.drawProvinceLabel();
     }
 
     requestAnimationFrame(() => this.drawProvinceShapes());
   }
 
-  drawConnectingLines(markers, scale) {
-    const sortedMarkers = markers
-      .map(marker => ({
-        ...marker,
-        center: this.regionCenters[marker.regionName]
-      }))
-      .sort((a, b) => a.order - b.order);
+  setupCanvas() {
+    const container = document.querySelector('.map-container');
+    this.elements.canvas.width = container.clientWidth;
+    this.elements.canvas.height = container.clientHeight;
+    this.ctx.clearRect(0, 0, this.elements.canvas.width, this.elements.canvas.height);
+    this.elements.worldMap.style.cursor = this.state.hoveredProvince ? 'pointer' : 'default';
+  }
 
-    // Convert rgb color to rgba with opacity
-    const lineColor = this.worldMapMarkerLineColor.replace('rgb', 'rgba').replace(')', `,${this.worldMapMarkerLineOpacity})`);
+  calculatePulseScale() {
+    const pulseTime = (Date.now() % 1500) / 1500;
+    return 1.0 + 0.2 * Math.sin(pulseTime * Math.PI * 2);
+  }
+
+  drawConnectingLines(markers, scale) {
+    const sortedMarkers = this.getSortedMarkers(markers);
+    const lineColor = this.getLineColor();
+    
     this.ctx.strokeStyle = lineColor;
     this.ctx.fillStyle = lineColor;
     this.ctx.lineWidth = 2;
@@ -435,96 +454,127 @@ class MapViewer {
 
       if (current.reset || next.reset || !current.center || !next.center) continue;
 
-      const startX = current.center.x * scale.scaleX + scale.offsetX;
-      const startY = current.center.y * scale.scaleY + scale.offsetY;
-      const endX = next.center.x * scale.scaleX + scale.offsetX;
-      const endY = next.center.y * scale.scaleY + scale.offsetY;
+      this.drawDottedLine(current, next, scale);
+    }
+  }
+
+  getSortedMarkers(markers) {
+    return markers
+      .map(marker => ({
+        ...marker,
+        center: this.state.regionCenters[marker.regionName]
+      }))
+      .sort((a, b) => a.order - b.order);
+  }
+
+  getLineColor() {
+    const { lineColor, lineOpacity } = this.config.worldMapMarkerStyle;
+    return lineColor.replace('rgb', 'rgba').replace(')', `,${lineOpacity})`);
+  }
+
+  drawDottedLine(current, next, scale) {
+    const startX = current.center.x * scale.scaleX + scale.offsetX;
+    const startY = current.center.y * scale.scaleY + scale.offsetY;
+    const endX = next.center.x * scale.scaleX + scale.offsetX;
+    const endY = next.center.y * scale.scaleY + scale.offsetY;
+    
+    const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+    const dotSpacing = 20;
+    const numberOfDots = Math.floor(distance / dotSpacing);
+    
+    for (let j = 0; j <= numberOfDots; j++) {
+      const ratio = j / numberOfDots;
+      const x = startX + (endX - startX) * ratio;
+      const y = startY + (endY - startY) * ratio;
       
-      const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-      const dotSpacing = 20;
-      const numberOfDots = Math.floor(distance / dotSpacing);
-      
-      for (let j = 0; j <= numberOfDots; j++) {
-        const ratio = j / numberOfDots;
-        const x = startX + (endX - startX) * ratio;
-        const y = startY + (endY - startY) * ratio;
-        
-        this.ctx.beginPath();
-        this.ctx.arc(x, y, 2.5, 0, Math.PI * 2); // Slightly smaller dots
-        this.ctx.fill();
-      }
+      this.ctx.beginPath();
+      this.ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+      this.ctx.fill();
     }
   }
 
   drawWorldMapMarkers(markers, scale, pulseScale, lastMarker) {
     markers.forEach(marker => {
-      const center = this.regionCenters[marker.regionName];
+      const center = this.state.regionCenters[marker.regionName];
       if (!center) return;
 
       const x = center.x * scale.scaleX + scale.offsetX;
       const y = center.y * scale.scaleY + scale.offsetY;
       const size = marker === lastMarker ? 
-        this.markerSize * pulseScale : 
-        this.markerSize;
+        this.config.markerSize * pulseScale : 
+        this.config.markerSize;
 
-      // Draw marker with border
-      this.ctx.save();
-      
-      // Draw border
-      this.ctx.beginPath();
-      this.ctx.arc(x, y, size / 2 + 2, 0, 2 * Math.PI);
-      this.ctx.strokeStyle = this.worldMapMarkerLineColor.replace('rgb', 'rgba').replace(')', `,${
-        marker === lastMarker ? this.worldMapMarkerLineOpacity * 1.2 : this.worldMapMarkerLineOpacity
-      })`);
-      this.ctx.lineWidth = marker === lastMarker ? 3 : 2;
-      this.ctx.stroke();
-
-      // Draw marker image
-      this.ctx.beginPath();
-      this.ctx.arc(x, y, size / 2, 0, 2 * Math.PI);
-      this.ctx.clip();
-      this.ctx.drawImage(
-        this.markerImage,
-        x - size / 2,
-        y - size / 2,
-        size,
-        size
-      );
-      
-      this.ctx.restore();
+      this.drawMarker(x, y, size, marker === lastMarker);
     });
   }
 
+  drawMarker(x, y, size, isLastMarker) {
+    const { lineColor, lineOpacity } = this.config.worldMapMarkerStyle;
+    this.ctx.save();
+    
+    // Draw border
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, size / 2 + 2, 0, 2 * Math.PI);
+    this.ctx.strokeStyle = lineColor.replace('rgb', 'rgba').replace(')', `,${
+      isLastMarker ? lineOpacity * 1.2 : lineOpacity
+    })`);
+    this.ctx.lineWidth = isLastMarker ? 3 : 2;
+    this.ctx.stroke();
+
+    // Draw marker image
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, size / 2, 0, 2 * Math.PI);
+    this.ctx.clip();
+    this.ctx.drawImage(
+      this.markerImage,
+      x - size / 2,
+      y - size / 2,
+      size,
+      size
+    );
+    
+    this.ctx.restore();
+  }
+
   drawProvinceLabel() {
+    const { x, y } = this.state.mousePos;
+    this.setupLabelContext();
+    
+    const textMetrics = this.ctx.measureText(this.state.hoveredProvince);
+    const { textX, textY, textAlign, textBaseline } = this.calculateLabelPosition(
+      x, y, textMetrics.width, 16
+    );
+    
+    this.ctx.textAlign = textAlign;
+    this.ctx.textBaseline = textBaseline;
+    this.ctx.strokeText(this.state.hoveredProvince, textX, textY);
+    this.ctx.fillText(this.state.hoveredProvince, textX, textY);
+  }
+
+  setupLabelContext() {
     this.ctx.fillStyle = 'white';
     this.ctx.strokeStyle = 'black';
     this.ctx.lineWidth = 3;
     this.ctx.font = 'bold 16px Arial';
-    
-    const textMetrics = this.ctx.measureText(this.hoveredProvince);
-    const textWidth = textMetrics.width;
-    const textHeight = 16;
-    const padding = 10;
-    
-    let textX = this.mousePos.x + padding;
-    let textY = this.mousePos.y + padding;
+  }
+
+  calculateLabelPosition(x, y, textWidth, textHeight, padding = 10) {
+    let textX = x + padding;
+    let textY = y + padding;
+    let textAlign = 'left';
+    let textBaseline = 'top';
     
     if (textX > this.elements.canvas.width - textWidth - padding) {
-      textX = this.mousePos.x - 5;
-      this.ctx.textAlign = 'right';
-    } else {
-      this.ctx.textAlign = 'left';
+      textX = x - 5;
+      textAlign = 'right';
     }
     
     if (textY > this.elements.canvas.height - textHeight - padding) {
-      textY = this.mousePos.y - textHeight - padding;
-      this.ctx.textBaseline = 'bottom';
-    } else {
-      this.ctx.textBaseline = 'top';
+      textY = y - textHeight - padding;
+      textBaseline = 'bottom';
     }
     
-    this.ctx.strokeText(this.hoveredProvince, textX, textY);
-    this.ctx.fillText(this.hoveredProvince, textX, textY);
+    return { textX, textY, textAlign, textBaseline };
   }
 
   bindEvents() {
@@ -543,48 +593,51 @@ class MapViewer {
     const rect = event.target.getBoundingClientRect();
     const scale = this.getMapScale();
     
-    this.mousePos = {
+    this.state.mousePos = {
       x: event.clientX - rect.left,
       y: event.clientY - rect.top
     };
     
-    const x = (this.mousePos.x - scale.offsetX) / scale.scaleX;
-    const y = (this.mousePos.y - scale.offsetY) / scale.scaleY;
+    const x = (this.state.mousePos.x - scale.offsetX) / scale.scaleX;
+    const y = (this.state.mousePos.y - scale.offsetY) / scale.scaleY;
     
-    // Find all regions containing this point
-    const containingRegions = Object.entries(this.provinceShapes)
+    this.updateHoveredProvince(x, y);
+  }
+
+  updateHoveredProvince(x, y) {
+    const containingRegions = Object.entries(this.state.provinceShapes)
       .filter(([_, points]) => this.isPointInPolygon(x, y, points, 5))
       .map(([name]) => name);
 
-    // If we found any regions, select the smallest one (child)
     if (containingRegions.length > 0) {
-      const smallestRegion = containingRegions.reduce((smallest, current) => {
-        if (!smallest) return current;
-        
-        const currentPoints = this.provinceShapes[current];
-        const smallestPoints = this.provinceShapes[smallest];
-        
-        // Calculate bounding boxes
-        const currentBounds = this.calculateBounds(currentPoints);
-        const smallestBounds = this.calculateBounds(smallestPoints);
-        
-        // Compare areas
-        const currentArea = (currentBounds.maxX - currentBounds.minX) * 
-                          (currentBounds.maxY - currentBounds.minY);
-        const smallestArea = (smallestBounds.maxX - smallestBounds.minX) * 
-                           (smallestBounds.maxY - smallestBounds.minY);
-        
-        return currentArea < smallestArea ? current : smallest;
-      }, null);
-
-      if (smallestRegion !== this.hoveredProvince) {
-        this.hoveredProvince = smallestRegion;
+      const smallestRegion = this.findSmallestRegion(containingRegions);
+      if (smallestRegion !== this.state.hoveredProvince) {
+        this.state.hoveredProvince = smallestRegion;
         this.drawProvinceShapes();
       }
-    } else if (this.hoveredProvince) {
-      this.hoveredProvince = null;
+    } else if (this.state.hoveredProvince) {
+      this.state.hoveredProvince = null;
       this.drawProvinceShapes();
     }
+  }
+
+  findSmallestRegion(regions) {
+    return regions.reduce((smallest, current) => {
+      if (!smallest) return current;
+      
+      const currentPoints = this.state.provinceShapes[current];
+      const smallestPoints = this.state.provinceShapes[smallest];
+      
+      const currentBounds = this.calculateBounds(currentPoints);
+      const smallestBounds = this.calculateBounds(smallestPoints);
+      
+      const currentArea = (currentBounds.maxX - currentBounds.minX) * 
+                        (currentBounds.maxY - currentBounds.minY);
+      const smallestArea = (smallestBounds.maxX - smallestBounds.minX) * 
+                         (smallestBounds.maxY - smallestBounds.minY);
+      
+      return currentArea < smallestArea ? current : smallest;
+    }, null);
   }
 
   calculateBounds(points) {
@@ -599,24 +652,21 @@ class MapViewer {
   }
 
   handleMouseLeave() {
-    this.hoveredProvince = null;
+    this.state.hoveredProvince = null;
     this.drawProvinceShapes();
   }
 
   handleWorldMapClick(event) {
+    if (!this.state.hoveredProvince || !this.state.regionMap[this.state.hoveredProvince]) return;
+
     const rect = event.target.getBoundingClientRect();
     const scale = this.getMapScale();
-    
     const x = Math.round((event.clientX - rect.left - scale.offsetX) / scale.scaleX);
     const y = Math.round((event.clientY - rect.top - scale.offsetY) / scale.scaleY);
     
-    if (this.hoveredProvince && this.regionMap[this.hoveredProvince]) {
-      this.showRegionMap(this.hoveredProvince, x, y);
-      this.fetchDaggerwalkLogs(this.hoveredProvince);
-      const params = new URLSearchParams(window.location.search);
-      params.set('region', this.hoveredProvince);
-      history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
-    }
+    this.showRegionMap(this.state.hoveredProvince, x, y);
+    this.fetchDaggerwalkLogs(this.state.hoveredProvince);
+    this.updateUrl(this.state.hoveredProvince);
   }
 }
 
