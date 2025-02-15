@@ -35,4 +35,7 @@ class DaggerwalkLog(models.Model):
         verbose_name_plural = 'Daggerwalk Logs'
 
     def __str__(self):
-        return f"{self.region} at {self.created_at}"
+        formatted_datetime = self.created_at.strftime("%b %d, %I:%M%p %Y")
+        # Remove leading zero from hour
+        formatted_datetime = formatted_datetime.replace(" 0", " ")
+        return f"{self.region} - {formatted_datetime}"
