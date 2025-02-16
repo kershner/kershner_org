@@ -7,8 +7,8 @@ from django.urls import reverse
 @admin.register(DaggerwalkLog)
 class DaggerwalkLogAdmin(admin.ModelAdmin):
     list_display = ('created_at', 'view_on_map_link', 'coordinates', 'region', 'location', 'formatted_date', 'weather', 'reset')
-    list_filter = ('region', 'location', 'location_type', 'weather', 'created_at', 'reset',)
-    search_fields = ('region', 'location', 'location_type', 'weather', 'created_at',)
+    list_filter = ('region', 'location', 'location_type', 'weather', 'season', 'created_at', 'reset',)
+    search_fields = ('region', 'location', 'location_type', 'weather', 'season', 'created_at',)
     
     def get_readonly_fields(self, request, obj=None):
         custom_fields = ['view_on_map_link', 'delete_previous_button', 'world_coordinates', 'map_pixel_coordinates', 'player_coordinates']
@@ -117,7 +117,8 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
             'fields': (
                 'date',
                 'weather',
-                'current_song'
+                'current_song',
+                'season'
             ),
         }),
         ('Delete', {

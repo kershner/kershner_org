@@ -95,6 +95,7 @@ def create_daggerwalk_log(request):
             player_z=data['playerZ'],
             date=data['date'],
             weather=data['weather'],
+            season=data['season'],
             current_song=data.get('currentSong'),
             reset=data.get('reset')
         )
@@ -131,18 +132,5 @@ def delete_previous_logs(request, log_id):
        return JsonResponse({'status': 'ok'})
 
 def latest_log(request):
-    log = DaggerwalkLog.objects.only(
-        'location', 
-        'region', 
-        'weather', 
-        'date', 
-        'current_song'
-    ).latest('created_at')
-    
-    return JsonResponse({
-        'location': log.location,
-        'region': log.region,
-        'weather': log.weather,
-        'date': log.date,
-        'current_song': log.current_song
-    })
+    log = DaggerwalkLog.objects.latest('created_at')
+    return JsonResponse(model_to_dict(log))

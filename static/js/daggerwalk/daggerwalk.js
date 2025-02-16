@@ -3,26 +3,38 @@ const daggerwalk = {
   pollInterval: null,
 
   formatTime(dateStr) {
-    const time = dateStr.match(/(\d{1,2}):(\d{2})/)?.[0]
-    if (!time) return dateStr
-    
-    const [h, m] = time.split(':')
-    return `${h % 12 || 12}:${m}${h >= 12 ? 'PM' : 'AM'}`
+    // Converts "HH:MM:SS" to "H:MM(AM|PM)" at end of string
+    return dateStr.replace(/(\d{1,2}):(\d{2}):\d{2}$/, (_, h, m) => 
+        `${h % 12 || 12}:${m}${h >= 12 ? 'PM' : 'AM'}`
+    );
   },
 
   updateStatus() {
-    const status = document.querySelector('.current-status')
-    if (!status || !this.latestLog) return
-    
-    console.log(this.latestLog);
-    
-    const { location, region, weather, date, current_song } = this.latestLog
-    
+    const status = document.querySelector('.current-status');
+    if (!status || !this.latestLog) return;
+
+    const log = this.latestLog;
+
+    // Define emoji mappings
+    const weatherEmoji = {
+        "Sunny": "☀️", "Clear": "🌙", "Cloudy": "☁️", "Foggy": "🌫️",
+        "Rainy": "🌧️", "Snowy": "🌨️", "Thunderstorm": "⛈️", "Blizzard": "❄️"
+    };
+
+    const seasonEmoji = {
+        "Winter": "☃️", "Spring": "🌸", "Summer": "🌻", "Autumn": "🍂"
+    };
+
+    // Get corresponding emojis
+    const weatherIcon = weatherEmoji[log.weather] || "🌈";
+    const seasonIcon = seasonEmoji[log.season] || "❓";
+
     status.innerHTML = `
-      <h2>${location} - ${region}</h2>
-      <p>${weather} | ${this.formatTime(date)}</p>
-      ${current_song ? `<p>♪ ${current_song}</p>` : ''}
-    `
+      <h2>${log.location} - ${log.region}</h2>
+      <p>${this.formatTime(log.date)}</p>
+      <p>${seasonIcon} ${log.season}  ${weatherIcon} ${log.weather}
+      ${log.current_song ? `  🎵 ${log.current_song}` : ''}</p>
+    `;
   },
 
   async fetchLatest() {

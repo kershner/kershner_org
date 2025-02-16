@@ -27,6 +27,7 @@ class DaggerwalkLog(models.Model):
     # Environment
     weather = models.CharField(max_length=255, help_text="Current weather condition")
     current_song = models.CharField(max_length=255, null=True, blank=True, help_text="Currently playing background music")
+    season = models.CharField(max_length=255, null=True, blank=True, help_text="Current in-game season")
 
     reset = models.BooleanField(default=False, help_text="Indicates if the log started at a new location")
 
