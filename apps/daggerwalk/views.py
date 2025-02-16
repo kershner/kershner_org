@@ -38,10 +38,13 @@ class DaggerwalkHomeView(View):
             .distinct()[:10]
         )
 
+        latest_log = DaggerwalkLog.objects.latest('created_at')
+        
         ctx = {
-            'region_data': json.dumps(list(region_data), default=str)
+            'region_data': json.dumps(list(region_data), default=str),
+            'latest_log': json.dumps(latest_log.__dict__, default=str)
         }
-        print(ctx)
+        
         return render(request, self.template_path, ctx)
 
 class DaggerwalkLogsView(View):
@@ -126,3 +129,20 @@ def delete_previous_logs(request, log_id):
        deleted, details = DaggerwalkLog.objects.filter(id__lt=log_id).delete()
        messages.success(request, f'{deleted} logs deleted')
        return JsonResponse({'status': 'ok'})
+
+def latest_log(request):
+    log = DaggerwalkLog.objects.only(
+        'location', 
+        'region', 
+        'weather', 
+        'date', 
+        'current_song'
+    ).latest('created_at')
+    
+    return JsonResponse({
+        'location': log.location,
+        'region': log.region,
+        'weather': log.weather,
+        'date': log.date,
+        'current_song': log.current_song
+    })

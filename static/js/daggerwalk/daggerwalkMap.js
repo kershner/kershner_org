@@ -47,7 +47,7 @@ class MapViewer {
   async init() {
     await this.loadMapData();
     this.calculateRegionCenters();
-    await this.handleUrlParams();
+    // await this.handleUrlParams();
     this.initializeMap();
   }
 
@@ -590,7 +590,7 @@ class MapViewer {
     worldMap.addEventListener('mouseup', () => this.drawProvinceShapes());
     worldMap.addEventListener('click', this.handleWorldMapClick.bind(this));
     regionMap.addEventListener('click', () => this.showWorldMap());
-    window.onpopstate = () => this.handleUrlParams();
+    // window.onpopstate = () => this.handleUrlParams();
   }
 
   handleMouseMove(event) {
@@ -676,8 +676,8 @@ class MapViewer {
 
 // Initialize the map viewer
 window.onload = async () => {
-  const mapViewer = new MapViewer();
-  mapViewer.markerImage.src = `${mapViewer.config.baseS3Url}/img/daggerwalk/Daggerwalk.ico`;
-  await mapViewer.init();
-  mapViewer.addAllWorldMapMarkers();
+  window.mapViewer = new MapViewer();
+  window.mapViewer.markerImage.src = `${mapViewer.config.baseS3Url}/img/daggerwalk/Daggerwalk.ico`;
+  await window.mapViewer.init();
+  window.mapViewer.addAllWorldMapMarkers();
 };

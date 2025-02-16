@@ -2,16 +2,14 @@ body
   margin: 0
   padding: 0
   background: #000
-  overflow: hidden
   font-family: Helvetica, Arial, sans-serif
+  color: #FFF
 
 .view-container 
   position: relative
   width: 100vw
-  height: 100vh
   display: flex
   flex-direction: column
-  justify-content: center
 
   .view-title
     color: #FFF
@@ -117,3 +115,47 @@ $marker-world-size: 24px
 
   &.recent
     @include pulse-animation($scale: 1.7, $opacity: 0.5)
+
+.tabs
+  input
+    display: none
+
+  label
+    padding: 10px
+    display: inline-block
+    cursor: pointer
+
+  .tab-content
+    display: none
+
+  @for $i from 1 through 10
+    input:nth-of-type(#{$i}):checked ~ label:nth-of-type(#{$i})
+      font-weight: bold
+      text-decoration: underline
+
+    input:nth-of-type(#{$i}):checked ~ .tab-content:nth-of-type(#{$i})
+      display: block
+
+#twitch-container 
+  position: relative
+  width: 100%
+  padding-top: 56.25%
+  
+  #twitch-embed
+    position: absolute
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+
+.current-status
+  padding: 1rem
+  background: #1a1a1a
+  color: #fff
+
+  h2
+    margin: 0 0 0.5rem
+
+  p
+    margin: 0
+    opacity: 0.8

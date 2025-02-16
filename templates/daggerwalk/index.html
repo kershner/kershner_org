@@ -10,27 +10,23 @@
     <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/daggerwalk.css">
 </head>
 <body>
-    <div id="loading" class="loading">Loading map data...</div>
-    
-    <div id="worldMapView" class="view-container hidden" data-base-url="{% settings_value "BASE_S3_URL" %}">
-        <div class="map-container">
-            <img id="worldMap" src="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/daggerfall_world_map.png" alt="Daggerfall World Map">
-            <canvas id="overlay"></canvas>
-        </div>
+    <div class="tabs">
+        <input type="radio" name="tabs" id="twitch-tab-btn" checked>
+        <input type="radio" name="tabs" id="map-tab-btn">
+        
+        <label data-tab="1" for="twitch-tab-btn">Twitch</label>
+        <label data-tab="2" for="map-tab-btn">Map</label>
+        
+        <div class="tab-content">{% include 'daggerwalk/twitch_player.html' %}</div>
+        <div class="tab-content">{% include 'daggerwalk/map.html' %}</div>
     </div>
 
-    <div id="regionMapView" class="view-container hidden">
-        <h2 id="regionName" class="view-title"></h2>
-        <div class="map-container">
-            <img id="regionMap" src="" alt="Region Map">
-            <div id="marker" class="marker"></div>
-        </div>
-    </div>
+    <div class="current-status"></div>
 
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalk.js"></script>
     <script type="text/javascript">
-      window.BASE_S3_URL = '{% settings_value "BASE_S3_URL" %}';
-      window.REGION_DATA = {{ region_data|safe }};
+        daggerwalk.latestLog = {{ latest_log|safe }};
+        daggerwalk.init();
     </script>
-    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk.js"></script>
 </body>
 </html>
