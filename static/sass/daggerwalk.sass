@@ -7,18 +7,15 @@ body
 
 .view-container 
   position: relative
-  width: 100vw
   display: flex
   flex-direction: column
 
   .view-title
     color: #FFF
-    margin: 0.5rem 1rem
+    margin: 0.5rem
 
 .map-container 
   position: relative
-  display: inline-block
-  width: 100%
 
 #worldMap 
   width: 100%
@@ -121,18 +118,40 @@ $marker-world-size: 24px
     display: none
 
   label
-    padding: 10px
-    display: inline-block
+    padding: 10px 14px
     cursor: pointer
+    display: inline-block
+    position: relative
+
+    &::after
+      content: ''
+      display: block
+      width: 0
+      height: 3px
+      background: #ffcc00
+      position: absolute
+      bottom: -3px
+      left: 50%
+      transform: translateX(-50%)
+
+    &[data-tab="1"]
+      margin-left: 1rem
 
   .tab-content
     display: none
+    padding-top: 1rem
 
-  @for $i from 1 through 10
+  // "Selected" styles
+  @for $i from 1 through 2
+    // tab label
     input:nth-of-type(#{$i}):checked ~ label:nth-of-type(#{$i})
       font-weight: bold
-      text-decoration: underline
+      color: #fff
 
+      &::after
+        width: 100%
+
+    // tab content
     input:nth-of-type(#{$i}):checked ~ .tab-content:nth-of-type(#{$i})
       display: block
 
@@ -150,12 +169,9 @@ $marker-world-size: 24px
 
 .current-status
   padding: 1rem
-  background: #1a1a1a
-  color: #fff
-
+  
   h2
     margin: 0 0 0.5rem
 
   p
     margin: 0
-    opacity: 0.8
