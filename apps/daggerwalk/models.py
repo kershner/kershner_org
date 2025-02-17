@@ -40,3 +40,36 @@ class DaggerwalkLog(models.Model):
         # Remove leading zero from hour
         formatted_datetime = formatted_datetime.replace(" 0", " ")
         return f"{self.region} - {formatted_datetime}"
+    
+    def save(self, *args, **kwargs):
+        # Determine and set the season before saving
+        self.season = self.determine_season()
+        super().save(*args, **kwargs)
+    
+    def determine_season(self):
+        """Determine season based on the in-game date string format:
+        'Sundas, 1 Last Seed, 3E 406, 10:32:56'"""
+        try:
+            date_parts = self.date.split(',')
+            month_part = date_parts[1].strip()  # "1 Last Seed"
+            month = ' '.join(month_part.split()[1:])  # "Last Seed"
+            
+            # Matching the provided seasonal mapping exactly
+            seasons = {
+                "Morning Star": "Winter", 
+                "Sun's Dusk": "Winter", 
+                "Evening Star": "Winter",
+                "First Seed": "Spring", 
+                "Rain's Hand": "Spring",
+                "Second Seed": "Summer", 
+                "Midyear": "Summer", 
+                "Sun's Height": "Summer",
+                "Last Seed": "Autumn", 
+                "Hearthfire": "Autumn", 
+                "Frostfall": "Autumn"
+            }
+            
+            return seasons.get(month, "Unknown")
+        except (ValueError, IndexError) as e:
+            print(f"Error parsing date: {self.date} - {str(e)}")
+            return "Unknown"

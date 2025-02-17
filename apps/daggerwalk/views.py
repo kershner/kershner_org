@@ -96,7 +96,6 @@ def create_daggerwalk_log(request):
             player_z=data['playerZ'],
             date=data['date'],
             weather=data['weather'],
-            season=data['season'],
             current_song=data.get('currentSong'),
             reset=data.get('reset')
         )
