@@ -47,7 +47,6 @@ class MapViewer {
   async init() {
     await this.loadMapData();
     this.calculateRegionCenters();
-    // await this.handleUrlParams();
     this.initializeMap();
   }
 
@@ -109,25 +108,6 @@ class MapViewer {
       onLoad();
     } else {
       this.elements.worldMap.onload = onLoad;
-    }
-  }
-
-  async handleUrlParams() {
-    const params = new URLSearchParams(window.location.search);
-    const region = params.get('region');
-    const x = parseInt(params.get('x'));
-    const y = parseInt(params.get('y'));
-
-    if (region && this.state.regionMap[region]) {
-      if (!isNaN(x) && !isNaN(y)) {
-        const regionData = this.state.regionMap[region];
-        const selectedPart = this.getSelectedRegionPart(regionData, x, y);
-        await this.showRegionMap(region, x, y, selectedPart);
-        this.addLogMarker(region, x, y, selectedPart);
-        this.updateUrl(region);
-      } else {
-        await this.fetchDaggerwalkLogs(region);
-      }
     }
   }
 
@@ -590,7 +570,6 @@ class MapViewer {
     worldMap.addEventListener('mouseup', () => this.drawProvinceShapes());
     worldMap.addEventListener('click', this.handleWorldMapClick.bind(this));
     regionMap.addEventListener('click', () => this.showWorldMap());
-    // window.onpopstate = () => this.handleUrlParams();
   }
 
   handleMouseMove(event) {
@@ -680,4 +659,23 @@ window.onload = async () => {
   window.mapViewer.markerImage.src = `${mapViewer.config.baseS3Url}/img/daggerwalk/Daggerwalk.ico`;
   await window.mapViewer.init();
   window.mapViewer.addAllWorldMapMarkers();
+
+  // Handle query parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const region = urlParams.get("region");
+  const x = parseInt(urlParams.get("x"), 10);
+  const y = parseInt(urlParams.get("y"), 10);
+
+  if (region in window.mapViewer.state.regionMap) {
+    console.log(`Auto-loading region: ${region}`);
+
+    if (!isNaN(x) && !isNaN(y)) {
+      window.mapViewer.showRegionMap(region, x, y).then(() => 
+        window.mapViewer.addLogMarker(region, x, y)
+      );
+    } else {
+      window.mapViewer.fetchDaggerwalkLogs(region);
+      window.mapViewer.showRegionMap(region);
+    }
+  }
 };

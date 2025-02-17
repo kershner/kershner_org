@@ -14,6 +14,7 @@
         <input type="radio" name="tabs" id="twitch-tab-btn" checked>
         <input type="radio" name="tabs" id="map-tab-btn">
         
+        <h3 class="title">Daggerwalk</h3>
         <label data-tab="1" for="twitch-tab-btn">Twitch</label>
         <label data-tab="2" for="map-tab-btn">Map</label>
         
@@ -25,8 +26,10 @@
 
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalk.js"></script>
     <script type="text/javascript">
-        daggerwalk.latestLog = {{ latest_log|safe }};
-        daggerwalk.init();
+        document.addEventListener("DOMContentLoaded", () => {
+            daggerwalk.latestLog = {{ latest_log|safe }};
+            daggerwalk.init();
+        });
     </script>
 </body>
 </html>

@@ -3,10 +3,15 @@ const daggerwalk = {
   pollInterval: null,
 
   formatTime(dateStr) {
-    // Converts "HH:MM:SS" to "H:MM(AM|PM)" at end of string
-    return dateStr.replace(/(\d{1,2}):(\d{2}):\d{2}$/, (_, h, m) => 
-        `${h % 12 || 12}:${m}${h >= 12 ? 'PM' : 'AM'}`
-    );
+    // Extract just the time portion and wrap in span
+    return dateStr.replace(/^(.+), (\d{1,2}:\d{2}:\d{2})$/, (_, datePart, timePart) => {
+        const formattedTime = timePart.replace(/(\d{1,2}):(\d{2}):\d{2}/, (_, h, m) => {
+            const hour = h % 12 || 12;
+            const period = h >= 12 ? 'pm' : 'am';
+            return `${hour}:${m} ${period}`;
+        });
+        return `<span class="time-string">⌚${formattedTime}</span>📅 ${datePart}`;
+    });
   },
 
   updateStatus() {
@@ -31,7 +36,7 @@ const daggerwalk = {
 
     status.innerHTML = `
       <h2>${log.location} - ${log.region}</h2>
-      <p>${this.formatTime(log.date)}</p>
+      ${this.formatTime(log.date)}
       <p>${seasonIcon} ${log.season}  ${weatherIcon} ${log.weather}
       ${log.current_song ? `  🎵 ${log.current_song}` : ''}</p>
     `;
@@ -61,6 +66,9 @@ const daggerwalk = {
 }
 
 daggerwalk.init = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const regionParam = urlParams.get('region');
+
   const mapTab = document.querySelector('#map-tab-btn')
   const twitchTab = document.querySelector('#twitch-tab-btn')
 
@@ -72,6 +80,11 @@ daggerwalk.init = () => {
   mapTab.addEventListener('change', () => {
     window.mapViewer.fetchDaggerwalkLogs(daggerwalk.latestLog.region)
   })
+
+  if (regionParam && mapTab) {
+    mapTab.checked = true;
+    mapTab.dispatchEvent(new Event("change", { bubbles: true }));
+  }
 
   daggerwalk.updateStatus()
   daggerwalk.startPolling()

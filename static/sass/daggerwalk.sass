@@ -1,8 +1,16 @@
+// Variables
+$color-loading-border: rgba(255, 255, 255, 0.3)
+$color-highlight: #ffcc00
+$error: #ff6b6b
+
+$primary-font-family: Helvetica, Arial, sans-serif
+$secondary-font-family: Georgia, serif
+  
 body 
   margin: 0
   padding: 0
   background: #000
-  font-family: Helvetica, Arial, sans-serif
+  font-family: $primary-font-family
   color: #FFF
 
 .view-container 
@@ -11,11 +19,13 @@ body
   flex-direction: column
 
   .view-title
-    color: #FFF
+    font-family: $secondary-font-family
     margin: 0.5rem
+    margin-left: 1rem
 
 .map-container 
   position: relative
+  top: 3px
 
 #worldMap 
   width: 100%
@@ -27,6 +37,7 @@ body
   height: auto
   object-fit: contain
   cursor: pointer
+  margin-top: 1px
 
 canvas 
   position: absolute
@@ -35,19 +46,29 @@ canvas
   pointer-events: none
 
 .hidden 
-  display: none
+  display: none !important
 
-.loading 
-  color: white
-  font-family: Arial, sans-serif
-  font-size: 24px
-  position: absolute
-  top: 50%
-  left: 50%
-  transform: translate(-50%, -50%)
+.loading
+  display: flex
+  align-items: center
+  min-height: 40vh
+  padding: 1rem
+  border-radius: 0.5rem
+
+  .spinner
+    width: 5rem
+    height: 5rem
+    border: 0.1875rem solid $color-loading-border
+    border-top-color: $color-highlight
+    border-radius: 50%
+    animation: spin 1s linear infinite
+
+@keyframes spin
+  to
+    transform: rotate(360deg)
 
 .error 
-  color: #ff6b6b
+  color: $error
 
 // Marker base styles
 %marker-base
@@ -113,6 +134,11 @@ $marker-world-size: 24px
   &.recent
     @include pulse-animation($scale: 1.7, $opacity: 0.5)
 
+.title
+  font-family: $secondary-font-family
+  display: inline-block
+  padding-left: 1rem
+
 .tabs
   input
     display: none
@@ -127,10 +153,10 @@ $marker-world-size: 24px
       content: ''
       display: block
       width: 0
-      height: 3px
-      background: #ffcc00
+      height: 0.2rem
+      background: $color-highlight
       position: absolute
-      bottom: -3px
+      bottom: -0.2rem
       left: 50%
       transform: translateX(-50%)
 
@@ -169,9 +195,16 @@ $marker-world-size: 24px
 
 .current-status
   padding: 1rem
+  border-top: 0.2rem solid $color-highlight
   
   h2
-    margin: 0 0 0.5rem
+    margin: 0
+    font-family: $secondary-font-family
 
   p
     margin: 0
+
+  .time-string
+    display: block
+    font-size: 1.2rem
+    font-weight: bold
