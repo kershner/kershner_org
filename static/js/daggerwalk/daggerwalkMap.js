@@ -9,6 +9,7 @@ class MapViewer {
       worldMapMarkers: new Map(),
       regionCenters: {},
       mapDimensions: { width: 0, height: 0 },
+      currentRegion: null
     };
 
     this.config = {
@@ -41,8 +42,8 @@ class MapViewer {
 
     this.ctx = this.elements.canvas.getContext('2d');
     this.markerImage = new Image();
-    this.bindEvents();
     this.initTooltip();
+    this.bindEvents();
   }
 
   async init() {
@@ -153,44 +154,6 @@ class MapViewer {
     history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
   }
 
-  async fetchDaggerwalkLogs(region) {
-    try {
-      const response = await fetch(`/daggerwalk/logs/?region=${encodeURIComponent(region)}`);
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-      
-      const data = await response.json();
-      if (!data.length) return;
-
-      const mostRecentLog = data[data.length - 1];
-      const regionData = this.state.regionMap[region];
-      const selectedPart = this.getSelectedRegionPart(
-        regionData, 
-        parseInt(mostRecentLog.map_pixel_x),
-        parseInt(mostRecentLog.map_pixel_y)
-      );
-
-      await this.showRegionMap(
-        region,
-        parseInt(mostRecentLog.map_pixel_x),
-        parseInt(mostRecentLog.map_pixel_y),
-        selectedPart
-      );
-
-      this.clearLogMarkers();
-      data.forEach(log => this.addLogMarker(
-        log.region, 
-        parseInt(log.map_pixel_x), 
-        parseInt(log.map_pixel_y), 
-        selectedPart,
-        this.createMarkerData(log)
-      ));
-
-      this.startLogPolling(region);
-    } catch (error) {
-      console.error('Error fetching logs:', error);
-    }
-  }
-
   createMarkerData(log) {
     return {
       season: log.season,
@@ -202,18 +165,117 @@ class MapViewer {
     };
   }
 
+  async fetchDaggerwalkLogs(region) {
+    try {
+        const response = await fetch(`/daggerwalk/logs/?region=${encodeURIComponent(region)}`);
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        
+        const data = await response.json();
+        if (!data.length) return;
+
+        const mostRecentLog = data[data.length - 1];
+        const regionData = this.state.regionMap[region];
+        const selectedPart = this.getSelectedRegionPart(
+            regionData, 
+            parseInt(mostRecentLog.map_pixel_x),
+            parseInt(mostRecentLog.map_pixel_y)
+        );
+
+        await this.showRegionMap(
+            region,
+            parseInt(mostRecentLog.map_pixel_x),
+            parseInt(mostRecentLog.map_pixel_y),
+            selectedPart
+        );
+
+        this.clearLogMarkers();
+        data.forEach(log => this.addLogMarker(
+            log.region, 
+            parseInt(log.map_pixel_x), 
+            parseInt(log.map_pixel_y), 
+            selectedPart,
+            this.createMarkerData(log)
+        ));
+
+        this.scheduleNextLogFetch(); // Schedule the next fetch
+    } catch (error) {
+        this.scheduleNextLogFetch(10000); // Retry in 10 seconds if fetch fails
+    }
+  }
+
+  scheduleNextLogFetch() {
+    if (this.state.fetchTimer) {
+        clearTimeout(this.state.fetchTimer);
+        this.state.fetchTimer = null;
+    }
+
+    this.calculateNextLogFetchDelay().then((nextFetchDelay) => {
+        if (isNaN(nextFetchDelay) || nextFetchDelay <= 0) {
+            nextFetchDelay = 10000; // Default retry delay
+        }
+
+        this.state.fetchTimer = setTimeout(() => {
+            if (!this.state.currentRegion) {
+                return;
+            }
+            this.fetchDaggerwalkLogs(this.state.currentRegion);
+        }, nextFetchDelay);
+    }).catch(err => {
+        this.scheduleNextLogFetch(10000); // Fallback to 10s retry on error
+    });
+  }
+
+  calculateNextLogFetchDelay(retryInterval = 1000, maxWaitTime = 30000) {
+    const buffer = 10000; // 10 seconds
+    const fiveMinutesAndBuffer = (5 * 60 * 1000) + buffer; // 5 minutes + 10 sec buffer
+    let elapsedTime = 0;
+
+    return new Promise((resolve) => {
+        const checkMarker = () => {
+            const recentMarker = document.querySelector('.log-marker.recent');
+
+            if (!recentMarker) {
+                if (elapsedTime >= maxWaitTime) {
+                    return resolve(buffer);
+                }
+
+                elapsedTime += retryInterval;
+                setTimeout(checkMarker, retryInterval);
+                return;
+            }
+
+            const createdAtStr = recentMarker.dataset.createdAt;
+            if (!createdAtStr) {
+                setTimeout(checkMarker, retryInterval);
+                return;
+            }
+
+            const lastLogTime = new Date(createdAtStr).getTime();
+            if (isNaN(lastLogTime)) {
+                setTimeout(checkMarker, retryInterval);
+                return;
+            }
+
+            const nextFetchTime = lastLogTime + fiveMinutesAndBuffer;
+            const delay = Math.max(nextFetchTime - Date.now(), buffer); // Ensure at least 10 sec delay
+
+            resolve(delay);
+        };
+
+        checkMarker(); // Start checking
+    });
+  }
+
   startLogPolling(region) {
-    this.stopLogPolling();
-    this.state.fetchTimer = setInterval(
-      () => this.fetchDaggerwalkLogs(region),
-      this.config.regionFetchInterval
-    );
+    this.stopLogPolling(); // Clear any previous polling
+    this.currentRegion = region;
+    this.fetchDaggerwalkLogs(region);
   }
 
   stopLogPolling() {
     if (this.state.fetchTimer) {
-      clearInterval(this.state.fetchTimer);
-      this.state.fetchTimer = null;
+        clearTimeout(this.state.fetchTimer);
+        this.state.fetchTimer = null;
     }
   }
 
@@ -225,6 +287,7 @@ class MapViewer {
     this.clearLogMarkers();
     this.elements.regionName.textContent = '';
     this.addAllWorldMapMarkers();
+    this.state.currentRegion = null;
   }
 
   async showRegionMap(regionName, x, y, forcePart = null) {
@@ -232,6 +295,7 @@ class MapViewer {
 
     this.elements.worldMapView.classList.add('hidden');
     this.elements.regionMapView.classList.remove('hidden');
+    this.state.currentRegion = regionName;
 
     const regionData = this.state.regionMap[regionName];
     const selectedPart = forcePart || 

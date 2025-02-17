@@ -43,28 +43,64 @@ const daggerwalk = {
   },
 
   async fetchLatest() {
-    try {
-      const response = await fetch('/daggerwalk/logs/latest/')
-      this.latestLog = await response.json()
-      this.updateStatus()
-    } catch (err) {
-      console.error('Failed to fetch latest log:', err)
+    const fiveMinutesAndBuffer = (5 * 60 * 1000) + 10000; // 5 min + 10 sec buffer
+
+    if (this.latestLog && this.latestLog.created_at) {
+        const lastLogTime = new Date(this.latestLog.created_at).getTime();
+        const nextFetchTime = lastLogTime + fiveMinutesAndBuffer;
+        const currentTime = Date.now();
+
+        if (currentTime < nextFetchTime) {
+            // console.log(`Skipping fetch: next fetch scheduled in ${(nextFetchTime - currentTime) / 1000} seconds`);
+            this.scheduleNextFetch(nextFetchTime - currentTime);
+            return;
+        }
     }
+
+    try {
+        const response = await fetch('/daggerwalk/logs/latest/');
+        const newLog = await response.json();
+        const buffer = 10000;  // 10s
+
+        // Ensure created_at exists and is valid before scheduling the next fetch
+        if (!newLog.created_at) {
+            this.scheduleNextFetch(buffer);
+            return;
+        }
+
+        this.latestLog = newLog;
+        this.updateStatus();
+
+        // Calculate the next fetch time based on the new log's created_at
+        const newLogTime = new Date(newLog.created_at).getTime();
+        const nextFetchTime = newLogTime + fiveMinutesAndBuffer;
+        const delay = Math.max(nextFetchTime - Date.now(), buffer); // Ensure a minimum delay of 10 sec
+        
+        this.scheduleNextFetch(delay);
+    } catch (err) {
+        this.scheduleNextFetch(buffer); // Retry in 10 seconds on failure
+    }
+  },
+
+  scheduleNextFetch(delay) {
+      if (this.pollInterval) {
+          clearTimeout(this.pollInterval);
+      }
+      this.pollInterval = setTimeout(() => this.fetchLatest(), delay);
   },
 
   startPolling() {
-    this.fetchLatest()
-    this.pollInterval = setInterval(() => this.fetchLatest(), 20000)
+      this.fetchLatest(); // Initial fetch, scheduling handled within fetchLatest
   },
 
   stopPolling() {
-    if (this.pollInterval) {
-      clearInterval(this.pollInterval)
-      this.pollInterval = null
-    }
+      if (this.pollInterval) {
+          clearTimeout(this.pollInterval);
+          this.pollInterval = null;
+      }
   }
 }
-
+  
 daggerwalk.init = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const regionParam = urlParams.get('region');

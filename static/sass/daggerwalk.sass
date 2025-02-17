@@ -117,7 +117,7 @@ $marker-world-size: 24px
   width: $marker-size
   height: $marker-size
   border-radius: 50%
-  background-color: red
+  background-color: $color-highlight
   cursor: pointer
   pointer-events: auto
 
@@ -153,6 +153,7 @@ $marker-world-size: 24px
     cursor: pointer
     display: inline-block
     position: relative
+    z-index: 1
 
     &::after
       content: ''
@@ -237,6 +238,7 @@ $marker-world-size: 24px
   
   &.visible
     opacity: 1
+    z-index: 10
 
   .row
     display: flex
