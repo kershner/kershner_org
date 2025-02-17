@@ -1,6 +1,6 @@
 // Variables
 $color-loading-border: rgba(255, 255, 255, 0.3)
-$color-highlight: #ffcc00
+$color-highlight: #F2E530
 $error: #ff6b6b
 
 $primary-font-family: Helvetica, Arial, sans-serif
@@ -20,12 +20,14 @@ body
 
   .view-title
     font-family: $secondary-font-family
+    color: #FFF
     margin: 0.5rem
     margin-left: 1rem
 
 .map-container 
   position: relative
   top: 3px
+  overflow: hidden
 
 #worldMap 
   width: 100%
@@ -141,6 +143,7 @@ $marker-world-size: 24px
 
 .title
   font-family: $secondary-font-family
+  color: $color-highlight
   display: inline-block
   padding-left: 1rem
 
@@ -206,6 +209,7 @@ $marker-world-size: 24px
   h2
     margin: 0
     font-family: $secondary-font-family
+    color: $color-highlight
 
   p
     margin: 0
@@ -220,6 +224,7 @@ $marker-world-size: 24px
   background: #000
   color: #fff
   padding: 0.25rem 1rem
+  min-width: 12rem
   border-radius: 0.25rem
   border: 0.15rem solid $color-highlight
   transform: translate(-50%, -100%)

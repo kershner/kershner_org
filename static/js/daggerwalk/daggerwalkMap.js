@@ -160,7 +160,6 @@ class MapViewer {
       weather: log.weather,
       currentSong: log.current_song,
       location: log.location,
-      reset: log.reset,
       createdAt: this.convertToEST(log.created_at)
     };
   }
@@ -184,8 +183,7 @@ class MapViewer {
         await this.showRegionMap(
             region,
             parseInt(mostRecentLog.map_pixel_x),
-            parseInt(mostRecentLog.map_pixel_y),
-            selectedPart
+            parseInt(mostRecentLog.map_pixel_y)
         );
 
         this.clearLogMarkers();
@@ -290,7 +288,7 @@ class MapViewer {
     this.state.currentRegion = null;
   }
 
-  async showRegionMap(regionName, x, y, forcePart = null) {
+  async showRegionMap(regionName, x, y) {
     if (!this.state.regionMap[regionName]) return;
 
     this.elements.worldMapView.classList.add('hidden');
@@ -298,8 +296,7 @@ class MapViewer {
     this.state.currentRegion = regionName;
 
     const regionData = this.state.regionMap[regionName];
-    const selectedPart = forcePart || 
-      (x && y ? this.getSelectedRegionPart(regionData, x, y) : regionData.parts[0]);
+    const selectedPart = this.getSelectedRegionPart(regionData, x, y);
     
     return new Promise((resolve) => {
       this.elements.regionMap.onload = () => {
@@ -317,7 +314,6 @@ class MapViewer {
       window.REGION_DATA.forEach((data, i) => this.addWorldMapMarker({
         regionName: data.region,
         latestDate: data.latest_date,
-        reset: data.latest_reset,
         location: data.latest_location,
         weather: data.latest_weather,
         currentSong: data.latest_current_song,
@@ -389,7 +385,7 @@ class MapViewer {
   }
 
   clearLogMarkers() {
-    document.querySelectorAll(`#${this.elements.regionMapView.id} .marker`).forEach(marker => marker.remove());
+    document.querySelectorAll(`#${this.elements.regionMapView.id} .log-marker`).forEach(marker => marker.remove());
   }
 
   getSelectedRegionPart(regionData, x, y) {
@@ -537,9 +533,6 @@ class MapViewer {
     for (let i = 0; i < sortedMarkers.length - 1; i++) {
       const current = sortedMarkers[i];
       const next = sortedMarkers[i + 1];
-
-      if (current.reset || next.reset || !current.center || !next.center) continue;
-
       this.drawDottedLine(current, next, scale);
     }
   }

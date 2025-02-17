@@ -120,8 +120,17 @@ daggerwalk.init = () => {
   })
   
   mapTab.addEventListener('change', () => {
-    window.mapViewer.fetchDaggerwalkLogs(daggerwalk.latestLog.region)
-  })
+    const region = daggerwalk.latestLog?.region;
+    if (!region) {
+        return;
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('region', region);
+    history.pushState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+
+    window.mapViewer.fetchDaggerwalkLogs(region);
+  });
 
   daggerwalk.updateStatus()
   daggerwalk.startPolling()

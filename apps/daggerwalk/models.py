@@ -29,8 +29,6 @@ class DaggerwalkLog(models.Model):
     current_song = models.CharField(max_length=255, null=True, blank=True, help_text="Currently playing background music")
     season = models.CharField(max_length=255, null=True, blank=True, help_text="Current in-game season")
 
-    reset = models.BooleanField(default=False, help_text="Indicates if the log started at a new location")
-
     class Meta:
         verbose_name = 'Daggerwalk Log'
         verbose_name_plural = 'Daggerwalk Logs'

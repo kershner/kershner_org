@@ -21,7 +21,6 @@ class DaggerwalkHomeView(View):
             .values('region')
             .annotate(
                 latest_date=Max('created_at'),
-                latest_reset=Max('reset'),
                 latest_location=Max('location'),
                 latest_weather=Max('weather'),
                 latest_current_song=Max('current_song')
@@ -30,7 +29,6 @@ class DaggerwalkHomeView(View):
             .values(
                 'region',
                 'latest_date',
-                'latest_reset',
                 'latest_location',
                 'latest_weather',
                 'latest_current_song'
@@ -97,7 +95,6 @@ def create_daggerwalk_log(request):
             date=data['date'],
             weather=data['weather'],
             current_song=data.get('currentSong'),
-            reset=data.get('reset')
         )
         
         return JsonResponse({
