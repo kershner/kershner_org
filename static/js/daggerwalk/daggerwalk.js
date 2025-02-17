@@ -116,6 +116,7 @@ daggerwalk.init = () => {
   twitchTab.addEventListener('change', () => {
     window.mapViewer.clearLogMarkers()
     window.mapViewer.stopLogPolling()
+    history.pushState({}, '', window.location.pathname);
   })
   
   mapTab.addEventListener('change', () => {
