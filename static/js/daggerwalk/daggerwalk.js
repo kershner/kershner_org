@@ -72,6 +72,11 @@ daggerwalk.init = () => {
   const mapTab = document.querySelector('#map-tab-btn')
   const twitchTab = document.querySelector('#twitch-tab-btn')
 
+  if (regionParam && mapTab) {
+    mapTab.checked = true;
+    mapTab.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
   twitchTab.addEventListener('change', () => {
     window.mapViewer.clearLogMarkers()
     window.mapViewer.stopLogPolling()
@@ -80,11 +85,6 @@ daggerwalk.init = () => {
   mapTab.addEventListener('change', () => {
     window.mapViewer.fetchDaggerwalkLogs(daggerwalk.latestLog.region)
   })
-
-  if (regionParam && mapTab) {
-    mapTab.checked = true;
-    mapTab.dispatchEvent(new Event("change", { bubbles: true }));
-  }
 
   daggerwalk.updateStatus()
   daggerwalk.startPolling()

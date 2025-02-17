@@ -8,7 +8,7 @@ class MapViewer {
       fetchTimer: null,
       worldMapMarkers: new Map(),
       regionCenters: {},
-      mapDimensions: { width: 0, height: 0 }
+      mapDimensions: { width: 0, height: 0 },
     };
 
     this.config = {
@@ -42,6 +42,7 @@ class MapViewer {
     this.ctx = this.elements.canvas.getContext('2d');
     this.markerImage = new Image();
     this.bindEvents();
+    this.initTooltip();
   }
 
   async init() {
@@ -111,6 +112,41 @@ class MapViewer {
     }
   }
 
+  initTooltip(selector = '.log-marker') {
+    const tooltip = document.createElement('div')
+    tooltip.className = 'tooltip'
+    document.body.appendChild(tooltip)
+  
+    document.addEventListener('mouseover', e => {
+      const el = e.target.closest(selector)
+      if (el) {
+        const {left, top, width} = el.getBoundingClientRect()
+        tooltip.innerHTML = Object.entries(el.dataset)
+          .map(([k, v]) => {
+            const formatted = k
+              .replace(/([A-Z])/g, ' $1')
+              .split(' ')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ')
+            return `<div class="row"><span class="key">${formatted}</span><span class="value">${v}</span></div>`
+          })
+          .join('')
+        tooltip.style.left = left + width/2 + 'px'
+        tooltip.style.top = top - 10 + 'px'
+        tooltip.classList.add('visible')
+      }
+    })
+  
+    document.addEventListener('mouseout', e => {
+      if (e.target.closest(selector)) {
+        tooltip.classList.remove('visible')
+      }
+    })
+  
+    // Return cleanup function
+    return () => tooltip.remove()
+  }
+
   updateUrl(region) {
     const params = new URLSearchParams(window.location.search);
     params.set('region', region);
@@ -157,11 +193,12 @@ class MapViewer {
 
   createMarkerData(log) {
     return {
-      timestamp: log.timestamp,
+      season: log.season,
       weather: log.weather,
       currentSong: log.current_song,
       location: log.location,
-      reset: log.reset
+      reset: log.reset,
+      createdAt: this.convertToEST(log.created_at)
     };
   }
 
@@ -247,7 +284,7 @@ class MapViewer {
 
       const marker = this.createMarkerElement(x, y, regionName, selectedPart, markerData);
       const mapContainer = document.querySelector('#regionMapView .map-container');
-      document.querySelectorAll('.marker').forEach(m => m.classList.remove('recent'));
+      document.querySelectorAll('.log-marker').forEach(m => m.classList.remove('recent'));
       mapContainer.appendChild(marker);
     });
   }
@@ -259,11 +296,12 @@ class MapViewer {
     const adjustedY = (y - selectedPart.offset.y) * scale * scaleFactor;
 
     const marker = document.createElement('div');
-    marker.classList.add('marker', 'recent');
+    marker.classList.add('log-marker', 'recent');
     marker.style.left = `${adjustedX}px`;
     marker.style.top = `${adjustedY}px`;
 
-    this.setMarkerDataAttributes(marker, { x, y, regionName, ...markerData });
+    const mapPixel = `${x},${y}`;
+    this.setMarkerDataAttributes(marker, { mapPixel, ...markerData });
     return marker;
   }
 
@@ -651,6 +689,18 @@ class MapViewer {
     this.fetchDaggerwalkLogs(this.state.hoveredProvince);
     this.updateUrl(this.state.hoveredProvince);
   }
+
+  convertToEST(dateString) {
+    return new Date(dateString).toLocaleString("en-US", {
+        timeZone: "America/New_York",
+        year: "2-digit",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+    }).replace(",", "");
+  }
 }
 
 // Initialize the map viewer
@@ -667,8 +717,6 @@ window.onload = async () => {
   const y = parseInt(urlParams.get("y"), 10);
 
   if (region in window.mapViewer.state.regionMap) {
-    console.log(`Auto-loading region: ${region}`);
-
     if (!isNaN(x) && !isNaN(y)) {
       window.mapViewer.showRegionMap(region, x, y).then(() => 
         window.mapViewer.addLogMarker(region, x, y)

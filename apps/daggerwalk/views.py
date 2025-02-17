@@ -73,7 +73,8 @@ class DaggerwalkLogsView(View):
         else:
             logs = queryset
 
-        return JsonResponse([model_to_dict(log) for log in logs], safe=False)
+        logs = [dict(model_to_dict(log), created_at=log.created_at) for log in logs]
+        return JsonResponse(logs, safe=False)
     
 @csrf_exempt
 @require_http_methods(["POST"])

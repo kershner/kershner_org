@@ -37,7 +37,6 @@ body
   height: auto
   object-fit: contain
   cursor: pointer
-  margin-top: 1px
 
 canvas 
   position: absolute
@@ -51,6 +50,7 @@ canvas
 .loading
   display: flex
   align-items: center
+  justify-content: center
   min-height: 40vh
   padding: 1rem
   border-radius: 0.5rem
@@ -92,7 +92,6 @@ canvas
 %marker-base
   position: absolute
   transform: translate(-50%, -50%)
-  pointer-events: none
 
 // Mixin for pulse animation
 @mixin pulse-animation($scale: 1.5, $opacity: 1.0, $duration: 1.5s)
@@ -111,14 +110,20 @@ $marker-size: 6px
 $marker-recent-size: 16px
 $marker-world-size: 24px
 
-.marker, .world-marker
+.log-marker, .world-marker
   @extend %marker-base
 
-.marker
+.log-marker
   width: $marker-size
   height: $marker-size
   border-radius: 50%
   background-color: red
+  cursor: pointer
+  pointer-events: auto
+
+  &:hover
+    width: $marker-recent-size
+    height: $marker-recent-size
 
   &.recent
     width: $marker-recent-size
@@ -207,4 +212,42 @@ $marker-world-size: 24px
   .time-string
     display: block
     font-size: 1.2rem
+    font-weight: bold
+
+.tooltip
+  position: fixed
+  background: #000
+  color: #fff
+  padding: 0.25rem 1rem
+  width: 13rem
+  border-radius: 0.25rem
+  border: 0.15rem solid $color-highlight
+  transform: translate(-50%, -100%)
+  opacity: 0
+
+  &:after
+    content: ''
+    position: absolute
+    bottom: -12px
+    left: 50%
+    transform: translateX(-50%)
+    border-left: 12px solid transparent
+    border-right: 12px solid transparent
+    border-top: 12px solid $color-highlight
+  
+  &.visible
+    opacity: 1
+
+  .row
+    display: flex
+    gap: 10px
+    margin: 0.25rem 0
+
+    &:last-of-type
+      border-bottom: none
+    
+    span
+      width: 50%
+
+  .key
     font-weight: bold
