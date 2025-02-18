@@ -13,6 +13,9 @@ body
   font-family: $primary-font-family
   color: #FFF
 
+.text-highlight
+  color: $color-highlight
+
 .view-container 
   position: relative
   display: flex
@@ -162,10 +165,10 @@ $marker-world-size: 24px
       content: ''
       display: block
       width: 0
-      height: 0.2rem
+      height: 0.3rem
       background: $color-highlight
       position: absolute
-      bottom: -0.2rem
+      bottom: -0.3rem
       left: 50%
       transform: translateX(-50%)
 
@@ -177,7 +180,7 @@ $marker-world-size: 24px
     padding-top: 1rem
 
   // "Selected" styles
-  @for $i from 1 through 2
+  @for $i from 1 through 3
     // tab label
     input:nth-of-type(#{$i}):checked ~ label:nth-of-type(#{$i})
       font-weight: bold
@@ -256,6 +259,79 @@ $marker-world-size: 24px
     .key
       font-weight: bold
       width: 40%
+
     .value
       width: 60%
-    
+
+.about-tabs
+  h4
+    margin: 1rem 0
+    font-size: 1rem
+    padding-left: 0.5rem
+    border-left: 0.3rem solid $color-highlight
+
+  ul
+    margin: 0.5rem 0
+  
+  .tab-content
+    padding: 0.5rem 1rem
+    max-width: 50rem
+
+  .about-img
+    border: 0.2rem solid $color-highlight
+    margin: 1rem 0
+    max-width: 30rem
+    border-radius: 0.25rem
+
+    img
+      width: 100%
+
+$alternate-table-color: lighten(#000, 10)
+.styled-table
+  width: 100%
+  border-collapse: collapse
+  th, td
+    padding: 10px
+    text-align: left
+  th
+    border-bottom: 0.2rem solid $color-highlight
+  tr:nth-child(even)
+    background: $alternate-table-color
+  tr:hover
+    background: $alternate-table-color
+
+.commands-table
+  td:first-of-type
+    font-weight: bold
+
+blockquote
+  padding: 1rem
+  border-left: 0.3rem solid $color-highlight
+  border-radius: 0 0.2rem 0.2rem 0
+  background: $alternate-table-color
+  margin: 1rem 0
+  width: fit-content
+
+  p
+    margin: 0
+    font-family: $secondary-font-family
+
+  cite
+    display: block
+    margin-top: 0.5rem
+    font-size: 0.9rem
+    font-style: italic
+
+details
+  margin-bottom: 3rem
+
+summary
+  font-weight: bold
+  cursor: pointer
+  font-size: 1.75rem
+  font-family: $secondary-font-family
+
+  &:hover,
+  &::marker
+    color: $color-highlight
+

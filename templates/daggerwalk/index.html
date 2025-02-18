@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/daggerwalk.css">
 </head>
 <body>
+    {# Main tabs - Twitch/Map #}
     <div class="tabs">
         <input type="radio" name="tabs" id="twitch-tab-btn" checked>
         <input type="radio" name="tabs" id="map-tab-btn">
@@ -22,7 +23,31 @@
         <div class="tab-content">{% include 'daggerwalk/map.html' %}</div>
     </div>
 
+    {# Current Status #}
     <div class="current-status"></div>
+
+    {# About tabs #}
+    <div class="tabs about-tabs">
+        <input type="radio" name="tabs-group-2" id="about-tab-btn" checked>
+        <input type="radio" name="tabs-group-2" id="commands-tab-btn">
+        {% comment %} <input type="radio" name="tabs-group-2" id="songs-tab-btn"> {% endcomment %}
+        
+        <label data-tab="1" for="about-tab-btn">About</label>
+        <label data-tab="2" for="commands-tab-btn">Commands</label>
+        {% comment %} <label data-tab="3" for="songs-tab-btn">Songs</label> {% endcomment %}
+        
+        <div class="tab-content">
+            {% include 'daggerwalk/about.html' %}
+        </div>
+        
+        <div class="tab-content">
+            {% include 'daggerwalk/commands.html' %}
+        </div>
+
+        {% comment %} <div class="tab-content">
+            {% include 'daggerwalk/songs.html' %}
+        </div> {% endcomment %}
+    </div>
 
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalk.js"></script>
     <script type="text/javascript">
