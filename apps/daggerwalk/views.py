@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.shortcuts import render
 from .models import DaggerwalkLog
 from django.db.models import Max
+from django.conf import settings
 import json
 
 
@@ -77,7 +78,12 @@ class DaggerwalkLogsView(View):
 @csrf_exempt
 @require_http_methods(["POST"])
 def create_daggerwalk_log(request):
-    # TODO - add auth
+    API_KEY = getattr(settings, "DAGGERWALK_API_KEY", None)
+    auth_header = request.headers.get("Authorization")
+
+    if not API_KEY or auth_header != f"Bearer {API_KEY}":
+        return JsonResponse({"status": "error", "message": "Unauthorized"}, status=401)
+    
     try:
         data = json.loads(request.body)
         

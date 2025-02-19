@@ -187,3 +187,6 @@ REST_FRAMEWORK = {
 # Google reCaptcha
 CAPTCHA_V2_SITE_KEY = PARAMETERS['captcha_v2_site_key']
 CAPTCHA_V2_SECRET_KEY = PARAMETERS['captcha_v2_secret_key']
+
+# Daggerwalk
+DAGGERWALK_API_KEY = PARAMETERS['daggerwalk_api_key']
