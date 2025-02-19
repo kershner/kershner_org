@@ -1,60 +1,82 @@
+{% load kershner_tags %}
+
 <blockquote>
-  <p>"The gladdest moment in human life is a departure into unknown lands."</p>
-  <cite>- Sir Richard Burton</cite>
+  <p>"The mythical world of Tamriel is roughly twice the size of Great Britain.  Players can visit 6,000 towns, cities, and villages."</p>
+  <cite>- Vlatko Andonov, Bethesda</cite>
 </blockquote>
 
-<p>
-  In id felis placerat, mattis turpis at, tristique massa. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris consequat consequat mauris. Fusce nec mauris et diam faucibus tincidunt.
+<div class="about-img no-border">
+  <img src="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/orig_daggerfall_logo.png" alt="Original Daggerfall logo">
+</div>
+
+<p class="extra-margin-bottom">
+  <a href="https://en.wikipedia.org/wiki/The_Elder_Scrolls_II:_Daggerfall" target="_blank">The Elder Scrolls II: Daggerfall</a> was released in September 1996 and features one of the largest game worlds ever created.
+  <strong>Daggerwalk</strong> is a collection of technologies that live-streams a bot endlessly walking through the massive Iliac Bay.
+  Viewers can interact with the game by typing commands into the chat and The Walker's progress can be viewed on this website.
 </p>
 
-<details open>
-  <summary>Hardware</summary>
-  <p>
-    Maecenas sagittis, ex ut aliquam blandit, nunc arcu condimentum dui, et efficitur orci tellus blandit tellus. Aenean quis metus vel mauris auctor sollicitudin. Vivamus urna tellus, malesuada ut ligula ac, convallis tempor dui. Proin non elementum enim. 
-  </p>
+<h2>Hardware</h2>
+<p style="margin-bottom: 0;"> 
+  Daggerwalk is currently running on my main PC, a relatively beefy gaming desktop.  
+  But the bot will soon be moved to this cheap Dell from eBay:
+</p>
 
-  <div class="about-img">
-    <a href="">
-      <img src="https://www.dsogaming.com/wp-content/uploads/2017/10/The-Elder-Scrolls-II-Daggerfall-feature.jpg" alt="Alt text">
-    </a>
-  </div>
+<h4>Dell Optiplex 3050</h4>
+<ul>
+  <li>3.20 GHz i5-6500, 8GB ram, 256GB SSD</li>  
+  <li>Nvidia Quadtro T400 4GB</li>
+</ul>
 
-  <h4>Dell Optiplex 3050</h4>
-  <ul>
-    <li>Ut laoreet felis ut orci elementum</li>  
-    <li>Integer scelerisque fringilla mauris</li>
-    <li>Nullam velit felis, dignissim</li>
-  </ul>
-</details>
+<hr>
 
-<details open>
-  <summary>Software</summary>
-  <p>
-    Phasellus porta sem massa, vitae sodales nisl lobortis nec. Pellentesque non urna sed quam dapibus tristique. Pellentesque sagittis dui ac justo fermentum consequat.
-  </p>
+<h2>Software</h2>
+<h4>Mods</h4>
 
-  <h4>Mods</h4>
-  <ul>
-    <li>Ut laoreet felis ut orci elementum</li>  
-    <li>Integer scelerisque fringilla mauris</li>
-    <li>Nullam velit felis, dignissim</li>
-  </ul>
+<h5>Nexus Mods:</h5>
+<ul id="nexus-modlist">
+  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/249" target="_blank">World of Daggerfall</a></li>  
+  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/128" target="_blank">Distant Terrain</a></li>
+  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/193" target="_blank">Interesting Eroded Terrains</a></li>
+  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/390" target="_blank">Wilderness Overhaul</a></li>
+  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/134" target="_blank">Basic Roads</a></li>
+  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/376" target="_blank">Dynamic Skies</a></li>
+  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/20" target="_blank">Real Grass</a></li>
+</ul>
 
-  <h4>Useful tools</h4>
-  <ul>
-    <li>Ut laoreet felis ut orci elementum</li>  
-    <li>Integer scelerisque fringilla mauris</li>
-  </ul>
+<h5>My Own Custom Mods:</h5>
+<ul id="custom-modlist">
+  <li>
+    <a href="https://github.com/kershner/daggerwalk/blob/master/dfu_mods/MapDataLogger.cs" target="_blank">Map Data Logger</a>
+    <p class="less-margin">Dumps current game state data to a local JSON file.</p>
+  </li>
 
-  <h4>Game automation / Twitch bot</h4>
-  <ul>
-    <li>Ut laoreet felis ut orci elementum</li>  
-    <li>Integer scelerisque fringilla mauris</li>
-  </ul>
+  <li>
+    <a href="https://github.com/kershner/daggerwalk/blob/master/dfu_mods/AutoWalk.cs" target="_blank">Auto Walk</a>
+    <p class="less-margin">Daggerfall Unity comes with Auto-Run out of the box, but not Auto-Walk.</p>
+  </li>
 
-  <h4>Website</h4>
-  <ul>
-    <li>Ut laoreet felis ut orci elementum</li>  
-    <li>Integer scelerisque fringilla mauris</li>
-  </ul>
-</details>
+  <li>
+    <a href="https://github.com/kershner/daggerwalk/blob/master/dfu_mods/MusicChanger.cs" target="_blank">Music Changer</a>
+    <p class="less-margin">Adds console commands to play songs on command as well as endlessly shuffle.</p>
+  </li>
+</ul>
+
+<h4>Useful tools</h4>
+<ul>
+  <li><a href="https://github.com/Interkarma/daggerfall-unity/releases" target="_blank">Daggerfall Unity</a></li>
+  <li><a href="https://www.dfworkshop.net/downloads/daggerfall-imaging/" target="_blank">Daggerfall Imaging 2</a></li>  
+  <li><a href="https://vb-audio.com/Cable/" target="_blank">VB-Audio Virtual Cable</a></li>
+</ul>
+
+<h4>Game automation / Twitch bot</h4>
+<ul>
+  <li><a href="https://github.com/kershner/daggerwalk/blob/master/start_daggerwalk.py" target="_blank">start_daggerwalk.py</a></li>
+  <li><a href="https://github.com/kershner/daggerwalk/blob/master/daggerwalk_twitch_bot.py" target="_blank">daggerwalk_twitch_bot.py</a></li>
+</ul>
+
+<h4>Website</h4>
+<ul>
+  <li><a href="https://github.com/kershner/kershner_org/tree/master/apps/daggerwalk" target="_blank">Python/Django</a></li>
+  <li><a href="https://github.com/kershner/kershner_org/tree/master/static/js/daggerwalk" target="_blank">JavaScripts</a></li>
+  <li><a href="https://github.com/kershner/kershner_org/blob/master/static/sass/daggerwalk.sass" target="_blank">SASS</a></li>
+</ul>

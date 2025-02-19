@@ -15,7 +15,10 @@
         <input type="radio" name="tabs" id="twitch-tab-btn" checked>
         <input type="radio" name="tabs" id="map-tab-btn">
         
-        <h3 class="title">Daggerwalk</h3>
+        <h3 class="title">
+            <img src="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/Daggerwalk_logo_small.png">
+            <span>Daggerwalk</span>
+        </h3>
         <label data-tab="1" for="twitch-tab-btn">Twitch</label>
         <label data-tab="2" for="map-tab-btn">Map</label>
         
@@ -28,25 +31,19 @@
 
     {# About tabs #}
     <div class="tabs about-tabs">
-        <input type="radio" name="tabs-group-2" id="about-tab-btn" checked>
-        <input type="radio" name="tabs-group-2" id="commands-tab-btn">
-        {% comment %} <input type="radio" name="tabs-group-2" id="songs-tab-btn"> {% endcomment %}
+        <input type="radio" name="tabs-group-2" id="commands-tab-btn" checked>
+        <input type="radio" name="tabs-group-2" id="about-tab-btn">
         
-        <label data-tab="1" for="about-tab-btn">About</label>
-        <label data-tab="2" for="commands-tab-btn">Commands</label>
-        {% comment %} <label data-tab="3" for="songs-tab-btn">Songs</label> {% endcomment %}
-        
-        <div class="tab-content">
-            {% include 'daggerwalk/about.html' %}
-        </div>
+        <label data-tab="1" for="commands-tab-btn">Commands</label>
+        <label data-tab="2" for="about-tab-btn">About</label>
         
         <div class="tab-content">
             {% include 'daggerwalk/commands.html' %}
         </div>
-
-        {% comment %} <div class="tab-content">
-            {% include 'daggerwalk/songs.html' %}
-        </div> {% endcomment %}
+        
+        <div class="tab-content">
+            {% include 'daggerwalk/about.html' %}
+        </div>
     </div>
 
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalk.js"></script>
