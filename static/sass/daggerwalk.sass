@@ -211,9 +211,6 @@ $marker-world-size: 24px
       transform: translateX(-50%)
       border-radius: $border-radius
 
-    &[data-tab="1"]
-      margin-left: 1rem
-
   .tab-content
     display: none
     padding-top: 1rem
@@ -236,6 +233,9 @@ $marker-world-size: 24px
   position: relative
   width: 100%
   padding-top: 56.25%
+
+  @media (max-width: 699px)
+    padding-top: 100%
   
   #twitch-embed
     position: absolute
@@ -305,6 +305,9 @@ $marker-world-size: 24px
       width: 60%
 
 .about-tabs
+  [data-tab="1"]
+    margin-left: 1rem
+
   h2
     margin: 0
     font-family: $secondary-font-family
