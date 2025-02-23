@@ -19,6 +19,7 @@ class DaggerwalkHomeView(View):
         # Get distinct regions with their most recent data
         region_data = (
             DaggerwalkLog.objects
+            .exclude(region="Ocean")
             .values('region')
             .annotate(
                 latest_date=Max('created_at'),
