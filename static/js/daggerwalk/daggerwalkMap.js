@@ -133,20 +133,42 @@ class MapViewer {
     tooltip.className = 'tooltip'
     document.body.appendChild(tooltip)
   
+    const weatherEmoji = {
+      "Sunny": "☀️", "Clear": "🌙", "Cloudy": "☁️", "Foggy": "🌫️",
+      "Rainy": "🌧️", "Snowy": "🌨️", "Thunderstorm": "⛈️", "Blizzard": "❄️"
+    }
+  
+    const seasonEmoji = {
+      "Winter": "☃️", "Spring": "🌸", "Summer": "🌻", "Autumn": "🍂"
+    }
+  
     document.addEventListener('mouseover', e => {
       const el = e.target.closest(selector)
       if (el) {
         const {left, top, width} = el.getBoundingClientRect()
+        
         tooltip.innerHTML = Object.entries(el.dataset)
           .map(([k, v]) => {
-            const formatted = k
-              .replace(/([A-Z])/g, ' $1')
+            let prefix = ''
+            switch(k) {
+              case 'mapPixel': prefix = '🌍' || ''; break
+              case 'season': prefix = seasonEmoji[v] || ''; break
+              case 'weather': prefix = weatherEmoji[v] || ''; break
+              case 'currentSong': prefix = '🎵'; v = v.replace('song_', ''); break
+              case 'location': prefix = '📍'; break
+              case 'createdAt': prefix = '⌚'; break
+              case 'date': prefix = '📅'; break
+            }
+  
+            const key = k.replace(/([A-Z])/g, ' $1')
               .split(' ')
               .map(word => word.charAt(0).toUpperCase() + word.slice(1))
               .join(' ')
-            return `<div class="row"><span class="key">${formatted}</span><span class="value">${v}</span></div>`
+              
+            return `<div class="row"><span class="key">${key}</span><span class="value">${prefix} ${v}</span></div>`
           })
           .join('')
+  
         tooltip.style.left = left + width/2 + 'px'
         tooltip.style.top = top - 10 + 'px'
         tooltip.classList.add('visible')
@@ -154,13 +176,12 @@ class MapViewer {
     })
   
     document.addEventListener('mouseout', e => {
-      if (e.target.closest(selector)) {
+      const el = e.target.closest(selector)
+      const relatedTarget = e.relatedTarget?.closest(selector)
+      if (el && !relatedTarget) {
         tooltip.classList.remove('visible')
       }
     })
-  
-    // Return cleanup function
-    return () => tooltip.remove()
   }
 
   updateUrl(region) {
@@ -169,8 +190,20 @@ class MapViewer {
     history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
   }
 
+  // Converts LogMarker.date Elder Scrolls date to 12 hour time format
+  convertElderScrollsTime(dateString) {
+    const timePart = dateString.split(', ').pop();
+    const [hours, minutes, seconds] = timePart.split(':').map(Number);
+    // Convert to 12-hour format
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const twelveHour = hours % 12 || 12;
+    const formattedTime = `${twelveHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+    return dateString.replace(timePart, formattedTime);
+  }
+
   createMarkerData(log) {
     return {
+      date: this.convertElderScrollsTime(log.date),
       season: log.season,
       weather: log.weather,
       currentSong: log.current_song,
