@@ -36,7 +36,7 @@ const daggerwalk = {
     const seasonIcon = seasonEmoji[log.season] || "❓";
 
     status.innerHTML = `
-      <h2>${log.location} - ${log.region}</h2>
+      <h2>📍 ${log.location} 🌍 ${log.region}</h2>
       ${this.formatTime(log.date)}
       <p>${seasonIcon} ${log.season}  ${weatherIcon} ${log.weather}
       ${log.current_song ? `  🎵 ${log.current_song}` : ''}</p>
