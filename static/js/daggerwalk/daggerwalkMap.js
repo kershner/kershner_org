@@ -204,7 +204,13 @@ class MapViewer {
         );
 
         this.clearLogMarkers();
-        data.forEach(log => this.addLogMarker(
+
+        // Filter logs based on device type
+        const logsToShow = this.isMobile() 
+            ? data.filter((_, index) => index % 3 === 0)  // Show every 3rd log on mobile
+            : data;
+
+        logsToShow.forEach(log => this.addLogMarker(
             log.region, 
             parseInt(log.map_pixel_x), 
             parseInt(log.map_pixel_y), 
