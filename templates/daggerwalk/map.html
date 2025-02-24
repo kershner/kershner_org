@@ -3,6 +3,8 @@
 <div class="daggerwalk-map">
   <div id="loading" class="loading"><div class="spinner"></div></div>
   
+  <h2 id="regionName" class="view-title"></h2>
+  
   <div id="worldMapView" class="view-container hidden" data-base-url="{% settings_value "BASE_S3_URL" %}">
       <div class="map-container">
           <img id="worldMap" src="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/daggerfall_world_map.png" alt="Daggerfall World Map">
@@ -11,7 +13,6 @@
   </div>
 
   <div id="regionMapView" class="view-container hidden">
-      <h2 id="regionName" class="view-title"></h2>
       <div class="map-container">
           <img id="regionMap" src="" alt="Region Map">
           <div id="marker" class="marker"></div>

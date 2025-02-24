@@ -304,7 +304,7 @@ class MapViewer {
     this.stopLogPolling();
     history.pushState({}, '', window.location.pathname);
     this.clearLogMarkers();
-    this.elements.regionName.textContent = '';
+    this.elements.regionName.textContent = 'The Iliac Bay';
     this.addAllWorldMapMarkers();
     this.state.currentRegion = null;
   }
