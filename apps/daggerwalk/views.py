@@ -35,7 +35,7 @@ class DaggerwalkHomeView(View):
                 'latest_weather',
                 'latest_current_song'
             )
-            .distinct()[:10]
+            .distinct()[:50]
         )
 
         latest_log = DaggerwalkLog.objects.latest('created_at')
