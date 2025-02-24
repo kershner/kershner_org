@@ -363,6 +363,12 @@ class MapViewer {
       const mapContainer = document.querySelector('#regionMapView .map-container');
       document.querySelectorAll('.log-marker').forEach(m => m.classList.remove('recent'));
       mapContainer.appendChild(marker);
+
+      marker.addEventListener('click', (e) => {
+        e.preventDefault();  // Prevents default action
+        e.stopPropagation(); // Stops event from bubbling up to parent elements 
+        marker.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+      });
     });
   }
 
