@@ -9,14 +9,27 @@ class MapViewer {
       worldMapMarkers: new Map(),
       regionCenters: {},
       mapDimensions: { width: 0, height: 0 },
-      currentRegion: null
+      currentRegion: null,
+      pulseSize: 0,
+      pulseAnimationFrame: null,
     };
 
     this.config = {
-      markerSize: 32,
       regionFetchInterval: 20000,
       baseS3Url: window.BASE_S3_URL,
+      breakpoints: {
+        mobile: 768
+      },
       worldMapMarkerStyle: {
+        size: {
+          mobile: 10,
+          desktop: 32
+        },
+        dotSize: {
+          mobile: 1.0,
+          desktop: 2.5
+        },
+        lineWidth: 1,
         lineColor: 'white',
         lineOpacity: 0.8
       },
@@ -73,6 +86,10 @@ class MapViewer {
       this.elements.loading.textContent = 'Error loading map data. Please refresh the page.';
       this.elements.loading.classList.add('error');
     }
+  }
+
+  isMobile() {
+    return window.innerWidth <= this.config.breakpoints.mobile;
   }
 
   calculateRegionCenters() {
@@ -494,13 +511,12 @@ class MapViewer {
     const scale = this.getMapScale();
     const markersArray = Array.from(this.state.worldMapMarkers.values());
     const lastMarker = markersArray[0];
-    const pulseScale = this.calculatePulseScale();
 
     if (this.state.worldMapMarkers.size > 1) {
       this.drawConnectingLines(markersArray, scale);
     }
 
-    this.drawWorldMapMarkers(markersArray, scale, pulseScale, lastMarker);
+    this.drawWorldMapMarkers(markersArray, scale, lastMarker);
 
     if (this.state.hoveredProvince) {
       this.drawProvinceLabel();
@@ -511,15 +527,23 @@ class MapViewer {
 
   setupCanvas() {
     const container = document.querySelector('.map-container');
-    this.elements.canvas.width = container.clientWidth;
-    this.elements.canvas.height = container.clientHeight;
-    this.ctx.clearRect(0, 0, this.elements.canvas.width, this.elements.canvas.height);
+    const dpr = window.devicePixelRatio || 1;
+    const displayWidth = container.clientWidth;
+    const displayHeight = container.clientHeight;
+    
+    this.elements.canvas.width = displayWidth * dpr;
+    this.elements.canvas.height = displayHeight * dpr;
+    
+    this.elements.canvas.style.width = `${displayWidth}px`;
+    this.elements.canvas.style.height = `${displayHeight}px`;
+    
+    this.ctx.scale(dpr, dpr);
+    this.ctx.clearRect(0, 0, displayWidth, displayHeight);
+    
+    this.ctx.imageSmoothingEnabled = true;
+    this.ctx.imageSmoothingQuality = 'high';
+    
     this.elements.worldMap.style.cursor = this.state.hoveredProvince ? 'pointer' : 'default';
-  }
-
-  calculatePulseScale() {
-    const pulseTime = (Date.now() % 1500) / 1500;
-    return 1.0 + 0.2 * Math.sin(pulseTime * Math.PI * 2);
   }
 
   drawConnectingLines(markers, scale) {
@@ -558,8 +582,14 @@ class MapViewer {
     const endY = next.center.y * scale.scaleY + scale.offsetY;
     
     const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-    const dotSpacing = 20;
+    const dotSpacing = this.isMobile() ? 10 : 20;
     const numberOfDots = Math.floor(distance / dotSpacing);
+    
+    const dotSize = this.isMobile() ? 
+      this.config.worldMapMarkerStyle.dotSize.mobile : 
+      this.config.worldMapMarkerStyle.dotSize.desktop;
+
+    this.ctx.fillStyle = '#F2E530'; // Set dot color
     
     for (let j = 0; j <= numberOfDots; j++) {
       const ratio = j / numberOfDots;
@@ -567,49 +597,68 @@ class MapViewer {
       const y = startY + (endY - startY) * ratio;
       
       this.ctx.beginPath();
-      this.ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+      this.ctx.arc(x, y, dotSize, 0, Math.PI * 2);
       this.ctx.fill();
     }
   }
 
-  drawWorldMapMarkers(markers, scale, pulseScale, lastMarker) {
+  drawWorldMapMarkers(markers, scale, lastMarker) {
     markers.forEach(marker => {
       const center = this.state.regionCenters[marker.regionName];
       if (!center) return;
 
       const x = center.x * scale.scaleX + scale.offsetX;
       const y = center.y * scale.scaleY + scale.offsetY;
-      const size = marker === lastMarker ? 
-        this.config.markerSize * pulseScale : 
-        this.config.markerSize;
 
-      this.drawMarker(x, y, size, marker === lastMarker);
+      this.drawWorldMapMarker(x, y, marker === lastMarker);
     });
   }
 
-  drawMarker(x, y, size, isLastMarker) {
+  drawWorldMapMarker(x, y, isLastMarker) {
     const { lineColor, lineOpacity } = this.config.worldMapMarkerStyle;
     this.ctx.save();
     
-    // Draw border
+    let markerSize = this.isMobile() ? 
+      this.config.worldMapMarkerStyle.size.mobile : 
+      this.config.worldMapMarkerStyle.size.desktop;
+
+    markerSize = isLastMarker ? markerSize : markerSize * 0.7;
+    
+    const borderThickness = this.isMobile() ? 1 : 2;
+
+    if (isLastMarker) {
+      const timestamp = performance.now();
+      const progress = (timestamp % 1500) / 1500; // 1.5s duration
+      const scale = 1 + (Math.sin(progress * Math.PI) * 0.3); // Scale between 1 and 1.3
+      
+      // Apply scale transform
+      this.ctx.translate(x, y);
+      this.ctx.scale(scale, scale);
+      this.ctx.translate(-x, -y);
+    }
+
     this.ctx.beginPath();
-    this.ctx.arc(x, y, size / 2 + 2, 0, 2 * Math.PI);
-    this.ctx.strokeStyle = lineColor.replace('rgb', 'rgba').replace(')', `,${
-      isLastMarker ? lineOpacity * 1.2 : lineOpacity
-    })`);
-    this.ctx.lineWidth = isLastMarker ? 3 : 2;
+    this.ctx.arc(x, y, markerSize / 2 + borderThickness, 0, 2 * Math.PI);
+    this.ctx.strokeStyle = isLastMarker ? 'rgba(242, 229, 48, 0.9)' : 'rgba(128, 128, 128, 0.6)';
+    this.ctx.lineWidth = borderThickness;
     this.ctx.stroke();
+
+    // Set up grayscale filter for inactive markers
+    if (!isLastMarker) {
+      this.ctx.filter = 'grayscale(100%)';
+    }
 
     // Draw marker image
     this.ctx.beginPath();
-    this.ctx.arc(x, y, size / 2, 0, 2 * Math.PI);
+    this.ctx.arc(x, y, markerSize / 2, 0, 2 * Math.PI);
     this.ctx.clip();
+    
     this.ctx.drawImage(
       this.markerImage,
-      x - size / 2,
-      y - size / 2,
-      size,
-      size
+      x - markerSize / 2,
+      y - markerSize / 2,
+      markerSize,
+      markerSize
     );
     
     this.ctx.restore();
