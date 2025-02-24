@@ -1,6 +1,7 @@
 const daggerwalk = {
   latestLog: {},
   pollInterval: null,
+  twitchPlayer: null,
 
   formatTime(dateStr) {
     // Extract just the time portion and wrap in span
@@ -98,6 +99,18 @@ const daggerwalk = {
           clearTimeout(this.pollInterval);
           this.pollInterval = null;
       }
+  },
+
+  initTwitchPlayer() {
+    if (this.twitchPlayer) {
+      return; // Player already initialized
+    }
+    
+    this.twitchPlayer = new Twitch.Embed("twitch-embed", {
+      width: "100%",
+      height: "100%",
+      channel: "daggerwalk",
+    });
   }
 }
   
@@ -105,8 +118,13 @@ daggerwalk.init = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const regionParam = urlParams.get('region');
 
-  const mapTab = document.querySelector('#map-tab-btn')
-  const twitchTab = document.querySelector('#twitch-tab-btn')
+  const mapTab = document.querySelector('#map-tab-btn');
+  const twitchTab = document.querySelector('#twitch-tab-btn');
+
+  // Initialize Twitch player immediately if no region parameter
+  if (!regionParam) {
+    daggerwalk.initTwitchPlayer();
+  }
 
   if (regionParam && mapTab) {
     mapTab.checked = true;
@@ -114,15 +132,18 @@ daggerwalk.init = () => {
   }
 
   twitchTab.addEventListener('change', () => {
-    window.mapViewer.clearLogMarkers()
-    window.mapViewer.stopLogPolling()
+    window.mapViewer.clearLogMarkers();
+    window.mapViewer.stopLogPolling();
     history.pushState({}, '', window.location.pathname);
-  })
+
+    // Init Twitch player when tab is selected
+    daggerwalk.initTwitchPlayer();
+  });
   
   mapTab.addEventListener('change', () => {
     const region = daggerwalk.latestLog?.region;
     if (!region) {
-        return;
+      return;
     }
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -132,6 +153,6 @@ daggerwalk.init = () => {
     window.mapViewer.fetchDaggerwalkLogs(region);
   });
 
-  daggerwalk.updateStatus()
-  daggerwalk.startPolling()
+  daggerwalk.updateStatus();
+  daggerwalk.startPolling();
 }

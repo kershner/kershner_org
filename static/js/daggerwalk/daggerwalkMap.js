@@ -10,8 +10,6 @@ class MapViewer {
       regionCenters: {},
       mapDimensions: { width: 0, height: 0 },
       currentRegion: null,
-      pulseSize: 0,
-      pulseAnimationFrame: null,
     };
 
     this.config = {
