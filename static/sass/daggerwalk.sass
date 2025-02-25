@@ -273,16 +273,6 @@ $marker-world-size: 24px
   opacity: 0
   font-size: 0.8rem
   pointer-events: none
-
-  &:after
-    content: ''
-    position: absolute
-    bottom: -12px
-    left: 50%
-    transform: translateX(-50%)
-    border-left: 12px solid transparent
-    border-right: 12px solid transparent
-    border-top: 12px solid $color-highlight
   
   &.visible
     opacity: 1
@@ -291,9 +281,7 @@ $marker-world-size: 24px
 
   .row
     display: flex
-    gap: 10px
-    margin: 0.25rem 0
-    padding-bottom: 0.75rem
+    padding: 0.25rem 0
     border-bottom: 1px solid $alternate-dark
 
     &:last-of-type
@@ -305,6 +293,14 @@ $marker-world-size: 24px
 
     .value
       width: 60%
+      display: flex
+
+      span:first-of-type
+        width: 2rem
+        display: flex
+        justify-content: center
+      span
+        width: 100%
 
 .about-tabs
   [data-tab="1"]

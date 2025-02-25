@@ -129,59 +129,92 @@ class MapViewer {
   }
 
   initTooltip(selector = '.log-marker') {
-    const tooltip = document.createElement('div')
-    tooltip.className = 'tooltip'
-    document.body.appendChild(tooltip)
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    document.body.appendChild(tooltip);
   
     const weatherEmoji = {
       "Sunny": "☀️", "Clear": "🌙", "Cloudy": "☁️", "Foggy": "🌫️",
       "Rainy": "🌧️", "Snowy": "🌨️", "Thunderstorm": "⛈️", "Blizzard": "❄️"
-    }
+    };
   
     const seasonEmoji = {
       "Winter": "☃️", "Spring": "🌸", "Summer": "🌻", "Autumn": "🍂"
-    }
+    };
   
     document.addEventListener('mouseover', e => {
-      const el = e.target.closest(selector)
+      const el = e.target.closest(selector);
       if (el) {
-        const {left, top, width} = el.getBoundingClientRect()
+        const {left, top, width} = el.getBoundingClientRect();
         
         tooltip.innerHTML = Object.entries(el.dataset)
           .map(([k, v]) => {
-            let prefix = ''
+            let prefix = '';
             switch(k) {
-              case 'mapPixel': prefix = '🌍' || ''; break
-              case 'season': prefix = seasonEmoji[v] || ''; break
-              case 'weather': prefix = weatherEmoji[v] || ''; break
-              case 'currentSong': prefix = '🎵'; v = v.replace('song_', ''); break
-              case 'location': prefix = '📍'; break
-              case 'createdAt': prefix = '⌚'; break
-              case 'date': prefix = '📅'; break
+              case 'mapPixel': prefix = '🌍' || ''; break;
+              case 'season': prefix = seasonEmoji[v] || ''; break;
+              case 'weather': prefix = weatherEmoji[v] || ''; break;
+              case 'currentSong': prefix = '🎵'; v = v.replace('song_', ''); break;
+              case 'location': prefix = '📍'; break;
+              case 'createdAt': prefix = '⌚'; break;
+              case 'date': prefix = '📅'; break;
             }
   
             const key = k.replace(/([A-Z])/g, ' $1')
               .split(' ')
               .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' ')
+              .join(' ');
               
-            return `<div class="row"><span class="key">${key}</span><span class="value">${prefix} ${v}</span></div>`
+            return `<div class="row"><span class="key">${key}</span><span class="value"><span>${prefix}</span><span>${v}</span></span></div>`;
           })
-          .join('')
+          .join('');
   
-        tooltip.style.left = left + width/2 + 'px'
-        tooltip.style.top = top - 10 + 'px'
-        tooltip.classList.add('visible')
+        // Make tooltip visible first with initial position
+        tooltip.style.left = left + width/2 + 'px';
+        tooltip.style.top = top - 10 + 'px';
+        tooltip.style.transform = 'translate(-50%, -100%)';
+        tooltip.classList.add('visible');
+        
+        // Get tooltip dimensions after it's visible
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const tooltipWidth = tooltipRect.width;
+        const tooltipHeight = tooltipRect.height;
+        
+        // Adjust position if needed
+        let finalLeft = left + width/2;
+        let finalTop = top - 10;
+        
+        // Check horizontal boundaries
+        if (finalLeft - tooltipWidth/2 < 10) {
+          // Too far left - align with left edge + padding
+          finalLeft = tooltipWidth/2 + 10;
+        } else if (finalLeft + tooltipWidth/2 > window.innerWidth - 10) {
+          // Too far right - align with right edge - padding
+          finalLeft = window.innerWidth - tooltipWidth/2 - 10;
+        }
+        
+        // Check vertical boundaries
+        if (finalTop - tooltipHeight < 10) {
+          // Too high - show below the element instead
+          finalTop = top + 25;
+          tooltip.style.transform = 'translate(-50%, 0)';
+        } else {
+          tooltip.style.transform = 'translate(-50%, -100%)';
+        }
+        
+        // Apply final position
+        tooltip.style.left = finalLeft + 'px';
+        tooltip.style.top = finalTop + 'px';
       }
-    })
+    });
   
     document.addEventListener('mouseout', e => {
-      const el = e.target.closest(selector)
-      const relatedTarget = e.relatedTarget?.closest(selector)
+      const el = e.target.closest(selector);
+      const relatedTarget = e.relatedTarget?.closest(selector);
       if (el && !relatedTarget) {
-        tooltip.classList.remove('visible')
+        tooltip.classList.remove('visible');
       }
-    })
+    });
   }
 
   updateUrl(region) {
@@ -401,10 +434,24 @@ class MapViewer {
       document.querySelectorAll('.log-marker').forEach(m => m.classList.remove('recent'));
       mapContainer.appendChild(marker);
 
+      // Variable to track which marker is currently showing the tooltip
+      const currentTooltipMarker = { ref: null };
+
       marker.addEventListener('click', (e) => {
         e.preventDefault();  // Prevents default action
         e.stopPropagation(); // Stops event from bubbling up to parent elements 
-        marker.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+        
+        const tooltip = document.querySelector('.tooltip');
+        
+        // If tooltip is visible AND was triggered by this marker, hide it
+        if (tooltip.classList.contains('visible') && currentTooltipMarker.ref === marker) {
+          tooltip.classList.remove('visible');
+          currentTooltipMarker.ref = null;
+        } else {
+          // Show tooltip and remember which marker triggered it
+          marker.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+          currentTooltipMarker.ref = marker;
+        }
       });
     });
   }

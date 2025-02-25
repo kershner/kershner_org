@@ -110,6 +110,7 @@ const daggerwalk = {
       width: "100%",
       height: "100%",
       channel: "daggerwalk",
+      layout: window.innerWidth > 768 ? "video-with-chat" : "video"
     });
   }
 }
