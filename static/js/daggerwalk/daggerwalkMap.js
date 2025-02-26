@@ -3,7 +3,7 @@ class MapViewer {
     this.state = {
       provinceShapes: {},
       regionMap: {},
-      capitalsData: {},
+      regionData: {},
       mousePos: { x: 0, y: 0 },
       hoveredProvince: null,
       fetchTimer: null,
@@ -33,9 +33,9 @@ class MapViewer {
         lineOpacity: 0.8
       },
       dataUrls: {
-        capitals: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/DaggerfallCapitals.json',
-        shapes: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/province_shapes_optimized.json',
-        regions: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/region_fmap_mapping.json'
+        regionData: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/daggerfall_region_data.json',
+        worldMapShapeData: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/province_shapes_optimized.json',
+        regionFmapData: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/region_fmap_mapping.json'
       },
       mapConstants: {
         width: 92,
@@ -67,20 +67,20 @@ class MapViewer {
 
   async loadMapData() {
     try {
-      const [shapesResponse, regionsResponse, capitalsResponse] = await Promise.all([
-        fetch(this.config.dataUrls.shapes),
-        fetch(this.config.dataUrls.regions),
-        fetch(this.config.dataUrls.capitals)
+      const [shapesResponse, regionsFmapResponse, regionDataResponse] = await Promise.all([
+        fetch(this.config.dataUrls.worldMapShapeData),
+        fetch(this.config.dataUrls.regionFmapData),
+        fetch(this.config.dataUrls.regionData)
       ]);
 
-      if (!shapesResponse.ok || !regionsResponse.ok || !capitalsResponse.ok) {
+      if (!shapesResponse.ok || !regionsFmapResponse.ok || !regionDataResponse.ok) {
         throw new Error('Failed to fetch map data');
       }
 
       this.state.provinceShapes = await shapesResponse.json();
-      this.state.regionMap = await regionsResponse.json();
-      this.state.capitalsData = await capitalsResponse.json();
-
+      this.state.regionMap = await regionsFmapResponse.json();
+      this.state.regionData = await regionDataResponse.json();
+      
       this.elements.loading.classList.add('hidden');
       this.elements.worldMapView.classList.remove('hidden');
     } catch (error) {
@@ -396,9 +396,9 @@ class MapViewer {
         this.clearLogMarkers();
 
         // Add capital city marker
-        const regionCapitalData = this.state.capitalsData.capitals.find(item => item.region === this.state.currentRegion);
-        if (regionCapitalData) {
-          this.addCapitalMarker(regionCapitalData);
+        const regionCapitalData = this.state.regionData.find(item => item.name === this.state.currentRegion);
+        if (regionCapitalData && regionCapitalData.capital) {
+          this.addCapitalMarker(regionCapitalData.capital);
         }
 
         resolve();
@@ -434,18 +434,15 @@ class MapViewer {
   addCapitalMarker(regionCapitalData) {
     if (!regionCapitalData.mapPixelX || !regionCapitalData.mapPixelY) return;
     
-    // Flag to identify this is a capital marker
-    const capitalMarkerFlag = { isCapitalMarker: true };
-    
     // Call addLogMarker with the capital data and the flag
     this.addLogMarker(
-      regionCapitalData.region,
+      regionCapitalData.name,
       regionCapitalData.mapPixelX,
       regionCapitalData.mapPixelY,
       null,
       {
-        capitalCity: regionCapitalData.capital,
-        ...capitalMarkerFlag
+        capitalCity: regionCapitalData.name,
+        isCapitalMarker: true
       }
     );
   }
