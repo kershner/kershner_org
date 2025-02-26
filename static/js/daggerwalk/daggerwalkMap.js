@@ -3,6 +3,7 @@ class MapViewer {
     this.state = {
       provinceShapes: {},
       regionMap: {},
+      capitalsData: {},
       mousePos: { x: 0, y: 0 },
       hoveredProvince: null,
       fetchTimer: null,
@@ -32,6 +33,7 @@ class MapViewer {
         lineOpacity: 0.8
       },
       dataUrls: {
+        capitals: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/DaggerfallCapitals.json',
         shapes: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/province_shapes_optimized.json',
         regions: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/region_fmap_mapping.json'
       },
@@ -65,17 +67,19 @@ class MapViewer {
 
   async loadMapData() {
     try {
-      const [shapesResponse, regionsResponse] = await Promise.all([
+      const [shapesResponse, regionsResponse, capitalsResponse] = await Promise.all([
         fetch(this.config.dataUrls.shapes),
-        fetch(this.config.dataUrls.regions)
+        fetch(this.config.dataUrls.regions),
+        fetch(this.config.dataUrls.capitals)
       ]);
 
-      if (!shapesResponse.ok || !regionsResponse.ok) {
+      if (!shapesResponse.ok || !regionsResponse.ok || !capitalsResponse.ok) {
         throw new Error('Failed to fetch map data');
       }
 
       this.state.provinceShapes = await shapesResponse.json();
       this.state.regionMap = await regionsResponse.json();
+      this.state.capitalsData = await capitalsResponse.json();
 
       this.elements.loading.classList.add('hidden');
       this.elements.worldMapView.classList.remove('hidden');
@@ -128,7 +132,7 @@ class MapViewer {
     }
   }
 
-  initTooltip(selector = '.log-marker') {
+  initTooltip(selector = '.log-marker, .capital-marker') {
     const tooltip = document.createElement('div');
     tooltip.className = 'tooltip';
     document.body.appendChild(tooltip);
@@ -158,6 +162,7 @@ class MapViewer {
               case 'location': prefix = '📍'; break;
               case 'createdAt': prefix = '⌚'; break;
               case 'date': prefix = '📅'; break;
+              case 'capitalCity': prefix = '🏰'; break;
             }
   
             const key = k.replace(/([A-Z])/g, ' $1')
@@ -281,6 +286,12 @@ class MapViewer {
             selectedPart,
             this.createMarkerData(log)
         ));
+
+        // Add capital city marker
+        const regionCapitalData = this.state.capitalsData.capitals.find(item => item.region === region);
+        if (regionCapitalData) {
+          this.addCapitalMarker(regionCapitalData);
+        }
 
         this.scheduleNextLogFetch(); // Schedule the next fetch
     } catch (error) {
@@ -419,6 +430,25 @@ class MapViewer {
     this.drawProvinceShapes();
   }
 
+  addCapitalMarker(regionCapitalData) {
+    if (!regionCapitalData.mapPixelX || !regionCapitalData.mapPixelY) return;
+    
+    // Flag to identify this is a capital marker
+    const capitalMarkerFlag = { isCapitalMarker: true };
+    
+    // Call addLogMarker with the capital data and the flag
+    this.addLogMarker(
+      regionCapitalData.region,
+      regionCapitalData.mapPixelX,
+      regionCapitalData.mapPixelY,
+      null,
+      {
+        capitalCity: regionCapitalData.capital,
+        ...capitalMarkerFlag
+      }
+    );
+  }
+  
   addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
     if (!x || !y) return;
   
@@ -428,15 +458,36 @@ class MapViewer {
   
       const selectedPart = forcePart || this.getSelectedRegionPart(regionData, x, y);
       if (!selectedPart?.offset) return;
-
+  
       const marker = this.createMarkerElement(x, y, regionName, selectedPart, markerData);
       const mapContainer = document.querySelector('#regionMapView .map-container');
-      document.querySelectorAll('.log-marker').forEach(m => m.classList.remove('recent'));
+      
+      // Only remove 'recent' class from log markers if this is not for a capital
+      if (!markerData.isCapitalMarker) {
+        document.querySelectorAll('.log-marker').forEach(m => m.classList.remove('recent'));
+      }
+      
+      // If this is a capital marker, change its class before appending
+      if (markerData.isCapitalMarker) {
+        marker.classList.remove('log-marker', 'recent');
+        marker.classList.add('capital-marker');
+        marker.setAttribute('title', `${markerData.capitalCity} - capital city of ${regionName}`);
+        
+        // For capital markers, only keep the capitalCity data attribute
+        const capitalCity = marker.dataset.capitalCity;
+        // Clear all data attributes
+        Object.keys(marker.dataset).forEach(key => {
+          delete marker.dataset[key];
+        });
+        // Set only the capitalCity attribute
+        marker.dataset.capitalCity = capitalCity;
+      }
+      
       mapContainer.appendChild(marker);
-
-      // Variable to track which marker is currently showing the tooltip
+  
+      // Keep click handler for all marker types
       const currentTooltipMarker = { ref: null };
-
+  
       marker.addEventListener('click', (e) => {
         e.preventDefault();  // Prevents default action
         e.stopPropagation(); // Stops event from bubbling up to parent elements 
@@ -492,7 +543,7 @@ class MapViewer {
   }
 
   clearLogMarkers() {
-    document.querySelectorAll(`#${this.elements.regionMapView.id} .log-marker`).forEach(marker => marker.remove());
+    document.querySelectorAll(`#${this.elements.regionMapView.id} .log-marker, #${this.elements.regionMapView.id} .capital-marker`).forEach(marker => marker.remove());
   }
 
   getSelectedRegionPart(regionData, x, y) {
