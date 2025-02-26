@@ -287,12 +287,6 @@ class MapViewer {
             this.createMarkerData(log)
         ));
 
-        // Add capital city marker
-        const regionCapitalData = this.state.capitalsData.capitals.find(item => item.region === region);
-        if (regionCapitalData) {
-          this.addCapitalMarker(regionCapitalData);
-        }
-
         this.scheduleNextLogFetch(); // Schedule the next fetch
     } catch (error) {
         this.scheduleNextLogFetch(10000); // Retry in 10 seconds if fetch fails
@@ -395,11 +389,18 @@ class MapViewer {
 
     const regionData = this.state.regionMap[regionName];
     const selectedPart = this.getSelectedRegionPart(regionData, x, y);
-    
+
     return new Promise((resolve) => {
       this.elements.regionMap.onload = () => {
         this.elements.regionName.textContent = regionName;
         this.clearLogMarkers();
+
+        // Add capital city marker
+        const regionCapitalData = this.state.capitalsData.capitals.find(item => item.region === this.state.currentRegion);
+        if (regionCapitalData) {
+          this.addCapitalMarker(regionCapitalData);
+        }
+
         resolve();
       };
       this.elements.regionMap.src = `${this.config.baseS3Url}/img/daggerwalk/maps/${selectedPart.fmap_image}`;
