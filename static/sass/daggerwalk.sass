@@ -162,6 +162,17 @@ $marker-world-size: 24px
     height: $marker-recent-size
     @include pulse-animation
 
+  &.poi
+    background-color: transparent
+    
+    &::before
+      content: attr(data-poi-emoji)
+      font-size: $marker-size * 3
+      position: absolute
+      top: 50%
+      left: 50%
+      transform: translate(-50%, -50%)
+
 .world-marker
   height: $marker-world-size
   width: $marker-world-size

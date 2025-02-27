@@ -40,7 +40,11 @@ class MapViewer {
       mapConstants: {
         width: 92,
         height: 80
-      }
+      },
+      poiMarkers: [
+        '💀', '☠️', '⚔️', '🗡️', '🏹', '🛡️', '⚱️', '🔮',
+        '👑', '🗝️', '📜', '🏺', '🪓', '🔥', '⛓️', '📌'
+      ]
     };
 
     this.elements = {
@@ -159,10 +163,15 @@ class MapViewer {
               case 'season': prefix = seasonEmoji[v] || ''; break;
               case 'weather': prefix = weatherEmoji[v] || ''; break;
               case 'currentSong': prefix = '🎵'; v = v.replace('song_', ''); break;
-              case 'location': prefix = '📍'; break;
+              case 'location': 
+                // Use the POI emoji if available, otherwise fall back to default
+                prefix = el.dataset.poiEmoji || '📍'; 
+                break;
               case 'createdAt': prefix = '⌚'; break;
               case 'date': prefix = '📅'; break;
               case 'capitalCity': prefix = '🏰'; break;
+              // Skip the poiEmoji entry itself to avoid displaying it separately in the tooltip
+              case 'poiEmoji': return '';
             }
   
             const key = k.replace(/([A-Z])/g, ' $1')
@@ -172,6 +181,7 @@ class MapViewer {
               
             return `<div class="row"><span class="key">${key}</span><span class="value"><span>${prefix}</span><span>${v}</span></span></div>`;
           })
+          .filter(row => row !== '') // Filter out any empty strings (like the poiEmoji entry)
           .join('');
   
         // Make tooltip visible first with initial position
@@ -436,7 +446,7 @@ class MapViewer {
     
     // Call addLogMarker with the capital data and the flag
     this.addLogMarker(
-      regionCapitalData.name,
+      this.state.currentRegion,
       regionCapitalData.mapPixelX,
       regionCapitalData.mapPixelY,
       null,
@@ -447,16 +457,17 @@ class MapViewer {
     );
   }
   
-  addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
+// Modified addLogMarker function to set a random emoji
+addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
     if (!x || !y) return;
   
     requestAnimationFrame(() => {
       const regionData = this.state.regionMap[regionName];
       if (!regionData) return;
-  
+      
       const selectedPart = forcePart || this.getSelectedRegionPart(regionData, x, y);
       if (!selectedPart?.offset) return;
-  
+
       const marker = this.createMarkerElement(x, y, regionName, selectedPart, markerData);
       const mapContainer = document.querySelector('#regionMapView .map-container');
       
@@ -479,6 +490,16 @@ class MapViewer {
         });
         // Set only the capitalCity attribute
         marker.dataset.capitalCity = capitalCity;
+      } 
+      // Add a random emoji for POI markers
+      else if (markerData.location && markerData.location !== "Wilderness") {
+        marker.classList.add('poi');
+        
+        // Choose a random emoji from the pool
+        const randomEmoji = this.config.poiMarkers[Math.floor(Math.random() * this.config.poiMarkers.length)];
+        
+        // Set the emoji as a data attribute that we'll use in CSS
+        marker.dataset.poiEmoji = randomEmoji;
       }
       
       mapContainer.appendChild(marker);
