@@ -59,6 +59,7 @@ class MapViewer {
 
     this.ctx = this.elements.canvas.getContext('2d');
     this.markerImage = new Image();
+    this.animationFrameId = null;
     this.initTooltip();
     this.bindEvents();
   }
@@ -127,8 +128,11 @@ class MapViewer {
       this.elements.canvas.width = this.elements.worldMap.width;
       this.elements.canvas.height = this.elements.worldMap.height;
       this.drawProvinceShapes();
+      
+      // Remove the onload handler to prevent memory leaks
+      this.elements.worldMap.onload = null;
     };
-
+  
     if (this.elements.worldMap.complete) {
       onLoad();
     } else {
@@ -140,17 +144,18 @@ class MapViewer {
     const tooltip = document.createElement('div');
     tooltip.className = 'tooltip';
     document.body.appendChild(tooltip);
-  
+    
     const weatherEmoji = {
       "Sunny": "☀️", "Clear": "🌙", "Cloudy": "☁️", "Foggy": "🌫️",
       "Rainy": "🌧️", "Snowy": "🌨️", "Thunderstorm": "⛈️", "Blizzard": "❄️"
     };
-  
+    
     const seasonEmoji = {
       "Winter": "☃️", "Spring": "🌸", "Summer": "🌻", "Autumn": "🍂"
     };
-  
-    document.addEventListener('mouseover', e => {
+    
+    // Store the handler as a property so we can remove it later
+    this.tooltipMouseOverHandler = e => {
       const el = e.target.closest(selector);
       if (el) {
         const {left, top, width} = el.getBoundingClientRect();
@@ -221,15 +226,23 @@ class MapViewer {
         tooltip.style.left = finalLeft + 'px';
         tooltip.style.top = finalTop + 'px';
       }
-    });
+    };
   
-    document.addEventListener('mouseout', e => {
+    // Store the mouseout handler as well
+    this.tooltipMouseOutHandler = e => {
       const el = e.target.closest(selector);
       const relatedTarget = e.relatedTarget?.closest(selector);
       if (el && !relatedTarget) {
         tooltip.classList.remove('visible');
       }
-    });
+    };
+    
+    // Store reference to tooltip for potential removal later
+    this.tooltip = tooltip;
+    
+    // Add event listeners with stored handlers
+    document.addEventListener('mouseover', this.tooltipMouseOverHandler);
+    document.addEventListener('mouseout', this.tooltipMouseOutHandler);
   }
 
   updateUrl(region) {
@@ -382,37 +395,58 @@ class MapViewer {
   }
 
   showWorldMap() {
+    // Cancel animation frame from previous state
+    this.cancelProvinceShapesAnimation();
+    
+    // Stop any polling
+    this.stopLogPolling();
+    
+    // Clear log markers (but don't clear world map markers yet)
+    this.clearLogMarkers();
+    
+    // Update UI state
     this.elements.worldMapView.classList.remove('hidden');
     this.elements.regionMapView.classList.add('hidden');
-    this.stopLogPolling();
-    history.pushState({}, '', window.location.pathname);
-    this.clearLogMarkers();
     this.elements.regionName.textContent = 'The Iliac Bay';
-    this.addAllWorldMapMarkers();
+    
+    // Update URL
+    history.pushState({}, '', window.location.pathname);
+    
+    // Reset state
     this.state.currentRegion = null;
+    
+    // Add world map markers (this inherently clears existing world markers)
+    this.addAllWorldMapMarkers();
+    
+    // Start a new animation loop
+    this.animationFrameId = requestAnimationFrame(() => this.drawProvinceShapes());
   }
 
   async showRegionMap(regionName, x, y) {
     if (!this.state.regionMap[regionName]) return;
-
+  
+    // Cancel world map animation
+    this.cancelProvinceShapesAnimation();
+    
+    // Update UI state
     this.elements.worldMapView.classList.add('hidden');
     this.elements.regionMapView.classList.remove('hidden');
     this.state.currentRegion = regionName;
-
+  
     const regionData = this.state.regionMap[regionName];
     const selectedPart = this.getSelectedRegionPart(regionData, x, y);
-
+  
     return new Promise((resolve) => {
       this.elements.regionMap.onload = () => {
         this.elements.regionName.textContent = regionName;
         this.clearLogMarkers();
-
+  
         // Add capital city marker
         const regionCapitalData = this.state.regionData.find(item => item.name === this.state.currentRegion);
         if (regionCapitalData && regionCapitalData.capital) {
           this.addCapitalMarker(regionCapitalData.capital);
         }
-
+  
         resolve();
       };
       this.elements.regionMap.src = `${this.config.baseS3Url}/img/daggerwalk/maps/${selectedPart.fmap_image}`;
@@ -668,23 +702,33 @@ addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
     return inside;
   }
 
+  cancelProvinceShapesAnimation() {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+  }
+
   drawProvinceShapes() {
     this.setupCanvas();
     const scale = this.getMapScale();
     const markersArray = Array.from(this.state.worldMapMarkers.values());
     const lastMarker = markersArray[0];
-
+  
     if (this.state.worldMapMarkers.size > 1) {
       this.drawConnectingLines(markersArray, scale);
     }
-
+  
     this.drawWorldMapMarkers(markersArray, scale, lastMarker);
-
+  
     if (this.state.hoveredProvince) {
       this.drawProvinceLabel();
     }
-
-    requestAnimationFrame(() => this.drawProvinceShapes());
+  
+    // Only continue the animation loop if we're in the world map view
+    if (!this.elements.worldMapView.classList.contains('hidden')) {
+      this.animationFrameId = requestAnimationFrame(() => this.drawProvinceShapes());
+    }
   }
 
   setupCanvas() {
@@ -870,12 +914,19 @@ addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
   bindEvents() {
     const { worldMap, regionMap } = this.elements;
     
-    worldMap.addEventListener('mousemove', this.handleMouseMove.bind(this));
-    worldMap.addEventListener('mouseleave', this.handleMouseLeave.bind(this));
-    worldMap.addEventListener('mousedown', () => this.drawProvinceShapes());
-    worldMap.addEventListener('mouseup', () => this.drawProvinceShapes());
-    worldMap.addEventListener('click', this.handleWorldMapClick.bind(this));
-    regionMap.addEventListener('click', () => this.showWorldMap());
+    // Create bound function references for later removal
+    this.boundHandleMouseMove = this.handleMouseMove.bind(this);
+    this.boundHandleMouseLeave = this.handleMouseLeave.bind(this);
+    this.boundHandleMouseDown = () => this.drawProvinceShapes();
+    this.boundHandleMouseUp = () => this.drawProvinceShapes();
+    this.boundHandleWorldMapClick = this.handleWorldMapClick.bind(this);
+    this.boundHandleRegionMapClick = () => this.showWorldMap();
+    
+    // Add event listeners using the bound functions
+    worldMap.addEventListener('mousemove', this.boundHandleMouseMove);
+    worldMap.addEventListener('mouseleave', this.boundHandleMouseLeave);
+    worldMap.addEventListener('click', this.boundHandleWorldMapClick);
+    regionMap.addEventListener('click', this.boundHandleRegionMapClick);
   }
 
   handleMouseMove(event) {
@@ -969,6 +1020,27 @@ addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
         hour12: true
     }).replace(",", "");
   }
+
+  destroy() {
+    // Cancel animation frame
+    this.cancelProvinceShapesAnimation();
+    
+    // Stop polling
+    this.stopLogPolling();
+    
+    // Remove event listeners - use bound functions to properly remove them
+    this.elements.worldMap.removeEventListener('mousemove', this.boundHandleMouseMove);
+    this.elements.worldMap.removeEventListener('mouseleave', this.boundHandleMouseLeave);
+    this.elements.worldMap.removeEventListener('click', this.boundHandleWorldMapClick);
+    this.elements.regionMap.removeEventListener('click', this.boundHandleRegionMapClick);
+
+    document.removeEventListener('mouseover', this.tooltipMouseOverHandler);
+    document.removeEventListener('mouseout', this.tooltipMouseOutHandler);
+    
+    // Clear markers
+    this.clearLogMarkers();
+    this.clearWorldMapMarkers();
+  }
 }
 
 // Initialize the map viewer
@@ -994,4 +1066,11 @@ window.onload = async () => {
       window.mapViewer.showRegionMap(region);
     }
   }
+  
+  // Add cleanup on page unload
+  window.addEventListener('beforeunload', () => {
+    if (window.mapViewer) {
+      window.mapViewer.destroy();
+    }
+  });
 };
