@@ -297,7 +297,9 @@ class MapViewer {
             this.createMarkerData(log)
         ));
 
-        this.scheduleNextLogFetch(); // Schedule the next fetch
+        if (daggerwalk.latestLog && daggerwalk.latestLog.region === this.state.currentRegion) {
+          this.scheduleNextLogFetch(); // Schedule the next fetch
+        }
     } catch (error) {
         this.scheduleNextLogFetch(10000); // Retry in 10 seconds if fetch fails
     }
