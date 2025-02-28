@@ -166,7 +166,7 @@ class MapViewer {
               case 'currentSong': prefix = '🎵'; v = v.replace('song_', ''); break;
               case 'location': 
                 // Use the POI emoji if available, otherwise fall back to default
-                prefix = el.dataset.poiEmoji || '📍'; 
+                prefix = el.dataset.emoji || '📍'; 
                 break;
               case 'createdAt': prefix = '⌚'; break;
               case 'date': prefix = '📅'; break;
