@@ -32,13 +32,19 @@
     {# About tabs #}
     <div class="tabs about-tabs">
         <input type="radio" name="tabs-group-2" id="commands-tab-btn" checked>
+        <input type="radio" name="tabs-group-2" id="schedule-tab-btn">
         <input type="radio" name="tabs-group-2" id="about-tab-btn">
         
         <label data-tab="1" for="commands-tab-btn">Commands</label>
-        <label data-tab="2" for="about-tab-btn">About</label>
+        <label data-tab="2" for="schedule-tab-btn">Schedule</label>
+        <label data-tab="3" for="about-tab-btn">About</label>
         
         <div class="tab-content">
             {% include 'daggerwalk/commands.html' %}
+        </div>
+
+        <div class="tab-content">
+            {% include 'daggerwalk/schedule.html' %}
         </div>
         
         <div class="tab-content">

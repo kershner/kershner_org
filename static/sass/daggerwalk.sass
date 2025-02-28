@@ -1,8 +1,8 @@
 // Variables
 $color-loading-border: rgba(255, 255, 255, 0.3)
 $color-highlight: #F2E530
-$error: #ff6b6b
 $alternate-dark: lighten(#000, 10)
+$error: #ff6b6b
 $border-width: 0.3rem
 $border-radius: 0.2rem
 
@@ -422,8 +422,6 @@ blockquote
   
   .images
     display: flex
-    border: $border-width solid $color-highlight
-    border-radius: $border-radius
 
     a
       display: flex
@@ -450,3 +448,38 @@ blockquote
     color: $color-highlight
     font-weight: bold
     font-family: $secondary-font-family
+
+.schedule-block
+  background: $alternate-dark
+  border-radius: $border-radius
+  margin: 1rem 0
+  padding: 2rem
+  max-width: 400px
+  width: 100%
+  text-align: center
+  
+  h1
+    margin-bottom: 1.5rem
+    color: $color-highlight
+    font-size: 1.75rem
+    font-family: $secondary-font-family
+  
+  .schedule-time
+    font-size: 1.25rem
+    margin-bottom: 1rem
+    background: #262626
+    padding: 1rem
+    border-radius: $border-radius
+    border-left: $border-width solid $color-highlight
+  
+  .schedule-days
+    font-size: 1rem
+    color: lighten($alternate-dark, 50%)
+    margin-top: 1.5rem
+
+    span
+      font-weight: bold
+  
+  .highlight
+    color: $color-highlight
+    font-weight: bold
