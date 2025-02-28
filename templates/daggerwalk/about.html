@@ -6,23 +6,44 @@
 </blockquote>
 
 <div class="about-img no-border">
-  <img src="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/orig_daggerfall_logo.png" alt="Original Daggerfall logo">
+  <img src="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/orig_daggerfall_logo.png" loading="lazy" alt="Original Daggerfall logo">
 </div>
 
-<p class="extra-margin-bottom">
+<p class="paragraph extra-margin-bottom">
   <a href="https://en.wikipedia.org/wiki/The_Elder_Scrolls_II:_Daggerfall" target="_blank">The Elder Scrolls II: Daggerfall</a> was released in September 1996 and features one of the largest game worlds ever created.
   <strong>Daggerwalk</strong> is a collection of technologies that live-streams a bot endlessly walking through the massive Iliac Bay.
   Viewers can interact with the game by typing commands into the chat and The Walker's progress can be viewed on this website.
 </p>
 
 <h2>Hardware</h2>
+
+<div class="gallery-container">
+  <div class="images">
+    <a href="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/optiplex_1.jpg" target="_blank">
+      <img src="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/optiplex_1.jpg" loading="lazy" alt="A picture of the Daggerwalk Dell Optiplex 3050 small form factor desktop PC">
+    </a>
+    <a href="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/optiplex_2.png" target="_blank">
+      <img src="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/optiplex_2.png" loading="lazy" alt="Another picture of the Daggerwalk PC showing its location in a closet corner">
+    </a>
+  </div>
+  <span class="cite">The Daggerwalk Optiplex in its natural environment (a closet corner)</span>
+</div>
+
 <h4>Dell Optiplex 3050</h4>
 <ul>
   <li>3.20 GHz i5-6500</li>
   <li>Nvidia Quadro T400 4GB</li>
   <li>8GB ram</li>
   <li>256GB SSD</li>
+  <li>Cheap WiFi antenna dongle</li>
+  <li>Mini DisplayPort dummy plug</li>
+  <li>Small form factor</li>
 </ul>
+
+<p class="paragraph">
+  A humble Dell Optiplex PC runs Daggerwalk autonomously.  It's programmed to boot up at a certain time each day, run the Daggerwalk scripts, and shut back down again on a timer.
+  It handles the game's graphics, streaming, and running the Twitch bot comfortably - keeping a cool temperature for a stable operation many hours per day.
+</p>
 
 <hr>
 
@@ -32,7 +53,6 @@
 <h5>Nexus Mods:</h5>
 <ul id="nexus-modlist">
   <li><a href="https://www.nexusmods.com/daggerfallunity/mods/249" target="_blank">World of Daggerfall</a></li>  
-  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/128" target="_blank">Distant Terrain</a></li>
   <li><a href="https://www.nexusmods.com/daggerfallunity/mods/193" target="_blank">Interesting Eroded Terrains</a></li>
   <li><a href="https://www.nexusmods.com/daggerfallunity/mods/390" target="_blank">Wilderness Overhaul</a></li>
   <li><a href="https://www.nexusmods.com/daggerfallunity/mods/134" target="_blank">Basic Roads</a></li>
@@ -56,13 +76,11 @@
     <a href="https://github.com/kershner/daggerwalk/blob/master/dfu_mods/MusicChanger.cs" target="_blank">Music Changer</a>
     <p class="less-margin">Adds console commands to play songs on command as well as endlessly shuffle.</p>
   </li>
-</ul>
 
-<h4>Useful tools</h4>
-<ul>
-  <li><a href="https://github.com/Interkarma/daggerfall-unity/releases" target="_blank">Daggerfall Unity</a></li>
-  <li><a href="https://www.dfworkshop.net/downloads/daggerfall-imaging/" target="_blank">Daggerfall Imaging 2</a></li>  
-  <li><a href="https://vb-audio.com/Cable/" target="_blank">VB-Audio Virtual Cable</a></li>
+  <li>
+    <a href="https://github.com/kershner/daggerwalk/blob/master/dfu_mods/FasterNights.cs" target="_blank">Faster Nights</a>
+    <p class="less-margin">Alters the timescale dynamically - 1 hour days, 6 minute nights.</p>
+  </li>
 </ul>
 
 <h4>Game automation / Twitch bot</h4>
@@ -70,10 +88,24 @@
   <li><a href="https://github.com/kershner/daggerwalk/blob/master/start_daggerwalk.py" target="_blank">start_daggerwalk.py</a></li>
   <li><a href="https://github.com/kershner/daggerwalk/blob/master/daggerwalk_twitch_bot.py" target="_blank">daggerwalk_twitch_bot.py</a></li>
 </ul>
+<p class="paragraph">
+  Scripting the game is simple - first it lauches Daggerfall Unity, waits for the game to load, enters a few console commands like "god mode," and starts walking.  Next it launches OBS and begins streaming.  Finally the Twitch bot starts up, handling input from chat and making requests to the <a href="https://kershner.org">kershner.org</a> web server.
+</p>
 
 <h4>Website</h4>
 <ul>
   <li><a href="https://github.com/kershner/kershner_org/tree/master/apps/daggerwalk" target="_blank">Python/Django</a></li>
   <li><a href="https://github.com/kershner/kershner_org/tree/master/static/js/daggerwalk" target="_blank">JavaScripts</a></li>
   <li><a href="https://github.com/kershner/kershner_org/blob/master/static/sass/daggerwalk.sass" target="_blank">SASS</a></li>
+</ul>
+
+<p class="paragraph">
+  Daggerwalk's backend is built into a larger Django monolith site. This page uses basic HTML, JavaScript, and SASS. The map images were taken directly from the game. 
+</p>
+
+<h4>Useful tools</h4>
+<ul>
+  <li><a href="https://github.com/Interkarma/daggerfall-unity/releases" target="_blank">Daggerfall Unity</a></li>
+  <li><a href="https://www.dfworkshop.net/downloads/daggerfall-imaging/" target="_blank">Daggerfall Imaging 2</a></li>  
+  <li><a href="https://vb-audio.com/Cable/" target="_blank">VB-Audio Virtual Cable</a></li>
 </ul>

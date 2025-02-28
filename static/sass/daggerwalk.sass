@@ -416,3 +416,37 @@ blockquote
     margin-top: 0.5rem
     font-size: 0.9rem
     font-style: italic
+
+.gallery-container
+  max-width: 25rem
+  
+  .images
+    display: flex
+    border: $border-width solid $color-highlight
+    border-radius: $border-radius
+
+    a
+      display: flex
+      width: 50%
+      align-items: center
+      
+      &:hover
+        opacity: 0.8
+      
+      img
+        width: 100%
+      
+  .cite
+    display: block
+    font-size: 0.8rem
+    margin-top: 5px
+
+.paragraph
+  text-indent: -0.75em
+  padding-left: calc(1.25rem)
+
+  &::first-letter
+    font-size: 1.25em
+    color: $color-highlight
+    font-weight: bold
+    font-family: $secondary-font-family
