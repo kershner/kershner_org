@@ -41,10 +41,6 @@ class MapViewer {
         width: 92,
         height: 80
       },
-      poiMarkers: [
-        '💀', '☠️', '⚔️', '🗡️', '🏹', '🛡️', '⚱️', '🔮',
-        '👑', '🗝️', '📜', '🏺', '🪓', '🔥', '⛓️', '📌'
-      ]
     };
 
     this.elements = {
@@ -176,7 +172,7 @@ class MapViewer {
               case 'date': prefix = '📅'; break;
               case 'capitalCity': prefix = '🏰'; break;
               // Skip the poiEmoji entry itself to avoid displaying it separately in the tooltip
-              case 'poiEmoji': return '';
+              case 'emoji': return '';
             }
   
             const key = k.replace(/([A-Z])/g, ' $1')
@@ -269,7 +265,8 @@ class MapViewer {
       weather: log.weather,
       currentSong: log.current_song,
       location: log.location,
-      createdAt: this.convertToEST(log.created_at)
+      createdAt: this.convertToEST(log.created_at),
+      emoji: log.emoji
     };
   }
 
@@ -530,12 +527,6 @@ addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
       // Add a random emoji for POI markers
       else if (markerData.location && markerData.location !== "Wilderness") {
         marker.classList.add('poi');
-        
-        // Choose a random emoji from the pool
-        const randomEmoji = this.config.poiMarkers[Math.floor(Math.random() * this.config.poiMarkers.length)];
-        
-        // Set the emoji as a data attribute that we'll use in CSS
-        marker.dataset.poiEmoji = randomEmoji;
       }
       
       mapContainer.appendChild(marker);

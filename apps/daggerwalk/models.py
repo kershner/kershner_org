@@ -1,4 +1,5 @@
 from django.db import models
+import random
 
 
 class DaggerwalkLog(models.Model):
@@ -28,6 +29,9 @@ class DaggerwalkLog(models.Model):
     weather = models.CharField(max_length=255, help_text="Current weather condition")
     current_song = models.CharField(max_length=255, null=True, blank=True, help_text="Currently playing background music")
     season = models.CharField(max_length=255, null=True, blank=True, help_text="Current in-game season")
+    
+    # Misc
+    emoji = models.CharField(max_length=10, blank=True, null=True)
 
     class Meta:
         verbose_name = 'Daggerwalk Log'
@@ -40,9 +44,23 @@ class DaggerwalkLog(models.Model):
         return f"{self.region} - {formatted_datetime}"
     
     def save(self, *args, **kwargs):
-        # Determine and set the season before saving
         self.season = self.determine_season()
+        if self.is_poi() and not self.emoji:
+            self.emoji = self.get_emoji()
         super().save(*args, **kwargs)
+
+    @classmethod
+    def get_emoji(cls):
+        emoji_choices = [
+            '💀', '☠️', '⚔️', '🗡️', '🏹', '🛡️', '⚱️', '🔮',
+            '👑', '🗝️', '📜', '🏺', '🪓', '🔥', '⛓️', '📌',
+            '🦴', '🕳️', '🔗', '⚒️', '⛏️', '🏰', '🕯️', '🌲', 
+            '🗿', '🔑', '🏕️', '🏚️', '🔔', '🎭', '🛶', '🚩', '📍',
+        ]
+        return random.choice(emoji_choices)
+    
+    def is_poi(self):
+        return self.location not in ["Wilderness", "Ocean"]
     
     def determine_season(self):
         """Determine season based on the in-game date string format:

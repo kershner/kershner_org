@@ -95,6 +95,7 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
             'fields': (
               'id',
               'created_at',
+              'emoji',
               'view_on_map_link',
             ),
         }),
