@@ -1066,7 +1066,7 @@ window.onload = async () => {
   const x = parseInt(urlParams.get("x"), 10);
   const y = parseInt(urlParams.get("y"), 10);
 
-  if (region in window.mapViewer.state.regionMap) {
+  if (region && region in window.mapViewer.state.regionMap) {
     if (!isNaN(x) && !isNaN(y)) {
       window.mapViewer.showRegionMap(region, x, y).then(() => 
         window.mapViewer.addLogMarker(region, x, y)
@@ -1075,6 +1075,12 @@ window.onload = async () => {
       window.mapViewer.fetchDaggerwalkLogs(region);
       window.mapViewer.showRegionMap(region);
     }
+  } else if (daggerwalk.latestLog && daggerwalk.latestLog.region) {
+    // Use the latest log's region if the URL parameter is invalid or missing
+    window.mapViewer.fetchDaggerwalkLogs(daggerwalk.latestLog.region);
+    window.mapViewer.showRegionMap(daggerwalk.latestLog.region, 
+      parseInt(daggerwalk.latestLog.map_pixel_x), 
+      parseInt(daggerwalk.latestLog.map_pixel_y));
   }
   
   // Add cleanup on page unload
