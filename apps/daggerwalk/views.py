@@ -1,12 +1,13 @@
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
+from apps.daggerwalk.utils import get_map_data
 from django.forms.models import model_to_dict
 from django.views.generic import View
 from django.http import JsonResponse
 from django.contrib import messages
-from django.shortcuts import render
 from .models import DaggerwalkLog
+from django.shortcuts import render
 from django.db.models import Max
 from django.conf import settings
 import json
@@ -39,10 +40,12 @@ class DaggerwalkHomeView(View):
         )
 
         latest_log = DaggerwalkLog.objects.latest('created_at')
+        map_data = get_map_data()
         
         ctx = {
+            **map_data,
             'region_data': json.dumps(list(region_data), default=str),
-            'latest_log': json.dumps(latest_log.__dict__, default=str)
+            'latest_log': json.dumps(latest_log.__dict__, default=str),
         }
         
         return render(request, self.template_path, ctx)

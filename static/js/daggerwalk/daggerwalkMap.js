@@ -1,9 +1,9 @@
 class MapViewer {
   constructor() {
     this.state = {
-      provinceShapes: {},
-      regionMap: {},
-      regionData: {},
+      provinceShapes: window.daggerwalkData.provinceShapes,
+      regionMap: window.daggerwalkData.regionMap,
+      regionData: window.daggerwalkData.regionData,
       mousePos: { x: 0, y: 0 },
       hoveredProvince: null,
       fetchTimer: null,
@@ -32,11 +32,6 @@ class MapViewer {
         lineColor: 'white',
         lineOpacity: 0.8
       },
-      dataUrls: {
-        regionData: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/daggerfall_region_data.json',
-        worldMapShapeData: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/province_shapes_optimized.json',
-        regionFmapData: 'https://kershnerportfolio.s3.us-east-2.amazonaws.com/static/daggerwalk/data/region_fmap_mapping.json'
-      },
       mapConstants: {
         width: 92,
         height: 80
@@ -61,27 +56,13 @@ class MapViewer {
   }
 
   async init() {
-    await this.loadMapData();
+    this.loadMapData();
     this.calculateRegionCenters();
     this.initializeMap();
   }
 
   async loadMapData() {
     try {
-      const [shapesResponse, regionsFmapResponse, regionDataResponse] = await Promise.all([
-        fetch(this.config.dataUrls.worldMapShapeData),
-        fetch(this.config.dataUrls.regionFmapData),
-        fetch(this.config.dataUrls.regionData)
-      ]);
-
-      if (!shapesResponse.ok || !regionsFmapResponse.ok || !regionDataResponse.ok) {
-        throw new Error('Failed to fetch map data');
-      }
-
-      this.state.provinceShapes = await shapesResponse.json();
-      this.state.regionMap = await regionsFmapResponse.json();
-      this.state.regionData = await regionDataResponse.json();
-      
       this.elements.loading.classList.add('hidden');
       this.elements.worldMapView.classList.remove('hidden');
     } catch (error) {
