@@ -15,6 +15,7 @@ body
   background: #000
   font-family: $primary-font-family
   color: #FFF
+  overflow-x: hidden
 
 hr
   margin: 2rem 0
@@ -267,11 +268,7 @@ $marker-world-size: 24px
 
 #twitch-container 
   position: relative
-  width: 100%
   padding-top: 56.25%
-
-  @media (max-width: 699px)
-    padding-top: 100%
   
   #twitch-embed
     position: absolute
@@ -474,7 +471,6 @@ blockquote
   margin: 1rem 0
   padding: 2rem
   max-width: 400px
-  width: 100%
   text-align: center
   
   h1
