@@ -3,10 +3,10 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from apps.daggerwalk.utils import get_map_data
 from django.forms.models import model_to_dict
+from .models import DaggerwalkLog, Region
 from django.views.generic import View
 from django.http import JsonResponse
 from django.contrib import messages
-from .models import DaggerwalkLog
 from django.shortcuts import render
 from django.db.models import Max
 from django.conf import settings
@@ -39,13 +39,13 @@ class DaggerwalkHomeView(View):
             .distinct()[:50]
         )
 
-        latest_log = DaggerwalkLog.objects.latest('created_at')
         map_data = get_map_data()
-        
+        latest_log = model_to_dict(DaggerwalkLog.objects.latest('created_at'))
+
         ctx = {
             **map_data,
             'region_data': json.dumps(list(region_data), default=str),
-            'latest_log': json.dumps(latest_log.__dict__, default=str),
+            'latest_log': json.dumps(latest_log, default=str),
         }
         
         return render(request, self.template_path, ctx)
@@ -98,7 +98,6 @@ def create_daggerwalk_log(request):
             map_pixel_y=data['mapPixelY'],
             region=data['region'],
             location=data['location'],
-            location_type=data['locationType'],
             player_x=data['playerX'],
             player_y=data['playerY'],
             player_z=data['playerZ'],
@@ -140,4 +139,4 @@ def delete_previous_logs(request, log_id):
 
 def latest_log(request):
     log = DaggerwalkLog.objects.latest('created_at')
-    return JsonResponse(dict(model_to_dict(log), created_at=log.created_at))
+    return JsonResponse(dict(model_to_dict(log)))

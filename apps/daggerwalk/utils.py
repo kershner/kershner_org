@@ -10,7 +10,7 @@ def get_map_data():
         'points_of_interest'
     ).select_related(
         'shape'
-    )
+    ).exclude(name='Ocean')
 
     province_shapes = {}
     region_map = {}

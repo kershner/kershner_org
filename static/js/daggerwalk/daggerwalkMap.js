@@ -139,33 +139,39 @@ class MapViewer {
         const {left, top, width} = el.getBoundingClientRect();
         
         tooltip.innerHTML = Object.entries(el.dataset)
-          .map(([k, v]) => {
-            let prefix = '';
-            switch(k) {
-              case 'mapPixel': prefix = '🌍' || ''; break;
-              case 'season': prefix = seasonEmoji[v] || ''; break;
-              case 'weather': prefix = weatherEmoji[v] || ''; break;
-              case 'currentSong': prefix = '🎵'; v = v.replace('song_', ''); break;
-              case 'location': 
-                // Use the POI emoji if available, otherwise fall back to default
-                prefix = el.dataset.emoji || '📍'; 
-                break;
-              case 'createdAt': prefix = '⌚'; break;
-              case 'date': prefix = '📅'; break;
-              case 'capitalCity': prefix = '🏰'; break;
-              // Skip the poiEmoji entry itself to avoid displaying it separately in the tooltip
-              case 'emoji': return '';
-            }
-  
-            const key = k.replace(/([A-Z])/g, ' $1')
-              .split(' ')
-              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' ');
-              
-            return `<div class="row"><span class="key">${key}</span><span class="value"><span>${prefix}</span><span>${v}</span></span></div>`;
-          })
-          .filter(row => row !== '') // Filter out any empty strings (like the poiEmoji entry)
-          .join('');
+        .map(([k, v]) => {
+          let prefix = '';
+          let displayValue = v;
+          
+          switch(k) {
+            case 'mapPixel': prefix = '🌍'; break;
+            case 'season': prefix = seasonEmoji[v] || ''; break;
+            case 'weather': prefix = weatherEmoji[v] || ''; break;
+            case 'currentSong': prefix = '🎵'; displayValue = v.replace('song_', ''); break;
+            case 'createdAt': prefix = '⌚'; break;
+            case 'date': prefix = '📅'; break;
+            case 'capitalCity': prefix = '🏰'; break;
+            case 'location':
+              // Find the index of the first alphabetic character
+              const alphaIndex = v.search(/[a-zA-Z]/);
+              if (alphaIndex > 0) {
+                prefix = v.substring(0, alphaIndex);
+                displayValue = v.substring(alphaIndex);
+              }
+              break;
+            // Skip the emoji entry
+            case 'emoji': return '';
+          }
+
+          const key = k.replace(/([A-Z])/g, ' $1')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+            
+          return `<div class="row"><span class="key">${key}</span><span class="value"><span>${prefix}</span><span>${displayValue}</span></span></div>`;
+        })
+        .filter(row => row !== '') // Filter out any empty strings
+        .join('');
   
         // Make tooltip visible first with initial position
         tooltip.style.left = left + width/2 + 'px';
@@ -512,7 +518,7 @@ addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
       if (!markerData.isCapitalMarker) {
         document.querySelectorAll('.log-marker').forEach(m => m.classList.remove('recent'));
       }
-      
+
       // If this is a capital marker, change its class before appending
       if (markerData.isCapitalMarker) {
         marker.classList.remove('log-marker', 'recent');
@@ -528,8 +534,9 @@ addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
         // Set only the capitalCity attribute
         marker.dataset.capitalCity = capitalCity;
       } 
-      // Add a random emoji for POI markers
-      else if (markerData.location && markerData.location !== "Wilderness") {
+      else if (markerData.location && 
+              !markerData.location.toLowerCase().includes("wilderness") && 
+              !markerData.location.toLowerCase().includes("ocean")) {
         marker.classList.add('poi');
       }
       
