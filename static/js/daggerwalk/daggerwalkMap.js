@@ -43,6 +43,7 @@ class MapViewer {
       regionMapView: document.getElementById('regionMapView'),
       worldMap: document.getElementById('worldMap'),
       regionName: document.getElementById('regionName'),
+      provinceName: document.getElementById('provinceName'),
       regionMap: document.getElementById('regionMap'),
       canvas: document.getElementById('overlay'),
       loading: document.getElementById('loading')
@@ -386,6 +387,7 @@ class MapViewer {
     this.elements.worldMapView.classList.remove('hidden');
     this.elements.regionMapView.classList.add('hidden');
     this.elements.regionName.textContent = 'The Iliac Bay';
+    this.elements.provinceName.textContent = 'Tamriel';
     
     // Update URL
     history.pushState({}, '', window.location.pathname);
@@ -412,11 +414,13 @@ class MapViewer {
     this.state.currentRegion = regionName;
   
     const regionData = this.state.regionMap[regionName];
+    const otherRegionData = this.state.regionData.filter(item => item.name === regionName);
     const selectedPart = this.getSelectedRegionPart(regionData, x, y);
   
     return new Promise((resolve) => {
       this.elements.regionMap.onload = () => {
         this.elements.regionName.textContent = regionName;
+        this.elements.provinceName.textContent = otherRegionData[0]?.province || '';
         this.clearLogMarkers();
   
         // Add capital city marker

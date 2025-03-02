@@ -26,7 +26,6 @@ hr
 a
   color: $color-highlight
   text-decoration: none
-  // border-bottom: $border-radius solid $color-highlight
   text-decoration: underline
   text-decoration-thickness: 0.1rem
   font-weight: bold
@@ -53,7 +52,16 @@ a
   color: #FFF
   margin: 0.5rem
   margin-left: 1rem
-
+  
+.view-subtitle
+  margin: 0.5rem
+  margin-top: -0.5rem
+  margin-left: 1rem
+  font-style: italic
+  font-weight: normal
+  font-size: 1.5rem
+  color: $color-highlight
+  
 .map-container 
   position: relative
   top: 3px
@@ -280,6 +288,11 @@ $marker-world-size: 24px
     margin: 0
     font-family: $secondary-font-family
     color: $color-highlight
+
+    span
+      &:last-of-type
+        margin-left: 1rem
+        font-weight: normal
 
   p
     margin: 0
