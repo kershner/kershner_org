@@ -63,8 +63,10 @@ class DaggerwalkLog(models.Model):
         return self.location not in ["Wilderness", "Ocean"]
     
     def determine_season(self):
-        """Determine season based on the in-game date string format:
-        'Sundas, 1 Last Seed, 3E 406, 10:32:56'"""
+        """
+        Determine season based on the in-game date string format:
+        'Sundas, 1 Last Seed, 3E 406, 10:32:56'
+        """
         try:
             date_parts = self.date.split(',')
             month_part = date_parts[1].strip()  # "1 Last Seed"
@@ -89,3 +91,73 @@ class DaggerwalkLog(models.Model):
         except (ValueError, IndexError) as e:
             print(f"Error parsing date: {self.date} - {str(e)}")
             return "Unknown"
+
+class Region(models.Model):
+    PROVINCE_CHOICES = [
+        ('High Rock', 'High Rock'),
+        ('Hammerfell', 'Hammerfell'),
+    ]
+    
+    CLIMATE_CHOICES = [
+        ('Desert', 'Desert'),
+        ('Mountain', 'Mountain'),
+        ('Woodlands', 'Woodlands'),
+        ('Swamp', 'Swamp'),
+        ('Ocean', 'Ocean'),
+        ('Subtropical', 'Subtropical'),
+    ]
+    
+    name = models.CharField(max_length=100, unique=True)
+    province = models.CharField(max_length=100, choices=PROVINCE_CHOICES)
+    climate = models.CharField(max_length=100, choices=CLIMATE_CHOICES)
+    
+    # FMAP Mapping Data
+    region_index = models.IntegerField(null=True, blank=True)
+    multi_part = models.BooleanField(default=False)
+    fmap_image = models.CharField(max_length=100, null=True, blank=True)  # For single image regions
+    offset_x = models.IntegerField(null=True, blank=True)  # For single image regions
+    offset_y = models.IntegerField(null=True, blank=True)  # For single image regions
+    
+    def __str__(self):
+        return f"{self.name} ({self.province})"
+
+class RegionMapPart(models.Model):
+    """For multi-part region maps"""
+    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='map_parts')
+    fmap_image = models.CharField(max_length=100)
+    offset_x = models.IntegerField()
+    offset_y = models.IntegerField()
+    
+    def __str__(self):
+        return f"Map part for {self.region.name}"
+
+class POI(models.Model):
+    """Points of Interest including capitals"""
+    TYPE_CHOICES = [
+        ('capital', 'Capital'),
+        ('town', 'Town'),
+        ('landmark', 'Landmark'),
+        ('dungeon', 'Dungeon'),
+    ]
+    
+    name = models.CharField(max_length=100)
+    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='points_of_interest')
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES, default='town')
+    map_pixel_x = models.IntegerField()
+    map_pixel_y = models.IntegerField()
+    description = models.TextField(blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.name} ({self.type} of {self.region.name})"
+    
+    class Meta:
+        unique_together = ('region', 'name')
+
+class ProvinceShape(models.Model):
+    """For storing the polygon coordinates of region shapes"""
+    region = models.OneToOneField(Region, on_delete=models.CASCADE, related_name='shape')
+    # Using JSON field to store the coordinate pairs, supported in PostgreSQL and SQLite ≥ 3.9
+    coordinates = models.JSONField()  # Contains array of [x, y] points
+    
+    def __str__(self):
+        return f"Shape for {self.region.name}"

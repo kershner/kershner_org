@@ -1,4 +1,4 @@
-from apps.daggerwalk.models import DaggerwalkLog
+from apps.daggerwalk.models import DaggerwalkLog, Region, RegionMapPart, POI, ProvinceShape
 from django.utils.html import format_html
 from urllib.parse import urlencode
 from django.contrib import admin
@@ -129,3 +129,105 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+    
+class ReadOnlyInline(admin.TabularInline):
+    extra = 0
+    can_delete = False
+    show_change_link = True
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+class RegionMapPartInline(ReadOnlyInline):
+    model = RegionMapPart
+
+
+class POIInline(ReadOnlyInline):
+    model = POI
+
+    def has_add_permission(self, request, obj=None):
+        return True
+
+
+class ProvinceShapeInline(ReadOnlyInline):
+    model = ProvinceShape
+
+
+@admin.register(Region)
+class RegionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'province', 'climate')
+    list_filter = ('province', 'climate', 'multi_part')
+    search_fields = ('name',)
+    inlines = [ProvinceShapeInline, RegionMapPartInline, POIInline]
+
+    def has_add_permission(self, request):
+        return False
+
+    def get_readonly_fields(self, request, obj=None):
+        return [f.name for f in self.model._meta.fields]
+
+
+@admin.register(RegionMapPart)
+class RegionMapPartAdmin(admin.ModelAdmin):
+    list_display = ('region', 'fmap_image', 'offset_x', 'offset_y')
+    search_fields = ('region__name', 'fmap_image')
+    list_filter = ('region',)
+
+    def has_add_permission(self, request):
+        return False
+
+    def get_readonly_fields(self, request, obj=None):
+        return [f.name for f in self.model._meta.fields]
+
+
+@admin.register(POI)
+class POIAdmin(admin.ModelAdmin):
+    list_display = ('name', 'region', 'type', 'map_coordinates', 'view_on_map_link')
+    list_filter = ('region', 'type')
+    search_fields = ('name', 'region__name', 'type')
+
+    def map_coordinates(self, obj):
+        return f"X: {obj.map_pixel_x}, Y: {obj.map_pixel_y}"
+    map_coordinates.short_description = "Map Coordinates"
+
+    def view_on_map_link(self, obj):
+        if obj.region and obj.map_pixel_x is not None and obj.map_pixel_y is not None:
+            base_url = reverse('daggerwalk')
+            query_params = urlencode({
+                'region': obj.region.name,
+                'x': obj.map_pixel_x,
+                'y': obj.map_pixel_y
+            })
+            url = f'{base_url}?{query_params}'
+            return format_html('<a href="{}" class="button" target="_blank">Map</a>', url)
+        return '-'
+    view_on_map_link.short_description = 'View on Map'
+
+    def get_readonly_fields(self, request, obj=None):
+        custom_fields = ['map_coordinates', 'view_on_map_link']
+        return [f.name for f in self.model._meta.fields] + custom_fields
+
+
+@admin.register(ProvinceShape)
+class ProvinceShapeAdmin(admin.ModelAdmin):
+    list_display = ('region', 'num_coordinates', 'view_shape_data')
+    search_fields = ('region__name',)
+
+    def num_coordinates(self, obj):
+        return len(obj.coordinates) if obj.coordinates else 0
+    num_coordinates.short_description = "Number of Coordinates"
+
+    def view_shape_data(self, obj):
+        return format_html('<pre style="max-width: 400px; white-space: pre-wrap;">{}</pre>', obj.coordinates)
+    view_shape_data.short_description = "Shape Data"
+
+    def has_add_permission(self, request):
+        return False
+
+    def get_readonly_fields(self, request, obj=None):
+        custom_fields = ['num_coordinates', 'view_shape_data']
+        return [f.name for f in self.model._meta.fields] + custom_fields
