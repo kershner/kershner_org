@@ -139,4 +139,4 @@ def delete_previous_logs(request, log_id):
 
 def latest_log(request):
     log = DaggerwalkLog.objects.latest('created_at')
-    return JsonResponse(dict(model_to_dict(log)))
+    return JsonResponse(dict(model_to_dict(log), created_at=log.created_at))
