@@ -441,7 +441,26 @@ class MapViewer {
         // Add capital city marker
         const regionCapitalData = this.state.regionData.find(item => item.name === this.state.currentRegion);
         if (regionCapitalData && regionCapitalData.capital) {
-          this.addCapitalMarker(regionCapitalData.capital);
+          // Get the capital coordinates
+          const capitalX = parseInt(regionCapitalData.capital.mapPixelX, 10);
+          const capitalY = parseInt(regionCapitalData.capital.mapPixelY, 10);
+          
+          // Determine which part the capital belongs to
+          const capitalPart = this.getSelectedRegionPart(regionData, capitalX, capitalY);
+          
+          // Only show the capital if it's in the currently displayed part
+          if (capitalPart && selectedPart && capitalPart.fmap_image === selectedPart.fmap_image) {
+            this.addLogMarker(
+              this.state.currentRegion,
+              capitalX,
+              capitalY,
+              selectedPart,
+              {
+                capitalCity: regionCapitalData.capital.name,
+                isCapitalMarker: true
+              }
+            );
+          }
         }
   
         resolve();
