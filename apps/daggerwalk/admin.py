@@ -162,13 +162,19 @@ class RegionAdmin(admin.ModelAdmin):
     list_display = ('name', 'province', 'climate')
     list_filter = ('province', 'climate', 'multi_part')
     search_fields = ('name',)
-    inlines = [ProvinceShapeInline, RegionMapPartInline, POIInline]
 
     def has_add_permission(self, request):
         return False
 
     def get_readonly_fields(self, request, obj=None):
         return [f.name for f in self.model._meta.fields]
+    
+    def get_inline_instances(self, request, obj=None):
+        """Only include RegionMapPartInline if the region is multi-part."""
+        inlines = [POIInline]
+        if obj and obj.multi_part:
+            inlines.append(RegionMapPartInline)
+        return [inline(self.model, self.admin_site) for inline in inlines]
 
 
 @admin.register(RegionMapPart)
