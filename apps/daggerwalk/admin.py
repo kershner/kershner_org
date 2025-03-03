@@ -167,7 +167,10 @@ class RegionAdmin(admin.ModelAdmin):
         return False
 
     def get_readonly_fields(self, request, obj=None):
-        return [f.name for f in self.model._meta.fields]
+        exclude_fields = ['climate']
+        all_fields = [f.name for f in self.model._meta.fields]
+        readonly_fields = [field for field in all_fields if field not in exclude_fields]
+        return readonly_fields
     
     def get_inline_instances(self, request, obj=None):
         """Only include RegionMapPartInline if the region is multi-part."""
