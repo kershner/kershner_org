@@ -1,7 +1,9 @@
-// Variables
-$color-loading-border: rgba(255, 255, 255, 0.3)
-$color-highlight: #F2E530
-$alternate-dark: lighten(#000, 10)
+:root
+  --background-color: #000000
+  --accent-color: #F2E530
+  --text-color: #FFFFFF
+  --alternate-dark: #1A1A1A
+
 $error: #ff6b6b
 $border-width: 0.3rem
 $border-radius: 0.2rem
@@ -12,30 +14,27 @@ $secondary-font-family: Georgia, serif
 body 
   margin: 0
   padding: 0
-  background: #000
+  background: var(--background-color)
   font-family: $primary-font-family
-  color: #FFF
+  color: var(--text-color)
   overflow-x: hidden
 
 hr
   margin: 2rem 0
   height: $border-width
-  background-color: $color-highlight
+  background-color: var(--accent-color)
   border-radius: $border-radius
   border: none
 
 a
-  color: $color-highlight
+  color: var(--accent-color)
   text-decoration: none
   text-decoration: underline
   text-decoration-thickness: 0.1rem
   font-weight: bold
-
-  &:hover
-    color: darken($color-highlight, 20%)
   
 .text-highlight
-  color: $color-highlight
+  color: var(--accent-color)
 
 .less-margin
   margin: 0.25rem 0
@@ -50,7 +49,6 @@ a
 
 .view-title
   font-family: $secondary-font-family
-  color: #FFF
   margin: 0.5rem
   margin-left: 1rem
   
@@ -61,7 +59,7 @@ a
   font-style: italic
   font-weight: normal
   font-size: 1.5rem
-  color: $color-highlight
+  color: var(--accent-color)
   
 .map-container 
   position: relative
@@ -99,8 +97,8 @@ canvas
   .spinner
     width: 5rem
     height: 5rem
-    border: 0.1875rem solid $color-loading-border
-    border-top-color: $color-highlight
+    border: 0.1875rem solid
+    border-top-color: var(--accent-color)
     border-radius: 50%
     animation: spin 1s linear infinite
 
@@ -158,7 +156,7 @@ $marker-world-size: 24px
   width: $marker-size
   height: $marker-size
   border-radius: 50%
-  background-color: $color-highlight
+  background-color: var(--accent-color)
   cursor: pointer
   pointer-events: auto
 
@@ -208,22 +206,75 @@ $marker-world-size: 24px
   clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)
   transform: translate(-50%, -50%)
 
-.title
-  margin: 0
-  font-family: $secondary-font-family
-  color: $color-highlight
-  display: inline-block
-  font-weight: bold
 
-  img
-    position: absolute
-    top: 0
-    left: 0
-    width: 3rem
-  
-  span
-    z-index: 1
-    padding-left: 3.25rem
+.top-row
+  display: flex
+  justify-content: space-between
+
+  .title
+    margin: 0
+    padding-top: 0.25rem
+    font-family: $secondary-font-family
+    color: var(--accent-color)
+    display: inline-block
+    font-weight: bold
+
+    img
+      position: absolute
+      top: 0
+      left: 0
+      width: 3rem
+      -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%)
+      mask-image: linear-gradient(to bottom, black 40%, transparent 100%)
+    
+    span
+      z-index: 1
+      padding-left: 3.25rem
+
+  .site-menu
+    position: relative
+    padding-right: 0.5rem
+
+    .menu-icon
+      position: relative
+      top: 0.25rem
+      line-height: 1.5rem
+      font-size: 2.5rem
+      cursor: pointer
+      color: var(--accent-color)
+      
+      &:hover
+        opacity: 0.5
+
+    .site-controls
+      position: absolute
+      margin-top: 0.5rem
+      right: 0.5rem
+      z-index: 2
+      padding: 0.25rem 0.5rem
+      background-color: var(--background-color)
+      border: $border-width solid var(--accent-color)
+      border-radius: $border-radius
+
+      .site-control-row
+        display: flex
+        justify-content: end
+        align-items: center
+        padding: 0.5rem
+        border-bottom: 1px solid var(--alternate-dark)
+        &:last-of-type
+          border-bottom: none
+
+        .site-control-label
+          text-align: right
+          padding-right: 1rem
+          white-space: nowrap
+          font-weight: bold
+      
+        input,
+        select,
+        button
+          cursor: pointer
 
 .tabs
   input
@@ -241,7 +292,7 @@ $marker-world-size: 24px
       display: block
       width: 0
       height: $border-width
-      background: $color-highlight
+      background: var(--accent-color)
       position: absolute
       bottom: -$border-width
       left: 50%
@@ -250,14 +301,17 @@ $marker-world-size: 24px
 
   .tab-content
     display: none
-    padding-top: 1.5rem
+    padding-top: 0.25rem
+
+    &.twitch-tab
+      padding-top: 1.5rem
 
   // "Selected" styles
   @for $i from 1 through 3
     // tab label
     input:nth-of-type(#{$i}):checked ~ label:nth-of-type(#{$i})
       font-weight: bold
-      color: #fff
+      color: var(--text-color)
 
       &::after
         width: 100%
@@ -279,12 +333,12 @@ $marker-world-size: 24px
 
 .current-status
   padding: 1rem
-  border-top: $border-width solid $color-highlight
+  border-top: $border-width solid var(--accent-color)
   
   h2
     margin: 0
     font-family: $secondary-font-family
-    color: $color-highlight
+    color: var(--accent-color)
     display: flex
     flex-wrap: wrap
     column-gap: 0.25rem
@@ -305,12 +359,11 @@ $marker-world-size: 24px
 
 .tooltip
   position: fixed
-  background: #000
-  color: #fff
+  background: var(--background-color)
   padding: 0.25rem 1rem
   min-width: 12rem
   border-radius: $border-radius
-  border: 0.15rem solid $color-highlight
+  border: 0.15rem solid var(--accent-color)
   transform: translate(-50%, -100%)
   opacity: 0
   font-size: 0.8rem
@@ -324,7 +377,7 @@ $marker-world-size: 24px
   .row
     display: flex
     padding: 0.25rem 0
-    border-bottom: 1px solid $alternate-dark
+    border-bottom: 1px solid var(--alternate-dark)
 
     &:last-of-type
       border-bottom: none
@@ -347,6 +400,12 @@ $marker-world-size: 24px
           position: relative
           top: 3px
           
+
+.main-tabs
+  label:first-of-type
+    margin-left: 0.5rem
+    margin-top: 0.5rem
+
 .about-tabs
   padding: 0.5rem 1rem
   max-width: 40rem
@@ -354,7 +413,7 @@ $marker-world-size: 24px
   h2
     margin: 0
     font-family: $secondary-font-family
-    color: $color-highlight
+    color: var(--accent-color)
     font-size: 2rem
 
   h4
@@ -363,9 +422,9 @@ $marker-world-size: 24px
     margin-bottom: 0
     font-size: 1rem
     padding: 0.5rem 1rem
-    border-left: $border-width solid $color-highlight
+    border-left: $border-width solid var(--accent-color)
     border-radius: $border-radius
-    background: $alternate-dark
+    background: var(--alternate-dark)
 
   h5
     margin: 1rem 0
@@ -381,7 +440,7 @@ $marker-world-size: 24px
       margin: 0.2rem 0
 
   .about-img
-    border: 0.2rem solid $color-highlight
+    border: 0.2rem solid var(--accent-color)
     margin: 1rem 0
     border-radius: $border-radius
 
@@ -398,11 +457,11 @@ $marker-world-size: 24px
     padding: 10px
     text-align: left
   th
-    border-bottom: 0.2rem solid $color-highlight
+    border-bottom: 0.2rem solid var(--accent-color)
   tr:nth-child(even)
-    background: $alternate-dark
+    background: var(--alternate-dark)
   tr:hover
-    background: $alternate-dark
+    background: var(--alternate-dark)
 
 .commands-table
   td:first-of-type
@@ -410,9 +469,9 @@ $marker-world-size: 24px
 
 blockquote
   padding: 1rem
-  border-left: $border-width solid $color-highlight
+  border-left: $border-width solid var(--accent-color)
   border-radius: $border-radius
-  background: $alternate-dark
+  background: var(--alternate-dark)
   margin: 1rem 0
   width: fit-content
 
@@ -430,7 +489,7 @@ blockquote
   .images
     max-width: 15rem
     display: flex
-    border: $border-width solid $color-highlight
+    border: $border-width solid var(--accent-color)
     border-radius: $border-radius
 
     a
@@ -454,12 +513,12 @@ blockquote
 
   &::first-letter
     font-size: 1.25em
-    color: $color-highlight
+    color: var(--accent-color)
     font-weight: bold
     font-family: $secondary-font-family
 
 .schedule-block
-  background: $alternate-dark
+  // background: var(--alternate-dark)
   border-radius: $border-radius
   margin: 1rem 0
   padding: 2rem
@@ -467,26 +526,26 @@ blockquote
   
   h1
     margin-bottom: 1.5rem
-    color: $color-highlight
+    color: var(--accent-color)
     font-size: 1.5rem
     font-family: $secondary-font-family
   
   .schedule-time
     font-size: 1.25rem
     margin-bottom: 1rem
-    background: #262626
+    background-color: var(--alternate-dark)
     padding: 1rem
     border-radius: $border-radius
-    border-left: $border-width solid $color-highlight
+    border-left: $border-width solid var(--accent-color)
   
   .schedule-days
     font-size: 1rem
-    color: lighten($alternate-dark, 50%)
+    color: var(--text-color)
     margin-top: 1.5rem
 
     span
       font-weight: bold
   
   .highlight
-    color: $color-highlight
+    color: var(--accent-color)
     font-weight: bold

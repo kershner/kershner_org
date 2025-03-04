@@ -11,18 +11,22 @@
 </head>
 <body>
     {# Main tabs - Twitch/Map #}
-    <div class="tabs">
-        <input type="radio" name="tabs" id="twitch-tab-btn" checked>
-        <input type="radio" name="tabs" id="map-tab-btn">
-        
+    <div class="top-row">
         <h3 class="title">
             <img src="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/Daggerwalk_logo_small.png">
             <span>Daggerwalk</span>
         </h3>
+
+        {% include "daggerwalk/site_menu.html" %}
+    </div>
+
+    <div class="tabs main-tabs">
+        <input type="radio" name="tabs" id="twitch-tab-btn" checked>
+        <input type="radio" name="tabs" id="map-tab-btn">
         <label data-tab="1" for="twitch-tab-btn">Twitch</label>
         <label data-tab="2" for="map-tab-btn">Map</label>
         
-        <div class="tab-content">{% include 'daggerwalk/twitch_player.html' %}</div>
+        <div class="tab-content twitch-tab">{% include 'daggerwalk/twitch_player.html' %}</div>
         <div class="tab-content">{% include 'daggerwalk/map.html' %}</div>
     </div>
 
@@ -53,6 +57,7 @@
     </div>
 
     <script src="https://embed.twitch.tv/embed/v1.js"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalk.js"></script>
     <script type="text/javascript">
         document.addEventListener("DOMContentLoaded", () => {
