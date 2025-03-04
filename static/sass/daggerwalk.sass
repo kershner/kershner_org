@@ -250,7 +250,7 @@ $marker-world-size: 24px
 
   .tab-content
     display: none
-    padding-top: 1rem
+    padding-top: 0.7rem
 
   // "Selected" styles
   @for $i from 1 through 3
@@ -287,10 +287,10 @@ $marker-world-size: 24px
     color: $color-highlight
     display: flex
     flex-wrap: wrap
-    column-gap: 1rem
+    column-gap: 0.25rem
 
     span
-      white-space: nowrap
+      white-space: normal
       
       &:last-of-type
         font-weight: normal
@@ -348,6 +348,9 @@ $marker-world-size: 24px
           top: 3px
           
 .about-tabs
+  padding: 0.5rem 1rem
+  max-width: 40rem
+
   [data-tab="1"]
     margin-left: 1rem
 
@@ -379,15 +382,10 @@ $marker-world-size: 24px
 
     li
       margin: 0.2rem 0
-  
-  .tab-content
-    padding: 0.5rem 1rem
-    max-width: 50rem
 
   .about-img
     border: 0.2rem solid $color-highlight
     margin: 1rem 0
-    max-width: 30rem
     border-radius: $border-radius
 
     &.no-border
@@ -432,8 +430,6 @@ blockquote
     font-style: italic
 
 .gallery-container
-  max-width: 25rem
-  
   .images
     max-width: 15rem
     display: flex
@@ -470,13 +466,12 @@ blockquote
   border-radius: $border-radius
   margin: 1rem 0
   padding: 2rem
-  max-width: 400px
   text-align: center
   
   h1
     margin-bottom: 1.5rem
     color: $color-highlight
-    font-size: 1.75rem
+    font-size: 1.5rem
     font-family: $secondary-font-family
   
   .schedule-time
