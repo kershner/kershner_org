@@ -117,86 +117,47 @@ const daggerwalk = {
   siteMenu() {
     const menuIcon = document.querySelector('.menu-icon');
     const siteControlsContainer = document.querySelector('.site-controls');
-    const backgroundColorInput = document.querySelector('input[name="background-color"]');
+    const backgroundSelect = document.querySelector('select[name="background"]');
     const accentColorInput = document.querySelector('input[name="accent-color"]');
-    const textColorSelect = document.querySelector('select[name="text-color"]');
     const resetButton = document.querySelector('.reset-default-button');
-    
-    // Get colors from localStorage or use defaults if not available
-    const savedBackgroundColor = localStorage.getItem('backgroundColor') || '#000000';
-    const savedAccentColor = localStorage.getItem('accentColor') || '#F2E530';
-    const savedTextColor = localStorage.getItem('textColor') || '#FFF';
-    
-    // Set initial CSS variables based on localStorage values
-    document.documentElement.style.setProperty('--background-color', savedBackgroundColor);
-    document.documentElement.style.setProperty('--accent-color', savedAccentColor);
-    document.documentElement.style.setProperty('--text-color', savedTextColor);
-    
-    // Calculate and set alternate dark color
-    const alternateDark = lightenColor(savedBackgroundColor, 10);
-    document.documentElement.style.setProperty('--alternate-dark', alternateDark);
-    
-    // Set initial input values based on localStorage
-    backgroundColorInput.value = savedBackgroundColor;
-    accentColorInput.value = savedAccentColor;
-    textColorSelect.value = savedTextColor === '#FFF' ? 'light' : 'dark';
-    
-    // Define default colors
-    const defaultBackgroundColor = '#000';
+    const defaultBackground = 'dark';
     const defaultAccentColor = '#F2E530';
-    const defaultTextColor = '#FFF';
     
-    // Toggle the "hidden" class for siteControlsContainer when menu icon is clicked
+    // Set initial values from localStorage
+    backgroundSelect.value = localStorage.getItem('background') || defaultBackground;
+    accentColorInput.value = localStorage.getItem('accentColor') || defaultAccentColor;
+    document.documentElement.style.setProperty('--accent-color', accentColorInput.value);
+    document.body.classList.add(backgroundSelect.value);
+    
+    // Toggle menu
     menuIcon.addEventListener('click', () => {
-        siteControlsContainer.classList.toggle('hidden');
+      siteControlsContainer.classList.toggle('hidden');
     });
     
-    // Update CSS variables when color inputs change
-    backgroundColorInput.addEventListener('input', (event) => {
-        const backgroundColor = event.target.value;
-        const alternateDark = lightenColor(backgroundColor, 10);
-        
-        // Update both CSS variables
-        document.documentElement.style.setProperty('--background-color', backgroundColor);
-        document.documentElement.style.setProperty('--alternate-dark', alternateDark);
-        
-        // Save to localStorage
-        localStorage.setItem('backgroundColor', backgroundColor);
+    // Background selection
+    backgroundSelect.addEventListener('change', (event) => {
+      document.body.classList.remove('light', 'dark');
+      document.body.classList.add(event.target.value);
+      localStorage.setItem('background', event.target.value);
     });
     
+    // Accent color
     accentColorInput.addEventListener('input', (event) => {
-        const accentColor = event.target.value;
-        document.documentElement.style.setProperty('--accent-color', accentColor);
-        
-        // Save to localStorage
-        localStorage.setItem('accentColor', accentColor);
+      document.documentElement.style.setProperty('--accent-color', event.target.value);
+      localStorage.setItem('accentColor', event.target.value);
     });
     
-    textColorSelect.addEventListener('change', (event) => {
-        const textColor = event.target.value === 'light' ? '#FFF' : '#333';
-        document.documentElement.style.setProperty('--text-color', textColor);
-        
-        // Save to localStorage
-        localStorage.setItem('textColor', textColor);
-    });
-    
-    // Reset to default colors when reset button is clicked
+    // Reset button
     resetButton.addEventListener('click', () => {
-        // Set CSS variables to defaults
-        document.documentElement.style.setProperty('--background-color', defaultBackgroundColor);
-        document.documentElement.style.setProperty('--accent-color', defaultAccentColor);
-        document.documentElement.style.setProperty('--text-color', defaultTextColor);
-        document.documentElement.style.setProperty('--alternate-dark', lightenColor(defaultBackgroundColor, 10));
-        
-        // Update input elements to match defaults
-        backgroundColorInput.value = defaultBackgroundColor;
-        accentColorInput.value = defaultAccentColor;
-        textColorSelect.value = 'light';
-        
-        // Save defaults to localStorage
-        localStorage.setItem('backgroundColor', defaultBackgroundColor);
-        localStorage.setItem('accentColor', defaultAccentColor);
-        localStorage.setItem('textColor', defaultTextColor);
+      document.body.classList.remove('light', 'dark');
+      document.body.classList.add(defaultBackground);
+      backgroundSelect.value = defaultBackground;
+      
+      accentColorInput.value = defaultAccentColor;
+      document.documentElement.style.setProperty('--accent-color', defaultAccentColor);
+      
+      localStorage.setItem('background', defaultBackground);
+      localStorage.setItem('accentColor', defaultAccentColor);
     });
   }
 }

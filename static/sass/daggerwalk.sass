@@ -1,8 +1,8 @@
 :root
   --background-color: #000000
-  --accent-color: #F2E530
   --text-color: #FFFFFF
   --alternate-dark: #1A1A1A
+  --accent-color: #F2E530
 
 $error: #ff6b6b
 $border-width: 0.3rem
@@ -14,10 +14,20 @@ $secondary-font-family: Georgia, serif
 body 
   margin: 0
   padding: 0
-  background: var(--background-color)
   font-family: $primary-font-family
+  background: var(--background-color)
   color: var(--text-color)
   overflow-x: hidden
+
+  &.light
+    --background-color: #FFFFFF
+    --text-color: #333333
+    --alternate-dark: #F5F5F5
+    
+  &.dark
+    --background-color: #000000
+    --text-color: #FFFFFF
+    --alternate-dark: #1A1A1A
 
 hr
   margin: 2rem 0
@@ -211,70 +221,72 @@ $marker-world-size: 24px
   display: flex
   justify-content: space-between
 
-  .title
-    margin: 0
-    padding-top: 0.25rem
-    font-family: $secondary-font-family
-    color: var(--accent-color)
-    display: inline-block
-    font-weight: bold
+  img
+    position: absolute
+    top: 0
+    left: 0
+    width: 5.5rem
+    -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 100%)
+    mask-image: linear-gradient(to bottom, black 30%, transparent 100%)
+  
+  .menu-container
+    display: flex
+    gap: 0.5rem
 
-    img
-      position: absolute
-      top: 0
-      left: 0
-      width: 3rem
-      -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%)
-      mask-image: linear-gradient(to bottom, black 40%, transparent 100%)
-    
-    span
-      z-index: 1
-      padding-left: 3.25rem
-
-  .site-menu
-    position: relative
-    padding-right: 0.5rem
-
-    .menu-icon
-      position: relative
-      top: 0.25rem
-      line-height: 1.5rem
-      font-size: 2.5rem
-      cursor: pointer
+    .title
+      margin: 0
+      padding-top: 0.25rem
+      font-family: $secondary-font-family
       color: var(--accent-color)
-      
-      &:hover
-        opacity: 0.5
+      display: inline-block
+      font-weight: bold
+      text-decoration: underline
+      text-decoration-thickness: 2px
+    
+    .site-menu
+      position: relative
+      padding-right: 0.5rem
 
-    .site-controls
-      position: absolute
-      margin-top: 0.5rem
-      right: 0.5rem
-      z-index: 2
-      padding: 0.25rem 0.5rem
-      background-color: var(--background-color)
-      border: $border-width solid var(--accent-color)
-      border-radius: $border-radius
+      .menu-icon
+        position: relative
+        top: 0.35rem
+        line-height: 1.25rem
+        font-size: 1.25rem
+        cursor: pointer
+        color: var(--accent-color)
+        
+        &:hover
+          opacity: 0.5
 
-      .site-control-row
-        display: flex
-        justify-content: end
-        align-items: center
-        padding: 0.5rem
-        border-bottom: 1px solid var(--alternate-dark)
-        &:last-of-type
-          border-bottom: none
+      .site-controls
+        position: absolute
+        margin-top: 0.5rem
+        right: 0.5rem
+        z-index: 2
+        padding: 0.25rem 0.5rem
+        background-color: var(--background-color)
+        border: $border-width solid var(--accent-color)
+        border-radius: $border-radius
 
-        .site-control-label
-          text-align: right
-          padding-right: 1rem
-          white-space: nowrap
-          font-weight: bold
-      
-        input,
-        select,
-        button
-          cursor: pointer
+        .site-control-row
+          display: flex
+          justify-content: end
+          align-items: center
+          padding: 0.5rem
+          border-bottom: 1px solid var(--alternate-dark)
+          &:last-of-type
+            border-bottom: none
+
+          .site-control-label
+            text-align: right
+            padding-right: 1rem
+            white-space: nowrap
+            font-weight: bold
+        
+          input,
+          select,
+          button
+            cursor: pointer
 
 .tabs
   input
@@ -402,9 +414,10 @@ $marker-world-size: 24px
           
 
 .main-tabs
-  label:first-of-type
-    margin-left: 0.5rem
-    margin-top: 0.5rem
+  label
+    margin-top: 1rem
+    &:first-of-type
+      margin-left: 1rem
 
 .about-tabs
   padding: 0.5rem 1rem

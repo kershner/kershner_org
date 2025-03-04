@@ -12,12 +12,14 @@
 <body>
     {# Main tabs - Twitch/Map #}
     <div class="top-row">
-        <h3 class="title">
+        <div class="logo-wrapper">
             <img src="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/Daggerwalk_logo_small.png">
-            <span>Daggerwalk</span>
-        </h3>
+        </div>
 
-        {% include "daggerwalk/site_menu.html" %}
+        <div class="menu-container">
+            <h3 class="title">Daggerwalk</h3>
+            {% include "daggerwalk/site_menu.html" %}
+        </div>
     </div>
 
     <div class="tabs main-tabs">
