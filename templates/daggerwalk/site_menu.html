@@ -3,15 +3,19 @@
 
   <div class="site-controls hidden">
       <div class="site-control-row">
-          <div class="site-control-label">Background</div>
-          <select id="background" name="background">
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-        </select>
+        <div class="site-control-checkbox">
+          <input type="radio" id="light" name="background" value="light" checked>
+          <label for="light">Light</label>
+        </div>
+          
+        <div class="site-control-checkbox">
+          <input type="radio" id="dark" name="background" value="dark">
+          <label for="dark">Dark</label>
+        </div>
       </div>
 
       <div class="site-control-row">
-          <div class="site-control-label">Accent Color</div>
+          <div class="site-control-label">Accent</div>
           <div class="site-control-input">
               <input type="color" name="accent-color">
           </div>

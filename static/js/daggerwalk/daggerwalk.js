@@ -117,28 +117,33 @@ const daggerwalk = {
   siteMenu() {
     const menuIcon = document.querySelector('.menu-icon');
     const siteControlsContainer = document.querySelector('.site-controls');
-    const backgroundSelect = document.querySelector('select[name="background"]');
+    const backgroundRadios = document.querySelectorAll('input[name="background"]');
     const accentColorInput = document.querySelector('input[name="accent-color"]');
     const resetButton = document.querySelector('.reset-default-button');
     const defaultBackground = 'dark';
     const defaultAccentColor = '#F2E530';
     
     // Set initial values from localStorage
-    backgroundSelect.value = localStorage.getItem('background') || defaultBackground;
+    const savedBackground = localStorage.getItem('background') || defaultBackground;
+    document.querySelector(`input[name="background"][value="${savedBackground}"]`).checked = true;
     accentColorInput.value = localStorage.getItem('accentColor') || defaultAccentColor;
     document.documentElement.style.setProperty('--accent-color', accentColorInput.value);
-    document.body.classList.add(backgroundSelect.value);
+    document.body.classList.add(savedBackground);
     
     // Toggle menu
     menuIcon.addEventListener('click', () => {
       siteControlsContainer.classList.toggle('hidden');
     });
     
-    // Background selection
-    backgroundSelect.addEventListener('change', (event) => {
-      document.body.classList.remove('light', 'dark');
-      document.body.classList.add(event.target.value);
-      localStorage.setItem('background', event.target.value);
+    // Background selection - now using radio buttons
+    backgroundRadios.forEach(radio => {
+      radio.addEventListener('change', (event) => {
+        if (event.target.checked) {
+          document.body.classList.remove('light', 'dark');
+          document.body.classList.add(event.target.value);
+          localStorage.setItem('background', event.target.value);
+        }
+      });
     });
     
     // Accent color
@@ -151,7 +156,7 @@ const daggerwalk = {
     resetButton.addEventListener('click', () => {
       document.body.classList.remove('light', 'dark');
       document.body.classList.add(defaultBackground);
-      backgroundSelect.value = defaultBackground;
+      document.querySelector(`input[name="background"][value="${defaultBackground}"]`).checked = true;
       
       accentColorInput.value = defaultAccentColor;
       document.documentElement.style.setProperty('--accent-color', defaultAccentColor);
