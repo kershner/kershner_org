@@ -272,15 +272,44 @@ class MapViewer {
         const addedLocations = new Set();
         const regionData = this.state.regionMap[region];
         let selectedPart = null;
-
+        let mostRecentLog = null;
         if (data.logs && data.logs.length) {
-          const mostRecentLog = data.logs[data.logs.length - 1];
+          mostRecentLog = data.logs[data.logs.length - 1];
           selectedPart = this.getSelectedRegionPart(
               regionData, 
               parseInt(mostRecentLog.map_pixel_x),
               parseInt(mostRecentLog.map_pixel_y)
           );
-    
+        }
+
+        // Add POI markers
+        if (data.pois && data.pois.length) {
+          data.pois.forEach(poi => {
+              const poiX = parseInt(poi.map_pixel_x);
+              const poiY = parseInt(poi.map_pixel_y);
+              const key = `${poiX},${poiY}`;
+              
+              // Only add the POI if we don't already have a marker at this location
+              if (!addedLocations.has(key)) {
+                  this.addLogMarker(
+                      region,
+                      poiX,
+                      poiY,
+                      selectedPart,
+                      {
+                          location: `${poi.emoji}${poi.name}`,
+                          emoji: poi.emoji,
+                          type: poi.type
+                      }
+                  );
+                  // Add to the set to prevent duplicates if multiple POIs share coordinates
+                  addedLocations.add(key);
+              }
+          });
+        }
+        
+
+        if (mostRecentLog) {
           await this.showRegionMap(
               region,
               parseInt(mostRecentLog.map_pixel_x),
@@ -307,32 +336,6 @@ class MapViewer {
             const key = `${parseInt(log.map_pixel_x)},${parseInt(log.map_pixel_y)}`;
             addedLocations.add(key);
           });  
-        }
-        
-        // Add POI markers
-        if (data.pois && data.pois.length) {
-            data.pois.forEach(poi => {
-                const poiX = parseInt(poi.map_pixel_x);
-                const poiY = parseInt(poi.map_pixel_y);
-                const key = `${poiX},${poiY}`;
-                
-                // Only add the POI if we don't already have a marker at this location
-                if (!addedLocations.has(key)) {
-                    this.addLogMarker(
-                        region,
-                        poiX,
-                        poiY,
-                        selectedPart,
-                        {
-                            location: `${poi.emoji}${poi.name}`,
-                            emoji: poi.emoji,
-                            type: poi.type
-                        }
-                    );
-                    // Add to the set to prevent duplicates if multiple POIs share coordinates
-                    addedLocations.add(key);
-                }
-            });
         }
   
         if (daggerwalk.latestLog && daggerwalk.latestLog.region === this.state.currentRegion) {
