@@ -712,6 +712,9 @@ addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
   }
 
   drawProvinceShapes() {
+    // Cancel any existing animation frame first to prevent accumulation
+    this.cancelProvinceShapesAnimation();
+    
     this.setupCanvas();
     const scale = this.getMapScale();
     const markersArray = Array.from(this.state.worldMapMarkers.values());
@@ -754,6 +757,20 @@ addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
     this.elements.worldMap.style.cursor = this.state.hoveredProvince ? 'pointer' : 'default';
   }
 
+  getSortedMarkers(markers) {
+    return markers
+      .map(marker => ({
+        ...marker,
+        center: this.state.regionCenters[marker.regionName]
+      }))
+      .sort((a, b) => a.order - b.order);
+  }
+
+  getLineColor() {
+    const { lineColor, lineOpacity } = this.config.worldMapMarkerStyle;
+    return lineColor.replace('rgb', 'rgba').replace(')', `,${lineOpacity})`);
+  }
+  
   drawConnectingLines(markers, scale) {
     const sortedMarkers = this.getSortedMarkers(markers);
     const lineColor = this.getLineColor();
@@ -767,20 +784,6 @@ addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
       const next = sortedMarkers[i + 1];
       this.drawDottedLine(current, next, scale);
     }
-  }
-
-  getSortedMarkers(markers) {
-    return markers
-      .map(marker => ({
-        ...marker,
-        center: this.state.regionCenters[marker.regionName]
-      }))
-      .sort((a, b) => a.order - b.order);
-  }
-
-  getLineColor() {
-    const { lineColor, lineOpacity } = this.config.worldMapMarkerStyle;
-    return lineColor.replace('rgb', 'rgba').replace(')', `,${lineOpacity})`);
   }
 
   drawDottedLine(current, next, scale) {
@@ -950,16 +953,14 @@ addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
     const containingRegions = Object.entries(this.state.provinceShapes)
       .filter(([_, points]) => this.isPointInPolygon(x, y, points, 5))
       .map(([name]) => name);
-
+  
     if (containingRegions.length > 0) {
       const smallestRegion = this.findSmallestRegion(containingRegions);
       if (smallestRegion !== this.state.hoveredProvince) {
         this.state.hoveredProvince = smallestRegion;
-        this.drawProvinceShapes();
       }
     } else if (this.state.hoveredProvince) {
       this.state.hoveredProvince = null;
-      this.drawProvinceShapes();
     }
   }
 
