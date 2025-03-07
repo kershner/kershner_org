@@ -36,11 +36,11 @@ class DaggerwalkHomeView(View):
                 'latest_weather',
                 'latest_current_song'
             )
-            .distinct()[:50]
+            .distinct()[:30]
         )
 
         map_data = get_map_data()
-        latest_log = model_to_dict(DaggerwalkLog.objects.latest('created_at'))
+        latest_log = model_to_dict(DaggerwalkLog.objects.exclude(region="Ocean").latest('created_at'))
 
         ctx = {
             **map_data,
