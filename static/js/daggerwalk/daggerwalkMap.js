@@ -563,7 +563,12 @@ class MapViewer {
     // Check date range (only for regular log markers, not POIs)
     if (!isPoi && filters.dateFrom instanceof Date && filters.dateTo instanceof Date) {
       const markerDate = markerData.createdAt ? new Date(markerData.createdAt) : null;
-      if (markerDate && (markerDate < filters.dateFrom || markerDate > filters.dateTo)) {
+      
+      // Create an adjusted end date that includes the full day
+      const adjustedDateTo = new Date(filters.dateTo);
+      adjustedDateTo.setDate(adjustedDateTo.getDate() + 1);
+      
+      if (markerDate && (markerDate < filters.dateFrom || markerDate >= adjustedDateTo)) {
         return false;
       }
     }

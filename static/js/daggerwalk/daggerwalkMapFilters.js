@@ -43,17 +43,21 @@ const daggerwalkMapFilters = {
     const dateTo = new Date(this.elements.dateTo.value);
     
     // Return early if invalid date range
-    if (!dateFrom || !dateTo || dateFrom >= dateTo) return false;
+    if (!dateFrom || !dateTo || dateFrom > dateTo) return false;
     
     // Update state
     this.state.dateFrom = dateFrom;
     this.state.dateTo = dateTo;
     this.updateGlobalState();
     
+    // Create an end date that includes the full day
+    const adjustedDateTo = new Date(dateTo);
+    adjustedDateTo.setDate(adjustedDateTo.getDate() + 1);
+    
     // Filter log markers by date range
     document.querySelectorAll('.log-marker').forEach(marker => {
       const markerDate = new Date(marker.getAttribute('data-created-at'));
-      marker.classList.toggle('hidden', !(markerDate >= dateFrom && markerDate <= dateTo));
+      marker.classList.toggle('hidden', !(markerDate >= dateFrom && markerDate < adjustedDateTo));
     });
     
     return true;
