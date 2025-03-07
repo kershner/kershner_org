@@ -283,6 +283,8 @@ class MapViewer {
           );
         }
 
+        this.clearLogMarkers();
+
         // Add POI markers
         if (data.pois && data.pois.length) {
           data.pois.forEach(poi => {
@@ -316,8 +318,6 @@ class MapViewer {
               parseInt(mostRecentLog.map_pixel_x),
               parseInt(mostRecentLog.map_pixel_y)
           );
-    
-          this.clearLogMarkers();
     
           // Filter logs based on device type
           const logsToShow = this.isMobile() 
