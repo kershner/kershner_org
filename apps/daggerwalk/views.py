@@ -65,11 +65,7 @@ class DaggerwalkLogsView(View):
                         .select_related('region_fk', 'poi')
                         .order_by('created_at'))
 
-        if self.use_sampling:
-            total_logs = len(queryset)
-            if total_logs == 0:
-                return JsonResponse([], safe=False)
-
+        if self.use_sampling and len(queryset):
             # Select every nth row and ensure the last row is included
             sampled_logs = queryset[::self.step]
             if queryset[-1] not in sampled_logs:
@@ -85,7 +81,19 @@ class DaggerwalkLogsView(View):
                     poi=model_to_dict(log.poi) if log.poi else None) 
                 for log in logs]
         
-        return JsonResponse(logs, safe=False)
+        # Get all POIs for this region
+        try:
+            region_obj = Region.objects.get(name=region)
+            pois = list(region_obj.points_of_interest.all().values())
+        except Region.DoesNotExist:
+            pois = []
+        
+        response_data = {
+            'logs': logs,
+            'pois': pois
+        }
+        
+        return JsonResponse(response_data, safe=False)
     
 @csrf_exempt
 @require_http_methods(["POST"])

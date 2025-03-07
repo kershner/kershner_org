@@ -260,47 +260,86 @@ class MapViewer {
     };
   }
 
-  async fetchDaggerwalkLogs(region) {
+  async fetchRegionData(region) {
     try {
         const response = await fetch(`/daggerwalk/logs/?region=${encodeURIComponent(region)}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
         
         const data = await response.json();
-        if (!data.length) return;
-
-        const mostRecentLog = data[data.length - 1];
+        if (!data.logs.length && !data.pois.length) return;
+  
+        // Track locations that already have markers
+        const addedLocations = new Set();
         const regionData = this.state.regionMap[region];
-        const selectedPart = this.getSelectedRegionPart(
-            regionData, 
-            parseInt(mostRecentLog.map_pixel_x),
-            parseInt(mostRecentLog.map_pixel_y)
-        );
 
-        await this.showRegionMap(
-            region,
-            parseInt(mostRecentLog.map_pixel_x),
-            parseInt(mostRecentLog.map_pixel_y)
-        );
+        if (data.logs && data.logs.length) {
+          const mostRecentLog = data.logs[data.logs.length - 1];
+          const selectedPart = this.getSelectedRegionPart(
+              regionData, 
+              parseInt(mostRecentLog.map_pixel_x),
+              parseInt(mostRecentLog.map_pixel_y)
+          );
+    
+          await this.showRegionMap(
+              region,
+              parseInt(mostRecentLog.map_pixel_x),
+              parseInt(mostRecentLog.map_pixel_y)
+          );
+    
+          this.clearLogMarkers();
+    
+          // Filter logs based on device type
+          const logsToShow = this.isMobile() 
+              ? data.logs.filter((_, index) => index % 3 === 0)  // Show every 3rd log on mobile
+              : data.logs;
+    
+          logsToShow.forEach(log => this.addLogMarker(
+              log.region, 
+              parseInt(log.map_pixel_x), 
+              parseInt(log.map_pixel_y), 
+              selectedPart,
+              this.createMarkerData(log)
+          ));
 
-        this.clearLogMarkers();
-
-        // Filter logs based on device type
-        const logsToShow = this.isMobile() 
-            ? data.filter((_, index) => index % 3 === 0)  // Show every 3rd log on mobile
-            : data;
-
-        logsToShow.forEach(log => this.addLogMarker(
-            log.region, 
-            parseInt(log.map_pixel_x), 
-            parseInt(log.map_pixel_y), 
-            selectedPart,
-            this.createMarkerData(log)
-        ));
-
+          // Add locations from logs to the tracking set
+          logsToShow.forEach(log => {
+            const key = `${parseInt(log.map_pixel_x)},${parseInt(log.map_pixel_y)}`;
+            addedLocations.add(key);
+          });  
+        }
+        
+        // Add POI markers
+        if (data.pois && data.pois.length) {
+            data.pois.forEach(poi => {
+                const poiX = parseInt(poi.map_pixel_x);
+                const poiY = parseInt(poi.map_pixel_y);
+                const key = `${poiX},${poiY}`;
+                const selectedPart = this.getSelectedRegionPart(regionData, poiX, poiY);
+                
+                // Only add the POI if we don't already have a marker at this location
+                if (!addedLocations.has(key)) {
+                    this.addLogMarker(
+                        region,
+                        poiX,
+                        poiY,
+                        selectedPart,
+                        {
+                            location: poi.name,
+                            emoji: poi.emoji,
+                            poiType: poi.type
+                        }
+                    );
+                    // Add to the set to prevent duplicates if multiple POIs share coordinates
+                    addedLocations.add(key);
+                }
+            });
+        }
+  
         if (daggerwalk.latestLog && daggerwalk.latestLog.region === this.state.currentRegion) {
           this.scheduleNextLogFetch(); // Schedule the next fetch
         }
     } catch (error) {
+        console.error('Error fetching logs:', error);
         this.scheduleNextLogFetch(10000); // Retry in 10 seconds if fetch fails
     }
   }
@@ -320,7 +359,7 @@ class MapViewer {
             if (!this.state.currentRegion) {
                 return;
             }
-            this.fetchDaggerwalkLogs(this.state.currentRegion);
+            this.fetchRegionData(this.state.currentRegion);
         }, nextFetchDelay);
     }).catch(err => {
         this.scheduleNextLogFetch(10000); // Fallback to 10s retry on error
@@ -371,7 +410,7 @@ class MapViewer {
   startLogPolling(region) {
     this.stopLogPolling(); // Clear any previous polling
     this.currentRegion = region;
-    this.fetchDaggerwalkLogs(region);
+    this.fetchRegionData(region);
   }
 
   stopLogPolling() {
@@ -430,32 +469,6 @@ class MapViewer {
         this.elements.regionName.textContent = regionName;
         this.elements.provinceName.textContent = otherRegionData[0]?.province || '';
         this.clearLogMarkers();
-  
-        // Add capital city marker
-        const regionCapitalData = this.state.regionData.find(item => item.name === this.state.currentRegion);
-        if (regionCapitalData && regionCapitalData.capital) {
-          // Get the capital coordinates
-          const capitalX = parseInt(regionCapitalData.capital.mapPixelX, 10);
-          const capitalY = parseInt(regionCapitalData.capital.mapPixelY, 10);
-          
-          // Determine which part the capital belongs to
-          const capitalPart = this.getSelectedRegionPart(regionData, capitalX, capitalY);
-          
-          // Only show the capital if it's in the currently displayed part
-          if (capitalPart && selectedPart && capitalPart.fmap_image === selectedPart.fmap_image) {
-            this.addLogMarker(
-              this.state.currentRegion,
-              capitalX,
-              capitalY,
-              selectedPart,
-              {
-                capitalCity: regionCapitalData.capital.name,
-                isCapitalMarker: true
-              }
-            );
-          }
-        }
-  
         resolve();
       };
       this.elements.regionMap.src = `${this.config.baseS3Url}/img/daggerwalk/maps/${selectedPart.fmap_image}`;
@@ -1010,7 +1023,7 @@ addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
     const y = Math.round((event.clientY - rect.top - scale.offsetY) / scale.scaleY);
     
     this.showRegionMap(this.state.hoveredProvince, x, y);
-    this.fetchDaggerwalkLogs(this.state.hoveredProvince);
+    this.fetchRegionData(this.state.hoveredProvince);
     this.updateUrl(this.state.hoveredProvince);
   }
 
@@ -1074,12 +1087,12 @@ window.onload = async () => {
         window.mapViewer.addLogMarker(region, x, y)
       );
     } else {
-      window.mapViewer.fetchDaggerwalkLogs(region);
+      window.mapViewer.fetchRegionData(region);
       window.mapViewer.showRegionMap(region);
     }
   } else if (daggerwalk.latestLog && daggerwalk.latestLog.region) {
     // Use the latest log's region if the URL parameter is invalid or missing
-    window.mapViewer.fetchDaggerwalkLogs(daggerwalk.latestLog.region);
+    window.mapViewer.fetchRegionData(daggerwalk.latestLog.region);
     window.mapViewer.showRegionMap(daggerwalk.latestLog.region, 
       parseInt(daggerwalk.latestLog.map_pixel_x), 
       parseInt(daggerwalk.latestLog.map_pixel_y));
