@@ -205,7 +205,7 @@ daggerwalk.init = () => {
     urlParams.set('region', region);
     history.pushState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
 
-    window.mapViewer.fetchDaggerwalkLogs(region);
+    window.mapViewer.fetchRegionData(region);
   });
 
   daggerwalk.updateStatus();
