@@ -396,7 +396,7 @@ class MapViewer {
     this.elements.provinceName.textContent = 'Tamriel';
     
     // Update URL
-    history.pushState({}, '', window.location.pathname);
+    history.pushState({}, '', `${window.location.pathname}?region=world`);
     
     // Reset state
     this.state.currentRegion = null;
