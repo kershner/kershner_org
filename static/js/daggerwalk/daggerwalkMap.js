@@ -256,7 +256,7 @@ class MapViewer {
       location = log.poi ? `${log.poi.emoji}${log.poi.name}` : `${log.emoji}${log.name}`;
     } else {
       location = region && region.climate && log.location ? 
-        `${region.emoji}${region.climate} ${log.location}` : log.location;
+        `${region.emoji}${region.climate.replace(/s$/, '')} ${log.location.toLowerCase()}` : log.location;
     }
   
     // Create base marker data
