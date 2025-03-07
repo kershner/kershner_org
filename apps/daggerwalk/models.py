@@ -17,6 +17,7 @@ class Region(models.Model):
         ('Swamp', 'Swamp'),
         ('Ocean', 'Ocean'),
         ('Subtropical', 'Subtropical'),
+        ('Rainforest', 'Rainforest'),
     ]
     
     name = models.CharField(max_length=100, unique=True)
@@ -29,29 +30,48 @@ class Region(models.Model):
     fmap_image = models.CharField(max_length=100, null=True, blank=True)  # For single image regions
     offset_x = models.IntegerField(null=True, blank=True)  # For single image regions
     offset_y = models.IntegerField(null=True, blank=True)  # For single image regions
+    emoji = models.CharField(max_length=10, blank=True, null=True)
     
     def __str__(self):
         return f"{self.name} ({self.province})"
-    
-    @property
-    def climate_with_emoji(self):
-        """Return climate with an appropriate emoji prefix"""
-        climate_emojis = {
-            'Desert': '🏜️',
-            'Mountain': '⛰️',
-            'Woodlands': '🌲',
-            'Swamp': '🌿',
-            'Ocean': '🌊',
-            'Subtropical': '🌴',
-        }
-        
-        if self.name == 'Ocean':
-            return f"🌊{self.climate}"
-        
-        # Otherwise use the climate mapping
-        emoji = climate_emojis.get(self.climate, '💀')  # Default emoji if climate not found
-        return f"{emoji}{self.climate}"
 
+class POI(models.Model):
+    """Points of Interest including capitals"""
+    TYPE_CHOICES = [
+        ('capital', 'Capital'),
+        ('town', 'Town'),
+        ('landmark', 'Landmark'),
+        ('dungeon', 'Dungeon'),
+    ]
+    
+    name = models.CharField(max_length=100)
+    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='points_of_interest')
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES, default='town')
+    map_pixel_x = models.IntegerField()
+    map_pixel_y = models.IntegerField()
+    description = models.TextField(blank=True, null=True)
+    emoji = models.CharField(max_length=10, blank=True, null=True)
+    
+    class Meta:
+        unique_together = ('region', 'name')
+    
+    def __str__(self):
+        return f"{self.emoji}{self.name} ({self.type} of {self.region.name})"
+    
+    def save(self, *args, **kwargs):
+        if not self.emoji:
+            self.emoji = self.get_emoji()
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_emoji(cls):
+        emoji_choices = [
+            '💀', '☠️', '⚔️', '🗡️', '🏹', '🛡️', '⚱️', '🔮',
+            '👑', '🗝️', '📜', '🏺', '🪓', '🔥', '⛓️', '📌',
+            '🦴', '🕳️', '🔗', '⚒️', '⛏️', '🏰', '🕯️', '🌲', 
+            '🗿', '🔑', '🏕️', '🏚️', '🔔', '🎭', '🛶', '🚩', '📍',
+        ]
+        return random.choice(emoji_choices)
 
 class DaggerwalkLog(models.Model):
     # World coordinates
@@ -66,6 +86,7 @@ class DaggerwalkLog(models.Model):
     region = models.CharField(max_length=255, help_text="Region name")
     region_fk = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True, related_name='logs')
     location = models.CharField(max_length=255, help_text="Specific location name")
+    poi = models.ForeignKey(POI, on_delete=models.SET_NULL, null=True, blank=True, related_name='logs')
 
     # Precise player coordinates
     player_x = models.DecimalField(max_digits=20, decimal_places=6, help_text="Precise X coordinate of player")
@@ -80,9 +101,6 @@ class DaggerwalkLog(models.Model):
     weather = models.CharField(max_length=255, help_text="Current weather condition")
     current_song = models.CharField(max_length=255, null=True, blank=True, help_text="Currently playing background music")
     season = models.CharField(max_length=255, null=True, blank=True, help_text="Current in-game season")
-    
-    # Misc
-    emoji = models.CharField(max_length=10, blank=True, null=True)
 
     class Meta:
         verbose_name = 'Daggerwalk Log'
@@ -96,35 +114,25 @@ class DaggerwalkLog(models.Model):
     
     def save(self, *args, **kwargs):
         self.season = self.determine_season()
-        if self.is_poi() and not self.emoji:
-            self.emoji = self.get_emoji()
         
         # Try to set the foreign key to Region
         try:
             self.region_fk = Region.objects.get(name=self.region)
         except Region.DoesNotExist:
             self.region_fk = None
-
-        self.location = self.location_with_climate
+            
+        # Try to associate with a POI if not wilderness/ocean
+        non_poi_keywords = ["Wilderness", "Ocean"]
+        is_wilderness = any(keyword.lower() in self.location.lower() for keyword in non_poi_keywords)
+        
+        if not is_wilderness and self.region_fk:
+            try:
+                # Try to find a POI with matching name and region
+                self.poi = POI.objects.get(name=self.location, region=self.region_fk)
+            except POI.DoesNotExist:
+                self.poi = None
             
         super().save(*args, **kwargs)
-
-    @classmethod
-    def get_emoji(cls):
-        emoji_choices = [
-            '💀', '☠️', '⚔️', '🗡️', '🏹', '🛡️', '⚱️', '🔮',
-            '👑', '🗝️', '📜', '🏺', '🪓', '🔥', '⛓️', '📌',
-            '🦴', '🕳️', '🔗', '⚒️', '⛏️', '🏰', '🕯️', '🌲', 
-            '🗿', '🔑', '🏕️', '🏚️', '🔔', '🎭', '🛶', '🚩', '📍',
-        ]
-        return random.choice(emoji_choices)
-    
-    def is_poi(self):
-        non_poi_keywords = ["Wilderness", "Ocean"]
-        for keyword in non_poi_keywords:
-            if keyword.lower() in self.location.lower():
-                return False
-        return True
     
     def determine_season(self):
         """
@@ -155,31 +163,6 @@ class DaggerwalkLog(models.Model):
         except (ValueError, IndexError) as e:
             print(f"Error parsing date: {self.date} - {str(e)}")
             return "Unknown"
-        
-    @property
-    def location_with_climate(self):
-        """Returns formatted location string with climate info for wilderness locations"""
-        wilderness_locations = ['Wilderness', 'Ocean']
-        location_emoji = self.emoji or "📍"
-        
-        # Regular location
-        if self.location not in wilderness_locations:
-            return f"{location_emoji}{self.location}"
-        
-        # Wilderness location - include climate info
-        region = self.region_fk
-        
-        if not region:
-            return f"{location_emoji}{self.location}"
-            
-        # Get the climate string from the Region model's method
-        climate_str = region.climate_with_emoji
-        
-        # Remove climate pluralization if it exists
-        if climate_str.endswith('s'):
-            climate_str = climate_str[:-1]
-            
-        return f"{climate_str} {self.location.lower()}"
 
 class RegionMapPart(models.Model):
     """For multi-part region maps"""
@@ -190,28 +173,6 @@ class RegionMapPart(models.Model):
     
     def __str__(self):
         return f"Map part for {self.region.name}"
-
-class POI(models.Model):
-    """Points of Interest including capitals"""
-    TYPE_CHOICES = [
-        ('capital', 'Capital'),
-        ('town', 'Town'),
-        ('landmark', 'Landmark'),
-        ('dungeon', 'Dungeon'),
-    ]
-    
-    name = models.CharField(max_length=100)
-    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='points_of_interest')
-    type = models.CharField(max_length=50, choices=TYPE_CHOICES, default='town')
-    map_pixel_x = models.IntegerField()
-    map_pixel_y = models.IntegerField()
-    description = models.TextField(blank=True, null=True)
-    
-    def __str__(self):
-        return f"{self.name} ({self.type} of {self.region.name})"
-    
-    class Meta:
-        unique_together = ('region', 'name')
 
 class ProvinceShape(models.Model):
     """For storing the polygon coordinates of region shapes"""
