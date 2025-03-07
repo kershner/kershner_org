@@ -271,10 +271,11 @@ class MapViewer {
         // Track locations that already have markers
         const addedLocations = new Set();
         const regionData = this.state.regionMap[region];
+        let selectedPart = null;
 
         if (data.logs && data.logs.length) {
           const mostRecentLog = data.logs[data.logs.length - 1];
-          const selectedPart = this.getSelectedRegionPart(
+          selectedPart = this.getSelectedRegionPart(
               regionData, 
               parseInt(mostRecentLog.map_pixel_x),
               parseInt(mostRecentLog.map_pixel_y)
@@ -314,7 +315,6 @@ class MapViewer {
                 const poiX = parseInt(poi.map_pixel_x);
                 const poiY = parseInt(poi.map_pixel_y);
                 const key = `${poiX},${poiY}`;
-                const selectedPart = this.getSelectedRegionPart(regionData, poiX, poiY);
                 
                 // Only add the POI if we don't already have a marker at this location
                 if (!addedLocations.has(key)) {
@@ -324,9 +324,9 @@ class MapViewer {
                         poiY,
                         selectedPart,
                         {
-                            location: poi.name,
+                            location: `${poi.emoji}${poi.name}`,
                             emoji: poi.emoji,
-                            poiType: poi.type
+                            type: poi.type
                         }
                     );
                     // Add to the set to prevent duplicates if multiple POIs share coordinates

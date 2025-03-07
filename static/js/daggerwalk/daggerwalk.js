@@ -34,9 +34,11 @@ const daggerwalk = {
     // Get corresponding emojis
     const weatherIcon = weatherEmoji[log.weather] || "🌈";
     const seasonIcon = seasonEmoji[log.season] || "❓";
+    const climateLocationStr = `${log.region_fk.emoji}${log.region_fk.climate} ${log.location}`;
+    const location = log.poi ? `${log.poi.emoji}${log.poi.name}` : climateLocationStr;
 
     status.innerHTML = `
-      <h2><span>🌍${log.region}</span><span>${log.location}</span></h2>
+      <h2><span>🌍${log.region}</span><span>${location}</span></h2>
       ${this.formatTime(log.date)}
       <p>${seasonIcon} ${log.season}  ${weatherIcon} ${log.weather}
       ${log.current_song ? `  🎵 ${log.current_song}` : ''}</p>

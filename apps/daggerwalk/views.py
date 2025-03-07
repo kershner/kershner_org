@@ -1,19 +1,29 @@
 from django.contrib.admin.views.decorators import staff_member_required
-from django.views.decorators.http import require_http_methods
+from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import AllowAny
 from apps.daggerwalk.utils import get_map_data
-from django.forms.models import model_to_dict
+from rest_framework.response import Response
 from .models import DaggerwalkLog, Region
-from django.views.generic import View
+from rest_framework.views import APIView
 from django.http import JsonResponse
-from django.contrib import messages
 from django.shortcuts import render
+from django.contrib import messages
+from rest_framework import status
 from django.db.models import Max
 from django.conf import settings
+from .serializers import (
+    SingleLogWithPOIsResponse,
+    DaggerwalkLogSerializer, 
+    LogsWithPOIsResponse,
+    POISimpleSerializer,
+)
 import json
 
 
-class DaggerwalkHomeView(View):
+class DaggerwalkHomeView(APIView):
+    """Home view for the Daggerwalk app"""
+    permission_classes = [AllowAny]
     template_path = 'daggerwalk/index.html'
 
     def get(self, request):
@@ -40,119 +50,137 @@ class DaggerwalkHomeView(View):
         )
 
         map_data = get_map_data()
-        latest_log = model_to_dict(DaggerwalkLog.objects.exclude(region="Ocean").latest('created_at'))
-
+        latest_log = DaggerwalkLog.objects.exclude(region="Ocean").latest('created_at')
+        serialized_log = DaggerwalkLogSerializer(latest_log).data
+        
         ctx = {
             **map_data,
             'region_data': json.dumps(list(region_data), default=str),
-            'latest_log': json.dumps(latest_log, default=str),
+            'latest_log': json.dumps(serialized_log, default=str),
         }
         
         return render(request, self.template_path, ctx)
 
-class DaggerwalkLogsView(View):
+
+class DaggerwalkLogsView(APIView):
+    """API view for retrieving logs for a specific region"""
+    permission_classes = [AllowAny]
     use_sampling = True
     step = 5
 
     def get(self, request):
-        region = request.GET.get('region')
+        region = request.query_params.get('region')
 
         if not region:
-            return JsonResponse({'error': 'Region parameter is required'}, status=400)
+            return Response({'error': 'Region parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Use select_related to prefetch related models in a single query
-        queryset = list(DaggerwalkLog.objects.filter(region=region)
-                        .select_related('region_fk', 'poi')
-                        .order_by('created_at'))
+        queryset = DaggerwalkLog.objects.filter(region=region) \
+                    .select_related('region_fk', 'poi') \
+                    .order_by('created_at')
 
-        if self.use_sampling and len(queryset):
+        if self.use_sampling and queryset.exists():
+            # Convert to list and sample
+            queryset_list = list(queryset)
             # Select every nth row and ensure the last row is included
-            sampled_logs = queryset[::self.step]
-            if queryset[-1] not in sampled_logs:
-                sampled_logs.append(queryset[-1])
-
+            sampled_logs = queryset_list[::self.step]
+            if queryset_list[-1] not in sampled_logs:
+                sampled_logs.append(queryset_list[-1])
             logs = sampled_logs
         else:
-            logs = queryset
-
-        logs = [dict(model_to_dict(log, exclude=['region_fk', 'poi']), 
-                    created_at=log.created_at,
-                    region_fk=model_to_dict(log.region_fk) if log.region_fk else None,
-                    poi=model_to_dict(log.poi) if log.poi else None) 
-                for log in logs]
+            logs = list(queryset)
         
         # Get all POIs for this region
         try:
             region_obj = Region.objects.get(name=region)
-            pois = list(region_obj.points_of_interest.all().values())
+            pois = region_obj.points_of_interest.all()
         except Region.DoesNotExist:
             pois = []
         
         response_data = {
-            'logs': logs,
-            'pois': pois
+            'logs': DaggerwalkLogSerializer(logs, many=True).data,
+            'pois': POISimpleSerializer(pois, many=True).data
         }
         
-        return JsonResponse(response_data, safe=False)
-    
+        # Validate using the response serializer
+        response_serializer = LogsWithPOIsResponse(data=response_data)
+        response_serializer.is_valid(raise_exception=True)
+        
+        return Response(response_data)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
 @csrf_exempt
-@require_http_methods(["POST"])
 def create_daggerwalk_log(request):
     API_KEY = getattr(settings, "DAGGERWALK_API_KEY", None)
     auth_header = request.headers.get("Authorization")
 
     if not API_KEY or auth_header != f"Bearer {API_KEY}":
-        return JsonResponse({"status": "error", "message": "Unauthorized"}, status=401)
+        return Response({"status": "error", "message": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
     
     try:
-        data = json.loads(request.body)
-        
         log_entry = DaggerwalkLog.objects.create(
-            world_x=data['worldX'],
-            world_z=data['worldZ'],
-            map_pixel_x=data['mapPixelX'],
-            map_pixel_y=data['mapPixelY'],
-            region=data['region'],
-            location=data['location'],
-            player_x=data['playerX'],
-            player_y=data['playerY'],
-            player_z=data['playerZ'],
-            date=data['date'],
-            weather=data['weather'],
-            current_song=data.get('currentSong'),
+            world_x=request.data['worldX'],
+            world_z=request.data['worldZ'],
+            map_pixel_x=request.data['mapPixelX'],
+            map_pixel_y=request.data['mapPixelY'],
+            region=request.data['region'],
+            location=request.data['location'],
+            player_x=request.data['playerX'],
+            player_y=request.data['playerY'],
+            player_z=request.data['playerZ'],
+            date=request.data['date'],
+            weather=request.data['weather'],
+            current_song=request.data.get('currentSong'),
         )
         
-        return JsonResponse({
+        return Response({
             'status': 'success',
             'message': 'Log entry created successfully',
             'id': log_entry.id
-        }, status=201)
+        }, status=status.HTTP_201_CREATED)
         
     except KeyError as e:
-        return JsonResponse({
+        return Response({
             'status': 'error',
             'message': f'Missing required field: {str(e)}'
-        }, status=400)
-        
-    except ValueError as e:
-        return JsonResponse({
-            'status': 'error',
-            'message': f'Invalid data format: {str(e)}'
-        }, status=400)
+        }, status=status.HTTP_400_BAD_REQUEST)
         
     except Exception as e:
-        return JsonResponse({
+        return Response({
             'status': 'error',
             'message': f'An error occurred: {str(e)}'
-        }, status=500) 
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @staff_member_required
 def delete_previous_logs(request, log_id):
-   if request.method == 'POST':
-       deleted, details = DaggerwalkLog.objects.filter(id__lt=log_id).delete()
-       messages.success(request, f'{deleted} logs deleted')
-       return JsonResponse({'status': 'ok'})
+    if request.method == 'POST':
+        deleted, details = DaggerwalkLog.objects.filter(id__lt=log_id).delete()
+        messages.success(request, f'{deleted} logs deleted')
+        return JsonResponse({'status': 'ok'})
 
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def latest_log(request):
     log = DaggerwalkLog.objects.latest('created_at')
-    return JsonResponse(dict(model_to_dict(log), created_at=log.created_at))
+    
+    # Get POIs for this region
+    try:
+        region_obj = Region.objects.get(name=log.region)
+        pois = region_obj.points_of_interest.all()
+    except Region.DoesNotExist:
+        pois = []
+    
+    response_data = {
+        'log': DaggerwalkLogSerializer(log).data,
+        'pois': POISimpleSerializer(pois, many=True).data
+    }
+    
+    # Validate using the response serializer
+    response_serializer = SingleLogWithPOIsResponse(data=response_data)
+    response_serializer.is_valid(raise_exception=True)
+    
+    return Response(response_data)
