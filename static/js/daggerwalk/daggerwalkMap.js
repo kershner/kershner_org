@@ -247,14 +247,16 @@ class MapViewer {
   }
 
   createMarkerData(log) {
+    const climateLocationStr = `${log.region_fk.emoji}${log.region_fk.climate} ${log.location}`;
+    const location = log.poi ? `${log.poi.emoji}${log.poi.name}` : climateLocationStr;
     return {
       date: this.convertElderScrollsTime(log.date),
       season: log.season,
       weather: log.weather,
       currentSong: log.current_song,
-      location: log.location,
+      location: location,
       createdAt: this.convertToEST(log.created_at),
-      emoji: log.emoji
+      emoji: log.poi ? log.poi.emoji : log.region.emoji
     };
   }
 

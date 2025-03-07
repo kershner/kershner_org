@@ -60,7 +60,10 @@ class DaggerwalkLogsView(View):
         if not region:
             return JsonResponse({'error': 'Region parameter is required'}, status=400)
 
-        queryset = list(DaggerwalkLog.objects.filter(region=region).order_by('created_at'))
+        # Use select_related to prefetch related models in a single query
+        queryset = list(DaggerwalkLog.objects.filter(region=region)
+                        .select_related('region_fk', 'poi')
+                        .order_by('created_at'))
 
         if self.use_sampling:
             total_logs = len(queryset)
@@ -76,7 +79,12 @@ class DaggerwalkLogsView(View):
         else:
             logs = queryset
 
-        logs = [dict(model_to_dict(log), created_at=log.created_at) for log in logs]
+        logs = [dict(model_to_dict(log, exclude=['region_fk', 'poi']), 
+                    created_at=log.created_at,
+                    region_fk=model_to_dict(log.region_fk) if log.region_fk else None,
+                    poi=model_to_dict(log.poi) if log.poi else None) 
+                for log in logs]
+        
         return JsonResponse(logs, safe=False)
     
 @csrf_exempt
