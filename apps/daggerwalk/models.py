@@ -138,8 +138,15 @@ class DaggerwalkLog(models.Model):
                 # Try to find a POI with matching name and region
                 self.poi = POI.objects.get(name=self.location, region=self.region_fk)
             except POI.DoesNotExist:
-                self.poi = None
-            
+                # If no POI exists, create one
+                self.poi = POI.objects.create(
+                    name=self.location,
+                    region=self.region_fk,
+                    type='landmark',
+                    map_pixel_x=self.map_pixel_x,
+                    map_pixel_y=self.map_pixel_y
+                )
+
         super().save(*args, **kwargs)
     
     def determine_season(self):
