@@ -13,10 +13,8 @@ from rest_framework import status
 from django.db.models import Max
 from django.conf import settings
 from .serializers import (
-    SingleLogWithPOIsResponse,
     DaggerwalkLogSerializer, 
-    LogsWithPOIsResponse,
-    POISimpleSerializer,
+    POISerializer,
 )
 import json
 
@@ -96,16 +94,12 @@ class DaggerwalkLogsView(APIView):
             pois = region_obj.points_of_interest.all()
         except Region.DoesNotExist:
             pois = []
-        
+
+        serialized_logs = DaggerwalkLogSerializer(logs, many=True).data
+        serialized_pois = POISerializer(pois, many=True).data
         response_data = {
-            'logs': DaggerwalkLogSerializer(logs, many=True).data,
-            'pois': POISimpleSerializer(pois, many=True).data
+            'logs': serialized_logs + serialized_pois
         }
-        
-        # Validate using the response serializer
-        response_serializer = LogsWithPOIsResponse(data=response_data)
-        response_serializer.is_valid(raise_exception=True)
-        
         return Response(response_data)
 
 
@@ -166,21 +160,7 @@ def delete_previous_logs(request, log_id):
 @permission_classes([AllowAny])
 def latest_log(request):
     log = DaggerwalkLog.objects.latest('created_at')
-    
-    # Get POIs for this region
-    try:
-        region_obj = Region.objects.get(name=log.region)
-        pois = region_obj.points_of_interest.all()
-    except Region.DoesNotExist:
-        pois = []
-    
     response_data = {
-        'log': DaggerwalkLogSerializer(log).data,
-        'pois': POISimpleSerializer(pois, many=True).data
+        'log': DaggerwalkLogSerializer(log).data
     }
-    
-    # Validate using the response serializer
-    response_serializer = SingleLogWithPOIsResponse(data=response_data)
-    response_serializer.is_valid(raise_exception=True)
-    
     return Response(response_data)

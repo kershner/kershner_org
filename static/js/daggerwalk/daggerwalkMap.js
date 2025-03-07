@@ -247,104 +247,108 @@ class MapViewer {
   }
 
   createMarkerData(log) {
-    const climateLocationStr = `${log.region_fk.emoji}${log.region_fk.climate} ${log.location}`;
-    const location = log.poi ? `${log.poi.emoji}${log.poi.name}` : climateLocationStr;
-    return {
-      date: this.convertElderScrollsTime(log.date),
-      season: log.season,
-      weather: log.weather,
-      currentSong: log.current_song,
-      location: location,
-      createdAt: this.convertToEST(log.created_at),
-      emoji: log.poi ? log.poi.emoji : log.region.emoji
-    };
+    const region = log.region_fk || log.region;
+    const isPOI = log.poi || (log.type && log.name);
+    
+    // Determine location string
+    let location;
+    if (isPOI) {
+      location = log.poi ? `${log.poi.emoji}${log.poi.name}` : `${log.emoji}${log.name}`;
+    } else {
+      location = region && region.climate && log.location ? 
+        `${region.emoji}${region.climate} ${log.location}` : log.location;
+    }
+  
+    // Create base marker data
+    const markerData = {};
+    
+    // Only add properties that exist in the source data
+    if (location) markerData.location = location;
+    
+    // Add emoji if available
+    if (isPOI && log.poi && log.poi.emoji) {
+      markerData.emoji = log.poi.emoji;
+    } else if (isPOI && log.emoji) {
+      markerData.emoji = log.emoji;
+    } else if (region && region.emoji) {
+      markerData.emoji = region.emoji;
+    }
+    
+    // Add other properties only if they exist
+    if (log.date) markerData.date = this.convertElderScrollsTime(log.date);
+    if (log.season) markerData.season = log.season;
+    if (log.weather) markerData.weather = log.weather;
+    if (log.current_song) markerData.currentSong = log.current_song;
+    else if (log.currentSong) markerData.currentSong = log.currentSong;
+    if (log.created_at) markerData.createdAt = this.convertToEST(log.created_at);
+    
+    return markerData;
   }
 
   async fetchRegionData(region) {
     try {
-        const response = await fetch(`/daggerwalk/logs/?region=${encodeURIComponent(region)}`);
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-        
-        const data = await response.json();
-        if (!data.logs.length && !data.pois.length) return;
+      const response = await fetch(`/daggerwalk/logs/?region=${encodeURIComponent(region)}`);
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+      
+      const data = await response.json();
+      if (!data.logs || !data.logs.length) return;
   
-        // Track locations that already have markers
-        const addedLocations = new Set();
-        const regionData = this.state.regionMap[region];
-        let selectedPart = null;
-        let mostRecentLog = null;
+      const regionData = this.state.regionMap[region];
+      const mostRecentLog = data.logs[data.logs.length - 1];
+      
+      // Parse coordinates once
+      const recentX = parseInt(mostRecentLog.map_pixel_x);
+      const recentY = parseInt(mostRecentLog.map_pixel_y);
+      
+      // Get the selected part for the most recent log
+      const selectedPart = this.getSelectedRegionPart(regionData, recentX, recentY);
+  
+      this.clearLogMarkers();
+      
+      // Show region map with most recent log position
+      await this.showRegionMap(region, recentX, recentY);
+  
+      // Filter logs based on device type
+      const mobileLogSamplingRate = 3;
+      const logsToShow = this.isMobile() 
+        ? data.logs.filter((_, index) => index % mobileLogSamplingRate === 0)
+        : data.logs;
+      
+      // Track marker positions to avoid duplicates
+      const markerPositions = new Set();
+      
+      logsToShow.forEach(log => {
+        // Get region name safely
+        const regionName = log.region_fk ? log.region_fk.name : 
+                           (typeof log.region === 'object' ? log.region.name : log.region);
         
-        if (data.logs && data.logs.length) {
-          mostRecentLog = data.logs[data.logs.length - 1];
-          selectedPart = this.getSelectedRegionPart(
-              regionData, 
-              parseInt(mostRecentLog.map_pixel_x),
-              parseInt(mostRecentLog.map_pixel_y)
+        // Get coordinates
+        const x = parseInt(log.map_pixel_x);
+        const y = parseInt(log.map_pixel_y);
+        
+        // Create a unique position key
+        const positionKey = `${x},${y}`;
+        
+        // Only add marker if position hasn't been used yet
+        if (!markerPositions.has(positionKey) && !isNaN(x) && !isNaN(y)) {
+          markerPositions.add(positionKey);
+          
+          this.addLogMarker(
+            regionName, 
+            x, 
+            y, 
+            selectedPart,
+            this.createMarkerData(log)
           );
         }
-
-        this.clearLogMarkers();
-
-        // Add POI markers
-        if (data.pois && data.pois.length) {
-          data.pois.forEach(poi => {
-              const poiX = parseInt(poi.map_pixel_x);
-              const poiY = parseInt(poi.map_pixel_y);
-              const key = `${poiX},${poiY}`;
-              
-              // Only add the POI if we don't already have a marker at this location
-              if (!addedLocations.has(key)) {
-                  this.addLogMarker(
-                      region,
-                      poiX,
-                      poiY,
-                      selectedPart,
-                      {
-                          location: `${poi.emoji}${poi.name}`,
-                          emoji: poi.emoji,
-                          type: poi.type
-                      }
-                  );
-                  // Add to the set to prevent duplicates if multiple POIs share coordinates
-                  addedLocations.add(key);
-              }
-          });
-        }
-
-        // Add Log markers
-        if (mostRecentLog) {
-          await this.showRegionMap(
-              region,
-              parseInt(mostRecentLog.map_pixel_x),
-              parseInt(mostRecentLog.map_pixel_y)
-          );
-    
-          // Filter logs based on device type
-          const logsToShow = this.isMobile() 
-              ? data.logs.filter((_, index) => index % 3 === 0)  // Show every 3rd log on mobile
-              : data.logs;
-    
-          logsToShow.forEach(log => this.addLogMarker(
-              log.region, 
-              parseInt(log.map_pixel_x), 
-              parseInt(log.map_pixel_y), 
-              selectedPart,
-              this.createMarkerData(log)
-          ));
-
-          // Add locations from logs to the tracking set
-          logsToShow.forEach(log => {
-            const key = `${parseInt(log.map_pixel_x)},${parseInt(log.map_pixel_y)}`;
-            addedLocations.add(key);
-          });  
-        }
+      });
   
-        if (daggerwalk.latestLog && daggerwalk.latestLog.region === this.state.currentRegion) {
-          this.scheduleNextLogFetch(); // Schedule the next fetch
-        }
+      if (daggerwalk.latestLog && daggerwalk.latestLog.region === this.state.currentRegion) {
+        this.scheduleNextLogFetch();
+      }
     } catch (error) {
-        console.error('Error fetching logs:', error);
-        this.scheduleNextLogFetch(10000); // Retry in 10 seconds if fetch fails
+      console.error('Error fetching logs:', error);
+      this.scheduleNextLogFetch(10000);
     }
   }
 
