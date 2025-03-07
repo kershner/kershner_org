@@ -66,16 +66,16 @@ const daggerwalk = {
         const buffer = 10000;  // 10s
 
         // Ensure created_at exists and is valid before scheduling the next fetch
-        if (!newLog.created_at) {
+        if (!newLog.log.created_at) {
             this.scheduleNextFetch(buffer);
             return;
         }
 
-        this.latestLog = newLog;
+        this.latestLog = newLog.log;
         this.updateStatus();
 
         // Calculate the next fetch time based on the new log's created_at
-        const newLogTime = new Date(newLog.created_at).getTime();
+        const newLogTime = new Date(newLog.log.created_at).getTime();
         const nextFetchTime = newLogTime + fiveMinutesAndBuffer;
         const delay = Math.max(nextFetchTime - Date.now(), buffer); // Ensure a minimum delay of 10 sec
         
