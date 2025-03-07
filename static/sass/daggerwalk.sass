@@ -10,6 +10,8 @@ $border-radius: 0.2rem
 
 $primary-font-family: Helvetica, Arial, sans-serif
 $secondary-font-family: Georgia, serif
+
+$mobile-breakpoint: 768px
   
 body 
   margin: 0
@@ -194,6 +196,9 @@ $marker-world-size: 24px
       top: 50%
       left: 50%
       transform: translate(-50%, -50%)
+      
+      @media (max-width: $mobile-breakpoint)
+        font-size: $marker-size * 2
 
 .world-marker
   height: $marker-world-size
@@ -203,24 +208,6 @@ $marker-world-size: 24px
 
   &.recent
     @include pulse-animation($scale: 1.7, $opacity: 0.5)
-
-.capital-marker
-  position: absolute
-  width: 0
-  height: 0
-  z-index: 10
-  transform: translate(-50%, -50%)
-
-.capital-marker::before
-  content: ''
-  position: absolute
-  width: 24px
-  height: 24px
-  background-color: gold
-  border: 1px solid black
-  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)
-  transform: translate(-50%, -50%)
-
 
 .top-row
   display: flex

@@ -265,13 +265,17 @@ class MapViewer {
     // Only add properties that exist in the source data
     if (location) markerData.location = location;
     
-    // Add emoji if available
-    if (isPOI && log.poi && log.poi.emoji) {
-      markerData.emoji = log.poi.emoji;
-    } else if (isPOI && log.emoji) {
-      markerData.emoji = log.emoji;
-    } else if (region && region.emoji) {
-      markerData.emoji = region.emoji;
+    // Add emoji and type only for POI markers
+    if (isPOI) {
+      if (log.poi && log.poi.emoji) {
+        markerData.emoji = log.poi.emoji;
+        // Add type if available
+        if (log.poi.type) markerData.type = log.poi.type;
+      } else if (log.emoji) {
+        markerData.emoji = log.emoji;
+        // Add type if available
+        if (log.type) markerData.type = log.type;
+      }
     }
     
     // Add other properties only if they exist

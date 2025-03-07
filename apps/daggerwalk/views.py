@@ -98,7 +98,7 @@ class DaggerwalkLogsView(APIView):
         serialized_logs = DaggerwalkLogSerializer(logs, many=True).data
         serialized_pois = POISerializer(pois, many=True).data
         response_data = {
-            'logs': serialized_logs + serialized_pois
+            'logs': serialized_pois + serialized_logs
         }
         return Response(response_data)
 
