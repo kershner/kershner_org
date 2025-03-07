@@ -337,13 +337,9 @@ class MapViewer {
         if (!markerPositions.has(positionKey) && !isNaN(x) && !isNaN(y)) {
           markerPositions.add(positionKey);
           
-          this.addLogMarker(
-            regionName, 
-            x, 
-            y, 
-            selectedPart,
-            this.createMarkerData(log)
-          );
+          // Create marker data and add marker if it passes filters
+          const markerData = this.createMarkerData(log);
+          this.addLogMarker(regionName, x, y, selectedPart, markerData);
         }
       });
   
@@ -526,26 +522,82 @@ class MapViewer {
       }
     );
   }
+
+  // Check if a marker should be shown based on global filters
+  checkMarkerFilters(markerData) {
+    const filters = window.mapFilterValues || {};
+    
+    // Determine if this is a POI
+    const isPoi = markerData.isCapitalMarker || 
+                  markerData.type === 'landmark' || 
+                  markerData.type === 'poi' ||
+                  (markerData.location && 
+                   !markerData.location.toLowerCase().includes("wilderness") && 
+                   !markerData.location.toLowerCase().includes("ocean"));
+    
+    // Check POI search filter
+    if (filters.poiSearch && filters.poiSearch.trim() !== '') {
+      // Non-POI markers should be hidden when searching
+      if (!isPoi) {
+        return false;
+      }
+      
+      // For POIs, check if they match the search
+      const location = (markerData.location || '').toLowerCase();
+      const type = (markerData.type || '').toLowerCase();
+      const capitalCity = (markerData.capitalCity || '').toLowerCase();
+      const searchTerm = filters.poiSearch.toLowerCase();
+      
+      if (!location.includes(searchTerm) && 
+          !type.includes(searchTerm) && 
+          !capitalCity.includes(searchTerm)) {
+        return false;
+      }
+    }
+    
+    // Check POI toggle
+    if (!filters.poiToggle && isPoi) {
+      return false;
+    }
+    
+    // Check date range (only for regular log markers, not POIs)
+    if (!isPoi && filters.dateFrom instanceof Date && filters.dateTo instanceof Date) {
+      const markerDate = markerData.createdAt ? new Date(markerData.createdAt) : null;
+      if (markerDate && (markerDate < filters.dateFrom || markerDate > filters.dateTo)) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
   
-// Modified addLogMarker function to set a random emoji
-addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
+  addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
     if (!x || !y) return;
   
+    // Check if this marker should be shown based on filters
+    const shouldDisplay = this.checkMarkerFilters(markerData);
+    
     requestAnimationFrame(() => {
       const regionData = this.state.regionMap[regionName];
       if (!regionData) return;
       
       const selectedPart = forcePart || this.getSelectedRegionPart(regionData, x, y);
       if (!selectedPart?.offset) return;
-
+  
       const marker = this.createMarkerElement(x, y, regionName, selectedPart, markerData);
+      
+      // Apply hidden class based on current filter state
+      if (!shouldDisplay) {
+        marker.classList.add('hidden');
+      }
+      
       const mapContainer = document.querySelector('#regionMapView .map-container');
       
       // Only remove 'recent' class from log markers if this is not for a capital
       if (!markerData.isCapitalMarker) {
         document.querySelectorAll('.log-marker').forEach(m => m.classList.remove('recent'));
       }
-
+  
       // If this is a capital marker, change its class before appending
       if (markerData.isCapitalMarker) {
         marker.classList.remove('log-marker', 'recent');
@@ -568,10 +620,10 @@ addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
       }
       
       mapContainer.appendChild(marker);
-  
+
       // Keep click handler for all marker types
       const currentTooltipMarker = { ref: null };
-  
+
       marker.addEventListener('click', (e) => {
         e.preventDefault();  // Prevents default action
         e.stopPropagation(); // Stops event from bubbling up to parent elements 

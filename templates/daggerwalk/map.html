@@ -3,8 +3,17 @@
 <div class="daggerwalk-map">
   <div id="loading" class="loading"><div class="spinner"></div></div>
   
-  <h2 id="regionName" class="view-title"></h2>
-  <h3 id="provinceName" class="view-subtitle"></h3>
+  <div class="map-nav">
+    <div class="map-title-wrapper">
+        <h2 id="regionName" class="view-title"></h2>
+        <h3 id="provinceName" class="view-subtitle"></h3>
+    </div>
+
+    <div class="map-filters-wrapper">
+        <div class="map-filters-toggle-btn">Map Filters</div>
+        {% include 'daggerwalk/map_filters.html' %}
+    </div>
+  </div>
   
   <div id="worldMapView" class="view-container hidden" data-base-url="{% settings_value "BASE_S3_URL" %}">
       <div class="map-container">
@@ -29,12 +38,15 @@
             regionMap: JSON.parse(document.getElementById('region-map-data').textContent),
             regionData: JSON.parse(document.getElementById('region-data').textContent),
         };
+
+        window.daggerwalkMapFilters.init();
     });
   </script>
 
-  <!-- JSON Data Storage (Safer than inline JS injection) -->
+  <!-- JSON Data Storage -->
   {{ provinceShapes|json_script:"province-shapes-data" }}
   {{ regionMap|json_script:"region-map-data" }}
   {{ regionData|json_script:"region-data" }}
+  <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalkMapFilters.js"></script>
   <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalkMap.js"></script>
 </div>

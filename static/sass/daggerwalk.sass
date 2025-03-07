@@ -562,3 +562,79 @@ blockquote
   .highlight
     color: var(--accent-color)
     font-weight: bold
+
+.map-nav
+  display: flex
+  justify-content: space-between
+  align-items: flex-end
+
+  .map-filters-wrapper
+    position: relative
+    padding-right: 0.5rem
+
+    .map-filters-toggle-btn
+      cursor: pointer
+      font-weight: bold
+      color: var(--accent-color)
+
+      &:hover
+        opacity: 0.6
+
+    .map-filters
+      position: absolute
+      margin-top: 0.5rem
+      right: 0.35rem
+      z-index: 1
+      padding: 1rem
+      background-color: var(--background-color)
+      border: $border-width solid var(--accent-color)
+      border-radius: $border-radius
+
+      input
+        display: unset
+
+      label
+        padding: unset
+        top: unset
+        margin-left: unset
+        &::after
+          content: none
+          all: unset
+      
+      .map-filter-row
+        // min-width: 10rem
+        padding: 1rem 0
+        border-bottom: 0.1rem solid var(--alternate-dark)
+        &:last-of-type
+          border-bottom: none
+        
+      .map-filter-label
+        display: block
+        margin-bottom: 0.25rem
+        font-weight: bold
+        color: var(--accent-color)
+      
+      .map-filter-input
+        display: flex
+        align-items: center
+
+        .poi-checkbox
+          width: 1.5rem
+          height: 1.5rem
+          cursor: pointer
+          vertical-align: middle
+        
+      .date-picker
+        width: 45%
+        padding: 0.25rem
+        
+      .date-separator
+        margin: 0 0.25rem
+        color: var(--accent-color)
+        
+      .search-input
+        width: 100%
+        padding: 0.25rem
+        
+      .poi-checkbox
+        margin-right: 0.25rem
