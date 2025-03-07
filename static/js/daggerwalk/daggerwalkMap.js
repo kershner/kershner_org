@@ -1059,7 +1059,14 @@ window.onload = async () => {
   const x = parseInt(urlParams.get("x"), 10);
   const y = parseInt(urlParams.get("y"), 10);
 
-  if (region && region in window.mapViewer.state.regionMap) {
+  // Check if the region parameter is a special world map value
+  const worldMapValues = ["tamriel", "all", "world"];
+  const isWorldMapRequest = region && worldMapValues.includes(region.toLowerCase());
+
+  if (isWorldMapRequest) {
+    // Show the world map view
+    window.mapViewer.showWorldMap();
+  } else if (region && region in window.mapViewer.state.regionMap) {
     if (!isNaN(x) && !isNaN(y)) {
       window.mapViewer.showRegionMap(region, x, y).then(() => 
         window.mapViewer.addLogMarker(region, x, y)
