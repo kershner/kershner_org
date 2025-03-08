@@ -462,6 +462,9 @@ class MapViewer {
     // Add world map markers (this inherently clears existing world markers)
     this.addAllWorldMapMarkers();
     
+    // Apply current filters to world map markers
+    this.applyFiltersToWorldMarkers();
+    
     // Start a new animation loop
     this.animationFrameId = requestAnimationFrame(() => this.drawProvinceShapes());
   }
@@ -492,6 +495,29 @@ class MapViewer {
     });
   }
 
+  applyFiltersToWorldMarkers() {
+    const filters = window.mapFilterValues || {};
+    
+    // Only apply date filters if they exist
+    if (filters.dateFrom instanceof Date && filters.dateTo instanceof Date) {
+      // Create an adjusted end date that includes the full day
+      const adjustedDateTo = new Date(filters.dateTo);
+      adjustedDateTo.setDate(adjustedDateTo.getDate() + 1);
+      
+      // Apply filter to world-map-markers
+      document.querySelectorAll('.world-map-marker').forEach(marker => {
+        const latestDateStr = marker.getAttribute('data-latest-date');
+        if (latestDateStr) {
+          const markerDate = new Date(latestDateStr);
+          marker.classList.toggle('hidden', !(markerDate >= filters.dateFrom && markerDate < adjustedDateTo));
+        }
+      });
+    }
+    
+    // After filtering, redraw connecting lines
+    this.drawConnectingLines();
+  }
+
   addAllWorldMapMarkers() {
     this.clearWorldMapMarkers();
     if (window.REGION_DATA) {
@@ -501,6 +527,9 @@ class MapViewer {
         order: i
       }));
     }
+    
+    // Apply filters after adding all markers
+    setTimeout(() => this.applyFiltersToWorldMarkers(), 0);
   }
 
   addWorldMapMarker(markerData) {
