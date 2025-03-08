@@ -571,16 +571,21 @@ blockquote
   .map-filters-wrapper
     position: relative
     padding-right: 0.5rem
+    padding-bottom: 0.25rem
 
     .map-filters-toggle-btn
       cursor: pointer
       color: var(--accent-color)
-
-      &.active
-        font-weight: bold
+      padding: 0.25rem 0.5rem
+      border: 1px solid var(--accent-color)
+      border-radius: $border-radius
+      font-size: 0.75rem
+      font-weight: bold
       
-      &:hover
-        opacity: 0.6
+      &:hover,
+      &.active
+        background-color: var(--accent-color)
+        color: var(--text-color)
 
     .map-filters
       position: absolute
@@ -641,6 +646,7 @@ blockquote
 
       .date-filter-shortcuts
         padding: 0.25rem 0
+        font-size: 0.8rem
         
         span
           cursor: pointer
