@@ -57,6 +57,14 @@ class MapViewer {
   }
 
   async init() {
+    const worldMapContainer = document.querySelector('#worldMapView .map-container');
+    if (worldMapContainer) {
+      const markerContainer = document.createElement('div');
+      markerContainer.className = 'world-marker-container';
+      worldMapContainer.appendChild(markerContainer);
+      this.elements.worldMapMarkerContainer = markerContainer;
+    }
+
     this.loadMapData();
     this.calculateRegionCenters();
     this.initializeMap();
@@ -118,7 +126,7 @@ class MapViewer {
     }
   }
 
-  initTooltip(selector = '.log-marker, .capital-marker') {
+  initTooltip(selector = '.log-marker, .capital-marker, .world-map-marker') {
     const tooltip = document.createElement('div');
     tooltip.className = 'tooltip';
     document.body.appendChild(tooltip);
@@ -504,13 +512,84 @@ class MapViewer {
   }
 
   addWorldMapMarker(markerData) {
+    // Store data in the state for line drawing
     this.state.worldMapMarkers.set(markerData.regionName, markerData);
-    this.drawProvinceShapes();
+    
+    // Create DOM marker with metadata
+    const center = this.state.regionCenters[markerData.regionName];
+    if (center && this.elements.worldMapMarkerContainer) {
+      const scale = this.getMapScale();
+      const x = center.x * scale.scaleX + scale.offsetX;
+      const y = center.y * scale.scaleY + scale.offsetY;
+      const markerSize = this.isMobile() ? 
+        this.config.worldMapMarkerStyle.size.mobile : 
+        this.config.worldMapMarkerStyle.size.desktop;
+      
+      // Check if this is the final marker
+      const markersArray = Array.from(this.state.worldMapMarkers.values());
+      const isLastMarker = markersArray.length > 0 && 
+                          markersArray[markersArray.length - 1].regionName === markerData.regionName;
+      
+      const marker = document.createElement('div');
+      marker.className = 'world-map-marker';
+      
+      // Add 'recent' class to the final marker
+      if (isLastMarker) {
+        marker.classList.add('recent');
+      }
+      
+      marker.style.left = `${x - markerSize/2}px`;
+      marker.style.top = `${y - markerSize/2}px`;
+      marker.style.width = `${markerSize}px`;
+      marker.style.height = `${markerSize}px`;
+      marker.style.backgroundImage = `url('${this.config.baseS3Url}/img/daggerwalk/Daggerwalk.ico')`;
+      
+      // Add metadata as data attributes
+      marker.dataset.regionName = markerData.regionName;
+      
+      // Add region data if available
+      const regionData = this.state.regionData.find(r => r.name === markerData.regionName);
+      if (regionData) {
+        if (regionData.province) marker.dataset.province = regionData.province;
+        if (regionData.climate) marker.dataset.climate = regionData.climate;
+      }
+      
+      // Add click handler
+      marker.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        this.showRegionMap(markerData.regionName, center.x, center.y);
+        this.fetchRegionData(markerData.regionName);
+        this.updateUrl(markerData.regionName);
+      });
+      
+      // Remove any previous 'recent' markers
+      const existingMarkers = this.elements.worldMapMarkerContainer.querySelectorAll('.world-map-marker.recent');
+      existingMarkers.forEach(existingMarker => {
+        existingMarker.classList.remove('recent');
+      });
+      
+      this.elements.worldMapMarkerContainer.appendChild(marker);
+    }
+    
+    this.drawConnectingLines();
   }
 
   clearWorldMapMarkers() {
+    // Clear the state data
     this.state.worldMapMarkers.clear();
-    this.drawProvinceShapes();
+    
+    // Clear DOM markers
+    if (this.elements.worldMapMarkerContainer) {
+      while (this.elements.worldMapMarkerContainer.firstChild) {
+        this.elements.worldMapMarkerContainer.removeChild(
+          this.elements.worldMapMarkerContainer.firstChild
+        );
+      }
+    }
+    
+    this.drawConnectingLines();
   }
 
   addCapitalMarker(regionCapitalData) {
@@ -802,28 +881,30 @@ class MapViewer {
   }
 
   drawProvinceShapes() {
-    // Cancel any existing animation frame first to prevent accumulation
-    this.cancelProvinceShapesAnimation();
+    this.drawConnectingLines();
+    this.updateWorldMarkerPositions();
+  }
+
+  updateWorldMarkerPositions() {
+    if (!this.elements.worldMapMarkerContainer) return;
     
-    this.setupCanvas();
     const scale = this.getMapScale();
-    const markersArray = Array.from(this.state.worldMapMarkers.values());
-    const lastMarker = markersArray[0];
-  
-    if (this.state.worldMapMarkers.size > 1) {
-      this.drawConnectingLines(markersArray, scale);
-    }
-  
-    this.drawWorldMapMarkers(markersArray, scale, lastMarker);
-  
-    if (this.state.hoveredProvince) {
-      this.drawProvinceLabel();
-    }
-  
-    // Only continue the animation loop if we're in the world map view
-    if (!this.elements.worldMapView.classList.contains('hidden')) {
-      this.animationFrameId = requestAnimationFrame(() => this.drawProvinceShapes());
-    }
+    const markers = this.elements.worldMapMarkerContainer.querySelectorAll('.world-map-marker');
+    
+    markers.forEach(marker => {
+      const regionName = marker.dataset.regionName;
+      const center = this.state.regionCenters[regionName];
+      if (center) {
+        const x = center.x * scale.scaleX + scale.offsetX;
+        const y = center.y * scale.scaleY + scale.offsetY;
+        const markerSize = this.isMobile() ? 
+          this.config.worldMapMarkerStyle.size.mobile : 
+          this.config.worldMapMarkerStyle.size.desktop;
+        
+        marker.style.left = `${x - markerSize/2}px`;
+        marker.style.top = `${y - markerSize/2}px`;
+      }
+    });
   }
 
   setupCanvas() {
@@ -861,18 +942,64 @@ class MapViewer {
     return lineColor.replace('rgb', 'rgba').replace(')', `,${lineOpacity})`);
   }
   
-  drawConnectingLines(markers, scale) {
-    const sortedMarkers = this.getSortedMarkers(markers);
-    const lineColor = this.getLineColor();
+  drawConnectingLines() {
+    // Cancel any existing animation frame first
+    this.cancelProvinceShapesAnimation();
     
-    this.ctx.strokeStyle = lineColor;
-    this.ctx.fillStyle = lineColor;
-    this.ctx.lineWidth = 2;
+    // Set up canvas
+    this.setupCanvas();
+    const scale = this.getMapScale();
+    const markersArray = Array.from(this.state.worldMapMarkers.values());
     
-    for (let i = 0; i < sortedMarkers.length - 1; i++) {
-      const current = sortedMarkers[i];
-      const next = sortedMarkers[i + 1];
-      this.drawDottedLine(current, next, scale);
+    // Only draw lines if we have multiple markers
+    if (markersArray.length > 1) {
+      const sortedMarkers = this.getSortedMarkers(markersArray);
+      const lineColor = this.getLineColor();
+      
+      this.ctx.strokeStyle = lineColor;
+      this.ctx.fillStyle = lineColor;
+      this.ctx.lineWidth = 2;
+      
+      for (let i = 0; i < sortedMarkers.length - 1; i++) {
+        const current = sortedMarkers[i];
+        const next = sortedMarkers[i + 1];
+        
+        // Draw dotted lines between markers
+        const startX = current.center.x * scale.scaleX + scale.offsetX;
+        const startY = current.center.y * scale.scaleY + scale.offsetY;
+        const endX = next.center.x * scale.scaleX + scale.offsetX;
+        const endY = next.center.y * scale.scaleY + scale.offsetY;
+        
+        const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+        const dotSpacing = this.isMobile() ? 10 : 20;
+        const numberOfDots = Math.floor(distance / dotSpacing);
+        
+        const dotSize = this.isMobile() ? 
+          this.config.worldMapMarkerStyle.dotSize.mobile : 
+          this.config.worldMapMarkerStyle.dotSize.desktop;
+  
+        this.ctx.fillStyle = '#F2E530'; // Set dot color
+        
+        for (let j = 0; j <= numberOfDots; j++) {
+          const ratio = j / numberOfDots;
+          const x = startX + (endX - startX) * ratio;
+          const y = startY + (endY - startY) * ratio;
+          
+          this.ctx.beginPath();
+          this.ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
+      }
+    }
+    
+    // Draw province highlight if needed
+    if (this.state.hoveredProvince) {
+      this.drawProvinceLabel();
+    }
+    
+    // Continue animation loop only in world map view
+    if (!this.elements.worldMapView.classList.contains('hidden')) {
+      this.animationFrameId = requestAnimationFrame(() => this.drawConnectingLines());
     }
   }
 
@@ -1009,19 +1136,24 @@ class MapViewer {
   bindEvents() {
     const { worldMap, regionMap } = this.elements;
     
-    // Create bound function references for later removal
     this.boundHandleMouseMove = this.handleMouseMove.bind(this);
     this.boundHandleMouseLeave = this.handleMouseLeave.bind(this);
-    this.boundHandleMouseDown = () => this.drawProvinceShapes();
-    this.boundHandleMouseUp = () => this.drawProvinceShapes();
+    this.boundHandleMouseDown = () => this.drawConnectingLines();
+    this.boundHandleMouseUp = () => this.drawConnectingLines();
     this.boundHandleWorldMapClick = this.handleWorldMapClick.bind(this);
     this.boundHandleRegionMapClick = () => this.showWorldMap();
+    this.boundHandleResize = () => {
+      this.drawConnectingLines();
+      this.updateWorldMarkerPositions();
+    };
     
-    // Add event listeners using the bound functions
+    // World map event listeners
     worldMap.addEventListener('mousemove', this.boundHandleMouseMove);
     worldMap.addEventListener('mouseleave', this.boundHandleMouseLeave);
     worldMap.addEventListener('click', this.boundHandleWorldMapClick);
     regionMap.addEventListener('click', this.boundHandleRegionMapClick);
+    
+    window.addEventListener('resize', this.boundHandleResize);
   }
 
   handleMouseMove(event) {
@@ -1121,18 +1253,27 @@ class MapViewer {
     // Stop polling
     this.stopLogPolling();
     
-    // Remove event listeners - use bound functions to properly remove them
+    // Remove event listeners
     this.elements.worldMap.removeEventListener('mousemove', this.boundHandleMouseMove);
     this.elements.worldMap.removeEventListener('mouseleave', this.boundHandleMouseLeave);
     this.elements.worldMap.removeEventListener('click', this.boundHandleWorldMapClick);
     this.elements.regionMap.removeEventListener('click', this.boundHandleRegionMapClick);
-
+    
+    // Remove resize listener
+    window.removeEventListener('resize', this.boundHandleResize);
+  
+    // Remove tooltip events
     document.removeEventListener('mouseover', this.tooltipMouseOverHandler);
     document.removeEventListener('mouseout', this.tooltipMouseOutHandler);
     
     // Clear markers
     this.clearLogMarkers();
     this.clearWorldMapMarkers();
+    
+    // Remove world map container if it exists
+    if (this.elements.worldMapMarkerContainer && this.elements.worldMapMarkerContainer.parentNode) {
+      this.elements.worldMapMarkerContainer.parentNode.removeChild(this.elements.worldMapMarkerContainer);
+    }
   }
 }
 
