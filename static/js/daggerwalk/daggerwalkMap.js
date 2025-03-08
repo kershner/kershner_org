@@ -503,9 +503,6 @@ class MapViewer {
       window.REGION_DATA.forEach((data, i) => this.addWorldMapMarker({
         regionName: data.region,
         latestDate: data.latest_date,
-        location: data.latest_location,
-        weather: data.latest_weather,
-        currentSong: data.latest_current_song,
         order: i
       }));
     }
@@ -525,16 +522,15 @@ class MapViewer {
         this.config.worldMapMarkerStyle.size.mobile : 
         this.config.worldMapMarkerStyle.size.desktop;
       
-      // Check if this is the final marker
+      // Check if this is the most recent marker
       const markersArray = Array.from(this.state.worldMapMarkers.values());
-      const isLastMarker = markersArray.length > 0 && 
-                          markersArray[markersArray.length - 1].regionName === markerData.regionName;
+      const mostRecentMarker = markersArray[0];
+      const isRecentMarker = mostRecentMarker.regionName === markerData.regionName;
       
       const marker = document.createElement('div');
-      marker.className = 'world-map-marker';
+      marker.classList.add('world-map-marker');
       
-      // Add 'recent' class to the final marker
-      if (isLastMarker) {
+      if (isRecentMarker) {
         marker.classList.add('recent');
       }
       
@@ -546,6 +542,7 @@ class MapViewer {
       
       // Add metadata as data attributes
       marker.dataset.regionName = markerData.regionName;
+      marker.dataset.lastHere = this.convertToEST(markerData.latestDate);
       
       // Add region data if available
       const regionData = this.state.regionData.find(r => r.name === markerData.regionName);
@@ -564,12 +561,6 @@ class MapViewer {
         this.updateUrl(markerData.regionName);
       });
       
-      // Remove any previous 'recent' markers
-      const existingMarkers = this.elements.worldMapMarkerContainer.querySelectorAll('.world-map-marker.recent');
-      existingMarkers.forEach(existingMarker => {
-        existingMarker.classList.remove('recent');
-      });
-      
       this.elements.worldMapMarkerContainer.appendChild(marker);
     }
     
@@ -577,18 +568,10 @@ class MapViewer {
   }
 
   clearWorldMapMarkers() {
-    // Clear the state data
-    this.state.worldMapMarkers.clear();
-    
-    // Clear DOM markers
     if (this.elements.worldMapMarkerContainer) {
-      while (this.elements.worldMapMarkerContainer.firstChild) {
-        this.elements.worldMapMarkerContainer.removeChild(
-          this.elements.worldMapMarkerContainer.firstChild
-        );
-      }
+      this.elements.worldMapMarkerContainer.innerHTML = '';
     }
-    
+    this.state.worldMapMarkers.clear();
     this.drawConnectingLines();
   }
 
