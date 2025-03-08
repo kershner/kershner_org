@@ -8,7 +8,6 @@ const daggerwalkMapFilters = {
   },
   
   init() {
-    console.log('daggerwalkMapFilters.init()');
     this.cacheElements();
     this.bindEvents();
     this.updateGlobalState();
@@ -22,14 +21,21 @@ const daggerwalkMapFilters = {
       dateTo: document.querySelector('#date-to'),
       poiToggle: document.querySelector('#poi-toggle'),
       poiSearch: document.querySelector('#poi-search'),
-      resetButton: document.querySelector('#reset-map-filters')
+      resetButton: document.querySelector('#reset-map-filters'),
+      dateFilterShortcuts: document.querySelector('.date-filter-shortcuts')
     };
   },
   
   bindEvents() {
     // Bind all event listeners with optional chaining for safety
-    this.elements.toggleButton?.addEventListener('click', () => 
-      this.elements.container.classList.toggle('hidden'));
+    this.elements.toggleButton?.addEventListener('click', () => {
+      this.elements.toggleButton.classList.toggle('active')  ;
+      this.elements.container.classList.toggle('hidden')
+      }
+    );
+    
+    // Set up date filter shortcuts
+    this.setupDateFilterShortcutHandlers();
       
     this.elements.dateFrom?.addEventListener('input', this.handleDateChange.bind(this));
     this.elements.dateTo?.addEventListener('input', this.handleDateChange.bind(this));
@@ -61,6 +67,60 @@ const daggerwalkMapFilters = {
     });
     
     return true;
+  },
+
+  setupDateFilterShortcutHandlers() {
+    const spans = document.querySelectorAll('.date-filter-shortcuts span');
+    
+    spans.forEach(span => {
+      span.addEventListener('click', (e) => {
+        const filterText = e.target.textContent.trim();
+        
+        // Set date range based on the selected shortcut
+        const today = new Date();
+        let dateFrom = new Date();
+        let dateTo = new Date();
+        
+        switch(filterText) {
+          case 'Today':
+            // Just use today for both
+            break;
+          case 'Yesterday':
+            dateFrom.setDate(today.getDate() - 1);
+            dateTo.setDate(today.getDate() - 1);
+            break;
+          case 'This week':
+            // Go to beginning of current week (Monday)
+            const dayOfWeek = today.getDay() || 7; // Convert Sunday (0) to 7
+            dateFrom.setDate(today.getDate() - dayOfWeek + 1); // Monday
+            break;
+          case 'Last week':
+            // Last week Monday to Sunday
+            const lastWeekDay = today.getDay() || 7;
+            dateFrom.setDate(today.getDate() - lastWeekDay - 6); // Last Monday
+            dateTo.setDate(today.getDate() - lastWeekDay); // Last Sunday
+            break;
+          default:
+            return;
+        }
+        
+        // Format dates for input fields (YYYY-MM-DD)
+        const formatDate = (date) => {
+          return date.toISOString().split('T')[0];
+        };
+        
+        // Update input fields
+        if (this.elements.dateFrom) {
+          this.elements.dateFrom.value = formatDate(dateFrom);
+        }
+        if (this.elements.dateTo) {
+          this.elements.dateTo.value = formatDate(dateTo);
+        }
+        
+        // Trigger the date filter
+        this.handleDateChange();
+      });
+    });
   },
   
   handlePoiToggle(e) {
@@ -112,10 +172,7 @@ const daggerwalkMapFilters = {
     this.updateGlobalState();
     
     // Show all markers
-    document.querySelectorAll('.log-marker').forEach(marker => 
-      marker.classList.remove('hidden'));
-    
-    console.log('Map filters reset');
+    document.querySelectorAll('.log-marker').forEach(marker => marker.classList.remove('hidden'));
   },
   
   updateGlobalState() {

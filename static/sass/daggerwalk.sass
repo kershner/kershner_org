@@ -574,9 +574,11 @@ blockquote
 
     .map-filters-toggle-btn
       cursor: pointer
-      font-weight: bold
       color: var(--accent-color)
 
+      &.active
+        font-weight: bold
+      
       &:hover
         opacity: 0.6
 
@@ -585,7 +587,7 @@ blockquote
       margin-top: 0.5rem
       right: 0.35rem
       z-index: 1
-      padding: 1rem
+      padding: 0.25rem 0.75rem
       background-color: var(--background-color)
       border: $border-width solid var(--accent-color)
       border-radius: $border-radius
@@ -602,8 +604,7 @@ blockquote
           all: unset
       
       .map-filter-row
-        // min-width: 10rem
-        padding: 1rem 0
+        padding: 0.5rem 0
         border-bottom: 0.1rem solid var(--alternate-dark)
         &:last-of-type
           border-bottom: none
@@ -614,27 +615,56 @@ blockquote
         font-weight: bold
         color: var(--accent-color)
       
-      .map-filter-input
+      .map-filter-input-wrapper
         display: flex
+
+      .map-filter-input
         align-items: center
 
+        &.date-input
+          display: flex
+
         .poi-checkbox
-          width: 1.5rem
-          height: 1.5rem
+          width: 1.65rem
+          height: 1.65rem
+          margin: 0 0.25rem
           cursor: pointer
           vertical-align: middle
         
       .date-picker
         width: 45%
         padding: 0.25rem
-        
+
       .date-separator
         margin: 0 0.25rem
         color: var(--accent-color)
+
+      .date-filter-shortcuts
+        padding: 0.25rem 0
+        
+        span
+          cursor: pointer
+          color: var(--accent-color)
+          text-decoration: underline
+          &:hover
+            opacity: 0.6
+          
+          &:not(:last-child)
+            &:after
+              content: "·"
+              display: inline-block
+              margin: 0 .1rem
+              font-size: 2rem
+              line-height: 0
+              color: var(--accent-color)
+              top: 0.35rem
+              position: relative
         
       .search-input
-        width: 100%
-        padding: 0.25rem
+        flex: 1
+        input
+          width: 95%
+          padding: 0.25rem
         
       .poi-checkbox
         margin-right: 0.25rem

@@ -2,26 +2,32 @@
   <!-- Date Range Filter -->
   <div class="map-filter-row">
     <label class="map-filter-label">Date Range</label>
-    <div class="map-filter-input">
+    <div class="map-filter-input date-input">
       <input type="date" class="date-picker" id="date-from" placeholder="From">
       <span class="date-separator">to</span>
       <input type="date" class="date-picker" id="date-to" placeholder="To">
     </div>
-  </div>
-  
-  <!-- Point of Interest Checkbox -->
-  <div class="map-filter-row">
-    <label class="map-filter-label">Points of Interest</label>
-    <div class="map-filter-input">
-      <input type="checkbox" id="poi-toggle" class="poi-checkbox" checked>
+
+    <div class="date-filter-shortcuts">
+      <span title="Today">Today</span>
+      <span title="Yesterday">Yesterday</span>
+      <span title="This week">This week</span>
+      <span title="Last week">Last week</span>
     </div>
   </div>
   
-  <!-- POI Search Input -->
+  <!-- POIs -->
   <div class="map-filter-row">
-    <label class="map-filter-label">POI Search</label>
-    <div class="map-filter-input">
-      <input type="text" id="poi-search" class="search-input" placeholder="Search for points of interest...">
+    <label class="map-filter-label">Points of Interest</label>
+    
+    <div class="map-filter-input-wrapper">
+      <div class="map-filter-input">
+        <input type="checkbox" id="poi-toggle" class="poi-checkbox" checked>
+      </div>
+
+      <div class="map-filter-input search-input">
+        <input type="text" id="poi-search" placeholder="Search for points of interest...">
+      </div>
     </div>
   </div>
 
