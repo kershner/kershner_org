@@ -66,6 +66,15 @@ const daggerwalkMapFilters = {
       marker.classList.toggle('hidden', !(markerDate >= dateFrom && markerDate < adjustedDateTo));
     });
     
+    // Also filter world-map-markers by date range using the latest-date attribute
+    document.querySelectorAll('.world-map-marker').forEach(marker => {
+      const latestDateStr = marker.getAttribute('data-latest-date');
+      if (latestDateStr) {
+        const markerDate = new Date(latestDateStr);
+        marker.classList.toggle('hidden', !(markerDate >= dateFrom && markerDate < adjustedDateTo));
+      }
+    });
+    
     return true;
   },
 

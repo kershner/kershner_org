@@ -169,6 +169,7 @@ class MapViewer {
               break;
             // Skip the emoji entry
             case 'emoji': return '';
+            case 'latestDate': return '';
           }
 
           const key = k.replace(/([A-Z])/g, ' $1')
@@ -463,9 +464,6 @@ class MapViewer {
     
     // Start a new animation loop
     this.animationFrameId = requestAnimationFrame(() => this.drawProvinceShapes());
-
-    // TODO - remove once filters apply to World Map
-    document.querySelector('.map-filters-wrapper').classList.add('hidden');
   }
 
   async showRegionMap(regionName, x, y) {
@@ -482,9 +480,6 @@ class MapViewer {
     const regionData = this.state.regionMap[regionName];
     const otherRegionData = this.state.regionData.filter(item => item.name === regionName);
     const selectedPart = this.getSelectedRegionPart(regionData, x, y);
-
-    // TODO - remove once filters apply to World Map
-    document.querySelector('.map-filters-wrapper').classList.remove('hidden');
   
     return new Promise((resolve) => {
       this.elements.regionMap.onload = () => {
@@ -543,6 +538,7 @@ class MapViewer {
       // Add metadata as data attributes
       marker.dataset.regionName = markerData.regionName;
       marker.dataset.lastHere = this.convertToEST(markerData.latestDate);
+      marker.dataset.latestDate = markerData.latestDate;
       
       // Add region data if available
       const regionData = this.state.regionData.find(r => r.name === markerData.regionName);
