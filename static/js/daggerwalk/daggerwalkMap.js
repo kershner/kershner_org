@@ -931,11 +931,19 @@ class MapViewer {
     // Set up canvas
     this.setupCanvas();
     const scale = this.getMapScale();
-    const markersArray = Array.from(this.state.worldMapMarkers.values());
     
-    // Only draw lines if we have multiple markers
-    if (markersArray.length > 1) {
-      const sortedMarkers = this.getSortedMarkers(markersArray);
+    // Filter to only get visible markers
+    const visibleMarkers = [];
+    this.state.worldMapMarkers.forEach((markerData, regionName) => {
+      const domMarker = document.querySelector(`.world-map-marker[data-region="${regionName}"]`);
+      if (domMarker && !domMarker.classList.contains('hidden')) {
+        visibleMarkers.push(markerData);
+      }
+    });
+    
+    // Only draw lines if we have multiple visible markers
+    if (visibleMarkers.length > 1) {
+      const sortedMarkers = this.getSortedMarkers(visibleMarkers);
       const lineColor = this.getLineColor();
       
       this.ctx.strokeStyle = lineColor;

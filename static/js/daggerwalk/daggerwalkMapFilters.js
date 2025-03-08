@@ -75,6 +75,11 @@ const daggerwalkMapFilters = {
       }
     });
     
+    // Redraw the connecting lines after filtering the markers
+    if (window.mapViewer) {
+      window.mapViewer.drawConnectingLines();
+    }
+    
     return true;
   },
 
@@ -181,7 +186,16 @@ const daggerwalkMapFilters = {
     this.updateGlobalState();
     
     // Show all markers
-    document.querySelectorAll('.log-marker').forEach(marker => marker.classList.remove('hidden'));
+    document.querySelectorAll('.log-marker').forEach(marker => {
+      marker.classList.remove('hidden');
+      marker.classList.remove('poi-filter-on');
+    });
+    document.querySelectorAll('.world-map-marker').forEach(marker => marker.classList.remove('hidden'));
+    
+    // Redraw the connecting lines after resetting all markers to visible
+    if (window.mapViewer) {
+      window.mapViewer.drawConnectingLines();
+    }
   },
   
   updateGlobalState() {
