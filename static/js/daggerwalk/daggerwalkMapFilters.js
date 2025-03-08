@@ -139,7 +139,7 @@ const daggerwalkMapFilters = {
     this.updateGlobalState();
     
     document.querySelectorAll('.log-marker.poi').forEach(marker => 
-      marker.classList.toggle('hidden', !showPoi));
+      marker.classList.toggle('poi-filter-on', !showPoi));
   },
   
   handlePoiSearch() {

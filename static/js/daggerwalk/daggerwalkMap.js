@@ -536,16 +536,12 @@ class MapViewer {
       marker.style.backgroundImage = `url('${this.config.baseS3Url}/img/daggerwalk/Daggerwalk.ico')`;
       
       // Add metadata as data attributes
-      marker.dataset.regionName = markerData.regionName;
+      const regionData = this.state.regionData.find(r => r.name === markerData.regionName);
+      marker.dataset.region = markerData.regionName;
+      marker.dataset.province = regionData.province;
+      marker.dataset.climate = regionData.climate;
       marker.dataset.lastHere = this.convertToEST(markerData.latestDate);
       marker.dataset.latestDate = markerData.latestDate;
-      
-      // Add region data if available
-      const regionData = this.state.regionData.find(r => r.name === markerData.regionName);
-      if (regionData) {
-        if (regionData.province) marker.dataset.province = regionData.province;
-        if (regionData.climate) marker.dataset.climate = regionData.climate;
-      }
       
       // Add click handler
       marker.addEventListener('click', (e) => {
@@ -590,9 +586,15 @@ class MapViewer {
   // Check if a marker should be shown based on global filters
   checkMarkerFilters(markerData) {
     const filters = window.mapFilterValues || {};
+
+    const result = {
+      shouldDisplay: true,
+      isPoi: false,
+      poiFilterOn: !filters.poiToggle
+    };
     
     // Determine if this is a POI
-    const isPoi = markerData.isCapitalMarker || 
+    result.isPoi = markerData.isCapitalMarker || 
                   markerData.type === 'landmark' || 
                   markerData.type === 'poi' ||
                   (markerData.location && 
@@ -602,8 +604,9 @@ class MapViewer {
     // Check POI search filter
     if (filters.poiSearch && filters.poiSearch.trim() !== '') {
       // Non-POI markers should be hidden when searching
-      if (!isPoi) {
-        return false;
+      if (!result.isPoi) {
+        result.shouldDisplay = false;
+        return result;
       }
       
       // For POIs, check if they match the search
@@ -615,17 +618,13 @@ class MapViewer {
       if (!location.includes(searchTerm) && 
           !type.includes(searchTerm) && 
           !capitalCity.includes(searchTerm)) {
-        return false;
+        result.shouldDisplay = false;
+        return result;
       }
     }
     
-    // Check POI toggle
-    if (!filters.poiToggle && isPoi) {
-      return false;
-    }
-    
     // Check date range (only for regular log markers, not POIs)
-    if (!isPoi && filters.dateFrom instanceof Date && filters.dateTo instanceof Date) {
+    if (!result.isPoi && filters.dateFrom instanceof Date && filters.dateTo instanceof Date) {
       const markerDate = markerData.createdAt ? new Date(markerData.createdAt) : null;
       
       // Create an adjusted end date that includes the full day
@@ -633,18 +632,19 @@ class MapViewer {
       adjustedDateTo.setDate(adjustedDateTo.getDate() + 1);
       
       if (markerDate && (markerDate < filters.dateFrom || markerDate >= adjustedDateTo)) {
-        return false;
+        result.shouldDisplay = false;
+        return result;
       }
     }
     
-    return true;
+    return result;
   }
   
   addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
     if (!x || !y) return;
   
     // Check if this marker should be shown based on filters
-    const shouldDisplay = this.checkMarkerFilters(markerData);
+    const filterResult = this.checkMarkerFilters(markerData);
     
     requestAnimationFrame(() => {
       const regionData = this.state.regionMap[regionName];
@@ -656,7 +656,7 @@ class MapViewer {
       const marker = this.createMarkerElement(x, y, regionName, selectedPart, markerData);
       
       // Apply hidden class based on current filter state
-      if (!shouldDisplay) {
+      if (!filterResult.shouldDisplay) {
         marker.classList.add('hidden');
       }
       
@@ -682,17 +682,20 @@ class MapViewer {
         // Set only the capitalCity attribute
         marker.dataset.capitalCity = capitalCity;
       } 
-      else if (markerData.location && 
-              !markerData.location.toLowerCase().includes("wilderness") && 
-              !markerData.location.toLowerCase().includes("ocean")) {
+      else if (filterResult.isPoi) {
         marker.classList.add('poi');
+        
+        // Add the POI filter class if the filter is on
+        if (filterResult.poiFilterOn) {
+          marker.classList.add('poi-filter-on');
+        }
       }
       
       mapContainer.appendChild(marker);
-
+  
       // Keep click handler for all marker types
       const currentTooltipMarker = { ref: null };
-
+  
       marker.addEventListener('click', (e) => {
         e.preventDefault();  // Prevents default action
         e.stopPropagation(); // Stops event from bubbling up to parent elements 
@@ -1007,68 +1010,6 @@ class MapViewer {
       this.ctx.arc(x, y, dotSize, 0, Math.PI * 2);
       this.ctx.fill();
     }
-  }
-
-  drawWorldMapMarkers(markers, scale, lastMarker) {
-    markers.forEach(marker => {
-      const center = this.state.regionCenters[marker.regionName];
-      if (!center) return;
-
-      const x = center.x * scale.scaleX + scale.offsetX;
-      const y = center.y * scale.scaleY + scale.offsetY;
-
-      this.drawWorldMapMarker(x, y, marker === lastMarker);
-    });
-  }
-
-  drawWorldMapMarker(x, y, isLastMarker) {
-    const { lineColor, lineOpacity } = this.config.worldMapMarkerStyle;
-    this.ctx.save();
-    
-    let markerSize = this.isMobile() ? 
-      this.config.worldMapMarkerStyle.size.mobile : 
-      this.config.worldMapMarkerStyle.size.desktop;
-
-    markerSize = isLastMarker ? markerSize : markerSize * 0.7;
-    
-    const borderThickness = this.isMobile() ? 1 : 2;
-
-    if (isLastMarker) {
-      const timestamp = performance.now();
-      const progress = (timestamp % 1500) / 1500; // 1.5s duration
-      const scale = 1 + (Math.sin(progress * Math.PI) * 0.3); // Scale between 1 and 1.3
-      
-      // Apply scale transform
-      this.ctx.translate(x, y);
-      this.ctx.scale(scale, scale);
-      this.ctx.translate(-x, -y);
-    }
-
-    this.ctx.beginPath();
-    this.ctx.arc(x, y, markerSize / 2 + borderThickness, 0, 2 * Math.PI);
-    this.ctx.strokeStyle = isLastMarker ? 'rgba(242, 229, 48, 0.9)' : 'rgba(128, 128, 128, 0.6)';
-    this.ctx.lineWidth = borderThickness;
-    this.ctx.stroke();
-
-    // Set up grayscale filter for inactive markers
-    if (!isLastMarker) {
-      this.ctx.filter = 'grayscale(100%)';
-    }
-
-    // Draw marker image
-    this.ctx.beginPath();
-    this.ctx.arc(x, y, markerSize / 2, 0, 2 * Math.PI);
-    this.ctx.clip();
-    
-    this.ctx.drawImage(
-      this.markerImage,
-      x - markerSize / 2,
-      y - markerSize / 2,
-      markerSize,
-      markerSize
-    );
-    
-    this.ctx.restore();
   }
 
   drawProvinceLabel() {

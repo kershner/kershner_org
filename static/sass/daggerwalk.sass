@@ -188,7 +188,7 @@ $marker-world-size: 24px
 
   &.poi
     background-color: transparent
-    
+
     &::before
       content: attr(data-emoji)
       font-size: $marker-size * 3
@@ -200,6 +200,11 @@ $marker-world-size: 24px
       @media (max-width: $mobile-breakpoint)
         font-size: $marker-size * 2
 
+    &.poi-filter-on
+      background-color: var(--accent-color)
+      &::before
+        content: ''
+        
 .world-marker-container
   position: absolute
   top: 0
@@ -215,7 +220,6 @@ $marker-world-size: 24px
     cursor: pointer
     pointer-events: auto
     z-index: 15
-    transition: transform 0.2s ease
     border: 2px solid var(--accent-color)
     filter: grayscale(100%) brightness(0.8)
     transform: scale(0.7)
@@ -394,8 +398,8 @@ $marker-world-size: 24px
 .tooltip
   position: fixed
   background: var(--background-color)
-  padding: 0.25rem 1rem
-  min-width: 12rem
+  padding: 0.25rem 0.5rem
+  min-width: 14rem
   border-radius: $border-radius
   border: 0.15rem solid var(--accent-color)
   transform: translate(-50%, -100%)
