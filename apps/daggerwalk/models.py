@@ -162,15 +162,15 @@ class DaggerwalkLog(models.Model):
             # Matching the provided seasonal mapping exactly
             seasons = {
                 "Morning Star": "Winter", 
-                "Sun's Dusk": "Winter", 
+                "Sun's Dawn": "Winter", 
                 "Evening Star": "Winter",
                 "First Seed": "Spring", 
                 "Rain's Hand": "Spring",
                 "Second Seed": "Summer", 
                 "Midyear": "Summer", 
-                "Sun's Height": "Summer",
-                "Last Seed": "Autumn", 
+                "Last Seed": "Summer", 
                 "Hearthfire": "Autumn", 
+                "Sun's Dusk": "Autumn", 
                 "Frostfall": "Autumn"
             }
             
