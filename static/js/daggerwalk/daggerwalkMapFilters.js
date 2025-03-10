@@ -11,6 +11,16 @@ const daggerwalkMapFilters = {
     this.cacheElements();
     this.bindEvents();
     this.updateGlobalState();
+    
+    // Set default to "This week" on page load
+    if (this.elements.dateFilterShortcuts) {
+      const thisWeekShortcut = this.elements.dateFilterShortcuts.querySelector('span:nth-child(3)');
+      if (thisWeekShortcut) {
+        // Add active class
+        thisWeekShortcut.classList.add('active');
+        thisWeekShortcut.click();
+      }
+    }
   },
   
   cacheElements() {
@@ -88,6 +98,12 @@ const daggerwalkMapFilters = {
     
     spans.forEach(span => {
       span.addEventListener('click', (e) => {
+        // Remove active class from all shortcuts
+        spans.forEach(s => s.classList.remove('active'));
+        
+        // Add active class to clicked shortcut
+        e.target.classList.add('active');
+        
         const filterText = e.target.textContent.trim();
         
         // Set date range based on the selected shortcut
@@ -144,7 +160,7 @@ const daggerwalkMapFilters = {
     this.updateGlobalState();
     
     document.querySelectorAll('.log-marker.poi').forEach(marker => 
-      marker.classList.toggle('poi-filter-on', !showPoi));
+      marker.classList.toggle('hidden', !showPoi));
   },
   
   handlePoiSearch() {
@@ -185,10 +201,16 @@ const daggerwalkMapFilters = {
     this.state.poiToggle = true;
     this.updateGlobalState();
     
+    // Remove active class from all date filter shortcuts
+    if (this.elements.dateFilterShortcuts) {
+      this.elements.dateFilterShortcuts.querySelectorAll('span').forEach(span => {
+        span.classList.remove('active');
+      });
+    }
+    
     // Show all markers
     document.querySelectorAll('.log-marker').forEach(marker => {
       marker.classList.remove('hidden');
-      marker.classList.remove('poi-filter-on');
     });
     document.querySelectorAll('.world-map-marker').forEach(marker => marker.classList.remove('hidden'));
     

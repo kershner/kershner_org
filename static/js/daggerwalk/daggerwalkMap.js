@@ -716,7 +716,7 @@ class MapViewer {
         
         // Add the POI filter class if the filter is on
         if (filterResult.poiFilterOn) {
-          marker.classList.add('poi-filter-on');
+          marker.classList.add('hidden');
         }
       }
       

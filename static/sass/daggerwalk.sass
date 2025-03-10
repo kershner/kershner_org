@@ -200,10 +200,6 @@ $marker-world-size: 24px
       @media (max-width: $mobile-breakpoint)
         font-size: $marker-size * 2
 
-    &.poi-filter-on
-      background-color: var(--accent-color)
-      &::before
-        content: ''
         
 .world-marker-container
   position: absolute
@@ -677,19 +673,17 @@ blockquote
           cursor: pointer
           color: var(--accent-color)
           text-decoration: underline
+          padding: 0.1rem 0.3rem
+
+          &.active
+            background-color: var(--accent-color)
+            color: var(--text-color)
+            text-decoration: none
+            text-align: center
+            border-radius: $border-radius
+
           &:hover
             opacity: 0.6
-          
-          &:not(:last-child)
-            &:after
-              content: "·"
-              display: inline-block
-              margin: 0 .1rem
-              font-size: 2rem
-              line-height: 0
-              color: var(--accent-color)
-              top: 0.35rem
-              position: relative
         
       .search-input
         flex: 1
