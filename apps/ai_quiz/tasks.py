@@ -18,12 +18,28 @@ def process_quiz(quiz_id):
     new_quiz = AiQuiz.objects.filter(id=quiz_id).first()
 
     system_prompt = f'''
-    You are a quiz generator returning a list of questions.
-    Include only questions in the response.
+    You are a quiz generator that returns a strict list of formatted questions.
+    Each question must follow this exact format:  
+    question{DELIMIT}answer{DELIMIT}name of source  
+
+    - Do not include a question unless it has a complete answer and a valid source.  
+    - Do not add placeholders like "answer needed" or "source needed".  
+    - Only output the questions. No explanations, no extra text.  
+
+    Example output:  
+    What is the capital of France?{DELIMIT}Paris{DELIMIT}National Geographic  
+    Who wrote Hamlet?{DELIMIT}William Shakespeare{DELIMIT}Oxford Literature Guide  
     '''
+
     api_prompt = f'''
-    Generate {new_quiz.num_questions} questions about {new_quiz.subject}.
-    Use this format: question{DELIMIT}answer{DELIMIT}name of source
+    Generate {new_quiz.num_questions} quiz questions about {new_quiz.subject}.  
+    Each question must follow this format: question{DELIMIT}answer{DELIMIT}name of source  
+
+    - Do NOT include a question if the answer or source is missing.  
+    - Ensure all answers are factual and sources are real.  
+    - Only return the quiz questions in the required format.  
+
+    Begin:
     '''
 
     log.info(f"system_prompt: {system_prompt}")
