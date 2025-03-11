@@ -159,7 +159,7 @@ def delete_previous_logs(request, log_id):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def latest_log(request):
-    log = DaggerwalkLog.objects.latest('created_at')
+    log = DaggerwalkLog.objects.exclude(region="Ocean").latest('created_at')
     response_data = {
         'log': DaggerwalkLogSerializer(log).data
     }

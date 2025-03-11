@@ -70,13 +70,21 @@ const daggerwalkMapFilters = {
     const adjustedDateTo = new Date(dateTo);
     adjustedDateTo.setDate(adjustedDateTo.getDate() + 1);
     
-    // Filter log markers by date range
-    document.querySelectorAll('.log-marker').forEach(marker => {
+    // Filter non-POI markers by date range
+    document.querySelectorAll('.log-marker:not(.poi)').forEach(marker => {
       const markerDate = new Date(marker.getAttribute('data-created-at'));
       marker.classList.toggle('hidden', !(markerDate >= dateFrom && markerDate < adjustedDateTo));
     });
     
-    // Also filter world-map-markers by date range using the latest-date attribute
+    // Only filter POI markers if the POI toggle is on
+    if (!this.state.poiToggle) {
+      document.querySelectorAll('.log-marker.poi').forEach(marker => {
+        const markerDate = new Date(marker.getAttribute('data-created-at'));
+        marker.classList.toggle('hidden', !(markerDate >= dateFrom && markerDate < adjustedDateTo));
+      });
+    }
+    
+    // Filter world-map-markers by date range
     document.querySelectorAll('.world-map-marker').forEach(marker => {
       const latestDateStr = marker.getAttribute('data-latest-date');
       if (latestDateStr) {
@@ -113,22 +121,24 @@ const daggerwalkMapFilters = {
         
         switch(filterText) {
           case 'Today':
-            // Just use today for both
+            // Last 24 hours: from 24 hours ago until now
+            dateFrom = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+            dateTo = today; // Current time today
             break;
           case 'Yesterday':
-            dateFrom.setDate(today.getDate() - 1);
-            dateTo.setDate(today.getDate() - 1);
+            // From 48 hours ago until 24 hours ago
+            dateFrom = new Date(today.getTime() - 48 * 60 * 60 * 1000);
+            dateTo = new Date(today.getTime() - 24 * 60 * 60 * 1000);
             break;
           case 'This week':
-            // Go to beginning of current week (Monday)
-            const dayOfWeek = today.getDay() || 7; // Convert Sunday (0) to 7
-            dateFrom.setDate(today.getDate() - dayOfWeek + 1); // Monday
+            // Last 7 days (including today)
+            dateFrom.setDate(today.getDate() - 6);
+            // dateTo is already today
             break;
           case 'Last week':
-            // Last week Monday to Sunday
-            const lastWeekDay = today.getDay() || 7;
-            dateFrom.setDate(today.getDate() - lastWeekDay - 6); // Last Monday
-            dateTo.setDate(today.getDate() - lastWeekDay); // Last Sunday
+            // 14 days ago to 7 days ago
+            dateFrom.setDate(today.getDate() - 13);
+            dateTo.setDate(today.getDate() - 7);
             break;
           default:
             return;
