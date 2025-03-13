@@ -48,20 +48,19 @@ colorWave.colorPrep = function() {
 
 colorWave.colorElements = function() {
     colorWave.elements.forEach(colorElement => {
-        let timerPointer = 0.0;
         let colorwaveElements = [...colorElement.querySelectorAll(`.${colorWave.dynamicClass}`)];
-
-        colorwaveElements.forEach(colorElement => {
-            colorElement.style.color = null;
-
-            colorElement.addEventListener('transitionend', () => {
-                colorElement.style.color = null;
-            });
-
+        
+        // Add transition property to each element
+        colorwaveElements.forEach(element => {
+            element.style.transition = "color 0.2s ease-in";
+        });
+        
+        let timerPointer = 0.0;
+        colorwaveElements.forEach(element => {
             setTimeout(function() {
-                colorElement.style.color = colorWave.color;
+                element.style.color = colorWave.color;
             }, timerPointer);
-
+            
             timerPointer += colorWave.timerIncrement;
         });
     });
