@@ -161,7 +161,7 @@ portfolio.colorGridInit = function() {
         JSON.stringify({
             cellSize: isMobile ? 40 : 80,
             borderStyle: "hidden",
-            autoInt: 1100,
+            autoInt: 2000,
             autoDur: 0.4,
             autoOn: true,
             menuOpen: false,
