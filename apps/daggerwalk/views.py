@@ -1,10 +1,11 @@
 from django.contrib.admin.views.decorators import staff_member_required
+from apps.api.views import BaseListAPIView
 from apps.daggerwalk.utils import get_map_data, get_latest_log_data
 from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from .models import DaggerwalkLog, Region
+from .models import POI, DaggerwalkLog, Region
 from rest_framework.views import APIView
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -15,6 +16,7 @@ from django.conf import settings
 from .serializers import (
     DaggerwalkLogSerializer, 
     POISerializer,
+    RegionSerializer,
 )
 import json
 
@@ -161,3 +163,38 @@ def latest_log(request):
     response_data = get_latest_log_data()
     return Response(response_data)
     
+    
+# API Views
+class RegionListAPIView(BaseListAPIView):
+    queryset = Region.objects.all()
+    serializer_class = RegionSerializer
+
+
+class POIListAPIView(BaseListAPIView):
+    queryset = POI.objects.all()
+    serializer_class = POISerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        region_id = self.request.query_params.get('region_id')
+        if region_id:
+            queryset = queryset.filter(region_id=region_id)
+        return queryset
+
+
+class DaggerwalkLogListAPIView(BaseListAPIView):
+    queryset = DaggerwalkLog.objects.all()
+    serializer_class = DaggerwalkLogSerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        region_id = self.request.query_params.get('region_id')
+        if region_id:
+            queryset = queryset.filter(region_fk_id=region_id)
+            
+        poi_id = self.request.query_params.get('poi_id')
+        if poi_id:
+            queryset = queryset.filter(poi_id=poi_id)
+            
+        return queryset
