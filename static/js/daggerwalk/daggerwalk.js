@@ -1,5 +1,6 @@
 const daggerwalk = {
   latestLog: {},
+  inOcean: false,
   pollInterval: null,
   twitchPlayer: null,
 
@@ -36,9 +37,13 @@ const daggerwalk = {
     const seasonIcon = seasonEmoji[log.season] || "❓";
     const climateLocationStr = `${log.region_fk.emoji}${log.region_fk.climate.replace(/s$/, '')} ${log.location.toLowerCase()}`;
     const location = log.poi ? `${log.poi.emoji}${log.poi.name}` : climateLocationStr;
+    let locationDisplay = `<h2><span>🌍${log.region}</span><span>${location}</span></h2>`;
+    if (this.inOcean) {
+      locationDisplay = `<h2><span>🌊Ocean</span></h2>`;
+    }
 
     status.innerHTML = `
-      <h2><span>🌍${log.region}</span><span>${location}</span></h2>
+      ${locationDisplay}
       ${this.formatTime(log.date)}
       <p>${seasonIcon} ${log.season}  ${weatherIcon} ${log.weather}
       ${log.current_song ? `  🎵 ${log.current_song}` : ''}</p>
@@ -61,21 +66,24 @@ const daggerwalk = {
     }
 
     try {
+        const buffer = 10000;  // 10s  
         const response = await fetch('/daggerwalk/logs/latest/');
-        const newLog = await response.json();
-        const buffer = 10000;  // 10s
+        const responseJson = await response.json();
+        const newLog = JSON.parse(responseJson.log);
+        const inOcean = responseJson.in_ocean === 'true';
 
         // Ensure created_at exists and is valid before scheduling the next fetch
-        if (!newLog.log.created_at) {
+        if (!newLog.created_at) {
             this.scheduleNextFetch(buffer);
             return;
         }
 
-        this.latestLog = newLog.log;
+        this.latestLog = newLog;
+        this.inOcean = inOcean;
         this.updateStatus();
 
         // Calculate the next fetch time based on the new log's created_at
-        const newLogTime = new Date(newLog.log.created_at).getTime();
+        const newLogTime = new Date(newLog.created_at).getTime();
         const nextFetchTime = newLogTime + fiveMinutesAndBuffer;
         const delay = Math.max(nextFetchTime - Date.now(), buffer); // Ensure a minimum delay of 10 sec
         
@@ -282,9 +290,13 @@ daggerwalk.init = () => {
   });
   
   mapTab.addEventListener('change', () => {
-    const region = daggerwalk.latestLog?.region;
+    let region = daggerwalk.latestLog?.region;
     if (!region) {
       return;
+    }
+
+    if (region === 'Ocean') {
+      region = 'world';
     }
 
     const urlParams = new URLSearchParams(window.location.search);

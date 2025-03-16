@@ -1,5 +1,6 @@
-from apps.daggerwalk.models import Region
-
+from apps.daggerwalk.serializers import DaggerwalkLogSerializer
+from apps.daggerwalk.models import DaggerwalkLog, Region
+import json
 
 def get_map_data():
     """Fetch and structure region data for provinceShapes, regionMap, and regionData."""
@@ -56,4 +57,23 @@ def get_map_data():
         "provinceShapes": province_shapes,
         "regionMap": region_map,
         "regionData": region_data,
+    }
+
+
+def get_latest_log_data():
+    # Get the absolute latest log regardless of region
+    actual_latest_log = DaggerwalkLog.objects.latest('created_at')
+    in_ocean = actual_latest_log.region == "Ocean"
+    
+    # If the latest log is from ocean, get the latest non-ocean log
+    if in_ocean:
+        latest_non_ocean_log = DaggerwalkLog.objects.exclude(region="Ocean").latest('created_at')
+        log_data = DaggerwalkLogSerializer(latest_non_ocean_log).data
+    else:
+        # If latest log is not from ocean, use it directly
+        log_data = DaggerwalkLogSerializer(actual_latest_log).data
+    
+    return {
+        'log': json.dumps(log_data, default=str),
+        'in_ocean': 'true' if in_ocean else 'false'
     }

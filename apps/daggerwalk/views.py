@@ -1,8 +1,8 @@
 from django.contrib.admin.views.decorators import staff_member_required
+from apps.daggerwalk.utils import get_map_data, get_latest_log_data
 from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
-from apps.daggerwalk.utils import get_map_data
 from rest_framework.response import Response
 from .models import DaggerwalkLog, Region
 from rest_framework.views import APIView
@@ -48,13 +48,12 @@ class DaggerwalkHomeView(APIView):
         )
 
         map_data = get_map_data()
-        latest_log = DaggerwalkLog.objects.exclude(region="Ocean").latest('created_at')
-        serialized_log = DaggerwalkLogSerializer(latest_log).data
+        latest_log_data = get_latest_log_data()
         
         ctx = {
             **map_data,
+            **latest_log_data,
             'region_data': json.dumps(list(region_data), default=str),
-            'latest_log': json.dumps(serialized_log, default=str),
         }
         
         return render(request, self.template_path, ctx)
@@ -159,8 +158,6 @@ def delete_previous_logs(request, log_id):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def latest_log(request):
-    log = DaggerwalkLog.objects.exclude(region="Ocean").latest('created_at')
-    response_data = {
-        'log': DaggerwalkLogSerializer(log).data
-    }
+    response_data = get_latest_log_data()
     return Response(response_data)
+    

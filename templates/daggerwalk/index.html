@@ -69,7 +69,8 @@
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalk.js"></script>
     <script type="text/javascript">
         document.addEventListener("DOMContentLoaded", () => {
-            daggerwalk.latestLog = {{ latest_log|safe }};
+            daggerwalk.latestLog = {{ log|safe }};
+            daggerwalk.inOcean = {{ in_ocean }};
             daggerwalk.init();
         });
     </script>
