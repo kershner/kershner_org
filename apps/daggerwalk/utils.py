@@ -65,10 +65,21 @@ def get_latest_log_data():
     actual_latest_log = DaggerwalkLog.objects.latest('created_at')
     in_ocean = actual_latest_log.region == "Ocean"
     
-    # If the latest log is from ocean, get the latest non-ocean log
     if in_ocean:
+        # Get the latest non-ocean log for location data
         latest_non_ocean_log = DaggerwalkLog.objects.exclude(region="Ocean").latest('created_at')
+        # Serialize the non-ocean log first
         log_data = DaggerwalkLogSerializer(latest_non_ocean_log).data
+        
+        # Then override with environmental data from the ocean log
+        ocean_log_data = DaggerwalkLogSerializer(actual_latest_log).data
+        # Update only the environmental fields
+        log_data.update({
+            'date': ocean_log_data['date'],
+            'weather': ocean_log_data['weather'],
+            'season': ocean_log_data['season'],
+            'current_song': ocean_log_data['current_song']
+        })
     else:
         # If latest log is not from ocean, use it directly
         log_data = DaggerwalkLogSerializer(actual_latest_log).data
