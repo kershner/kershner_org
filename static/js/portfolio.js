@@ -23,7 +23,9 @@ const mobileBreakpoint = 768;
 const isMobile = window.innerWidth <= mobileBreakpoint;
 
 portfolio.init = function(baseS3Url) {
-    portfolio.currentColor = randomColor({luminosity: 'light'});
+    const darkMode = document.body.classList.contains('dark-mode');
+    const luminosity = darkMode ? 'bright' : 'dark';
+    portfolio.currentColor = randomColor({luminosity: luminosity});
     portfolio.rotateColors();
     portfolio.colorGridInit();
 };
@@ -150,7 +152,10 @@ portfolio.changeColors = function() {
     document.documentElement.style.setProperty('--dynamic-color', portfolio.currentColor);
     colorWave.color = portfolio.currentColor;
     colorWave.init();
-    portfolio.currentColor = randomColor({luminosity: 'bright'});
+    
+    const darkMode = document.body.classList.contains('dark-mode');
+    const luminosity = darkMode ? 'bright' : 'dark';
+    portfolio.currentColor = randomColor({luminosity: luminosity});
 };
 
 portfolio.colorGridInit = function() {
