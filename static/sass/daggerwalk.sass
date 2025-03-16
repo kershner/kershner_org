@@ -504,7 +504,9 @@ $marker-world-size: 24px
   tr:nth-child(even)
     background: var(--alternate-dark)
   tr:hover
-    background: var(--alternate-dark)
+    :not(th)  
+      background: var(--accent-color)
+      color: var(--background-color)
 
 .commands-table
   td:first-of-type
