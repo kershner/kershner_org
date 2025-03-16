@@ -166,7 +166,93 @@ const daggerwalk = {
       localStorage.setItem('background', defaultBackground);
       localStorage.setItem('accentColor', defaultAccentColor);
     });
+  },
+
+  // New function to handle the "tab" parameter for about-tabs group
+  handleAboutTabParameter() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    
+    if (!tabParam) return false;
+    
+    // Map tab parameter to tab button ID for the second tab group
+    const validTabs = {
+      'commands': 'commands-tab-btn',
+      'songs': 'songs-tab-btn',
+      'schedule': 'schedule-tab-btn',
+      'about': 'about-tab-btn'
+    };
+    
+    const tabId = validTabs[tabParam.toLowerCase()];
+    if (!tabId) return false;
+    
+    const tabElement = document.querySelector(`#${tabId}`);
+    if (tabElement) {
+      // Select the tab and trigger its change event
+      tabElement.checked = true;
+      tabElement.dispatchEvent(new Event("change", { bubbles: true }));
+      return true;
+    }
+    
+    return false;
+  },
+
+  // Function to initialize about-tabs event listeners
+  initAboutTabs() {
+    const tabButtons = document.querySelectorAll('.about-tabs input[type="radio"]');
+    
+    tabButtons.forEach(button => {
+      button.addEventListener('change', (event) => {
+        if (event.target.checked) {
+          const tabName = event.target.id.replace('-tab-btn', '');
+          
+          // Update URL without affecting other parameters
+          const urlParams = new URLSearchParams(window.location.search);
+          urlParams.set('tab', tabName);
+          history.pushState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+        }
+      });
+    });
   }
+}
+
+daggerwalk.initSongTable = function() {
+  // Minimal sort function
+  const sortTable = (colIdx, asc) => {
+    // Update headers
+    document.querySelectorAll('#songTable th').forEach((h, i) => {
+      h.innerHTML = h.innerHTML.replace(/[↑↓]\s*$/, '');
+      if (i === colIdx) h.innerHTML += asc ? ' ↑' : ' ↓';
+    });
+    
+    // Sort rows
+    [...document.querySelectorAll('#songTable tbody tr')]
+      .sort((a, b) => {
+        const valA = a.cells[colIdx].textContent.trim();
+        const valB = b.cells[colIdx].textContent.trim();
+        return colIdx === 0 
+          ? (asc ? +valA - +valB : +valB - +valA) 
+          : (asc ? valA.localeCompare(valB) : valB.localeCompare(valA));
+      })
+      .forEach(tr => document.querySelector('#songTable tbody').appendChild(tr));
+  };
+
+  // Add click handlers
+  document.querySelectorAll('#songTable th').forEach((th, i) => {
+    th.style.cursor = 'pointer';
+    th.addEventListener('click', () => sortTable(i, !th.innerHTML.includes('↑')));
+  });
+  
+  // Search filter
+  document.getElementById('songSearchInput')?.addEventListener('input', e => {
+    const term = e.target.value.toLowerCase();
+    document.querySelectorAll('#songTable tbody tr').forEach(tr => {
+      tr.style.display = [...tr.cells].some(td => td.textContent.toLowerCase().includes(term)) ? '' : 'none';
+    });
+  });
+  
+  // Initial sort by Category (column 2) DESC
+  setTimeout(() => sortTable(2, false), 0);
 }
   
 daggerwalk.init = () => {
@@ -208,7 +294,10 @@ daggerwalk.init = () => {
     window.mapViewer.fetchRegionData(region);
   });
 
+  daggerwalk.handleAboutTabParameter();
+  daggerwalk.initAboutTabs();
   daggerwalk.updateStatus();
   daggerwalk.startPolling();
   daggerwalk.siteMenu();
+  daggerwalk.initSongTable();
 }
