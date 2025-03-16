@@ -41,14 +41,14 @@ $PYTHON $BASEDIR/manage.py migrate $PROD_SETTINGS
 echo ''
 
 
-echo '==========[ Compiling front end assets (react etc) ]=========='
-cd $COLOR_DOODLE_DIR
-npm install
-npm run build
+# echo '==========[ Compiling front end assets (react etc) ]=========='
+# cd $COLOR_DOODLE_DIR
+# npm install
+# npm run build
 
-cd $MUSIC_PLAYER_DIR
-npm install
-npm run build
+# cd $MUSIC_PLAYER_DIR
+# npm install
+# npm run build
 
 echo '==========[ Restarting supervisor ]=========='
 sudo service supervisor restart
