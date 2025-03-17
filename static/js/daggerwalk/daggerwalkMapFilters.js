@@ -132,12 +132,12 @@ const daggerwalkMapFilters = {
             break;
           case 'This week':
             // Last 7 days (including today)
-            dateFrom.setDate(today.getDate() - 6);
+            dateFrom.setDate(today.getDate() - 7);
             // dateTo is already today
             break;
           case 'Last week':
             // 14 days ago to 7 days ago
-            dateFrom.setDate(today.getDate() - 13);
+            dateFrom.setDate(today.getDate() - 14);
             dateTo.setDate(today.getDate() - 7);
             break;
           default:
