@@ -95,6 +95,7 @@ class DaggerwalkLog(models.Model):
     region_fk = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True, related_name='logs')
     location = models.CharField(max_length=255, help_text="Specific location name")
     poi = models.ForeignKey(POI, on_delete=models.SET_NULL, null=True, blank=True, related_name='logs')
+    last_known_region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True)
 
     # Precise player coordinates
     player_x = models.DecimalField(max_digits=20, decimal_places=6, help_text="Precise X coordinate of player")
@@ -128,6 +129,18 @@ class DaggerwalkLog(models.Model):
             self.region_fk = Region.objects.get(name=self.region)
         except Region.DoesNotExist:
             self.region_fk = None
+
+        # Handle Ocean region - set last_known_region to most recent non-ocean region
+        if self.region.lower() == "ocean" and not self.last_known_region:
+            # Get the most recent log entry that isn't in the Ocean and has a region_fk
+            last_land_log = DaggerwalkLog.objects.exclude(
+                region__iexact="Ocean"
+            ).exclude(
+                region_fk__isnull=True
+            ).order_by('-created_at').first()
+            
+            if last_land_log and last_land_log.region_fk:
+                self.last_known_region = last_land_log.region_fk
             
         # Try to associate with a POI if not wilderness/ocean
         non_poi_keywords = ["Wilderness", "Ocean"]

@@ -332,9 +332,14 @@ class MapViewer {
       
       logsToShow.forEach(log => {
         // Get region name safely
-        const regionName = log.region_fk ? log.region_fk.name : 
+        let regionName = log.region_fk ? log.region_fk.name : 
                            (typeof log.region === 'object' ? log.region.name : log.region);
-        
+
+        // Show related ocean logs on this region's FMAP
+        if (regionName === 'Ocean') {
+          regionName = this.state.currentRegion;
+        }
+
         // Get coordinates
         const x = parseInt(log.map_pixel_x);
         const y = parseInt(log.map_pixel_y);

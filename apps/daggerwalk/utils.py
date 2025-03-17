@@ -62,7 +62,7 @@ def get_map_data():
 
 def get_latest_log_data():
     # Get the absolute latest log regardless of region
-    actual_latest_log = DaggerwalkLog.objects.latest('created_at')
+    actual_latest_log = DaggerwalkLog.objects.select_related('region_fk', 'poi', 'last_known_region').latest('created_at')
     in_ocean = actual_latest_log.region == "Ocean"
     
     if in_ocean:
@@ -78,7 +78,9 @@ def get_latest_log_data():
             'date': ocean_log_data['date'],
             'weather': ocean_log_data['weather'],
             'season': ocean_log_data['season'],
-            'current_song': ocean_log_data['current_song']
+            'current_song': ocean_log_data['current_song'],
+            # Add last_known_region if available
+            'last_known_region': actual_latest_log.last_known_region.name if actual_latest_log.last_known_region else None
         })
     else:
         # If latest log is not from ocean, use it directly

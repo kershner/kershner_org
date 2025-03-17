@@ -39,7 +39,7 @@ const daggerwalk = {
     const location = log.poi ? `${log.poi.emoji}${log.poi.name}` : climateLocationStr;
     let locationDisplay = `<h2><span>🌍${log.region}</span><span>${location}</span></h2>`;
     if (this.inOcean) {
-      locationDisplay = `<h2><span>🌊Ocean</span></h2>`;
+      locationDisplay = `<h2><span>🌊Ocean near ${log.last_known_region}</span></h2>`;
     }
 
     status.innerHTML = `

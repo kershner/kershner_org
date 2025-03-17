@@ -1,11 +1,11 @@
 from django.contrib.admin.views.decorators import staff_member_required
-from apps.api.views import BaseListAPIView
 from apps.daggerwalk.utils import get_map_data, get_latest_log_data
 from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 from .models import POI, DaggerwalkLog, Region
+from rest_framework.response import Response
+from apps.api.views import BaseListAPIView
 from rest_framework.views import APIView
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -13,6 +13,7 @@ from django.contrib import messages
 from rest_framework import status
 from django.db.models import Max
 from django.conf import settings
+from django.db.models import Q
 from .serializers import (
     DaggerwalkLogSerializer, 
     POISerializer,
@@ -73,10 +74,27 @@ class DaggerwalkLogsView(APIView):
         if not region:
             return Response({'error': 'Region parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Use select_related to prefetch related models in a single query
-        queryset = DaggerwalkLog.objects.filter(region=region) \
-                    .select_related('region_fk', 'poi') \
-                    .order_by('created_at')
+        try:
+            # First get the region object
+            region_obj = Region.objects.get(name=region)
+            
+            # Query logs where either:
+            # 1. The region field directly matches the requested region, OR
+            # 2. The last_known_region foreign key points to the requested region
+            queryset = DaggerwalkLog.objects.filter(
+                Q(region=region) | 
+                Q(last_known_region=region_obj)
+            ).select_related('region_fk', 'poi', 'last_known_region').order_by('created_at')
+
+            # Get all POIs for this region
+            pois = region_obj.points_of_interest.all()
+            
+        except Region.DoesNotExist:
+            # Fallback to just matching the region name string if the region doesn't exist
+            queryset = DaggerwalkLog.objects.filter(
+                region=region
+            ).select_related('region_fk', 'poi', 'last_known_region').order_by('created_at')
+            pois = []
 
         if self.use_sampling and queryset.exists():
             # Convert to list and sample
@@ -88,13 +106,6 @@ class DaggerwalkLogsView(APIView):
             logs = sampled_logs
         else:
             logs = list(queryset)
-        
-        # Get all POIs for this region
-        try:
-            region_obj = Region.objects.get(name=region)
-            pois = region_obj.points_of_interest.all()
-        except Region.DoesNotExist:
-            pois = []
 
         serialized_logs = DaggerwalkLogSerializer(logs, many=True).data
         serialized_pois = POISerializer(pois, many=True).data

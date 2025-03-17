@@ -104,6 +104,7 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
                 'region_fk',
                 'location',
                 'poi',
+                'last_known_region',
             ),
         }),
         ('Coordinates', {
