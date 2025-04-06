@@ -164,33 +164,36 @@ class DaggerwalkLog(models.Model):
     
     def determine_season(self):
         """
-        Determine season based on the in-game date string format:
-        'Sundas, 1 Last Seed, 3E 406, 10:32:56'
+        Determine season based on in-game date string.
+        Parses date strings like: 'Loredas, 7 Sun's Dusk, 3E 406, 12:47:25'
         """
         try:
-            date_parts = self.date.split(',')
-            month_part = date_parts[1].strip()  # "1 Last Seed"
-            month = ' '.join(month_part.split()[1:])  # "Last Seed"
-            
-            # Matching the provided seasonal mapping exactly
+            # Simple mapping of normalized month names to seasons
             seasons = {
-                "Morning Star": "Winter", 
-                "Sun's Dawn": "Winter", 
-                "Evening Star": "Winter",
-                "First Seed": "Spring", 
-                "Rain's Hand": "Spring",
-                "Second Seed": "Spring", 
-                "Midyear": "Summer", 
-                "Last Seed": "Summer", 
-                "Sun's Height": "Summer",
-                "Hearthfire": "Autumn",  
-                "Frostfall": "Autumn",
-                "Sun's Dusk": "Autumn",
+                "morningstar": "Winter",
+                "sunsdawn": "Winter", 
+                "eveningstar": "Winter",
+                "firstseed": "Spring", 
+                "rainshand": "Spring",
+                "secondseed": "Spring", 
+                "midyear": "Summer", 
+                "lastseed": "Summer", 
+                "sunsheight": "Summer",
+                "hearthfire": "Autumn",  
+                "frostfall": "Autumn",
+                "sunsdusk": "Autumn",
             }
             
-            return seasons.get(month, "Unknown")
-        except (ValueError, IndexError) as e:
-            print(f"Error parsing date: {self.date} - {str(e)}")
+            # Search for each month name in the date string
+            date_lower = self.date.lower()
+            date_simple = ''.join(c for c in date_lower if c.isalnum())
+            
+            for month, season in seasons.items():
+                if month in date_simple:
+                    return season
+                    
+            return "Unknown"
+        except Exception:
             return "Unknown"
 
 class RegionMapPart(models.Model):
