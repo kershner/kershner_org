@@ -145,7 +145,7 @@ def create_daggerwalk_log(request):
             'status': 'success',
             'message': 'Log entry created successfully',
             'id': log_entry.id,
-            'log': DaggerwalkLogSerializer(log_entry).data
+            'log_data': get_latest_log_data()
         }, status=status.HTTP_201_CREATED)
         
     except KeyError as e:
