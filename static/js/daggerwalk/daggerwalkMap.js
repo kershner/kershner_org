@@ -46,7 +46,8 @@ class MapViewer {
       provinceName: document.getElementById('provinceName'),
       regionMap: document.getElementById('regionMap'),
       canvas: document.getElementById('overlay'),
-      loading: document.getElementById('loading')
+      loading: document.getElementById('loading'),
+      worldMapBtn: document.querySelector('.world-map-link')
     };
 
     this.ctx = this.elements.canvas.getContext('2d');
@@ -68,6 +69,10 @@ class MapViewer {
     this.loadMapData();
     this.calculateRegionCenters();
     this.initializeMap();
+
+    this.elements.worldMapBtn.addEventListener('click', () => {
+      this.showWorldMap();
+    });
   }
 
   async loadMapData() {
@@ -472,6 +477,8 @@ class MapViewer {
     
     // Start a new animation loop
     this.animationFrameId = requestAnimationFrame(() => this.drawProvinceShapes());
+
+    this.elements.worldMapBtn.classList.add('active');
   }
 
   async showRegionMap(regionName, x, y) {
@@ -488,6 +495,8 @@ class MapViewer {
     const regionData = this.state.regionMap[regionName];
     const otherRegionData = this.state.regionData.filter(item => item.name === regionName);
     const selectedPart = this.getSelectedRegionPart(regionData, x, y);
+
+    this.elements.worldMapBtn.classList.remove('active');
   
     return new Promise((resolve) => {
       this.elements.regionMap.onload = () => {
