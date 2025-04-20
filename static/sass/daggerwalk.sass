@@ -191,15 +191,14 @@ $marker-world-size: 24px
 
     &::before
       content: attr(data-emoji)
-      font-size: $marker-size * 3
+      font-size: $marker-size * 2
       position: absolute
       top: 50%
       left: 50%
       transform: translate(-50%, -50%)
       
       @media (max-width: $mobile-breakpoint)
-        font-size: $marker-size * 2
-
+        font-size: $marker-size * 1.5
         
 .world-marker-container
   position: absolute
