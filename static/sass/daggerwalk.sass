@@ -12,7 +12,10 @@ $primary-font-family: Helvetica, Arial, sans-serif
 $secondary-font-family: Georgia, serif
 
 $mobile-breakpoint: 768px
-  
+
+button
+  cursor: pointer
+
 body 
   margin: 0
   padding: 0
@@ -347,7 +350,7 @@ $marker-world-size: 24px
     padding-top: 1.5rem
 
   // "Selected" styles
-  @for $i from 1 through 4
+  @for $i from 1 through 5
     // tab label
     input:nth-of-type(#{$i}):checked ~ label:nth-of-type(#{$i})
       font-weight: bold
@@ -396,6 +399,44 @@ $marker-world-size: 24px
     display: block
     font-size: 1.2rem
     font-weight: bold
+
+.stats-content
+  display: flex
+  flex-direction: column
+
+  h4
+    width: fit-content
+
+  select
+    padding: .25rem
+    cursor: pointer
+    font-size: 1.1rem
+
+  .stats-data-wrapper
+    display: inline-flex
+    flex-direction: column
+    gap: 0.75rem
+    padding-top: 1.5rem
+
+    .stats-data-item
+      font-size: 1.2rem
+      dt
+        font-weight: bold
+      dd
+        margin-left: 0
+
+      .stats-date-range
+        display: flex
+        gap: 1rem
+
+        .stats-date-range-item
+          .stats-date-range-date
+            font-family: $secondary-font-family
+          .stats-date-range-season
+            font-size: 0.9rem
+            font-family: $secondary-font-family
+            font-style: italic
+            
 
 .tooltip
   position: fixed
@@ -495,6 +536,8 @@ $marker-world-size: 24px
 .styled-table
   width: 100%
   border-collapse: collapse
+  table-layout: fixed
+
   th, td
     padding: 10px
     text-align: left

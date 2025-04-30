@@ -1,7 +1,8 @@
+from apps.daggerwalk.utils import get_map_data, get_latest_log_data, calculate_daggerwalk_stats
 from django.contrib.admin.views.decorators import staff_member_required
-from apps.daggerwalk.utils import get_map_data, get_latest_log_data
 from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.csrf import csrf_exempt
+from django.template.loader import render_to_string
 from rest_framework.permissions import AllowAny
 from .models import POI, DaggerwalkLog, Region
 from rest_framework.response import Response
@@ -57,6 +58,7 @@ class DaggerwalkHomeView(APIView):
             **map_data,
             **latest_log_data,
             'region_data': json.dumps(list(region_data), default=str),
+            'stats': calculate_daggerwalk_stats('today'),
         }
         
         return render(request, self.template_path, ctx)
@@ -210,3 +212,21 @@ class DaggerwalkLogListAPIView(BaseListAPIView):
             queryset = queryset.filter(poi_id=poi_id)
             
         return queryset
+    
+
+class DaggerwalkStatsView(APIView):
+    template = 'daggerwalk/stats.html'
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        keyword = request.query_params.get('range', 'all')
+        try:
+            stats = calculate_daggerwalk_stats(keyword)
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        data = {
+            'stats': stats,
+            'html': render_to_string(self.template, {'stats': stats}),
+        }
+        return Response(data)

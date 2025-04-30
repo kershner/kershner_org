@@ -1,4 +1,3 @@
-from django.forms.models import model_to_dict
 from django.db import models
 import random
 
@@ -195,6 +194,20 @@ class DaggerwalkLog(models.Model):
             return "Unknown"
         except Exception:
             return "Unknown"
+        
+    @staticmethod
+    def get_weather_emoji(weather):
+        weather_emoji = {
+            "Sunny": "☀️",
+            "Clear": "🌙",
+            "Cloudy": "☁️",
+            "Foggy": "🌫️",
+            "Rainy": "🌧️",
+            "Snowy": "🌨️",
+            "Thunderstorm": "⛈️",
+            "Blizzard": "❄️"
+        }
+        return weather_emoji.get(weather, "")
 
 class RegionMapPart(models.Model):
     """For multi-part region maps"""

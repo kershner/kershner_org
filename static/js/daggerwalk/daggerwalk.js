@@ -262,6 +262,47 @@ daggerwalk.initSongTable = function() {
   // Initial sort by Category (column 2) DESC
   setTimeout(() => sortTable(2, false), 0);
 }
+
+daggerwalk.initDaggerwalkStats = function() {
+  const statsContainer = document.querySelector('.stats-content');
+  const statsApiUrl = '/api/daggerwalk/stats/';
+
+  async function fetchStats(range) {
+    try {
+      statsContainer.innerHTML = '<p>Loading stats...</p>';
+      const response = await fetch(`${statsApiUrl}?range=${range}`);
+      const data = await response.json();
+      if (!response.ok || !data.html) throw new Error('Failed to fetch stats');
+
+      statsContainer.innerHTML = data.html;
+      attachEvents();
+
+      const select = document.getElementById('rangeSelect');
+      if (select) select.value = range;
+    } catch (error) {
+      statsContainer.innerHTML = '<p>Error loading stats.</p>';
+      console.error(error);
+    }
+  }
+
+  function attachEvents() {
+    const select = document.getElementById('rangeSelect');
+    if (select) {
+      select.addEventListener('change', () => fetchStats(select.value));
+    }
+  
+    const reloadBtn = document.getElementById('reload-stats-btn');
+    if (reloadBtn) {
+      reloadBtn.addEventListener('click', () => {
+        if (select) {
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+    }
+  }
+
+  attachEvents();
+}
   
 daggerwalk.init = () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -312,4 +353,5 @@ daggerwalk.init = () => {
   daggerwalk.startPolling();
   daggerwalk.siteMenu();
   daggerwalk.initSongTable();
+  daggerwalk.initDaggerwalkStats();
 }

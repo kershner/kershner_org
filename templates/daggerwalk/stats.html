@@ -1,0 +1,157 @@
+<div class="stats-content">
+  <div class="stats-header">
+    <select id="rangeSelect">
+      <option value="all">All</option>
+      <option value="today" selected>Today</option>
+      <option value="yesterday">Yesterday</option>
+      <option value="last_7_days">Last 7 Days</option>
+      <option value="this_month">This Month</option>
+    </select>
+
+    <button id="reload-stats-btn" title="Reload stats">↺</button>
+  </div>
+
+  {% if stats.startDate == stats.endDate %}
+    <h4>
+      On <strong class="text-highlight">{{ stats.startDate|default:"N/A" }}</strong>:
+    </h4>
+  {% else %}
+    <h4>
+      From <strong class="text-highlight">{{ stats.startDate|default:"N/A" }}</strong> to <strong class="text-highlight">{{ stats.endDate|default:"N/A" }}</strong>:
+    </h4>
+  {% endif %}
+  
+  <div class="stats-data-wrapper">
+    <div class="stats-data-item">
+      <dt>Walking Time</dt>
+      <dd>{{ stats.formattedPlaytime }}</dd>
+    </div>
+
+    <div class="stats-data-item">
+      <dt>Distance</dt>
+      <dd>{{ stats.totalDistanceKm }} km</dd>
+    </div>
+
+    <div class="stats-data-item">
+      <dt>{{ stats.inGameTimeRange.uniqueDays }} In-game days</dt>
+      
+      <dd class="stats-date-range">
+        <div class="stats-date-range-item">
+          <div class="stats-date-range-date">{{ stats.inGameTimeRange.startDate }}</div>
+          <div class="stats-date-range-season">{{ stats.inGameTimeRange.startSeason }}</div>
+        </div>
+
+        <div class="stats-date-range-item">-</div>
+
+        <div class="stats-date-range-item">
+          <div class="stats-date-range-date">{{ stats.inGameTimeRange.endDate }}</div>
+          <div class="stats-date-range-season">{{ stats.inGameTimeRange.endSeason }}</div>
+        </div>
+      </dd>
+    </div>
+  </div>
+
+  {% if stats.topWeather %}
+  <div class="stats-data-wrapper">
+    <h4>Weather</h4>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Total time</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for w in stats.topWeather %}
+          <tr>
+            <td>{{ w.emoji }} {{ w.name }}</td>
+            <td>{{ w.time }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if stats.mostVisitedRegions %}
+  <div class="stats-data-wrapper">
+    <h4>Visited Regions</h4>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Region</th>
+          <th>Last seen</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for region in stats.mostVisitedRegions %}
+          <tr>
+            <td>
+              <a href="{% url 'daggerwalk' %}?region={{ region.region|urlencode }}">
+                {{ region.region }}
+              </a>
+            </td>
+            
+            <td>
+              {% if region.lastSeen %}
+                {{ region.lastSeen }}
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if stats.topPOIsVisited %}
+  <div class="stats-data-wrapper">
+    <h4>Top POIs</h4>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>POI</th>
+          <th>Region</th>
+          <th>Time Spent</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for poi in stats.topPOIsVisited %}
+          <tr>
+            <td>{{ poi.emoji|default:"" }} {{ poi.poi }}</td>
+            <td>
+              <a href="{% url 'daggerwalk' %}?region={{ poi.region|urlencode }}">{{ poi.region }}</a>
+            </td>
+            <td>{{ poi.timeSpentMinutes }} min</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if stats.topSongs %}
+  <div class="stats-data-wrapper">
+    <h4>Songs</h4>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Song</th>
+          <th>Total time</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for song in stats.topSongs %}
+          <tr>
+            <td>{{ song.name }}</td>
+            <td>{{ song.time }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
