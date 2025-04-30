@@ -57,8 +57,7 @@ class DaggerwalkHomeView(APIView):
         ctx = {
             **map_data,
             **latest_log_data,
-            'region_data': json.dumps(list(region_data), default=str),
-            'stats': calculate_daggerwalk_stats('today'),
+            'region_data': json.dumps(list(region_data), default=str)
         }
         
         return render(request, self.template_path, ctx)

@@ -264,10 +264,11 @@ daggerwalk.initSongTable = function() {
 }
 
 daggerwalk.initDaggerwalkStats = function() {
-  const statsContainer = document.querySelector('.stats-content');
+  const statsContainer = document.querySelector('#stats-content');
   const statsApiUrl = '/api/daggerwalk/stats/';
 
   async function fetchStats(range) {
+    
     try {
       statsContainer.innerHTML = '<p>Loading stats...</p>';
       const response = await fetch(`${statsApiUrl}?range=${range}`);
@@ -302,6 +303,7 @@ daggerwalk.initDaggerwalkStats = function() {
   }
 
   attachEvents();
+  fetchStats("today");
 }
   
 daggerwalk.init = () => {
