@@ -125,15 +125,19 @@ def format_minutes(total_minutes):
 def format_distance(km):
     return f"{km:.2f}" if km < 1 else f"{km:.0f}"
 
+def extract_date_key(date_str):
+    if not date_str:
+        return None
+    parts = date_str.split(',')
+    if len(parts) >= 3:
+        return f"{parts[1].strip()}, {parts[2].strip()}"  # e.g., "12 Hearthfire, 3E 407"
+    return date_str.strip()
 
-def get_top_values_by_time(logs, attr, top_n=10):
-    from collections import Counter
-
-    values = [getattr(log, attr) for log in logs if getattr(log, attr)]
-    counter = Counter(values).most_common(top_n)
-
+def get_top_values_by_time_counts(value_counts, attr, top_n=10):
     results = []
-    for value, count in counter:
+    for value_data in value_counts[:top_n]:
+        value = value_data[attr]
+        count = value_data['count']
         entry = {
             'name': value,
             'time': format_minutes(count * 5)
@@ -141,45 +145,7 @@ def get_top_values_by_time(logs, attr, top_n=10):
         if attr == 'weather':
             entry['emoji'] = DaggerwalkLog.get_weather_emoji(value)
         results.append(entry)
-
     return results
-
-
-def get_in_game_time_range(logs):
-    if not logs:
-        return {
-            "startDate": None,
-            "endDate": None,
-            "startSeason": None,
-            "endSeason": None,
-            "uniqueDays": 0,
-        }
-
-    first_log = logs.first()
-    last_log = logs.last()
-
-    def extract_date_key(date_str):
-        if not date_str:
-            return None
-        parts = date_str.split(',')
-        if len(parts) >= 3:
-            return f"{parts[1].strip()}, {parts[2].strip()}"  # "12 Hearthfire, 3E 407"
-        return date_str.strip()
-
-    # Unique in-game days
-    unique_days = set()
-    for log in logs:
-        key = extract_date_key(log.date)
-        if key:
-            unique_days.add(key)
-
-    return {
-        "startDate": extract_date_key(first_log.date),
-        "endDate": extract_date_key(last_log.date),
-        "startSeason": first_log.season,
-        "endSeason": last_log.season,
-        "uniqueDays": len(unique_days),
-    }
 
 
 def calculate_daggerwalk_stats(range_keyword):
@@ -188,9 +154,9 @@ def calculate_daggerwalk_stats(range_keyword):
             return None
         dt_local = dt.astimezone(EST_TIMEZONE)
         try:
-            return dt_local.strftime('%B %-d, %-I:%M %p')  # Unix: no leading zero
+            return dt_local.strftime('%B %-d, %-I:%M %p')
         except ValueError:
-            return dt_local.strftime('%B %d, %I:%M %p') 
+            return dt_local.strftime('%B %d, %I:%M %p')
 
     if range_keyword not in (ranges := get_stats_date_ranges()) and range_keyword != 'all':
         raise ValueError(f'Invalid range: {range_keyword}. Must be one of: {", ".join(list(ranges) + ["all"])}')
@@ -205,7 +171,8 @@ def calculate_daggerwalk_stats(range_keyword):
         start_date, end_date = ranges[range_keyword]
         queryset = DaggerwalkLog.objects.filter(created_at__date__range=(start_date, end_date))
 
-    if not queryset.exists():
+    total_logs = queryset.count()
+    if total_logs == 0:
         return {
             'startDate': start_date.isoformat(),
             'endDate': end_date.isoformat(),
@@ -223,8 +190,11 @@ def calculate_daggerwalk_stats(range_keyword):
             'topWeather': [],
         }
 
-    logs = queryset.order_by('created_at').select_related('poi', 'region_fk')
-    total_logs = logs.count()
+    logs = queryset.order_by('created_at').select_related('poi', 'region_fk').only(
+        'created_at', 'player_x', 'player_z', 'region', 'poi', 'weather',
+        'date', 'season', 'current_song', 'region_fk__name', 'poi__name', 'poi__emoji'
+    )
+
     total_minutes = total_logs * 5
 
     # Distance + per-day breakdown
@@ -237,16 +207,18 @@ def calculate_daggerwalk_stats(range_keyword):
             distance_per_day[day] = distance_per_day.get(day, 0) + dist
         previous_log = log
 
-    # Most visited regions + last seen
-    region_counter = Counter(logs.values_list('region', flat=True))
-    top_regions = region_counter.most_common(10)
+    # Region frequency
+    region_counts = queryset.values('region').annotate(count=Count('id')).order_by('-count')[:10]
+    top_regions = [r['region'] for r in region_counts]
 
+    # Last seen timestamps for top regions
+    recent_logs = logs.filter(region__in=top_regions).order_by('-created_at')
     last_seen_region = {}
-    for log in logs.order_by('-created_at'):
-        region = log.region
-        if region in [r for r, _ in top_regions] and region not in last_seen_region:
-            last_seen_region[region] = log.created_at
-        if len(last_seen_region) >= len(top_regions): break
+    for log in recent_logs:
+        if log.region not in last_seen_region:
+            last_seen_region[log.region] = log.created_at
+        if len(last_seen_region) == len(top_regions):
+            break
 
     mostVisitedRegions = sorted(
         [
@@ -254,24 +226,43 @@ def calculate_daggerwalk_stats(range_keyword):
                 'region': region,
                 'lastSeen': format_last_seen(last_seen_region.get(region))
             }
-            for region, _ in top_regions
+            for region in top_regions
         ],
         key=lambda r: last_seen_region.get(r['region']) or datetime.min,
         reverse=True
     )
 
     # POIs
-    top_pois = logs.exclude(poi__isnull=True).values('poi__name', 'poi__emoji', 'region_fk__name') \
-        .annotate(log_count=Count('id')).order_by('-log_count')[:10]
+    top_pois = queryset.exclude(poi__isnull=True).values(
+        'poi__name', 'poi__emoji', 'region_fk__name'
+    ).annotate(log_count=Count('id')).order_by('-log_count')[:10]
+
     topPOIsVisited = [
-        {'poi': p['poi__name'], 'region': p['region_fk__name'], 'emoji': p['poi__emoji'], 'timeSpentMinutes': p['log_count'] * 5}
+        {
+            'poi': p['poi__name'],
+            'region': p['region_fk__name'],
+            'emoji': p['poi__emoji'],
+            'timeSpentMinutes': p['log_count'] * 5
+        }
         for p in top_pois
     ]
 
-    # Songs / Weather
-    unique_songs = logs.exclude(current_song__isnull=True).values_list('current_song', flat=True).distinct()
-    most_common_song = Counter(logs.exclude(current_song__isnull=True).values_list('current_song', flat=True)).most_common(1)
-    most_common_weather = Counter(logs.values_list('weather', flat=True)).most_common(1)
+    # Songs
+    song_counts = queryset.exclude(current_song__isnull=True).values('current_song') \
+        .annotate(count=Count('id')).order_by('-count')
+    most_common_song = song_counts.first()
+    total_songs_heard = song_counts.count()
+
+    # Weather
+    weather_counts = queryset.values('weather').annotate(count=Count('id')).order_by('-count')
+    most_common_weather = weather_counts.first()
+
+    # In-game time
+    date_keys = queryset.values_list('date', flat=True)
+    unique_days = {extract_date_key(d) for d in date_keys if d}
+
+    first_log = logs.first()
+    last_log = logs.last()
 
     return {
         'startDate': start_date.isoformat(),
@@ -281,13 +272,18 @@ def calculate_daggerwalk_stats(range_keyword):
         'formattedPlaytime': format_minutes(total_minutes),
         'totalDistanceKm': format_distance(total_distance_km),
         'mostVisitedRegions': mostVisitedRegions,
-        'mostCommonWeather': most_common_weather[0][0] if most_common_weather else None,
+        'mostCommonWeather': most_common_weather['weather'] if most_common_weather else None,
         'topPOIsVisited': topPOIsVisited,
         'distancePerDayKm': {day: round(km, 2) for day, km in distance_per_day.items()},
-        'mostCommonSong': most_common_song[0][0] if most_common_song else None,
-        'totalSongsHeard': unique_songs.count(),
-        'topSongs': get_top_values_by_time(logs, 'current_song'),
-        'topWeather': get_top_values_by_time(logs, 'weather'),
-        'inGameTimeRange': get_in_game_time_range(logs),
+        'mostCommonSong': most_common_song['current_song'] if most_common_song else None,
+        'totalSongsHeard': total_songs_heard,
+        'topSongs': get_top_values_by_time_counts(song_counts, 'current_song'),
+        'topWeather': get_top_values_by_time_counts(weather_counts, 'weather'),
+        'inGameTimeRange': {
+            "startDate": extract_date_key(first_log.date) if first_log else None,
+            "endDate": extract_date_key(last_log.date) if last_log else None,
+            "startSeason": first_log.season if first_log else None,
+            "endSeason": last_log.season if last_log else None,
+            "uniqueDays": len(unique_days),
+        },
     }
-

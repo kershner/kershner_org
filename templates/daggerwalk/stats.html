@@ -113,16 +113,20 @@
       <thead>
         <tr>
           <th>POI</th>
-          <th>Region</th>
           <th>Time Spent</th>
         </tr>
       </thead>
       <tbody>
         {% for poi in stats.topPOIsVisited %}
           <tr>
-            <td>{{ poi.emoji|default:"" }} {{ poi.poi }}</td>
             <td>
-              <a href="{% url 'daggerwalk' %}?region={{ poi.region|urlencode }}">{{ poi.region }}</a>
+              <div class="stat-poi">
+                <div>{{ poi.emoji|default:"" }}</div>
+                <div>
+                  <span>{{ poi.poi }}</span>
+                  <a href="{% url 'daggerwalk' %}?region={{ poi.region|urlencode }}">{{ poi.region }}</a>
+                </div>
+              </div>
             </td>
             <td>{{ poi.timeSpentMinutes }} min</td>
           </tr>
