@@ -21,141 +21,147 @@
     </h4>
   {% endif %}
   
-  <div class="stats-data-wrapper">
-    <div class="stats-data-item">
-      <dt>Walking Time</dt>
-      <dd>{{ stats.formattedPlaytime }}</dd>
+  {% if not stats.totalDistanceKm %}
+  <p class="secondary-font">
+    The Walker is sleeping, check back soon...
+  </p>
+  {% else %}
+    <div class="stats-data-wrapper">
+      <div class="stats-data-item">
+        <dt>Walking Time</dt>
+        <dd>{{ stats.formattedPlaytime }}</dd>
+      </div>
+
+      <div class="stats-data-item">
+        <dt>Distance</dt>
+        <dd>{{ stats.totalDistanceKm }} km</dd>
+      </div>
+
+      <div class="stats-data-item">
+        <dt>{{ stats.inGameTimeRange.uniqueDays }} In-game days</dt>
+        
+        <dd class="stats-date-range">
+          <div class="stats-date-range-item">
+            <div class="stats-date-range-date">{{ stats.inGameTimeRange.startDate }}</div>
+            <div class="stats-date-range-season">{{ stats.inGameTimeRange.startSeason }}</div>
+          </div>
+
+          <div class="stats-date-range-item">-</div>
+
+          <div class="stats-date-range-item">
+            <div class="stats-date-range-date">{{ stats.inGameTimeRange.endDate }}</div>
+            <div class="stats-date-range-season">{{ stats.inGameTimeRange.endSeason }}</div>
+          </div>
+        </dd>
+      </div>
     </div>
 
-    <div class="stats-data-item">
-      <dt>Distance</dt>
-      <dd>{{ stats.totalDistanceKm }} km</dd>
-    </div>
-
-    <div class="stats-data-item">
-      <dt>{{ stats.inGameTimeRange.uniqueDays }} In-game days</dt>
-      
-      <dd class="stats-date-range">
-        <div class="stats-date-range-item">
-          <div class="stats-date-range-date">{{ stats.inGameTimeRange.startDate }}</div>
-          <div class="stats-date-range-season">{{ stats.inGameTimeRange.startSeason }}</div>
-        </div>
-
-        <div class="stats-date-range-item">-</div>
-
-        <div class="stats-date-range-item">
-          <div class="stats-date-range-date">{{ stats.inGameTimeRange.endDate }}</div>
-          <div class="stats-date-range-season">{{ stats.inGameTimeRange.endSeason }}</div>
-        </div>
-      </dd>
-    </div>
-  </div>
-
-  {% if stats.topWeather %}
-  <div class="stats-data-wrapper">
-    <h4>Weather</h4>
-    <table class="styled-table">
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Total time</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {% for w in stats.topWeather %}
+    {% if stats.topWeather %}
+    <div class="stats-data-wrapper">
+      <h4>Weather</h4>
+      <table class="styled-table">
+        <thead>
           <tr>
-            <td>{{ w.emoji }} {{ w.name }}</td>
-            <td>{{ w.time }}</td>
+            <th>Type</th>
+            <th>Total time</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% endif %}
+        </thead>
 
-  {% if stats.mostVisitedRegions %}
-  <div class="stats-data-wrapper">
-    <h4>Visited Regions</h4>
-    <table class="styled-table">
-      <thead>
-        <tr>
-          <th>Region</th>
-          <th>Last seen</th>
-        </tr>
-      </thead>
+        <tbody>
+          {% for w in stats.topWeather %}
+            <tr>
+              <td>{{ w.emoji }} {{ w.name }}</td>
+              <td>{{ w.time }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
 
-      <tbody>
-        {% for region in stats.mostVisitedRegions %}
+    {% if stats.mostVisitedRegions %}
+    <div class="stats-data-wrapper">
+      <h4>Visited Regions</h4>
+      <table class="styled-table">
+        <thead>
           <tr>
-            <td>
-              <a href="{% url 'daggerwalk' %}?region={{ region.region|urlencode }}">
-                {{ region.region }}
-              </a>
-            </td>
-            
-            <td>
-              {% if region.lastSeen %}
-                {{ region.lastSeen }}
-              {% endif %}
-            </td>
+            <th>Region</th>
+            <th>Last seen</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% endif %}
+        </thead>
 
-  {% if stats.topPOIsVisited %}
-  <div class="stats-data-wrapper">
-    <h4>Top POIs</h4>
-    <table class="styled-table">
-      <thead>
-        <tr>
-          <th>POI</th>
-          <th>Time Spent</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for poi in stats.topPOIsVisited %}
+        <tbody>
+          {% for region in stats.mostVisitedRegions %}
+            <tr>
+              <td>
+                <a href="{% url 'daggerwalk' %}?region={{ region.region|urlencode }}">
+                  {{ region.region }}
+                </a>
+              </td>
+              
+              <td>
+                {% if region.lastSeen %}
+                  {{ region.lastSeen }}
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    {% if stats.topPOIsVisited %}
+    <div class="stats-data-wrapper">
+      <h4>Top POIs</h4>
+      <table class="styled-table">
+        <thead>
           <tr>
-            <td>
-              <div class="stat-poi">
-                <div>{{ poi.emoji|default:"" }}</div>
-                <div>
-                  <span>{{ poi.poi }}</span>
-                  <a href="{% url 'daggerwalk' %}?region={{ poi.region|urlencode }}">{{ poi.region }}</a>
+            <th>POI</th>
+            <th>Time Spent</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for poi in stats.topPOIsVisited %}
+            <tr>
+              <td>
+                <div class="stat-poi">
+                  <div>{{ poi.emoji|default:"" }}</div>
+                  <div>
+                    <span>{{ poi.poi }}</span>
+                    <a href="{% url 'daggerwalk' %}?region={{ poi.region|urlencode }}">{{ poi.region }}</a>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td>{{ poi.timeSpentMinutes }} min</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% endif %}
+              </td>
+              <td>{{ poi.timeSpentMinutes }} min</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
 
-  {% if stats.topSongs %}
-  <div class="stats-data-wrapper">
-    <h4>Songs</h4>
-    <table class="styled-table">
-      <thead>
-        <tr>
-          <th>Song</th>
-          <th>Total time</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {% for song in stats.topSongs %}
+    {% if stats.topSongs %}
+    <div class="stats-data-wrapper">
+      <h4>Songs</h4>
+      <table class="styled-table">
+        <thead>
           <tr>
-            <td>{{ song.name }}</td>
-            <td>{{ song.time }}</td>
+            <th>Song</th>
+            <th>Total time</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+        </thead>
+
+        <tbody>
+          {% for song in stats.topSongs %}
+            <tr>
+              <td>{{ song.name }}</td>
+              <td>{{ song.time }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
   {% endif %}
 </div>

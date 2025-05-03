@@ -270,7 +270,7 @@ daggerwalk.initDaggerwalkStats = function() {
   async function fetchStats(range) {
     
     try {
-      statsContainer.innerHTML = '<p>Loading stats...</p>';
+      statsContainer.innerHTML = '<p class="secondary-font">Loading stats...</p>';
       const response = await fetch(`${statsApiUrl}?range=${range}`);
       const data = await response.json();
       if (!response.ok || !data.html) throw new Error('Failed to fetch stats');
@@ -281,7 +281,7 @@ daggerwalk.initDaggerwalkStats = function() {
       const select = document.getElementById('rangeSelect');
       if (select) select.value = range;
     } catch (error) {
-      statsContainer.innerHTML = '<p>Error loading stats.</p>';
+      statsContainer.innerHTML = '<p class="secondary-font">Error loading stats.</p>';
       console.error(error);
     }
   }
