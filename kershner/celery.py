@@ -15,7 +15,7 @@ app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 app.conf.beat_schedule = {
     'post-to-bluesky-morning': {
         'task': 'apps.daggerwalk.tasks.post_to_bluesky',
-        'schedule': crontab(minute=25, hour=11),  # 11:25 AM Eastern
+        'schedule': crontab(minute=35, hour=11),  # 11:35 AM Eastern
     },
     # 'post-to-bluesky-evening': {
     #     'task': 'apps.daggerwalk.tasks.post_to_bluesky',
