@@ -23,5 +23,5 @@ app.conf.beat_schedule = {
     # },
 }
 
-app.conf.timezone = 'US/Eastern'
-app.conf.enable_utc = False
+app.conf.timezone = 'UTC'
+app.conf.enable_utc = True
