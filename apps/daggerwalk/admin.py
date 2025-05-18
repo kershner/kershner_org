@@ -146,8 +146,9 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def run_bluesky_post(self, request):
-        post_to_bluesky.delay()
-        self.message_user(request, "Bluesky post triggered.", level=messages.SUCCESS)
+        if request.method == 'POST':
+            post_to_bluesky.delay()
+            self.message_user(request, "Bluesky post triggered.", level=messages.SUCCESS)
         return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/admin/"))
     
 class ReadOnlyInline(admin.TabularInline):
