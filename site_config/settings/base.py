@@ -190,3 +190,9 @@ CAPTCHA_V2_SECRET_KEY = PARAMETERS['captcha_v2_secret_key']
 
 # Daggerwalk
 DAGGERWALK_API_KEY = PARAMETERS['daggerwalk_api_key']
+DAGGERWALK_BLUESKY_HANDLE = PARAMETERS['daggerwalk_bluesky_handle']
+DAGGERWALK_BLUESKY_APP_PASSWORD = PARAMETERS['daggerwalk_bluesky_app_password']
+DAGGERWALK_TWITCH_CLIENT_ID = PARAMETERS['daggerwalk_twitch_client_id']
+DAGGERWALK_TWITCH_SECRET = PARAMETERS['daggerwalk_twitch_secret']
+DAGGERWALK_TWITCH_BROADCASTER_ID = PARAMETERS['daggerwalk_twitch_broadcaster_id']
+DAGGERWALK_TWITCH_REFRESH_TOKEN = PARAMETERS['daggerwalk_twitch_refresh_token']
