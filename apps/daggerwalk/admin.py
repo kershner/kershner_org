@@ -147,7 +147,7 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
 
     def run_bluesky_post(self, request):
         if request.method == 'POST':
-            post_to_bluesky.delay()
+            post_to_bluesky()
             self.message_user(request, "Bluesky post triggered.", level=messages.SUCCESS)
         return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/admin/"))
     

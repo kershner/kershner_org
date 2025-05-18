@@ -1,5 +1,4 @@
 from django.conf import settings
-from celery import shared_task
 from datetime import datetime
 from atproto import Client
 from io import BytesIO
@@ -115,7 +114,6 @@ def post_clip_to_bluesky(caption, clip_url, thumb_blob, client: Client):
     )
 
 
-@shared_task
 def post_to_bluesky():
     client = Client()
     client.login(settings.DAGGERWALK_BLUESKY_HANDLE, settings.DAGGERWALK_BLUESKY_APP_PASSWORD)
