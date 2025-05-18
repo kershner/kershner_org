@@ -124,7 +124,7 @@ def post_to_bluesky():
 
     clip_id, clip_data = create_and_wait_for_clip()
     clip_url = f"https://clips.twitch.tv/{clip_id}"
-    thumbnail_url = clip_data['thumbnail_url'].rsplit('-', 1)[0] + "-1280x720.jpg"
+    thumbnail_url = clip_data['thumbnail_url']
     thumb_blob = upload_thumbnail_as_blob(client, thumbnail_url)
 
     caption = generate_bluesky_caption(log_data)

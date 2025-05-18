@@ -1,11 +1,18 @@
 from apps.daggerwalk.models import DaggerwalkLog, Region, RegionMapPart, POI, ProvinceShape
+from django.http import HttpResponseRedirect
+from apps.daggerwalk.tasks import post_to_bluesky
 from django.utils.html import format_html
+from django.contrib import messages
 from urllib.parse import urlencode
 from django.contrib import admin
 from django.urls import reverse
+from django.urls import path
+
 
 @admin.register(DaggerwalkLog)
 class DaggerwalkLogAdmin(admin.ModelAdmin):
+    change_list_template = "admin/daggerwalk/daggerwalklog_changelist.html"
+    
     list_display = ('created_at', 'view_on_map_link', 'coordinates', 'region', 'location', 'formatted_date', 'weather',)
     list_filter = ('region', 'location', 'weather', 'season', 'created_at',)
     search_fields = ('region', 'location', 'weather', 'season', 'created_at',)
@@ -130,6 +137,18 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+    
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path("run-bluesky-post/", self.admin_site.admin_view(self.run_bluesky_post), name="run_bluesky_post"),
+        ]
+        return custom_urls + urls
+
+    def run_bluesky_post(self, request):
+        post_to_bluesky.delay()
+        self.message_user(request, "Bluesky post triggered.", level=messages.SUCCESS)
+        return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/admin/"))
     
 class ReadOnlyInline(admin.TabularInline):
     extra = 0
