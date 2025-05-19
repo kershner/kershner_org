@@ -32,15 +32,15 @@
   </div>
   
   <script type="text/javascript">
-    window.BASE_S3_URL = '{% settings_value "BASE_S3_URL" %}';
-    window.REGION_DATA = {{ region_data|safe }};
-    window.daggerwalkData = {
-        provinceShapes: JSON.parse(document.getElementById('province-shapes-data').textContent),
-        regionMap: JSON.parse(document.getElementById('region-map-data').textContent),
-        regionData: JSON.parse(document.getElementById('region-data').textContent),
-    };
-
-    window.daggerwalkMapFilters.init();
+    document.addEventListener("DOMContentLoaded", () => {
+        window.BASE_S3_URL = '{% settings_value "BASE_S3_URL" %}';
+        window.REGION_DATA = {{ region_data|safe }};
+        window.daggerwalkData = {
+            provinceShapes: JSON.parse(document.getElementById('province-shapes-data').textContent),
+            regionMap: JSON.parse(document.getElementById('region-map-data').textContent),
+            regionData: JSON.parse(document.getElementById('region-data').textContent),
+        };
+    });
   </script>
 
   <!-- JSON Data Storage -->

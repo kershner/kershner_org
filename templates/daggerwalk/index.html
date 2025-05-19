@@ -75,6 +75,8 @@
         document.addEventListener("DOMContentLoaded", () => {
             daggerwalk.latestLog = {{ log|safe }};
             daggerwalk.inOcean = {{ in_ocean }};
+            
+            window.daggerwalkMapFilters.init();
             daggerwalk.init();
         });
     </script>
