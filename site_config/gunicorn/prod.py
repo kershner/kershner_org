@@ -4,7 +4,9 @@
 wsgi_app = "kershner.wsgi:application"
 
 # The number of worker processes for handling requests
-workers = 2
+workers = 1
+max_requests = 100
+max_requests_jitter = 10
 
 # The socket to bind
 bind = "0.0.0.0:8000"
