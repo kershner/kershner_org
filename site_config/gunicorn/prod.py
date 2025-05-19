@@ -4,7 +4,7 @@
 wsgi_app = "kershner.wsgi:application"
 
 # The number of worker processes for handling requests
-workers = 1
+workers = 2
 max_requests = 100
 max_requests_jitter = 10
 
