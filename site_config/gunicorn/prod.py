@@ -8,6 +8,10 @@ workers = 1
 max_requests = 100
 max_requests_jitter = 10
 
+# Allow concurrency without extra worker processes
+worker_class = "gthread"
+threads = 4
+
 # The socket to bind
 bind = "0.0.0.0:8000"
 
