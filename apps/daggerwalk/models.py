@@ -114,6 +114,15 @@ class DaggerwalkLog(models.Model):
         verbose_name = 'Daggerwalk Log'
         verbose_name_plural = 'Daggerwalk Logs'
 
+        indexes = [
+            models.Index(fields=['created_at']),
+            models.Index(fields=['region']),
+            models.Index(fields=['region', 'created_at']),
+            models.Index(fields=['poi']),
+            models.Index(fields=['current_song']),
+            models.Index(fields=['weather']),
+        ]
+
     def __str__(self):
         formatted_datetime = self.created_at.strftime("%b %d, %I:%M%p %Y")
         # Remove leading zero from hour

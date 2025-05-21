@@ -71,49 +71,44 @@ class DaggerwalkLogsView(APIView):
 
     def get(self, request):
         region = request.query_params.get('region')
-
         if not region:
             return Response({'error': 'Region parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # First get the region object
+            # Get region object and related POIs
             region_obj = Region.objects.get(name=region)
-            
-            # Query logs where either:
-            # 1. The region field directly matches the requested region, OR
-            # 2. The last_known_region foreign key points to the requested region
+            pois = region_obj.points_of_interest.all()
+
+            # Get logs matching region name or FK
             queryset = DaggerwalkLog.objects.filter(
-                Q(region=region) | 
-                Q(last_known_region=region_obj)
+                Q(region=region) | Q(last_known_region=region_obj)
             ).select_related('region_fk', 'poi', 'last_known_region').order_by('created_at')
 
-            # Get all POIs for this region
-            pois = region_obj.points_of_interest.all()
-            
         except Region.DoesNotExist:
-            # Fallback to just matching the region name string if the region doesn't exist
+            # Fallback if region FK doesn't exist
             queryset = DaggerwalkLog.objects.filter(
                 region=region
             ).select_related('region_fk', 'poi', 'last_known_region').order_by('created_at')
             pois = []
 
         if self.use_sampling and queryset.exists():
-            # Convert to list and sample
-            queryset_list = list(queryset)
-            # Select every nth row and ensure the last row is included
-            sampled_logs = queryset_list[::self.step]
-            if queryset_list[-1] not in sampled_logs:
-                sampled_logs.append(queryset_list[-1])
-            logs = sampled_logs
+            # Sample by IDs before fetching full records
+            log_ids = list(queryset.values_list('id', flat=True))
+            sampled_ids = log_ids[::self.step]
+            if log_ids and log_ids[-1] not in sampled_ids:
+                sampled_ids.append(log_ids[-1])
+
+            # Reload sampled logs
+            logs = list(DaggerwalkLog.objects.filter(id__in=sampled_ids)
+                        .select_related('region_fk', 'poi', 'last_known_region')
+                        .order_by('created_at'))
         else:
             logs = list(queryset)
 
+        # Serialize and return combined logs and POIs
         serialized_logs = DaggerwalkLogSerializer(logs, many=True).data
         serialized_pois = POISerializer(pois, many=True).data
-        response_data = {
-            'logs': serialized_pois + serialized_logs
-        }
-        return Response(response_data)
+        return Response({'logs': serialized_pois + serialized_logs})
 
 
 @api_view(['POST'])
