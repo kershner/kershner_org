@@ -1,9 +1,9 @@
+from apps.daggerwalk.models import DaggerwalkLog
 from django.conf import settings
 from datetime import datetime
 from atproto import Client
 from io import BytesIO
 import requests
-import openai
 import time
 
 
@@ -40,9 +40,7 @@ def upload_thumbnail_as_blob(client: Client, image_url: str):
     return upload_response.blob
 
 
-def generate_bluesky_caption(log_data):
-    openai.api_key = settings.OPENAI_API_KEY
-
+def generate_bluesky_caption(log_data, stats_data):
     def get_time_of_day(date_str):
         # Extract the time portion at the end (e.g., "22:52:08")
         try:
@@ -54,7 +52,6 @@ def generate_bluesky_caption(log_data):
             # 12:00 PM - 5:59 PM: Afternoon
             # 6:00 PM - 9:59 PM: Evening
             # 10:00 PM - 5:59 AM: Night
-            
             morning_start = datetime.strptime("06:00:00", "%H:%M:%S").time()
             afternoon_start = datetime.strptime("12:00:00", "%H:%M:%S").time()
             evening_start = datetime.strptime("18:00:00", "%H:%M:%S").time()
@@ -72,45 +69,36 @@ def generate_bluesky_caption(log_data):
             # Default to unknown if there's an error parsing the time
             print(f"Error parsing time: {e}")
             return "Unknown"
-        
-    max_tokens = 80
-    system_prompt = (
-        "You are a fantasy chronicler documenting moments from the journey of a figure known as The Walker. "
-        "Write a concise 1-2 sentence description of what The Walker is experiencing based on the log data. "
-        "Use clear, direct language while varying sentence structure across entries. "
-        "Always use the present tense. "
-        "Avoid flowery language and unnecessary embellishments. "
-        "Always refer to the character as 'The Walker' using they/them pronouns. "
-        "Incorporate these elements to enhance your entries: "
-        "- Subtly reflect the time of day in your descriptions "
-        "- Note small observed details that bring The Walker's world alive "
-        "- Vary the emotional tone based on weather, season, and surroundings "
-        "- Don't discuss the Walker's motivation or purpose "
-        f"Keep entries complete and under the {max_tokens - 10} token limit. No hashtags or meta-commentary."
-    )
 
-    user_prompt = (
-        f"Region: {log_data['region']}\n"
-        f"Location: {log_data['location']}\n"
-        f"Province: {log_data['region_fk']['province']}\n"
-        f"Climate: {log_data['region_fk']['climate']}\n"
-        f"Weather: {log_data['weather']}\n"
-        f"Season: {log_data['season']}\n"
-        f"Date and Time: {log_data['date']}\n"
-        f"Time of Day: {get_time_of_day(log_data['date'])}"
-    )
+    stats_data = stats_data["stats"]
+    time_of_day = get_time_of_day(log_data['date']).lower()
+    date_without_time = log_data['date'].rsplit(',', 1)[0]
+    region_data = log_data['region_fk']
 
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ],
-        temperature=1.0,
-        max_tokens=max_tokens,
-    )
+    region_name = region_data['name']
+    region_province = region_data['province']
+    region_emoji = region_data['emoji']
+    
+    climate = region_data["climate"].lower()
+    if climate == "woodlands":
+        climate = "woodland"
 
-    return response['choices'][0]['message']['content'].strip()
+    weather = log_data['weather'].lower()
+    weather_emoji = DaggerwalkLog.get_weather_emoji(log_data['weather'])
+    poi_data = log_data['poi']
+
+    region_string = f"Walking through the {climate} wilderness of {region_name} in {region_province}"
+    weather_string = f"It's a {weather} {time_of_day} in {log_data['season']}"
+    traveled_string = f"The Walker has traveled {stats_data['totalDistanceKm']}km in {stats_data['formattedPlaytime']} so far today"
+    poi_string = ""
+    if poi_data:
+        poi_name = poi_data['name']
+        poi_emoji = poi_data['emoji']
+        poi_string = f" {poi_name} is nearby."
+
+    # TODO - handle "Ocean" region
+    text = f"{date_without_time}. {region_string}.{poi_string} {weather_string}. {traveled_string}."
+    return text
 
 
 def post_clip_to_bluesky(caption, clip_url, thumb_blob, client: Client):
@@ -179,12 +167,17 @@ def post_to_bluesky():
     client = Client()
     client.login(settings.DAGGERWALK_BLUESKY_HANDLE, settings.DAGGERWALK_BLUESKY_APP_PASSWORD)
 
-    log_data = requests.get(f"{API_BASE_URL}/logs/?ordering=-id&limit=1").json()['results'][0]
+    log_data = requests.get(f"{API_BASE_URL}/logs/?ordering=-id").json()['results'][0]
+    stats_data = requests.get(f"{API_BASE_URL}/stats/?range=today").json()
 
+    # Create and wait for Twitch clip
     clip_id, clip_data = create_and_wait_for_clip()
     clip_url = f"https://clips.twitch.tv/{clip_id}"
     thumbnail_url = clip_data['thumbnail_url']
     thumb_blob = upload_thumbnail_as_blob(client, thumbnail_url)
 
-    caption = generate_bluesky_caption(log_data)
+    # Generate text content for the post
+    caption = generate_bluesky_caption(log_data, stats_data)
+    
+    # Post to Bluesky
     post_clip_to_bluesky(caption, clip_url, thumb_blob, client)
