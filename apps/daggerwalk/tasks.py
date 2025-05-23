@@ -1,5 +1,6 @@
 from apps.daggerwalk.models import DaggerwalkLog
 from django.conf import settings
+from celery import shared_task
 from datetime import datetime
 from atproto import Client
 from io import BytesIO
@@ -234,6 +235,7 @@ def post_video_to_bluesky(caption, video_blob, client: Client):
         raise
 
 
+@shared_task
 def post_to_bluesky():
     logger.info("Starting Bluesky post process")
     
