@@ -9,11 +9,11 @@ CELERY_TIMEZONE = 'UTC'
 CELERY_BEAT_SCHEDULE = {
     'daggerwalk-post-to-bluesky-morning': {
         'task': 'apps.daggerwalk.tasks.post_to_bluesky',
-        'schedule': crontab(minute=0, hour=15),  # 10:00 AM EST == 15:00 UTC
+         'schedule': crontab(minute=10, hour=15),  # 11:10 AM EDT
     },
     'daggerwalk-post-to-bluesky-evening': {
         'task': 'apps.daggerwalk.tasks.post_to_bluesky',
-        'schedule': crontab(minute=48, hour=0),  # 7:48 PM EST == 00:48 UTC
+        'schedule': crontab(minute=55, hour=23),  # 7:55 PM EDT
     },
 }
 
