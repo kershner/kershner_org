@@ -4,16 +4,17 @@ from django.conf import settings
 from celery import Celery
 import os
 
-CELERY_TIMEZONE = 'UTC'
+CELERY_TIMEZONE = 'America/New_York'
+CELERY_ENABLE_UTC = False
 
 CELERY_BEAT_SCHEDULE = {
     'daggerwalk-post-to-bluesky-morning': {
         'task': 'apps.daggerwalk.tasks.post_to_bluesky',
-         'schedule': crontab(minute=10, hour=15),  # 11:10 AM EDT
+         'schedule': crontab(minute=10, hour=11),  # 11:10 AM Eastern (local time)
     },
     'daggerwalk-post-to-bluesky-evening': {
         'task': 'apps.daggerwalk.tasks.post_to_bluesky',
-        'schedule': crontab(minute=55, hour=23),  # 7:55 PM EDT
+        'schedule': crontab(minute=3, hour=20),   # 8:05 PM Eastern (local time)
     },
 }
 
