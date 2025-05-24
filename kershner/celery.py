@@ -11,7 +11,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     'daggerwalk-post-to-bluesky-evening': {
         'task': 'apps.daggerwalk.tasks.post_to_bluesky',
-        'schedule': crontab(minute=8, hour=20),   # 8:08 PM Eastern (local time)
+        'schedule': crontab(minute=20, hour=20),   # 8:20 PM Eastern (local time)
     },
 }
 
