@@ -8,6 +8,7 @@ import tempfile
 import requests
 import logging
 import yt_dlp
+import openai
 import time
 import os
 
@@ -172,13 +173,38 @@ def generate_bluesky_caption(log_data, stats_data):
     return text
 
 
+def suggest_discoverability_hashtags() -> list[str]:
+    prompt = """
+You are assisting with a Bluesky post for a Twitch clip featuring retro gameplay from The Elder Scrolls II: Daggerfall.
+Suggest 5 popular, high-discoverability hashtags that are widely used across gaming and streaming communities. Focus on tags relevant to retro games, Twitch culture, and Elder Scrolls fandom.
+Do not include the following hashtags: daggerfall, elderscrolls, twitch. Avoid niche, game-specific, or low-traffic tags. Do not include the '#' symbol. Return only the hashtags, separated by commas.
+"""
+    openai.api_key = settings.OPENAI_API_KEY
+    
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=30,
+            temperature=0.7,
+        )
+        tag_text = response['choices'][0]['message']['content']
+        return [tag.strip() for tag in tag_text.split(",") if tag.strip()]
+    except Exception as e:
+        logger.warning(f"Hashtag suggestion failed: {e}")
+        return []
+
+
 def post_video_to_bluesky(caption, video_blob, client: Client):
     logger.info("Preparing Bluesky post")
 
-    hashtag_strings = ["daggerfall", "elderscrolls", "twitch"]
+    base_tags = ["daggerfall", "elderscrolls", "twitch"]
+    extra_tags = suggest_discoverability_hashtags()
+    extra_tags = [tag for tag in extra_tags if tag not in base_tags]
+    hashtag_strings = base_tags + extra_tags[:2]  # Add 1–2 discoverability tags
     hashtags_text = " ".join([f"#{tag}" for tag in hashtag_strings])
 
-    max_text_len = 300 - len(hashtags_text) - 2
+    max_text_len = 300 - len(hashtags_text) - 2  # For spacing/newlines
     if len(caption) > max_text_len:
         caption = caption[:max_text_len - 1].rstrip() + "…"
 
