@@ -153,6 +153,8 @@ REDIS_HOST = PARAMETERS['redis_host']
 REDIS_PORT = PARAMETERS['redis_port']
 
 # Celery config
+CELERY_TIMEZONE = 'America/New_York'
+CELERY_ENABLE_UTC = False
 BROKER_URL = 'redis://{}:{}'.format(PARAMETERS['redis_host'], PARAMETERS['redis_port'])
 CELERY_RESULT_BACKEND = 'redis://{}:{}'.format(PARAMETERS['redis_host'], PARAMETERS['redis_port'])
 BROKER_TRANSPORT = 'redis'
