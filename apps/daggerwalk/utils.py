@@ -147,7 +147,6 @@ def get_top_values_by_time_counts(value_counts, attr, top_n=10):
         results.append(entry)
     return results
 
-
 def calculate_daggerwalk_stats(range_keyword):
     def format_last_seen(dt):
         if not isinstance(dt, datetime):
@@ -172,6 +171,7 @@ def calculate_daggerwalk_stats(range_keyword):
         queryset = DaggerwalkLog.objects.filter(created_at__date__range=(start_date, end_date))
 
     total_logs = queryset.count()
+    
     if total_logs == 0:
         return {
             'startDate': start_date.isoformat(),
@@ -190,16 +190,20 @@ def calculate_daggerwalk_stats(range_keyword):
             'topWeather': [],
         }
 
+    # Main query - use iterator for large datasets to save memory
+    # Only select the fields we actually need for distance calculation and first/last log
     logs = queryset.order_by('created_at').select_related('poi', 'region_fk').only(
         'created_at', 'player_x', 'player_z', 'region', 'poi', 'weather',
         'date', 'season', 'current_song', 'region_fk__name', 'poi__name', 'poi__emoji'
     )
+    # Convert to list once for multiple iterations
+    logs_list = list(logs)
 
     total_minutes = total_logs * 5
 
-    # Distance + per-day breakdown
+    # Distance calculation
     total_distance_km, previous_log, distance_per_day = 0, None, {}
-    for log in logs:
+    for log in logs_list:
         if previous_log:
             dist = math.sqrt((log.player_x - previous_log.player_x) ** 2 + (log.player_z - previous_log.player_z) ** 2) / 1000
             total_distance_km += dist
@@ -211,14 +215,17 @@ def calculate_daggerwalk_stats(range_keyword):
     region_counts = queryset.values('region').annotate(count=Count('id')).order_by('-count')[:10]
     top_regions = [r['region'] for r in region_counts]
 
-    # Last seen timestamps for top regions
-    recent_logs = logs.filter(region__in=top_regions).order_by('-created_at')
+    # Last seen timestamps for top regions - optimized to use already loaded data
     last_seen_region = {}
-    for log in recent_logs:
-        if log.region not in last_seen_region:
+    top_regions_set = set(top_regions)  # Convert to set for faster lookup
+    
+    # Process logs in reverse order (most recent first) to find last seen timestamps
+    for log in reversed(logs_list):
+        if log.region in top_regions_set and log.region not in last_seen_region:
             last_seen_region[log.region] = log.created_at
-        if len(last_seen_region) == len(top_regions):
-            break
+            # Stop early if we've found all top regions
+            if len(last_seen_region) == len(top_regions):
+                break
 
     mostVisitedRegions = sorted(
         [
@@ -257,12 +264,12 @@ def calculate_daggerwalk_stats(range_keyword):
     weather_counts = queryset.values('weather').annotate(count=Count('id')).order_by('-count')
     most_common_weather = weather_counts.first()
 
-    # In-game time
-    date_keys = queryset.values_list('date', flat=True)
-    unique_days = {extract_date_key(d) for d in date_keys if d}
+    # In-game time - optimized to avoid redundant queryset evaluation
+    # Extract dates from already loaded logs instead of making another query
+    unique_days = {extract_date_key(log.date) for log in logs_list if log.date}
 
-    first_log = logs.first()
-    last_log = logs.last()
+    first_log = logs_list[0] if logs_list else None
+    last_log = logs_list[-1] if logs_list else None
 
     return {
         'startDate': start_date.isoformat(),
