@@ -12,9 +12,9 @@ const daggerwalkMapFilters = {
     this.bindEvents();
     this.updateGlobalState();
     
-    // Set default to "This week" on page load
+    // Set default to "Today" on page load
     if (this.elements.dateFilterShortcuts) {
-      const thisWeekShortcut = this.elements.dateFilterShortcuts.querySelector('span:nth-child(3)');
+      const thisWeekShortcut = this.elements.dateFilterShortcuts.querySelector('span:nth-child(1)');
       if (thisWeekShortcut) {
         // Add active class
         thisWeekShortcut.classList.add('active');
