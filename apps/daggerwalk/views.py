@@ -83,9 +83,9 @@ class DaggerwalkLogsView(APIView):
 
             two_weeks_ago = timezone.now() - timedelta(weeks=2)
 
-            # Get logs matching region name or FK
+            # Get logs using region_fk instead of raw string
             queryset = DaggerwalkLog.objects.filter(
-                Q(region=region) | Q(last_known_region=region_obj),
+                Q(region_fk=region_obj) | Q(last_known_region=region_obj),
                 created_at__gte=two_weeks_ago
             ).select_related('region_fk', 'poi', 'last_known_region').order_by('created_at')
 
@@ -97,16 +97,10 @@ class DaggerwalkLogsView(APIView):
             pois = []
 
         if self.use_sampling and queryset.exists():
-            # Sample by IDs before fetching full records
-            log_ids = list(queryset.values_list('id', flat=True))
-            sampled_ids = log_ids[::self.step]
-            if log_ids and log_ids[-1] not in sampled_ids:
-                sampled_ids.append(log_ids[-1])
-
-            # Reload sampled logs
-            logs = list(DaggerwalkLog.objects.filter(id__in=sampled_ids)
-                        .select_related('region_fk', 'poi', 'last_known_region')
-                        .order_by('created_at'))
+            all_logs = list(queryset)
+            logs = all_logs[::self.step]
+            if all_logs and all_logs[-1] not in logs:
+                logs.append(all_logs[-1])
         else:
             logs = list(queryset)
 
