@@ -13,7 +13,9 @@ from django.shortcuts import render
 from django.contrib import messages
 from rest_framework import status
 from django.db.models import Max
+from django.utils import timezone
 from django.conf import settings
+from datetime import timedelta
 from django.db.models import Q
 from .serializers import (
     DaggerwalkLogSerializer, 
@@ -79,9 +81,12 @@ class DaggerwalkLogsView(APIView):
             region_obj = Region.objects.get(name=region)
             pois = region_obj.points_of_interest.all()
 
+            two_weeks_ago = timezone.now() - timedelta(weeks=2)
+
             # Get logs matching region name or FK
             queryset = DaggerwalkLog.objects.filter(
-                Q(region=region) | Q(last_known_region=region_obj)
+                Q(region=region) | Q(last_known_region=region_obj),
+                created_at__gte=two_weeks_ago
             ).select_related('region_fk', 'poi', 'last_known_region').order_by('created_at')
 
         except Region.DoesNotExist:
