@@ -7,6 +7,7 @@ from io import BytesIO
 import tempfile
 import requests
 import logging
+import random
 import yt_dlp
 import openai
 import time
@@ -201,7 +202,8 @@ def post_video_to_bluesky(caption, video_blob, client: Client):
     base_tags = ["daggerfall", "elderscrolls", "twitch"]
     extra_tags = suggest_discoverability_hashtags()
     extra_tags = [tag for tag in extra_tags if tag not in base_tags]
-    hashtag_strings = base_tags + extra_tags[:2]  # Add 1–2 discoverability tags
+    random_extra_tags = random.sample(extra_tags, min(2, len(extra_tags)))
+    hashtag_strings = base_tags + random_extra_tags
     hashtags_text = " ".join([f"#{tag}" for tag in hashtag_strings])
 
     max_text_len = 300 - len(hashtags_text) - 2  # For spacing/newlines
