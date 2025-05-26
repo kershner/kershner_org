@@ -233,10 +233,6 @@ def post_video_to_bluesky(caption, video_blob, client: Client):
     hashtag_strings = base_tags + extra_tags
     hashtags_text = " ".join([f"#{tag}" for tag in hashtag_strings])
 
-    max_text_len = 300 - len(hashtags_text) - 2  # For spacing/newlines
-    if len(caption) > max_text_len:
-        caption = caption[:max_text_len - 1].rstrip() + "…"
-
     text = f"{caption}\n\n{hashtags_text}"
 
     facets = []
