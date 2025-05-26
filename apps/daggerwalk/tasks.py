@@ -199,7 +199,8 @@ def suggest_discoverability_hashtags(base_tags=[]) -> list[str]:
 You are assisting with a Bluesky post for a retro/DIY tech project that features a modest PC livestreaming the classic game The Elder Scrolls II: Daggerfall for many hours a day.  The project is fully automated and viewers can interact with the game via Twitch.  There's a live website showing the Walker's progress.
 The Bluesky post will include a short caption about the Walker's journey, the current weather, and the region they are in.  The post will also include a video clip of the Walker's journey.
 Please suggest 5 popular, high-discoverability hashtags that are widely used across gaming, streaming, software, or DIY hardware communities.
-Do not include the following hashtags: {", ".join(base_tags)}. Avoid niche or low-traffic tags. Avoid programming languages other than Python or Javascript.  Do not include the '#' symbol. Return only the hashtags, separated by commas.
+Do not include the following hashtags: {", ".join(base_tags)}. Avoid niche or low-traffic tags. Avoid programming languages other than Python or Javascript.  Do not include any tag related to "PC master race".
+Do not include the '#' symbol. Return only the hashtags, separated by commas.
 Ensure you are choosing the most relevant and popular hashtags that will help the post reach a wider audience.
 """
     openai.api_key = settings.OPENAI_API_KEY
