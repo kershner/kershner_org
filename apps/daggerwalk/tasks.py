@@ -114,6 +114,25 @@ def upload_video_as_blob(client: Client, video_path: str):
 
 
 def generate_bluesky_caption(log_data, stats_data):
+    def get_qualified_season(date_str):
+        season_map = [
+            ("Winter", ["morningstar", "sunsdawn", "eveningstar"]),
+            ("Spring", ["firstseed", "rainshand", "secondseed"]),
+            ("Summer", ["midyear", "sunsheight", "lastseed"]),
+            ("Autumn", ["hearthfire", "frostfall", "sunsdusk"]),
+        ]
+
+        try:
+            month = date_str.split(',')[1].strip().split(' ', 1)[1]
+            key = month.lower().replace("'", "").replace(" ", "")
+            for season, months in season_map:
+                if key in months:
+                    pos = ["early", "mid", "late"][months.index(key)]
+                    return f"{pos} {season}"
+        except:
+            pass
+        return "unknown season"
+    
     def get_time_of_day(date_str):
         # Extract the time portion at the end (e.g., "22:52:08")
         try:
@@ -161,7 +180,8 @@ def generate_bluesky_caption(log_data, stats_data):
     poi_data = log_data['poi']
 
     region_string = f"Walking through the {climate} wilderness of {region_name} in {region_province}"
-    weather_string = f"It's a {weather} {time_of_day} in {log_data['season']}"
+    season_qualifier = get_qualified_season(log_data['date'])
+    weather_string = f"It's a {weather} {time_of_day} in {season_qualifier}"
     traveled_string = f"The Walker has traveled {stats_data['totalDistanceKm']}km in {stats_data['formattedPlaytime']} so far today"
     poi_string = ""
     if poi_data:
@@ -174,20 +194,26 @@ def generate_bluesky_caption(log_data, stats_data):
     return text
 
 
-def suggest_discoverability_hashtags() -> list[str]:
-    prompt = """
-You are assisting with a Bluesky post for a Twitch clip featuring retro gameplay from The Elder Scrolls II: Daggerfall.
-Suggest 5 popular, high-discoverability hashtags that are widely used across gaming and streaming communities. Focus on tags relevant to retro games, Twitch culture, and Elder Scrolls fandom.
-Do not include the following hashtags: daggerfall, elderscrolls, twitch. Avoid niche, game-specific, or low-traffic tags. Do not include the '#' symbol. Return only the hashtags, separated by commas.
+def suggest_discoverability_hashtags(base_tags=[]) -> list[str]:
+    prompt = f"""
+You are assisting with a Bluesky post for a retro/DIY tech project that features a modest PC livestreaming the classic game The Elder Scrolls II: Daggerfall for many hours a day.  The project is fully automated and viewers can interact with the game via Twitch.  There's a live website showing the Walker's progress.
+The Bluesky post will include a short caption about the Walker's journey, the current weather, and the region they are in.  The post will also include a video clip of the Walker's journey.
+Please suggest 5 popular, high-discoverability hashtags that are widely used across gaming, streaming, software, or DIY hardware communities.
+Do not include the following hashtags: {", ".join(base_tags)}. Avoid niche or low-traffic tags. Avoid programming languages other than Python or Javascript.  Do not include the '#' symbol. Return only the hashtags, separated by commas.
+Ensure you are choosing the most relevant and popular hashtags that will help the post reach a wider audience.
 """
     openai.api_key = settings.OPENAI_API_KEY
     
     try:
         response = openai.ChatCompletion.create(
             model="gpt-4",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=30,
+            messages=[
+                {"role": "system", "content": "Respond only with a comma-separated list of 5 popular hashtags, no extra text."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=50,
             temperature=0.7,
+            stop=["\n"]
         )
         tag_text = response['choices'][0]['message']['content']
         return [tag.strip() for tag in tag_text.split(",") if tag.strip()]
@@ -200,10 +226,10 @@ def post_video_to_bluesky(caption, video_blob, client: Client):
     logger.info("Preparing Bluesky post")
 
     base_tags = ["daggerfall", "elderscrolls", "twitch"]
-    extra_tags = suggest_discoverability_hashtags()
+    extra_tags = suggest_discoverability_hashtags(base_tags)
     extra_tags = [tag for tag in extra_tags if tag not in base_tags]
     random_extra_tags = random.sample(extra_tags, min(2, len(extra_tags)))
-    hashtag_strings = base_tags + random_extra_tags
+    hashtag_strings = base_tags + extra_tags
     hashtags_text = " ".join([f"#{tag}" for tag in hashtag_strings])
 
     max_text_len = 300 - len(hashtags_text) - 2  # For spacing/newlines
