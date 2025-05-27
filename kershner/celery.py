@@ -6,8 +6,12 @@ import os
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'site_config.settings.prod')
 os.environ.setdefault('FORKED_BY_MULTIPROCESSING', '1')
+
 app = Celery('kershner')
+
 app.config_from_object('django.conf:settings')
+app.conf.worker_cancel_long_running_tasks_on_connection_loss = True  # Prevents stuck tasks if Redis disconnects
+
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
 app.conf.beat_schedule = {
