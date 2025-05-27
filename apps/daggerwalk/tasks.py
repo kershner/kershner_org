@@ -1,4 +1,4 @@
-from apps.daggerwalk.models import DaggerwalkLog
+from apps.daggerwalk.models import DaggerwalkLog, Region
 from django.conf import settings
 from celery import shared_task
 from datetime import datetime
@@ -179,7 +179,15 @@ def generate_bluesky_caption(log_data, stats_data):
     weather_emoji = DaggerwalkLog.get_weather_emoji(log_data['weather'])
     poi_data = log_data['poi']
 
-    region_string = f"Walking through the {climate} wilderness of {region_name} in {region_province}"
+    if region_name.lower() == "ocean":
+        try:
+            last_known_region = Region.objects.get(id=log_data['last_known_region'])
+            region_string = f"Walking through the ocean near {last_known_region.name} in {last_known_region.province}"
+        except Region.DoesNotExist:
+            region_string = "Walking through the Ocean."
+    else:
+        region_string = f"Walking through the {climate} wilderness of {region_name} in {region_province}"
+
     season_qualifier = get_qualified_season(log_data['date'])
     weather_string = f"It's a {weather} {time_of_day} in {season_qualifier}"
     traveled_string = f"The Walker has traveled {stats_data['totalDistanceKm']}km in {stats_data['formattedPlaytime']} so far today"
@@ -189,7 +197,6 @@ def generate_bluesky_caption(log_data, stats_data):
         poi_emoji = poi_data['emoji']
         poi_string = f" {poi_name} is nearby."
 
-    # TODO - handle "Ocean" region
     text = f"{date_without_time}. {region_string}.{poi_string} {weather_string}. {traveled_string}."
     return text
 
