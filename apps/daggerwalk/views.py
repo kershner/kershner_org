@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib import messages
+from django.core.cache import cache
 from rest_framework import status
 from django.db.models import Max
 from django.utils import timezone
@@ -213,10 +214,10 @@ class DaggerwalkStatsView(APIView):
 
     def get(self, request):
         keyword = request.query_params.get('range', 'all')
-        try:
-            stats = calculate_daggerwalk_stats(keyword)
-        except ValueError as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        stats = cache.get(f'daggerwalk_stats:{keyword}')
+
+        if stats is None:
+            return Response({'error': 'Stats are currently unavailable.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         data = {
             'stats': stats,

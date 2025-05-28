@@ -1,4 +1,6 @@
+from apps.daggerwalk.utils import calculate_daggerwalk_stats
 from apps.daggerwalk.models import DaggerwalkLog, Region
+from django.core.cache import cache
 from django.conf import settings
 from celery import shared_task
 from datetime import datetime
@@ -355,3 +357,13 @@ def post_to_bluesky():
                 logger.info("Cleanup completed")
             except OSError as e:
                 logger.warning(f"Cleanup warning: {str(e)}")  # Ignore cleanup errors
+
+@shared_task
+def update_daggerwalk_stats_cache():
+    for keyword in ['all', 'today', 'yesterday', 'last_7_days', 'this_month']:
+        try:
+            stats = calculate_daggerwalk_stats(keyword)
+            cache.set(f'daggerwalk_stats:{keyword}', stats, timeout=None)  # store indefinitely
+        except Exception as e:
+            # log or handle error if needed
+            pass
