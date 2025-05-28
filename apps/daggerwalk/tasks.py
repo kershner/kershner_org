@@ -237,7 +237,7 @@ def post_video_to_bluesky(caption, video_blob, client: Client):
     extra_tags = suggest_discoverability_hashtags(base_tags)
     extra_tags = [tag for tag in extra_tags if tag not in base_tags]
     random_extra_tags = random.sample(extra_tags, min(2, len(extra_tags)))
-    hashtag_strings = base_tags + extra_tags
+    hashtag_strings = base_tags + random_extra_tags
     hashtags_text = " ".join([f"#{tag}" for tag in hashtag_strings])
 
     text = f"{caption}\n\n{hashtags_text}"
