@@ -308,14 +308,14 @@ daggerwalk.initDaggerwalkStats = function() {
   
 daggerwalk.init = () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const regionParam = urlParams.get('region');
+  let regionParam = urlParams.get('region');
 
   const mapTab = document.querySelector('#map-tab-btn');
   const twitchTab = document.querySelector('#twitch-tab-btn');
 
   // Initialize Twitch player immediately if no region parameter
   if (!regionParam) {
-    daggerwalk.initTwitchPlayer();
+    regionParam = 'current';
   }
 
   if (regionParam && mapTab) {
