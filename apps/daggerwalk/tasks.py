@@ -118,7 +118,7 @@ def upload_video_as_blob(client: Client, video_path: str):
 def generate_bluesky_caption(log_data, stats_data):
     def get_qualified_season(date_str):
         season_map = [
-            ("Winter", ["morningstar", "sunsdawn", "eveningstar"]),
+            ("Winter", ["eveningstar", "morningstar", "sunsdawn",]),
             ("Spring", ["firstseed", "rainshand", "secondseed"]),
             ("Summer", ["midyear", "sunsheight", "lastseed"]),
             ("Autumn", ["hearthfire", "frostfall", "sunsdusk"]),
