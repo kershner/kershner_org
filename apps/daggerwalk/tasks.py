@@ -19,7 +19,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-API_BASE_URL = 'https://kershner.org/api/daggerwalk'
+BASE_URL = 'https://kershner.org'
+API_BASE_URL = f'{BASE_URL}/api/daggerwalk'
 TWITCH_CLIP_URL = 'https://api.twitch.tv/helix/clips'
 
 
@@ -378,3 +379,12 @@ def update_daggerwalk_stats_cache():
         except Exception as e:
             # log or handle error if needed
             pass
+
+
+@shared_task
+def update_daggerwalk_current_region_logs_cache():
+    latest_log = DaggerwalkLog.objects.latest('id')
+    latest_region = latest_log.region
+    region_logs_url = f"{BASE_URL}/daggerwalk/logs/?region={latest_region}"
+    response = requests.get(region_logs_url)
+    cache.set('daggerwalk_current_region_logs', response.json()['logs'], timeout=None)

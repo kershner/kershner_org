@@ -19,7 +19,7 @@ ROOT_ENDPOINTS = [
 # Format: (namespace, [(endpoint, view, name), ...])
 GROUPED_ENDPOINTS = [
     ('daggerwalk', [
-        ('logs', DaggerwalkLogListAPIView, 'daggerwalk_logs'),
+        ('logs', DaggerwalkLogListAPIView, 'daggerwalk_logs_list'),
         ('regions', RegionListAPIView, 'daggerwalk_regions'),
         ('pois', POIListAPIView, 'daggerwalk_pois'),
         ('stats', DaggerwalkStatsView, 'daggerwalk_stats'),
