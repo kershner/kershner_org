@@ -2,6 +2,7 @@ from apps.daggerwalk.utils import calculate_daggerwalk_stats
 from apps.daggerwalk.models import DaggerwalkLog, Region
 from django.core.cache import cache
 from django.conf import settings
+from collections import Counter
 from celery import shared_task
 from datetime import datetime
 from atproto import Client
@@ -9,9 +10,7 @@ from io import BytesIO
 import tempfile
 import requests
 import logging
-import random
 import yt_dlp
-import openai
 import time
 import os
 
@@ -203,49 +202,16 @@ def generate_bluesky_caption(log_data, stats_data):
     return text
 
 
-def suggest_discoverability_hashtags(base_tags=[]) -> list[str]:
-    prompt = f"""
-You are assisting with a Bluesky post for a retro/DIY tech project that features a modest PC livestreaming the classic game The Elder Scrolls II: Daggerfall for many hours a day.  The project is fully automated and viewers can interact with the game via Twitch.  There's a live website showing the Walker's progress.
-The Bluesky post will include a short caption about the Walker's journey, the current weather, and the region they are in.  The post will also include a video clip of the Walker's journey.
-Please suggest 5 popular, high-discoverability hashtags that are widely used across gaming, streaming, software, or DIY hardware communities.
-Do not include the following hashtags: {", ".join(base_tags)}. Avoid niche or low-traffic tags. Avoid programming languages other than Python or Javascript.  Do not include any tag related to "PC master race".
-Do not include the '#' symbol. Return only the hashtags, separated by commas.
-Ensure you are choosing the most relevant and popular hashtags that will help the post reach a wider audience.
-"""
-    openai.api_key = settings.OPENAI_API_KEY
-    
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "Respond only with a comma-separated list of 5 popular hashtags, no extra text."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=50,
-            temperature=0.7,
-            stop=["\n"]
-        )
-        tag_text = response['choices'][0]['message']['content']
-        return [tag.strip() for tag in tag_text.split(",") if tag.strip()]
-    except Exception as e:
-        logger.warning(f"Hashtag suggestion failed: {e}")
-        return []
-
-
 def post_video_to_bluesky(caption, video_blob, client: Client):
     logger.info("Preparing Bluesky post")
 
-    base_tags = ["daggerfall", "elderscrolls", "twitch"]
-    extra_tags = suggest_discoverability_hashtags(base_tags)
-    extra_tags = [tag for tag in extra_tags if tag not in base_tags]
-    random_extra_tags = random.sample(extra_tags, min(2, len(extra_tags)))
-    hashtag_strings = base_tags + random_extra_tags
-    hashtags_text = " ".join([f"#{tag}" for tag in hashtag_strings])
+    tags = ["gaming", "elderscrolls", "twitch", "retrogaming", "livestreaming"]
+    hashtags_text = " ".join([f"#{tag}" for tag in tags])
 
     text = f"{caption}\n\n{hashtags_text}"
 
     facets = []
-    for tag in hashtag_strings:
+    for tag in tags:
         hashtag = f"#{tag}"
         start = text.find(hashtag)
         if start != -1:
@@ -293,6 +259,51 @@ def post_video_to_bluesky(caption, video_blob, client: Client):
     except Exception as e:
         logger.error(f"Video embed failed: {str(e)}")
         raise
+
+
+def get_popular_hashtags(client, topics, limit=50):
+    """Retrieves and counts popular hashtags related to specified topics from Bluesky using AT Protocol."""
+    hashtag_counter = Counter()
+
+    try:
+        for topic in topics:
+            # Use the correct AT Protocol search method
+            response = client.app.bsky.feed.search_posts(
+                params={
+                    'q': topic,
+                    'limit': min(limit, 100)
+                }
+            )
+            
+            # Extract posts from the response
+            posts = response.posts if hasattr(response, 'posts') else []
+            
+            # Extract hashtags from each post
+            for post in posts:
+                # Get the post text from the record
+                post_text = ""
+                if hasattr(post, 'record') and hasattr(post.record, 'text'):
+                    post_text = post.record.text
+                elif isinstance(post, dict) and 'record' in post:
+                    post_text = post['record'].get('text', '')
+                
+                # Extract hashtags using string operations
+                words = post_text.split()
+                hashtags = [word.lower() for word in words if word.startswith('#')]
+                hashtag_counter.update(hashtags)
+
+        # Return the most common hashtags
+        return hashtag_counter.most_common()
+
+    except Exception as e:
+        # More specific error handling
+        error_msg = f"Error fetching popular hashtags: {str(e)}"
+        if "rate limit" in str(e).lower():
+            error_msg += " (Rate limit exceeded - try reducing the limit or waiting)"
+        elif "auth" in str(e).lower():
+            error_msg += " (Authentication error - ensure client is logged in)"
+        
+        raise Exception(error_msg)
 
 
 @shared_task
