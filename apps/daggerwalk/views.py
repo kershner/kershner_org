@@ -77,28 +77,21 @@ class DaggerwalkLogsView(APIView):
         if not region:
             return Response({'error': 'Region parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Get the latest log's region
-        latest_region = DaggerwalkLog.objects.values('region').latest('id')['region']
-
-        # Check if the region matches the latest log's region and fetch from cache
-        if region == latest_region:
-            logs = cache.get('daggerwalk_current_region_logs', [])
-            if logs:
-                return Response({'logs': logs})
-
-        # If cache is empty or region doesn't match, proceed with the regular query
         try:
+            # Get region object and related POIs
             region_obj = Region.objects.get(name=region)
             pois = region_obj.points_of_interest.all()
 
             two_weeks_ago = timezone.now() - timedelta(weeks=2)
 
+            # Get logs using region_fk instead of raw string
             queryset = DaggerwalkLog.objects.filter(
                 Q(region_fk=region_obj) | Q(last_known_region=region_obj),
                 created_at__gte=two_weeks_ago
             ).select_related('region_fk', 'poi', 'last_known_region').order_by('created_at')
 
         except Region.DoesNotExist:
+            # Fallback if region FK doesn't exist
             queryset = DaggerwalkLog.objects.filter(
                 region=region
             ).select_related('region_fk', 'poi', 'last_known_region').order_by('created_at')
