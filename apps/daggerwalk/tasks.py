@@ -206,7 +206,7 @@ def generate_bluesky_caption(log_data, stats_data):
 def post_video_to_bluesky(caption, video_blob, client: Client):
     logger.info("Preparing Bluesky post")
 
-    tags = ["gaming", "elderscrolls", "twitch", "retrogaming", "livestreaming"]
+    tags = ["daggerfall", "gaming", "elderscrolls", "twitch", "retrogaming", "livestreaming"]
     hashtags_text = " ".join([f"#{tag}" for tag in tags])
 
     text = f"{caption}\n\n{hashtags_text}"
