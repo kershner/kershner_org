@@ -46,6 +46,7 @@ ___
 | Project | Code |
 |---------|--------------|
 | **[Daggerwalk](https://kershner.org/daggerwalk/)** | [Python](https://github.com/kershner/kershner_org/tree/master/apps/daggerwalk) · [JavaScript](https://github.com/kershner/kershner_org/blob/master/static/js/daggerwalk/) · [Sass](https://github.com/kershner/kershner_org/blob/master/static/sass/daggerwalk.sass) |
+| **[public-api-explorer](https://kershner.org/public-api-explorer/)** | [JavaScript](https://github.com/kershner/public-api-explorer) |
 | **[AI Generated Quizzes](https://kershner.org/quiz/)** | [Python](https://github.com/kershner/kershner_org/tree/master/apps/ai_quiz) · [JavaScript](https://github.com/kershner/kershner_org/blob/master/static/js/aiQuiz.js) · [Sass](https://github.com/kershner/kershner_org/blob/master/static/sass/ai-quiz.sass) |
 | **[Music Player](https://kershner.org/music/)** | [JavaScript](https://github.com/kershner/kershner_org/tree/master/static/react-apps/musicPlayer) |
 | **[[ominous whoosher]](https://kershner.org/whoosh/)** | [Python](https://github.com/kershner/kershner_org/tree/master/apps/whoosh) · [JavaScript](https://github.com/kershner/kershner_org/blob/master/static/js/whoosh.js) · [Sass](https://github.com/kershner/kershner_org/blob/master/static/sass/whoosh.sass) |
