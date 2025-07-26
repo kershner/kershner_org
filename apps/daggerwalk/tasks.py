@@ -192,14 +192,15 @@ def generate_bluesky_caption(log_data, stats_data):
 
     season_qualifier = get_qualified_season(log_data['date'])
     weather_string = f"It's a {weather} {time_of_day} in {season_qualifier}"
-    traveled_string = f"The Walker has traveled {stats_data['totalDistanceKm']}km in {stats_data['formattedPlaytime']} so far today"
+    traveled_string = f"The Walker has traveled {stats_data['totalDistanceKm']}km in {stats_data['formattedPlaytime']} so far today."
     poi_string = ""
     if poi_data:
         poi_name = poi_data['name']
         poi_emoji = poi_data['emoji']
         poi_string = f" {poi_name} is nearby."
+        traveled_string = ""  # Don't include travel string if POI is present to preserve characters
 
-    text = f"{date_without_time}. {region_string}.{poi_string} {weather_string}. {traveled_string}."
+    text = f"{date_without_time}. {region_string}.{poi_string} {weather_string}. {traveled_string}"
     return text
 
 
