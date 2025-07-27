@@ -1,8 +1,8 @@
 from apps.daggerwalk.utils import calculate_daggerwalk_stats
 from apps.daggerwalk.models import DaggerwalkLog, Region
+from playwright.sync_api import sync_playwright
 from django.core.cache import cache
 from django.conf import settings
-from collections import Counter
 from celery import shared_task
 from datetime import datetime
 from atproto import Client
@@ -257,55 +257,11 @@ def post_video_to_bluesky(caption, video_blob, client: Client):
             }
         )
         logger.info("Post created successfully")
-
+        return response["uri"], response["cid"]
+    
     except Exception as e:
         logger.error(f"Video embed failed: {str(e)}")
         raise
-
-
-def get_popular_hashtags(client, topics, limit=50):
-    """Retrieves and counts popular hashtags related to specified topics from Bluesky using AT Protocol."""
-    hashtag_counter = Counter()
-
-    try:
-        for topic in topics:
-            # Use the correct AT Protocol search method
-            response = client.app.bsky.feed.search_posts(
-                params={
-                    'q': topic,
-                    'limit': min(limit, 100)
-                }
-            )
-            
-            # Extract posts from the response
-            posts = response.posts if hasattr(response, 'posts') else []
-            
-            # Extract hashtags from each post
-            for post in posts:
-                # Get the post text from the record
-                post_text = ""
-                if hasattr(post, 'record') and hasattr(post.record, 'text'):
-                    post_text = post.record.text
-                elif isinstance(post, dict) and 'record' in post:
-                    post_text = post['record'].get('text', '')
-                
-                # Extract hashtags using string operations
-                words = post_text.split()
-                hashtags = [word.lower() for word in words if word.startswith('#')]
-                hashtag_counter.update(hashtags)
-
-        # Return the most common hashtags
-        return hashtag_counter.most_common()
-
-    except Exception as e:
-        # More specific error handling
-        error_msg = f"Error fetching popular hashtags: {str(e)}"
-        if "rate limit" in str(e).lower():
-            error_msg += " (Rate limit exceeded - try reducing the limit or waiting)"
-        elif "auth" in str(e).lower():
-            error_msg += " (Authentication error - ensure client is logged in)"
-        
-        raise Exception(error_msg)
 
 
 @shared_task
@@ -350,7 +306,10 @@ def post_to_bluesky():
         caption = generate_bluesky_caption(log_data, stats_data)
         
         # Post video to Bluesky
-        post_video_to_bluesky(caption, video_blob, client)
+        uri, cid = post_video_to_bluesky(caption, video_blob, client)
+
+        # Post screenshots as reply
+        post_screenshot_reply_to_video(client, uri, cid)
         
         logger.info("Process completed successfully")
         
@@ -371,6 +330,86 @@ def post_to_bluesky():
             except OSError as e:
                 logger.warning(f"Cleanup warning: {str(e)}")  # Ignore cleanup errors
 
+
+def post_screenshot_reply_to_video(client: Client, uri: str, cid: str):
+    """
+    Captures two map screenshots and posts them as a reply to the specified video post.
+    """
+
+    screenshots = {
+        "region": "region_map.png",
+        "world": "world_map.png"
+    }
+
+    try:
+        # Step 1: Take screenshots
+        with sync_playwright() as p:
+            browser = p.chromium.launch(
+                headless=True,
+                executable_path=settings.PLAYWRIGHT_CHROMIUM_PATH
+            )
+            page = browser.new_page()
+            page.goto("https://kershner.org/daggerwalk")
+
+            region_map = page.query_selector("#regionMapView")
+            world_map_link = page.query_selector(".world-map-link")
+            world_map = page.query_selector("#worldMapView")
+
+            if region_map:
+                region_map.screenshot(path=screenshots["region"])
+
+                if world_map_link:
+                    world_map_link.click()
+
+                if world_map:
+                    world_map.screenshot(path=screenshots["world"])
+
+            browser.close()
+
+        # Step 2: Upload screenshots
+        uploaded = []
+        for label, path in screenshots.items():
+            with open(path, "rb") as f:
+                blob = client.com.atproto.repo.upload_blob(BytesIO(f.read()))
+                uploaded.append({
+                    "image": blob.blob,
+                    "alt": f"{label.capitalize()} map view"
+                })
+
+        # Step 3: Post reply
+        reply_record = {
+            "repo": client.me.did,
+            "collection": "app.bsky.feed.post",
+            "record": {
+                "text": "The Walker's journey so far today:",
+                "createdAt": client.get_current_time_iso(),
+                "reply": {
+                    "root": {"uri": uri, "cid": cid},
+                    "parent": {"uri": uri, "cid": cid}
+                },
+                "embed": {
+                    "$type": "app.bsky.embed.images",
+                    "images": uploaded
+                }
+            }
+        }
+
+        client.com.atproto.repo.create_record(data=reply_record)
+        logger.info("Screenshot reply posted successfully.")
+
+    except Exception as e:
+        logger.error(f"Failed to post screenshot reply: {str(e)}")
+        raise
+
+    finally:
+        # Step 4: Clean up
+        for path in screenshots.values():
+            if os.path.exists(path):
+                try:
+                    os.remove(path)
+                    logger.info(f"Deleted screenshot: {path}")
+                except Exception as e:
+                    logger.warning(f"Failed to delete screenshot {path}: {str(e)}")
 @shared_task
 def update_daggerwalk_stats_cache():
     for keyword in ['all', 'today', 'yesterday', 'last_7_days', 'this_month']:
