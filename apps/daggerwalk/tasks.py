@@ -349,22 +349,24 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str):
                 executable_path=settings.PLAYWRIGHT_CHROMIUM_PATH
             )
             page = browser.new_page()
-            page.goto("https://kershner.org/daggerwalk")
+            page.goto("https://kershner.org/daggerwalk", wait_until="networkidle")
+
+            # Wait until the region map is fully rendered
+            page.wait_for_selector("#regionMapView", timeout=10000)
 
             region_map = page.query_selector("#regionMapView")
-            world_map_link = page.query_selector(".world-map-link")
-            world_map = page.query_selector("#worldMapView")
-
             if region_map:
                 region_map.screenshot(path=screenshots["region"])
 
+                # Click the link and wait for world map view to render
+                world_map_link = page.query_selector(".world-map-link")
                 if world_map_link:
                     world_map_link.click()
+                    page.wait_for_selector("#worldMapView", timeout=10000)
 
-                if world_map:
-                    world_map.screenshot(path=screenshots["world"])
-
-            browser.close()
+                    world_map = page.query_selector("#worldMapView")
+                    if world_map:
+                        world_map.screenshot(path=screenshots["world"])
 
         # Step 2: Upload screenshots
         uploaded = []
