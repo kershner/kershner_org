@@ -309,7 +309,7 @@ def post_to_bluesky():
         uri, cid = post_video_to_bluesky(caption, video_blob, client)
 
         # Post screenshots as reply
-        post_screenshot_reply_to_video(client, uri, cid)
+        post_screenshot_reply_to_video(client, uri, cid, log_data)
         
         logger.info("Process completed successfully")
         
@@ -331,7 +331,7 @@ def post_to_bluesky():
                 logger.warning(f"Cleanup warning: {str(e)}")  # Ignore cleanup errors
 
 
-def post_screenshot_reply_to_video(client: Client, uri: str, cid: str):
+def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data):
     """
     Captures two map screenshots and posts them as a reply to the specified video post.
     """
@@ -356,6 +356,14 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str):
 
             region_map = page.query_selector("#regionMapView")
             if region_map:
+                checkbox = page.query_selector("#poi-toggle")
+                if checkbox:
+                    checkbox.evaluate("""
+                        el => {
+                            el.checked = !el.checked;
+                            el.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    """)
                 region_map.screenshot(path=screenshots["region"])
 
                 # Click the link and wait for world map view to render
@@ -373,18 +381,38 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str):
         for label, path in screenshots.items():
             with open(path, "rb") as f:
                 blob = client.com.atproto.repo.upload_blob(BytesIO(f.read()))
+
+                region = log_data['region']
+                if label == "region":
+                    alt = f"Daggerfall region map for {region} with markers showing the Walker's progress so far today."
+                elif label == "world":
+                    alt = f"Daggerfall world map with markers showing the Walker's recent travels.  The Walker is currently in the {region} region."
+
                 uploaded.append({
                     "image": blob.blob,
-                    "alt": f"{label.capitalize()} map view"
+                    "alt": alt
                 })
 
         # Step 3: Post reply
+        url = "https://kershner.org/daggerwalk"
+        text = f"The Walker's recent travels:\n{url}"
+
         reply_record = {
             "repo": client.me.did,
             "collection": "app.bsky.feed.post",
             "record": {
-                "text": "The Walker's journey so far today:",
+                "text": text,
                 "createdAt": client.get_current_time_iso(),
+                "facets": [{
+                    "index": {
+                        "byteStart": text.index(url),
+                        "byteEnd": text.index(url) + len(url)
+                    },
+                    "features": [{
+                        "$type": "app.bsky.richtext.facet#link",
+                        "uri": url
+                    }]
+                }],
                 "reply": {
                     "root": {"uri": uri, "cid": cid},
                     "parent": {"uri": uri, "cid": cid}
@@ -412,6 +440,7 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str):
                     logger.info(f"Deleted screenshot: {path}")
                 except Exception as e:
                     logger.warning(f"Failed to delete screenshot {path}: {str(e)}")
+
 @shared_task
 def update_daggerwalk_stats_cache():
     for keyword in ['all', 'today', 'yesterday', 'last_7_days', 'this_month']:
