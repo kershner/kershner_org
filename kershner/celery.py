@@ -25,10 +25,10 @@ app.conf.beat_schedule = {
     # },
     'daggerwalk-post-to-bluesky-morning': {
         'task': 'apps.daggerwalk.tasks.post_to_bluesky',
-        'schedule': crontab(minute=10, hour=11),  # 11:10 AM Eastern
+        'schedule': crontab(minute=10, hour=10),  # 10:10 AM Eastern
     },
     'daggerwalk-post-to-bluesky-evening': {
         'task': 'apps.daggerwalk.tasks.post_to_bluesky',
-        'schedule': crontab(minute=27, hour=19),  # 7:27 PM Eastern
+        'schedule': crontab(minute=27, hour=18),  # 6:27 PM Eastern
     },
 }
