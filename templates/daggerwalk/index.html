@@ -35,6 +35,12 @@
     {# Current Status #}
     <div class="current-status"></div>
 
+    <div class="footer">
+        <a href="{% url 'daggerwalk-root' %}" target="_blank" title="View the Daggerwalk API">API</a>
+        <a href="https://bsky.app/profile/daggerwalk.bsky.social" target="_blank" title="View Daggerwalk's Bluesky profile">Bluesky</a>
+        <a href="https://twitch.tv/daggerwalk" target="_blank" title="View Daggerwalk's Twitch profile">Twitch</a>
+    </div>
+
     {# About tabs #}
     <div class="tabs about-tabs">
         <input type="radio" name="tabs-group-2" id="stats-tab-btn" checked>
@@ -62,12 +68,6 @@
         <div class="tab-content">
             {% include 'daggerwalk/about.html' %}
         </div>
-    </div>
-
-    <div class="footer">
-        <a href="{% url 'daggerwalk-root' %}" target="_blank" title="View the Daggerwalk API">API</a>
-        <a href="https://bsky.app/profile/daggerwalk.bsky.social" target="_blank" title="View Daggerwalk's Bluesky profile">Bluesky</a>
-        <a href="https://twitch.tv/daggerwalk" target="_blank" title="View Daggerwalk's Twitch profile">Twitch</a>
     </div>
 
     <script src="https://embed.twitch.tv/embed/v1.js"></script>
