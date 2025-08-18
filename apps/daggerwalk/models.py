@@ -236,3 +236,31 @@ class ProvinceShape(models.Model):
     
     def __str__(self):
         return f"Shape for {self.region.name}"
+    
+
+class ChatCommandLog(models.Model):
+    request_log = models.ForeignKey(
+        'daggerwalk.DaggerwalkLog',
+        on_delete=models.CASCADE,
+        related_name='chat_commands'
+    )
+
+    # Parsed fields
+    timestamp = models.DateTimeField()
+    user = models.CharField(max_length=50, db_index=True)
+    command = models.CharField(max_length=32, db_index=True)
+    args = models.TextField(blank=True, default="")    # keep raw args string
+    raw = models.TextField(blank=True, default="")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['timestamp']),
+            models.Index(fields=['user', 'timestamp']),
+            models.Index(fields=['command', 'timestamp']),
+        ]
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.timestamp} | {self.user} | {self.command} | {self.args}"

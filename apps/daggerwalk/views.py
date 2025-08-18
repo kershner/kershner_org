@@ -1,10 +1,11 @@
-from apps.daggerwalk.utils import get_map_data, get_latest_log_data, calculate_daggerwalk_stats
 from django.contrib.admin.views.decorators import staff_member_required
+from apps.daggerwalk.utils import get_map_data, get_latest_log_data
 from rest_framework.decorators import api_view, permission_classes
+from .models import POI, DaggerwalkLog, Region, ChatCommandLog
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
+from django.utils.dateparse import parse_datetime
 from rest_framework.permissions import AllowAny
-from .models import POI, DaggerwalkLog, Region
 from rest_framework.response import Response
 from apps.api.views import BaseListAPIView
 from rest_framework.views import APIView
@@ -118,6 +119,9 @@ class DaggerwalkLogsView(APIView):
 @permission_classes([AllowAny])
 @csrf_exempt
 def create_daggerwalk_log(request):
+    from django.utils.dateparse import parse_datetime
+    from apps.daggerwalk.models import ChatCommandLog
+
     API_KEY = getattr(settings, "DAGGERWALK_API_KEY", None)
     auth_header = request.headers.get("Authorization")
 
@@ -139,8 +143,6 @@ def create_daggerwalk_log(request):
                     "command": parts[2],
                     "args": " ".join(parts[3:]) if len(parts) > 3 else ""
                 })
-        logger.info(f"Received chat logs: {parsed_chat_logs}")
-        # TODO: later save parsed_chat_logs to a model
 
         log_entry = DaggerwalkLog.objects.create(
             world_x=request.data['worldX'],
@@ -156,16 +158,41 @@ def create_daggerwalk_log(request):
             weather=request.data['weather'],
             current_song=request.data.get('currentSong'),
         )
-        
-        resp = {
+
+        chat_command_objects = []
+        for chat_log in parsed_chat_logs:
+            parsed_timestamp = parse_datetime(chat_log['timestamp'])
+            if not parsed_timestamp:
+                continue
+
+            chat_command_objects.append(
+                ChatCommandLog(
+                    request_log=log_entry,
+                    timestamp=parsed_timestamp,
+                    user=chat_log['user'],
+                    command=chat_log['command'],
+                    args=chat_log.get('args', ''),
+                    raw=" | ".join(filter(None, [
+                        chat_log['timestamp'],
+                        chat_log['user'],
+                        chat_log['command'],
+                        chat_log.get('args', '')
+                    ]))
+                )
+            )
+
+        try:
+            if chat_command_objects:
+                ChatCommandLog.objects.bulk_create(chat_command_objects)
+        except Exception as e:
+            logger.error(f"Failed to save ChatCommandLog objects: {str(e)}")
+
+        return Response({
             'status': 'success',
             'message': 'Log entry created successfully',
             'id': log_entry.id,
             'log_data': get_latest_log_data()
-        }
-        logger.info(f"Daggerwalk log created id={log_entry.id} region={request.data.get('region')} "
-                    f"location={request.data.get('location')} chat_logs={len(parsed_chat_logs)}")
-        return Response(resp, status=status.HTTP_201_CREATED)
+        }, status=status.HTTP_201_CREATED)
         
     except KeyError as e:
         return Response({

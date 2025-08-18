@@ -1,4 +1,4 @@
-from apps.daggerwalk.models import DaggerwalkLog, Region, RegionMapPart, POI, ProvinceShape
+from apps.daggerwalk.models import DaggerwalkLog, Region, RegionMapPart, POI, ProvinceShape, ChatCommandLog
 from django.http import HttpResponseRedirect
 from apps.daggerwalk.tasks import post_to_bluesky
 from django.utils.html import format_html
@@ -9,10 +9,29 @@ from django.urls import reverse
 from django.urls import path
 
 
+class ReadOnlyInline(admin.TabularInline):
+    extra = 0
+    can_delete = False
+    show_change_link = True
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+class ChatCommandLogInline(ReadOnlyInline):
+    model = ChatCommandLog
+    fields = ('timestamp', 'user', 'command', 'args', 'raw', 'created_at')
+    verbose_name = "Chat Command"
+    verbose_name_plural = "Chat Commands"
+
+
 @admin.register(DaggerwalkLog)
 class DaggerwalkLogAdmin(admin.ModelAdmin):
     change_list_template = "admin/daggerwalk/daggerwalklog_changelist.html"
-    
+    inlines = [ChatCommandLogInline]
     list_display = ('created_at', 'view_on_map_link', 'coordinates', 'region', 'location', 'formatted_date', 'weather',)
     list_filter = ('region', 'location', 'weather', 'season', 'created_at',)
     search_fields = ('region', 'location', 'weather', 'season', 'created_at',)
@@ -149,18 +168,6 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
         post_to_bluesky.delay()
         self.message_user(request, "Bluesky post triggered.", level=messages.SUCCESS)
         return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/admin/"))
-    
-class ReadOnlyInline(admin.TabularInline):
-    extra = 0
-    can_delete = False
-    show_change_link = True
-
-    def has_add_permission(self, request, obj=None):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
 
 class RegionMapPartInline(ReadOnlyInline):
     model = RegionMapPart
@@ -260,3 +267,22 @@ class ProvinceShapeAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         custom_fields = ['num_coordinates', 'view_shape_data']
         return [f.name for f in self.model._meta.fields] + custom_fields
+
+
+@admin.register(ChatCommandLog)
+class ChatCommandLogAdmin(admin.ModelAdmin):
+    list_display = ('timestamp', 'user', 'command', 'args_short', 'request_log', 'created_at')
+    list_filter = ('user', 'command', 'created_at')
+    search_fields = ('user', 'command', 'args', 'raw', 'request_log__region', 'request_log__location')
+
+    ordering = ('-timestamp',)
+
+    def args_short(self, obj):
+        return (obj.args[:60] + '…') if obj.args and len(obj.args) > 60 else (obj.args or '')
+    args_short.short_description = 'Args'
+
+    def has_add_permission(self, request):
+        return False
+
+    def get_readonly_fields(self, request, obj=None):
+        return [f.name for f in self.model._meta.fields]
