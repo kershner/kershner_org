@@ -1,4 +1,4 @@
-from .models import Region, POI, DaggerwalkLog
+from .models import ChatCommandLog, Region, POI, DaggerwalkLog
 from rest_framework import serializers
 
 
@@ -30,4 +30,11 @@ class RegionWithPOIsSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Region
+        fields = '__all__'
+
+
+class ChatCommandLogSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = ChatCommandLog
         fields = '__all__'

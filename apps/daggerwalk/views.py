@@ -20,6 +20,7 @@ from django.conf import settings
 from datetime import timedelta
 from django.db.models import Q
 from .serializers import (
+    ChatCommandLogSerializer,
     DaggerwalkLogSerializer, 
     POISerializer,
     RegionSerializer,
@@ -274,3 +275,8 @@ class DaggerwalkStatsView(APIView):
             'html': render_to_string(self.template, {'stats': stats}),
         }
         return Response(data)
+
+
+class ChatCommandLogListAPIView(BaseListAPIView):
+    queryset = ChatCommandLog.objects.all()
+    serializer_class = ChatCommandLogSerializer
