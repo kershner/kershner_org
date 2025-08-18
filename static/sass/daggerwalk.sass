@@ -781,7 +781,8 @@ blockquote
   padding: 0 1rem
   display: flex
 
-  a
+  .footer-btn
+    cursor: pointer
     background-color: var(--accent-color)
     padding: 0.25rem 0.5rem
     margin-right: 0.25rem
@@ -789,6 +790,30 @@ blockquote
     text-decoration: none
     color: var(--background-color)
     font-size: 0.8rem
+    font-weight: bold
 
     &:hover
       opacity: 0.8
+
+  .dropdown
+    position: relative
+
+  .dropdown-content
+    display: none
+    position: absolute
+    margin-top: 0.25rem
+    left: 0
+    padding: 0.5rem
+    background-color: var(--accent-color)
+    width: max-content
+    z-index: 2
+    border-radius: $border-radius
+
+    a
+      color: var(--background-color)
+      font-size: 0.8rem
+
+  .dropdown[open] .dropdown-content
+    display: flex
+    flex-direction: column
+    gap: 0.5rem

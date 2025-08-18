@@ -36,9 +36,17 @@
     <div class="current-status"></div>
 
     <div class="footer">
-        <a href="{% url 'daggerwalk-root' %}" target="_blank" title="View the Daggerwalk API">API</a>
-        <a href="https://bsky.app/profile/daggerwalk.bsky.social" target="_blank" title="View Daggerwalk's Bluesky profile">Bluesky</a>
-        <a href="https://twitch.tv/daggerwalk" target="_blank" title="View Daggerwalk's Twitch profile">Twitch</a>
+        <a class="footer-btn" href="{% url 'daggerwalk-root' %}" target="_blank" title="View the Daggerwalk API">API</a>
+        <a class="footer-btn" href="https://bsky.app/profile/daggerwalk.bsky.social" target="_blank" title="View Daggerwalk's Bluesky profile">Bluesky</a>
+        <a class="footer-btn" href="https://twitch.tv/daggerwalk" target="_blank" title="View Daggerwalk's Twitch profile">Twitch</a>
+        
+        <details class="dropdown">
+            <summary class="footer-btn" title="View Daggerwalk code">Code</summary>
+            <div class="dropdown-content">
+                <a href="https://github.com/kershner/daggerwalk" title="View Twitch bot and mods codebase" target="_blank">Twitch bot and mods</a>
+                <a href="https://github.com/kershner/kershner_org/tree/master/apps/daggerwalk" title="View Daggerwalk website codebase" target="_blank">Website</a>
+            </div>
+        </details>
     </div>
 
     {# About tabs #}
