@@ -23,7 +23,10 @@ from .serializers import (
     POISerializer,
     RegionSerializer,
 )
+import logging
 import json
+
+logger = logging.getLogger(__name__)
 
 
 class DaggerwalkHomeView(APIView):
@@ -122,6 +125,23 @@ def create_daggerwalk_log(request):
         return Response({"status": "error", "message": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
     
     try:
+        raw_chat_logs = request.data.get("chat_logs") or []
+        if isinstance(raw_chat_logs, str):
+            raw_chat_logs = raw_chat_logs.strip().splitlines()
+
+        parsed_chat_logs = []
+        for ln in raw_chat_logs:
+            parts = [p.strip() for p in ln.split("|")]
+            if len(parts) >= 3:
+                parsed_chat_logs.append({
+                    "timestamp": parts[0],
+                    "user": parts[1],
+                    "command": parts[2],
+                    "args": " ".join(parts[3:]) if len(parts) > 3 else ""
+                })
+        logger.info(f"Received chat logs: {parsed_chat_logs}")
+        # TODO: later save parsed_chat_logs to a model
+
         log_entry = DaggerwalkLog.objects.create(
             world_x=request.data['worldX'],
             world_z=request.data['worldZ'],
@@ -137,12 +157,15 @@ def create_daggerwalk_log(request):
             current_song=request.data.get('currentSong'),
         )
         
-        return Response({
+        resp = {
             'status': 'success',
             'message': 'Log entry created successfully',
             'id': log_entry.id,
             'log_data': get_latest_log_data()
-        }, status=status.HTTP_201_CREATED)
+        }
+        logger.info(f"Daggerwalk log created id={log_entry.id} region={request.data.get('region')} "
+                    f"location={request.data.get('location')} chat_logs={len(parsed_chat_logs)}")
+        return Response(resp, status=status.HTTP_201_CREATED)
         
     except KeyError as e:
         return Response({
