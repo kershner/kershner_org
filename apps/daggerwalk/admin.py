@@ -23,7 +23,8 @@ class ReadOnlyInline(admin.TabularInline):
 
 class ChatCommandLogInline(ReadOnlyInline):
     model = ChatCommandLog
-    fields = ('timestamp', 'user', 'command', 'args', 'raw', 'created_at')
+    fields = ('timestamp', 'user', 'command', 'args', 'raw')
+    readonly_fields = ('timestamp', 'user', 'command', 'args', 'raw', 'created_at')
     verbose_name = "Chat Command"
     verbose_name_plural = "Chat Commands"
 
@@ -271,10 +272,9 @@ class ProvinceShapeAdmin(admin.ModelAdmin):
 
 @admin.register(ChatCommandLog)
 class ChatCommandLogAdmin(admin.ModelAdmin):
-    list_display = ('timestamp', 'user', 'command', 'args_short', 'request_log', 'created_at')
+    list_display = ('timestamp', 'user', 'command', 'args_short', 'created_at')
     list_filter = ('user', 'command', 'created_at')
     search_fields = ('user', 'command', 'args', 'raw', 'request_log__region', 'request_log__location')
-
     ordering = ('-timestamp',)
 
     def args_short(self, obj):
