@@ -2,9 +2,9 @@ from django.contrib.admin.views.decorators import staff_member_required
 from apps.daggerwalk.utils import get_map_data, get_latest_log_data
 from rest_framework.decorators import api_view, permission_classes
 from .models import POI, DaggerwalkLog, Region, ChatCommandLog
+from django_filters.rest_framework import DjangoFilterBackend
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
-from django.utils.dateparse import parse_datetime
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from apps.api.views import BaseListAPIView
@@ -13,9 +13,10 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib import messages
 from django.core.cache import cache
+from rest_framework import filters
 from rest_framework import status
-from django.db.models import Max
 from django.utils import timezone
+from django.db.models import Max
 from django.conf import settings
 from datetime import timedelta
 from django.db.models import Q
@@ -278,5 +279,7 @@ class DaggerwalkStatsView(APIView):
 
 
 class ChatCommandLogListAPIView(BaseListAPIView):
-    queryset = ChatCommandLog.objects.all()
+    queryset = ChatCommandLog.objects.order_by('-id')
     serializer_class = ChatCommandLogSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ('user', 'command')
