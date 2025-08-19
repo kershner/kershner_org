@@ -245,6 +245,18 @@ class POIListAPIView(BaseListAPIView):
 class DaggerwalkLogListAPIView(BaseListAPIView):
     queryset = DaggerwalkLog.objects.all()
     serializer_class = DaggerwalkLogSerializer
+    ordering = ("-id",)
+
+    # build filterset_fields dynamically
+    @property
+    def filterset_fields(self):
+        exclude = {"poi"}
+        model = self.get_queryset().model
+        return [
+            f.name
+            for f in model._meta.get_fields()
+            if getattr(f, "concrete", False) and f.name not in exclude
+        ]
     
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -281,5 +293,5 @@ class DaggerwalkStatsView(APIView):
 class ChatCommandLogListAPIView(BaseListAPIView):
     queryset = ChatCommandLog.objects.order_by('-id')
     serializer_class = ChatCommandLogSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ('user', 'command')
+    ordering = ("-id",)
