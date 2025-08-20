@@ -10,6 +10,7 @@ from io import BytesIO
 import tempfile
 import requests
 import logging
+import random
 import yt_dlp
 import time
 import os
@@ -207,7 +208,13 @@ def generate_bluesky_caption(log_data, stats_data):
 def post_video_to_bluesky(caption, video_blob, client: Client):
     logger.info("Preparing Bluesky post")
 
-    tags = ["daggerfall", "gaming", "dos", "twitch", "retrogaming", "fantasy"]
+    random_tags = [
+        "streaming", "obs", "twitch", "gaming", "gamedev",
+        "webdev", "javascript", "python", "coding", "programming",
+        "bethesda", "elderscrolls", "fantasy", "retrogaming", "retro",
+        "pcgaming", "pcgames", "rpg", "dos", "msdos", "90s",
+    ]
+    tags = ["daggerfall"] + random.sample(random_tags, 5)
     hashtags_text = " ".join([f"#{tag}" for tag in tags])
 
     text = f"{caption}\n\n{hashtags_text}"
