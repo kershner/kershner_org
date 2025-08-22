@@ -363,14 +363,6 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
 
             region_map = page.query_selector("#regionMapView")
             if region_map:
-                checkbox = page.query_selector("#poi-toggle")
-                if checkbox:
-                    checkbox.evaluate("""
-                        el => {
-                            el.checked = !el.checked;
-                            el.dispatchEvent(new Event('change', { bubbles: true }));
-                        }
-                    """)
                 region_map.screenshot(path=screenshots["region"])
 
                 # Click the link and wait for world map view to render
