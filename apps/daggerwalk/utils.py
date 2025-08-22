@@ -1,5 +1,5 @@
+from apps.daggerwalk.models import DaggerwalkLog, Region, ChatCommandLog
 from apps.daggerwalk.serializers import DaggerwalkLogSerializer
-from apps.daggerwalk.models import DaggerwalkLog, Region
 from django.db.models import Min, Max, Count
 from datetime import timedelta, datetime
 from django.utils import timezone
@@ -147,6 +147,36 @@ def get_top_values_by_time_counts(value_counts, attr, top_n=10):
         results.append(entry)
     return results
 
+
+def get_chat_command_stats(start_date, end_date):
+    chat_qs = ChatCommandLog.objects.filter(
+        request_log__created_at__date__range=(start_date, end_date)
+    )
+
+    total = chat_qs.count()
+
+    top_cmds = chat_qs.values('command').annotate(count=Count('id')).order_by('-count')[:10]
+    top_users = chat_qs.values('user').annotate(count=Count('id')).order_by('-count')[:10]
+
+    last_20 = chat_qs.order_by('-timestamp')[:20]
+    last_20_list = [
+        {
+            "timestamp": timezone.localtime(c.timestamp, EST_TIMEZONE),
+            "user": c.user,
+            "command": c.command,
+            "args": c.args,
+            "raw": c.raw,
+        }
+        for c in last_20
+    ]
+
+    return {
+        "total": total,
+        "top_commands": [{"command": c['command'], "count": c['count']} for c in top_cmds],
+        "top_users": [{"user": u['user'], "count": u['count']} for u in top_users],
+        "last_20": last_20_list,
+    }
+
 def calculate_daggerwalk_stats(range_keyword):
     def format_last_seen(dt):
         if not isinstance(dt, datetime):
@@ -169,6 +199,8 @@ def calculate_daggerwalk_stats(range_keyword):
     else:
         start_date, end_date = ranges[range_keyword]
         queryset = DaggerwalkLog.objects.filter(created_at__date__range=(start_date, end_date))
+
+    chat_command_stats = get_chat_command_stats(start_date, end_date)
 
     total_logs = queryset.count()
     
@@ -293,4 +325,5 @@ def calculate_daggerwalk_stats(range_keyword):
             "endSeason": last_log.season if last_log else None,
             "uniqueDays": len(unique_days),
         },
+        'chatCommandStats': chat_command_stats,
     }

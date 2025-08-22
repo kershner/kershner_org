@@ -2,7 +2,6 @@ from django.contrib.admin.views.decorators import staff_member_required
 from apps.daggerwalk.utils import get_map_data, get_latest_log_data
 from rest_framework.decorators import api_view, permission_classes
 from .models import POI, DaggerwalkLog, Region, ChatCommandLog
-from django_filters.rest_framework import DjangoFilterBackend
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
 from rest_framework.permissions import AllowAny
@@ -13,10 +12,10 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib import messages
 from django.core.cache import cache
-from rest_framework import filters
 from rest_framework import status
 from django.utils import timezone
 from django.db.models import Max
+from .utils import EST_TIMEZONE
 from django.conf import settings
 from datetime import timedelta
 from django.db.models import Q
@@ -285,7 +284,10 @@ class DaggerwalkStatsView(APIView):
 
         data = {
             'stats': stats,
-            'html': render_to_string(self.template, {'stats': stats}),
+            'html': render_to_string(self.template, {
+                'stats': stats, 
+                "today": timezone.localtime(timezone.now(), EST_TIMEZONE).date()
+            }),
         }
         return Response(data)
 
