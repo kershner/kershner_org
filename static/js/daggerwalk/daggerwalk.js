@@ -310,7 +310,6 @@ daggerwalk.labelSelectActivation = function() {
   // Allows the label+inputs to be activated with keyboard
   document.addEventListener('keydown', (e) => {
     if (e.key !== ' ' && e.key !== 'Enter') return;
-    console.log('hello!');
     const label = e.target.closest('.about-tabs label[for]');
     if (!label) return;
     e.preventDefault();       // stop Space from scrolling
