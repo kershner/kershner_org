@@ -70,8 +70,17 @@ class MapViewer {
     this.calculateRegionCenters();
     this.initializeMap();
 
-    this.elements.worldMapBtn.addEventListener('click', () => {
-      this.showWorldMap();
+    this.elements.worldMapBtn.addEventListener('click', (e) => {
+      const btn = e.target;
+      if (btn.classList.contains('active')) {
+        // Use the latest log's region if the URL parameter is invalid or missing
+        window.mapViewer.fetchRegionData(daggerwalk.latestLog.region);
+        window.mapViewer.showRegionMap(daggerwalk.latestLog.region, 
+          parseInt(daggerwalk.latestLog.map_pixel_x), 
+          parseInt(daggerwalk.latestLog.map_pixel_y));
+      } else {
+        this.showWorldMap();
+      }
     });
   }
 
@@ -724,8 +733,7 @@ class MapViewer {
         });
         // Set only the capitalCity attribute
         marker.dataset.capitalCity = capitalCity;
-      } 
-      else if (filterResult.isPoi) {
+      } else if (filterResult.isPoi) {
         marker.classList.add('poi');
         
         // Add the POI filter class if the filter is on

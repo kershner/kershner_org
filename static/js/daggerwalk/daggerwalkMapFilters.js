@@ -3,7 +3,7 @@ const daggerwalkMapFilters = {
   state: {
     dateFrom: null,
     dateTo: null,
-    poiToggle: true,
+    poiToggle: false,
     poiSearch: ''
   },
   

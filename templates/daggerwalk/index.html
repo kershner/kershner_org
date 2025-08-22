@@ -23,13 +23,13 @@
     </div>
 
     <div class="tabs main-tabs">
-        <input type="radio" name="tabs" id="twitch-tab-btn" checked>
         <input type="radio" name="tabs" id="map-tab-btn">
-        <label data-tab="1" for="twitch-tab-btn">Twitch</label>
-        <label data-tab="2" for="map-tab-btn">Map</label>
+        <input type="radio" name="tabs" id="twitch-tab-btn" checked>
+        <label data-tab="1" for="map-tab-btn">Map</label>
+        <label data-tab="2" for="twitch-tab-btn">Twitch</label>
         
-        <div class="tab-content twitch-tab">{% include 'daggerwalk/twitch_player.html' %}</div>
         <div class="tab-content">{% include 'daggerwalk/map.html' %}</div>
+        <div class="tab-content twitch-tab">{% include 'daggerwalk/twitch_player.html' %}</div>
     </div>
 
     {# Current Status #}
