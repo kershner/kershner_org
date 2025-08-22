@@ -305,6 +305,18 @@ daggerwalk.initDaggerwalkStats = function() {
   attachEvents();
   fetchStats("today");
 }
+
+daggerwalk.labelSelectActivation = function() {
+  // Allows the label+inputs to be activated with keyboard
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== ' ' && e.key !== 'Enter') return;
+    console.log('hello!');
+    const label = e.target.closest('.about-tabs label[for]');
+    if (!label) return;
+    e.preventDefault();       // stop Space from scrolling
+    label.click();            // fires the associated radio's native click
+  });
+}
   
 daggerwalk.init = () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -349,6 +361,7 @@ daggerwalk.init = () => {
     window.mapViewer.fetchRegionData(region);
   });
 
+  daggerwalk.labelSelectActivation();
   daggerwalk.handleAboutTabParameter();
   daggerwalk.initAboutTabs();
   daggerwalk.updateStatus();
