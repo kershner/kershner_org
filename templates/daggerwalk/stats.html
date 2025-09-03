@@ -65,7 +65,6 @@
             <th>Timestamp</th>
             <th>User</th>
             <th>Command</th>
-            <th>Args</th>
           </tr>
         </thead>
         <tbody>
@@ -78,9 +77,8 @@
                 {% endif %}
                 <small><em>{{ c.timestamp|timesince }} ago</em></small>
               </td>
-              <td><strong>{{ c.user }}</strong></td>
-              <td>{{ c.command }}</td>
-              <td>{{ c.args }}</td>
+              <td class="twitch-user"><strong>{{ c.user }}</strong></td>
+              <td>{{ c.command }} {{ c.args }}</td>
             </tr>
           {% endfor %}
         </tbody>
