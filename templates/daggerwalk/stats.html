@@ -59,10 +59,10 @@
     {% if stats.chatCommandStats.last_20 %}
     <div class="stats-data-wrapper">
       <h4>Last 20 Commands</h4>
-      <table class="styled-table">
+      <table class="styled-table twitch-cmds-table">
         <thead>
           <tr>
-            <th>Timestamp</th>
+            <th>Time</th>
             <th>User</th>
             <th>Command</th>
           </tr>
@@ -77,7 +77,7 @@
                 {% endif %}
                 <small><em>{{ c.timestamp|timesince }} ago</em></small>
               </td>
-              <td class="twitch-user"><strong>{{ c.user }}</strong></td>
+              <td><strong>{{ c.user }}</strong></td>
               <td>{{ c.command }} {{ c.args }}</td>
             </tr>
           {% endfor %}
