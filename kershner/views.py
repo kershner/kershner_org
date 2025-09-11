@@ -1,4 +1,5 @@
 from apps.project.serializers import ProjectSerializer
+from django.views.decorators.cache import cache_page
 from apps.project.models import Project, ProjectTag
 from django.template.loader import render_to_string
 from apps.song.serializers import SongSerializer
@@ -8,6 +9,7 @@ from django.conf import settings
 import json
 
 
+@cache_page(60 * 15)  # 15 minutes
 def home(request):
     projects = Project.objects.order_by('position').all()
     projects_serializer = ProjectSerializer(projects, many=True)
