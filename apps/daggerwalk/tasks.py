@@ -210,7 +210,7 @@ def post_video_to_bluesky(caption, video_blob, client: Client):
 
     random_tags = [
         "streaming", "obs", "twitch", "gaming", "gamedev",
-        "webdev", "javascript", "python", "coding", "programming",
+        "webdev", "javascript", "python", "coding", "programming", "django",
         "bethesda", "elderscrolls", "fantasy", "retrogaming", "retro",
         "pcgaming", "pcgames", "rpg", "dos", "msdos", "90s",
     ]
