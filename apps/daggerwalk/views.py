@@ -2,7 +2,9 @@ from django.contrib.admin.views.decorators import staff_member_required
 from apps.daggerwalk.utils import get_map_data, get_latest_log_data
 from rest_framework.decorators import api_view, permission_classes
 from .models import POI, DaggerwalkLog, Region, ChatCommandLog
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import cache_page
 from django.template.loader import render_to_string
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -31,6 +33,7 @@ import json
 logger = logging.getLogger(__name__)
 
 
+@method_decorator(cache_page(60 * 5), name="dispatch")
 class DaggerwalkHomeView(APIView):
     """Home view for the Daggerwalk app"""
     permission_classes = [AllowAny]
