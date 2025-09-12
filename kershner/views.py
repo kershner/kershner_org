@@ -9,7 +9,7 @@ from django.conf import settings
 import json
 
 
-@cache_page(60 * 15)  # 15 minutes
+@cache_page(60 * 60 * 24 * 30)  # 30 days
 def home(request):
     projects = Project.objects.order_by('position').all()
     projects_serializer = ProjectSerializer(projects, many=True)
