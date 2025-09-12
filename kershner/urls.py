@@ -13,7 +13,7 @@ from . import views as kersh_views
 from apps.bacon.views import bacon
 from django.contrib import admin
 
-handler404 = 'kershner.views.custom_error_view'
+handler404 = 'kershner.views.custom_error_view_404'
 handler500 = 'kershner.views.custom_error_view'
 handler403 = 'kershner.views.custom_error_view'
 handler400 = 'kershner.views.custom_error_view'

@@ -42,3 +42,7 @@ def music(request):
 
 def custom_error_view(request, exception=None):
     return render(request, 'error/generic_error_page.html', {})
+
+
+def custom_error_view_404(request, exception=None):
+    return render(request, 'error/404.html', {})
