@@ -46,7 +46,6 @@ class MapViewer {
       provinceName: document.getElementById('provinceName'),
       regionMap: document.getElementById('regionMap'),
       canvas: document.getElementById('overlay'),
-      loading: document.getElementById('loading'),
       worldMapBtn: document.querySelector('.world-map-link')
     };
 
@@ -86,12 +85,9 @@ class MapViewer {
 
   async loadMapData() {
     try {
-      this.elements.loading.classList.add('hidden');
       this.elements.worldMapView.classList.remove('hidden');
     } catch (error) {
       console.error('Error loading map data:', error);
-      this.elements.loading.textContent = 'Error loading map data. Please refresh the page.';
-      this.elements.loading.classList.add('error');
     }
   }
 
