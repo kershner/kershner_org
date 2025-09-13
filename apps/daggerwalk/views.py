@@ -253,6 +253,6 @@ class ChatCommandLogListAPIView(BaseListAPIView):
 @staff_member_required
 def build_daggerwalk_caches(request):
     if request.method == "POST":
-        update_all_daggerwalk_caches().delay()
+        update_all_daggerwalk_caches.delay()
         messages.success(request, "Daggerwalk caches built successfully.")
     return redirect("admin:daggerwalk_daggerwalklog_changelist")
