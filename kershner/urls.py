@@ -7,6 +7,7 @@ from apps.project import views as project_views
 from apps.ai_quiz.urls import ai_quiz_patterns
 from apps.whoosh.urls import whoosh_patterns
 import apps.philomania.views as phil_views
+from .admin_views import clear_cache_view
 from apps.api.urls import api_patterns
 from django.urls import include, path
 from . import views as kersh_views
@@ -67,6 +68,7 @@ urlpatterns = [
     # Admin Stuff
     path('kersh-zone/move-project-position/<project_id>/<direction>', project_views.MoveProjectPositionView.as_view(),
          name='move_project_position'),
+    path('kersh-zone/util/clear-cache/', admin.site.admin_view(clear_cache_view), name="admin-clear-cache"),
     path('kersh-zone/', admin.site.urls),
 ]
 

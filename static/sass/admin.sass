@@ -73,3 +73,32 @@
 .submit-row,
 .submit-row input
   @extend %text-shadow
+
+#header
+  overflow: visible
+
+#user-tools
+  details
+    display: inline-block
+  
+.admin-utils
+  position: relative
+  cursor: pointer
+  padding: 0.5rem
+
+  .admin-utils-content
+    position: absolute
+    top: 100%
+    right: 0
+    display: none
+    border: 1px solid var(--border-color)
+    padding: 0.5rem
+    min-width: 5rem
+    background: var(--darkened-bg)
+    border-radius: 0.2rem
+
+    button
+      width: 5rem
+
+  &[open] .admin-utils-content
+    display: block

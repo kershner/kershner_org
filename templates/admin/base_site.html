@@ -7,6 +7,21 @@
     <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/admin.css?timestamp={{ timestamp }}">
 {% endblock %}
 
+{% block userlinks %}
+  {{ block.super }}
+  {% if user.is_superuser %}
+    <details class="admin-utils">
+      <summary>Utilities</summary>
+      <div class="admin-utils-content">
+        <form method="post" action="{% url 'admin-clear-cache' %}">
+            {% csrf_token %}
+            <button type="submit" class="button" onclick="return confirm('Clear cache?')">Clear cache</button>
+        </form>
+      </div>
+    </details>
+  {% endif %}
+{% endblock %}
+
 {% block footer %}
     {{ block.super }}
 

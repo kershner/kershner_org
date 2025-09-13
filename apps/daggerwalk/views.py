@@ -33,7 +33,7 @@ import json
 logger = logging.getLogger(__name__)
 
 
-@method_decorator(cache_page(60 * 5), name="dispatch")
+@method_decorator(cache_page(60 * 60 * 24 * 30), name="dispatch")  # 30 days
 class DaggerwalkHomeView(APIView):
     """Home view for the Daggerwalk app"""
     permission_classes = [AllowAny]
