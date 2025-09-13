@@ -1,8 +1,8 @@
-from apps.daggerwalk.tasks import update_daggerwalk_region_logs_cache, update_daggerwalk_stats_cache
 from django.contrib.admin.views.decorators import staff_member_required
-from apps.daggerwalk.utils import get_map_data, get_latest_log_data
 from rest_framework.decorators import api_view, permission_classes
+from apps.daggerwalk.tasks import update_all_daggerwalk_caches
 from .models import POI, DaggerwalkLog, Region, ChatCommandLog
+from apps.daggerwalk.utils import get_latest_log_data
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import cache_page
@@ -19,7 +19,6 @@ from django.contrib import messages
 from django.core.cache import cache
 from rest_framework import status
 from django.utils import timezone
-from django.db.models import Max
 from .utils import EST_TIMEZONE
 from django.conf import settings
 from .serializers import (
@@ -41,38 +40,15 @@ class DaggerwalkHomeView(APIView):
     template_path = 'daggerwalk/index.html'
 
     def get(self, request):
-        # Get distinct regions with their most recent data
-        # TODO - add a task to put this in the cache
-        region_data = (
-            DaggerwalkLog.objects
-            .exclude(region="Ocean")
-            .values('region')
-            .annotate(
-                latest_date=Max('created_at'),
-                latest_location=Max('location'),
-                latest_weather=Max('weather'),
-                latest_current_song=Max('current_song')
-            )
-            .order_by('-latest_date')
-            .values(
-                'region',
-                'latest_date',
-                'latest_location',
-                'latest_weather',
-                'latest_current_song'
-            )
-            .distinct()[:30]
-        )
+        region_data = cache.get("daggerwalk_region_data") or []
+        map_data = cache.get("daggerwalk_map_data") or {}
+        latest_log_data = cache.get("daggerwalk_latest_log_data") or {}
 
-        map_data = get_map_data()
-        latest_log_data = get_latest_log_data()
-        
         ctx = {
             **map_data,
             **latest_log_data,
-            'region_data': json.dumps(list(region_data), default=str)
+            'region_data': json.dumps(region_data, default=str),
         }
-        
         return render(request, self.template_path, ctx)
 
 
@@ -277,7 +253,6 @@ class ChatCommandLogListAPIView(BaseListAPIView):
 @staff_member_required
 def build_daggerwalk_caches(request):
     if request.method == "POST":
-        update_daggerwalk_stats_cache()
-        update_daggerwalk_region_logs_cache()
+        update_all_daggerwalk_caches().delay()
         messages.success(request, "Daggerwalk caches built successfully.")
     return redirect("admin:daggerwalk_daggerwalklog_changelist")

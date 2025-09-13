@@ -67,16 +67,23 @@ class MapViewer {
 
     this.loadMapData();
     this.calculateRegionCenters();
-    this.initializeMap();
+
+    // IMPORTANT: wait for world map image to be ready so mapDimensions are valid
+    await this.initializeMap();
+
+    // Safe to add markers now
+    this.addAllWorldMapMarkers();
 
     this.elements.worldMapBtn.addEventListener('click', (e) => {
       const btn = e.target;
       if (btn.classList.contains('active')) {
         // Use the latest log's region if the URL parameter is invalid or missing
         window.mapViewer.fetchRegionData(daggerwalk.latestLog.region);
-        window.mapViewer.showRegionMap(daggerwalk.latestLog.region, 
-          parseInt(daggerwalk.latestLog.map_pixel_x), 
-          parseInt(daggerwalk.latestLog.map_pixel_y));
+        window.mapViewer.showRegionMap(
+          daggerwalk.latestLog.region,
+          parseInt(daggerwalk.latestLog.map_pixel_x),
+          parseInt(daggerwalk.latestLog.map_pixel_y)
+        );
       } else {
         this.showWorldMap();
       }
@@ -116,25 +123,30 @@ class MapViewer {
   }
 
   initializeMap() {
-    const onLoad = () => {
-      this.state.mapDimensions = {
-        width: this.elements.worldMap.naturalWidth,
-        height: this.elements.worldMap.naturalHeight
+    return new Promise((resolve) => {
+      const onLoad = () => {
+        this.state.mapDimensions = {
+          width: this.elements.worldMap.naturalWidth,
+          height: this.elements.worldMap.naturalHeight
+        };
+        this.elements.canvas.width = this.elements.worldMap.width;
+        this.elements.canvas.height = this.elements.worldMap.height;
+        this.drawProvinceShapes();
+
+        // Remove the onload handler to prevent memory leaks
+        this.elements.worldMap.onload = null;
+        resolve();
       };
-      this.elements.canvas.width = this.elements.worldMap.width;
-      this.elements.canvas.height = this.elements.worldMap.height;
-      this.drawProvinceShapes();
-      
-      // Remove the onload handler to prevent memory leaks
-      this.elements.worldMap.onload = null;
-    };
-  
-    if (this.elements.worldMap.complete) {
-      onLoad();
-    } else {
-      this.elements.worldMap.onload = onLoad;
-    }
+
+      // If already cached and dimensions are available, run immediately
+      if (this.elements.worldMap.complete && this.elements.worldMap.naturalWidth) {
+        onLoad();
+      } else {
+        this.elements.worldMap.addEventListener('load', onLoad, { once: true });
+      }
+    });
   }
+
 
   initTooltip(selector = '.log-marker, .capital-marker, .world-map-marker') {
     const tooltip = document.createElement('div');
@@ -554,58 +566,66 @@ class MapViewer {
   addWorldMapMarker(markerData) {
     // Store data in the state for line drawing
     this.state.worldMapMarkers.set(markerData.regionName, markerData);
-    
+
     // Create DOM marker with metadata
     const center = this.state.regionCenters[markerData.regionName];
     if (center && this.elements.worldMapMarkerContainer) {
       const scale = this.getMapScale();
+
+      // If scale not ready yet, try again on next frame
+      if (!scale) {
+        requestAnimationFrame(() => this.addWorldMapMarker(markerData));
+        return;
+      }
+
       const x = center.x * scale.scaleX + scale.offsetX;
       const y = center.y * scale.scaleY + scale.offsetY;
-      const markerSize = this.isMobile() ? 
-        this.config.worldMapMarkerStyle.size.mobile : 
-        this.config.worldMapMarkerStyle.size.desktop;
-      
+      const markerSize = this.isMobile()
+        ? this.config.worldMapMarkerStyle.size.mobile
+        : this.config.worldMapMarkerStyle.size.desktop;
+
       // Check if this is the most recent marker
       const markersArray = Array.from(this.state.worldMapMarkers.values());
       const mostRecentMarker = markersArray[0];
       const isRecentMarker = mostRecentMarker.regionName === markerData.regionName;
-      
+
       const marker = document.createElement('div');
       marker.classList.add('world-map-marker');
-      
+
       if (isRecentMarker) {
         marker.classList.add('recent');
       }
-      
-      marker.style.left = `${x - markerSize/2}px`;
-      marker.style.top = `${y - markerSize/2}px`;
+
+      marker.style.left = `${x - markerSize / 2}px`;
+      marker.style.top = `${y - markerSize / 2}px`;
       marker.style.width = `${markerSize}px`;
       marker.style.height = `${markerSize}px`;
       marker.style.backgroundImage = `url('${this.config.baseS3Url}/img/daggerwalk/Daggerwalk.ico')`;
-      
+
       // Add metadata as data attributes
-      const regionData = this.state.regionData.find(r => r.name === markerData.regionName);
+      const regionData = this.state.regionData.find(r => r.name === markerData.regionName) || {};
       marker.dataset.region = markerData.regionName;
-      marker.dataset.province = regionData.province;
-      marker.dataset.climate = regionData.climate;
+      if (regionData.province) marker.dataset.province = regionData.province;
+      if (regionData.climate) marker.dataset.climate = regionData.climate;
       marker.dataset.lastHere = this.convertToEST(markerData.latestDate);
       marker.dataset.latestDate = markerData.latestDate;
-      
-      // Add click handler
+
+      // Click handler
       marker.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         this.showRegionMap(markerData.regionName, center.x, center.y);
         this.fetchRegionData(markerData.regionName);
         this.updateUrl(markerData.regionName);
       });
-      
+
       this.elements.worldMapMarkerContainer.appendChild(marker);
     }
-    
+
     this.drawConnectingLines();
   }
+
 
   clearWorldMapMarkers() {
     if (this.elements.worldMapMarkerContainer) {
@@ -855,9 +875,15 @@ class MapViewer {
 
   getMapScale() {
     const img = this.elements.worldMap;
+
+    // If dimensions aren't ready yet, signal not-ready
+    if (!this.state.mapDimensions.width || !this.state.mapDimensions.height) {
+      return null;
+    }
+
     const containerWidth = img.clientWidth;
     const containerHeight = img.clientHeight;
-    
+
     const imageAspectRatio = this.state.mapDimensions.width / this.state.mapDimensions.height;
     const containerAspectRatio = containerWidth / containerHeight;
 
@@ -916,22 +942,25 @@ class MapViewer {
 
   updateWorldMarkerPositions() {
     if (!this.elements.worldMapMarkerContainer) return;
-    
+
     const scale = this.getMapScale();
+    if (!scale) return; // Not ready yet
+
     const markers = this.elements.worldMapMarkerContainer.querySelectorAll('.world-map-marker');
-    
+
     markers.forEach(marker => {
-      const regionName = marker.dataset.regionName;
+      // Use the key you actually set when creating the marker
+      const regionName = marker.dataset.region;
       const center = this.state.regionCenters[regionName];
       if (center) {
         const x = center.x * scale.scaleX + scale.offsetX;
         const y = center.y * scale.scaleY + scale.offsetY;
-        const markerSize = this.isMobile() ? 
-          this.config.worldMapMarkerStyle.size.mobile : 
+        const markerSize = this.isMobile() ?
+          this.config.worldMapMarkerStyle.size.mobile :
           this.config.worldMapMarkerStyle.size.desktop;
-        
-        marker.style.left = `${x - markerSize/2}px`;
-        marker.style.top = `${y - markerSize/2}px`;
+
+        marker.style.left = `${x - markerSize / 2}px`;
+        marker.style.top = `${y - markerSize / 2}px`;
       }
     });
   }
@@ -974,11 +1003,18 @@ class MapViewer {
   drawConnectingLines() {
     // Cancel any existing animation frame first
     this.cancelProvinceShapesAnimation();
-    
+
     // Set up canvas
     this.setupCanvas();
     const scale = this.getMapScale();
-    
+    if (!scale) {
+      // Try again on the next frame until the image is ready
+      if (!this.elements.worldMapView.classList.contains('hidden')) {
+        this.animationFrameId = requestAnimationFrame(() => this.drawConnectingLines());
+      }
+      return;
+    }
+
     // Filter to only get visible markers
     const visibleMarkers = [];
     this.state.worldMapMarkers.forEach((markerData, regionName) => {
@@ -987,53 +1023,53 @@ class MapViewer {
         visibleMarkers.push(markerData);
       }
     });
-    
+
     // Only draw lines if we have multiple visible markers
     if (visibleMarkers.length > 1) {
       const sortedMarkers = this.getSortedMarkers(visibleMarkers);
       const lineColor = this.getLineColor();
-      
+
       this.ctx.strokeStyle = lineColor;
       this.ctx.fillStyle = lineColor;
       this.ctx.lineWidth = 2;
-      
+
       for (let i = 0; i < sortedMarkers.length - 1; i++) {
         const current = sortedMarkers[i];
         const next = sortedMarkers[i + 1];
-        
+
         // Draw dotted lines between markers
         const startX = current.center.x * scale.scaleX + scale.offsetX;
         const startY = current.center.y * scale.scaleY + scale.offsetY;
         const endX = next.center.x * scale.scaleX + scale.offsetX;
         const endY = next.center.y * scale.scaleY + scale.offsetY;
-        
+
         const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
         const dotSpacing = this.isMobile() ? 10 : 20;
         const numberOfDots = Math.floor(distance / dotSpacing);
-        
-        const dotSize = this.isMobile() ? 
-          this.config.worldMapMarkerStyle.dotSize.mobile : 
+
+        const dotSize = this.isMobile() ?
+          this.config.worldMapMarkerStyle.dotSize.mobile :
           this.config.worldMapMarkerStyle.dotSize.desktop;
-  
+
         this.ctx.fillStyle = '#F2E530'; // Set dot color
-        
+
         for (let j = 0; j <= numberOfDots; j++) {
           const ratio = j / numberOfDots;
           const x = startX + (endX - startX) * ratio;
           const y = startY + (endY - startY) * ratio;
-          
+
           this.ctx.beginPath();
           this.ctx.arc(x, y, dotSize, 0, Math.PI * 2);
           this.ctx.fill();
         }
       }
     }
-    
+
     // Draw province highlight if needed
     if (this.state.hoveredProvince) {
       this.drawProvinceLabel();
     }
-    
+
     // Continue animation loop only in world map view
     if (!this.elements.worldMapView.classList.contains('hidden')) {
       this.animationFrameId = requestAnimationFrame(() => this.drawConnectingLines());
@@ -1134,15 +1170,16 @@ class MapViewer {
   handleMouseMove(event) {
     const rect = event.target.getBoundingClientRect();
     const scale = this.getMapScale();
-    
+    if (!scale) return; // Not ready yet
+
     this.state.mousePos = {
       x: event.clientX - rect.left,
       y: event.clientY - rect.top
     };
-    
+
     const x = (this.state.mousePos.x - scale.offsetX) / scale.scaleX;
     const y = (this.state.mousePos.y - scale.offsetY) / scale.scaleY;
-    
+
     this.updateHoveredProvince(x, y);
   }
 
@@ -1256,8 +1293,7 @@ class MapViewer {
 window.onload = async () => {
   window.mapViewer = new MapViewer();
   window.mapViewer.markerImage.src = `${mapViewer.config.baseS3Url}/img/daggerwalk/Daggerwalk.ico`;
-  await window.mapViewer.init();
-  window.mapViewer.addAllWorldMapMarkers();
+  await window.mapViewer.init(); // init now adds markers after the map is ready
 
   // Handle query parameters
   const urlParams = new URLSearchParams(window.location.search);
@@ -1270,11 +1306,10 @@ window.onload = async () => {
   const isWorldMapRequest = region && worldMapValues.includes(region.toLowerCase());
 
   if (isWorldMapRequest) {
-    // Show the world map view
     window.mapViewer.showWorldMap();
   } else if (region && region in window.mapViewer.state.regionMap) {
     if (!isNaN(x) && !isNaN(y)) {
-      window.mapViewer.showRegionMap(region, x, y).then(() => 
+      window.mapViewer.showRegionMap(region, x, y).then(() =>
         window.mapViewer.addLogMarker(region, x, y)
       );
     } else {
@@ -1282,14 +1317,15 @@ window.onload = async () => {
       window.mapViewer.showRegionMap(region);
     }
   } else if (daggerwalk.latestLog && daggerwalk.latestLog.region) {
-    // Use the latest log's region if the URL parameter is invalid or missing
     window.mapViewer.fetchRegionData(daggerwalk.latestLog.region);
-    window.mapViewer.showRegionMap(daggerwalk.latestLog.region, 
-      parseInt(daggerwalk.latestLog.map_pixel_x), 
-      parseInt(daggerwalk.latestLog.map_pixel_y));
+    window.mapViewer.showRegionMap(
+      daggerwalk.latestLog.region,
+      parseInt(daggerwalk.latestLog.map_pixel_x),
+      parseInt(daggerwalk.latestLog.map_pixel_y)
+    );
   }
-  
-  // Add cleanup on page unload
+
+  // Cleanup on unload
   window.addEventListener('beforeunload', () => {
     if (window.mapViewer) {
       window.mapViewer.destroy();

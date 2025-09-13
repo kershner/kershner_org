@@ -1,5 +1,5 @@
+from apps.daggerwalk.utils import calculate_daggerwalk_stats, get_map_data, get_latest_log_data
 from apps.daggerwalk.serializers import DaggerwalkLogSerializer, POISerializer
-from apps.daggerwalk.utils import calculate_daggerwalk_stats
 from apps.daggerwalk.models import DaggerwalkLog, Region
 from playwright.sync_api import sync_playwright
 from datetime import datetime, timedelta
@@ -7,6 +7,7 @@ from django.utils.text import slugify
 from django.core.cache import cache
 from django.utils import timezone
 from django.conf import settings
+from django.db.models import Max
 from django.db.models import Q
 from celery import shared_task
 from atproto import Client
@@ -445,27 +446,20 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
                     logger.warning(f"Failed to delete screenshot {path}: {str(e)}")
 
 @shared_task
-def update_daggerwalk_stats_cache():
-    for keyword in ['all', 'today', 'yesterday', 'last_7_days', 'this_month']:
-        try:
-            stats = calculate_daggerwalk_stats(keyword)
-            cache.set(f'daggerwalk_stats:{keyword}', stats, timeout=None)  # store indefinitely
-        except Exception as e:
-            # log or handle error if needed
-            pass
-
-@shared_task
-def update_daggerwalk_region_logs_cache():
+def update_all_daggerwalk_caches():
     use_sampling = True
     step = 5
 
+    # Region logs (per-region)
     for region in Region.objects.all():
         pois = region.points_of_interest.all()
         two_weeks_ago = timezone.now() - timedelta(weeks=2)
-        queryset = DaggerwalkLog.objects.filter(
-            Q(region_fk=region) | Q(last_known_region=region),
-            created_at__gte=two_weeks_ago
-        ).select_related('region_fk', 'poi', 'last_known_region').order_by('created_at')
+        queryset = (
+            DaggerwalkLog.objects
+            .filter(Q(region_fk=region) | Q(last_known_region=region), created_at__gte=two_weeks_ago)
+            .select_related('region_fk', 'poi', 'last_known_region')
+            .order_by('created_at')
+        )
 
         if use_sampling and queryset.exists():
             all_logs = list(queryset)
@@ -476,5 +470,35 @@ def update_daggerwalk_region_logs_cache():
             logs = list(queryset)
 
         combined = POISerializer(pois, many=True).data + DaggerwalkLogSerializer(logs, many=True).data
-        cache_key = f"daggerwalk_region_logs:{slugify(region.name)}"
-        cache.set(cache_key, combined, timeout=None)
+        cache.set(f"daggerwalk_region_logs:{slugify(region.name)}", combined, timeout=None)
+
+    # Global datasets
+    region_data = (
+        DaggerwalkLog.objects
+        .exclude(region="Ocean")
+        .values('region')
+        .annotate(
+            latest_date=Max('created_at'),
+            latest_location=Max('location'),
+            latest_weather=Max('weather'),
+            latest_current_song=Max('current_song'),
+        )
+        .order_by('-latest_date')
+        .values('region', 'latest_date', 'latest_location', 'latest_weather', 'latest_current_song')
+        .distinct()[:30]
+    )
+    cache.set("daggerwalk_region_data", list(region_data), timeout=None)
+
+    map_data = get_map_data()
+    cache.set("daggerwalk_map_data", map_data, timeout=None)
+
+    latest_log_data = get_latest_log_data()
+    cache.set("daggerwalk_latest_log_data", latest_log_data, timeout=None)
+
+    # Stats slices
+    for keyword in ['all', 'today', 'yesterday', 'last_7_days', 'this_month']:
+        try:
+            stats = calculate_daggerwalk_stats(keyword)
+            cache.set(f"daggerwalk_stats:{keyword}", stats, timeout=None)
+        except Exception:
+            pass  # optional: log
