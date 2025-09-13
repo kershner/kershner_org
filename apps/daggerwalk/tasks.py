@@ -1,10 +1,14 @@
+from apps.daggerwalk.serializers import DaggerwalkLogSerializer, POISerializer
 from apps.daggerwalk.utils import calculate_daggerwalk_stats
 from apps.daggerwalk.models import DaggerwalkLog, Region
 from playwright.sync_api import sync_playwright
+from datetime import datetime, timedelta
+from django.utils.text import slugify
 from django.core.cache import cache
+from django.utils import timezone
 from django.conf import settings
+from django.db.models import Q
 from celery import shared_task
-from datetime import datetime
 from atproto import Client
 from io import BytesIO
 import tempfile
@@ -450,11 +454,27 @@ def update_daggerwalk_stats_cache():
             # log or handle error if needed
             pass
 
-
 @shared_task
-def update_daggerwalk_current_region_logs_cache():
-    latest_log = DaggerwalkLog.objects.latest('id')
-    latest_region = latest_log.region
-    region_logs_url = f"{BASE_URL}/daggerwalk/logs/?region={latest_region}"
-    response = requests.get(region_logs_url)
-    cache.set('daggerwalk_current_region_logs', response.json()['logs'], timeout=None)
+def update_daggerwalk_region_logs_cache():
+    use_sampling = True
+    step = 5
+
+    for region in Region.objects.all():
+        pois = region.points_of_interest.all()
+        two_weeks_ago = timezone.now() - timedelta(weeks=2)
+        queryset = DaggerwalkLog.objects.filter(
+            Q(region_fk=region) | Q(last_known_region=region),
+            created_at__gte=two_weeks_ago
+        ).select_related('region_fk', 'poi', 'last_known_region').order_by('created_at')
+
+        if use_sampling and queryset.exists():
+            all_logs = list(queryset)
+            logs = all_logs[::step]
+            if all_logs and all_logs[-1] not in logs:
+                logs.append(all_logs[-1])
+        else:
+            logs = list(queryset)
+
+        combined = POISerializer(pois, many=True).data + DaggerwalkLogSerializer(logs, many=True).data
+        cache_key = f"daggerwalk_region_logs:{slugify(region.name)}"
+        cache.set(cache_key, combined, timeout=None)

@@ -19,10 +19,10 @@ app.conf.beat_schedule = {
         'task': 'apps.daggerwalk.tasks.update_daggerwalk_stats_cache',
         'schedule': crontab(minute='*/5'),
     },
-    # 'update_current_region_logs_cache_every_5_minutes': {
-    #     'task': 'apps.daggerwalk.tasks.update_daggerwalk_current_region_logs_cache',
-    #     'schedule': crontab(minute='*/5'),
-    # },
+    'update_daggerwalk_region_logs_every_5_minutes': {
+        'task': 'apps.daggerwalk.tasks.update_daggerwalk_region_logs_cache',
+        'schedule': crontab(minute='*/5'),
+    },
     'daggerwalk-post-to-bluesky-afternoon': {
         'task': 'apps.daggerwalk.tasks.post_to_bluesky',
         'schedule': crontab(minute=0, hour=14),  # 2:00 PM Eastern

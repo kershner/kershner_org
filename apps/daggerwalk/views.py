@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from apps.api.views import BaseListAPIView
 from rest_framework.views import APIView
+from django.utils.text import slugify
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib import messages
@@ -41,6 +42,7 @@ class DaggerwalkHomeView(APIView):
 
     def get(self, request):
         # Get distinct regions with their most recent data
+        # TODO - add a task to put this in the cache
         region_data = (
             DaggerwalkLog.objects
             .exclude(region="Ocean")
@@ -75,48 +77,18 @@ class DaggerwalkHomeView(APIView):
 
 
 class DaggerwalkLogsView(APIView):
-    """API view for retrieving logs for a specific region"""
     permission_classes = [AllowAny]
-    use_sampling = True
-    step = 5
 
     def get(self, request):
-        region = request.query_params.get('region')
+        region = request.query_params.get("region")
         if not region:
-            return Response({'error': 'Region parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Region parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            # Get region object and related POIs
-            region_obj = Region.objects.get(name=region)
-            pois = region_obj.points_of_interest.all()
-
-            two_weeks_ago = timezone.now() - timedelta(weeks=2)
-
-            # Get logs using region_fk instead of raw string
-            queryset = DaggerwalkLog.objects.filter(
-                Q(region_fk=region_obj) | Q(last_known_region=region_obj),
-                created_at__gte=two_weeks_ago
-            ).select_related('region_fk', 'poi', 'last_known_region').order_by('created_at')
-
-        except Region.DoesNotExist:
-            # Fallback if region FK doesn't exist
-            queryset = DaggerwalkLog.objects.filter(
-                region=region
-            ).select_related('region_fk', 'poi', 'last_known_region').order_by('created_at')
-            pois = []
-
-        if self.use_sampling and queryset.exists():
-            all_logs = list(queryset)
-            logs = all_logs[::self.step]
-            if all_logs and all_logs[-1] not in logs:
-                logs.append(all_logs[-1])
-        else:
-            logs = list(queryset)
-
-        # Serialize and return combined logs and POIs
-        serialized_logs = DaggerwalkLogSerializer(logs, many=True).data
-        serialized_pois = POISerializer(pois, many=True).data
-        return Response({'logs': serialized_pois + serialized_logs})
+        cache_key = f"daggerwalk_region_logs:{slugify(region)}"
+        data = cache.get(cache_key)
+        if data is None:
+            return Response({"error": "No cached data available"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"logs": data})
 
 
 @api_view(['POST'])
