@@ -167,13 +167,12 @@ def delete_previous_logs(request, log_id):
         return JsonResponse({'status': 'ok'})
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([AllowAny])
 def latest_log(request):
-    response_data = get_latest_log_data()
-    return Response(response_data)
+    return Response(cache.get("daggerwalk_latest_log_data"))
     
-    
+
 # API Views
 class RegionListAPIView(BaseListAPIView):
     queryset = Region.objects.all()
