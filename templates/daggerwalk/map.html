@@ -17,7 +17,7 @@
   
   <div id="worldMapView" class="view-container hidden" data-base-url="{% settings_value "BASE_S3_URL" %}">
       <div class="map-container">
-          <img id="worldMap" src="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/daggerfall_world_map.png" alt="Daggerfall World Map">
+          <img id="worldMap" src="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/daggerfall_world_map.png" alt="Daggerfall World Map" loading="lazy">
           <canvas id="overlay"></canvas>
       </div>
   </div>
