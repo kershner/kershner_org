@@ -17,6 +17,8 @@
             {% csrf_token %}
             <button type="submit" class="button" onclick="return confirm('Clear cache?')">Clear cache</button>
         </form>
+
+        {% block extra_admin_utils %}{% endblock %}
       </div>
     </details>
   {% endif %}

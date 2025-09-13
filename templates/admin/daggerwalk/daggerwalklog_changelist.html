@@ -1,8 +1,17 @@
 {% extends "admin/change_list.html" %}
 
-{% block object-tools-items %}
-    {{ block.super }}
-    <li>
-        <a class="button" href="{% url 'admin:run_bluesky_post' %}">Post to Bluesky</a>
-    </li>
+{% block extra_admin_utils %}
+<form method="post" action="{% url 'admin-build-daggerwalk-caches' %}">
+    {% csrf_token %}
+    <button type="submit" class="button" onclick="return confirm('Build Daggerwalk caches now?')">
+        Build Daggerwalk Caches
+    </button>
+</form>
+
+<form method="post" action="{% url 'admin:run_bluesky_post' %}">
+  {% csrf_token %}
+  <button type="submit" class="button" onclick="return confirm('Post to Bluesky now?')">
+    Post to Bluesky
+  </button>
+</form>
 {% endblock %}

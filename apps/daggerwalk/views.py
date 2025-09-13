@@ -1,3 +1,4 @@
+from apps.daggerwalk.tasks import update_daggerwalk_region_logs_cache, update_daggerwalk_stats_cache
 from django.contrib.admin.views.decorators import staff_member_required
 from apps.daggerwalk.utils import get_map_data, get_latest_log_data
 from rest_framework.decorators import api_view, permission_classes
@@ -11,6 +12,7 @@ from rest_framework.response import Response
 from apps.api.views import BaseListAPIView
 from rest_framework.views import APIView
 from django.utils.text import slugify
+from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib import messages
@@ -20,8 +22,6 @@ from django.utils import timezone
 from django.db.models import Max
 from .utils import EST_TIMEZONE
 from django.conf import settings
-from datetime import timedelta
-from django.db.models import Q
 from .serializers import (
     ChatCommandLogSerializer,
     DaggerwalkLogSerializer, 
@@ -272,3 +272,12 @@ class ChatCommandLogListAPIView(BaseListAPIView):
     serializer_class = ChatCommandLogSerializer
     filterset_fields = ('user', 'command')
     ordering = ("-id",)
+
+
+@staff_member_required
+def build_daggerwalk_caches(request):
+    if request.method == "POST":
+        update_daggerwalk_stats_cache()
+        update_daggerwalk_region_logs_cache()
+        messages.success(request, "Daggerwalk caches built successfully.")
+    return redirect("admin:daggerwalk_daggerwalklog_changelist")
