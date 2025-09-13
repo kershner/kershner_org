@@ -46,3 +46,7 @@ def custom_error_view(request, exception=None):
 
 def custom_error_view_404(request, exception=None):
     return render(request, 'error/404.html', {})
+
+
+def robots_txt(request):
+    return render(request, "robots.txt", {}, content_type="text/plain")

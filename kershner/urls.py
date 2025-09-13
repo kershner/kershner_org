@@ -65,6 +65,8 @@ urlpatterns = [
     # API
     path('api/', include(api_patterns)),
 
+    path("robots.txt", kersh_views.robots_txt),
+
     # Admin Stuff
     path('kersh-zone/move-project-position/<project_id>/<direction>', project_views.MoveProjectPositionView.as_view(),
          name='move_project_position'),
