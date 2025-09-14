@@ -615,6 +615,7 @@ $marker-world-size: 24px
     text-align: left
   th
     border-bottom: 0.2rem solid var(--accent-color)
+    color: var(--accent-color)
   tr:nth-child(even)
     background: var(--alternate-dark)
   tr:hover
@@ -820,20 +821,12 @@ blockquote
       .poi-checkbox
         margin-right: 0.25rem
 
-.song-table-controls
-  display: flex
-  flex-direction: column
-  max-width: 50%
-
-  label
-    font-weight: bold
-    color: var(--accent-color)
-
-  input
-    display: unset
-    padding: 0.25rem
-    margin-left: 0.5rem
-    margin-bottom: 0.5rem
+.table-filter-input
+  display: unset !important
+  width: 15rem
+  padding: 0.5rem
+  border: 0
+  border-radius: $border-radius
 
 .footer
   padding: 0 1rem

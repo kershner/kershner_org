@@ -211,43 +211,75 @@ const daggerwalk = {
   }
 }
 
-daggerwalk.initSongTable = function() {
+daggerwalk.enhanceTable = function(tableSelector, opts = {}) {
+  console.log('Enhancing table:', tableSelector, opts);
+  const table = typeof tableSelector === 'string' ? document.querySelector(tableSelector) : tableSelector;
+  if (!table) return;
+
+  const tbody = table.tBodies[0];
+  const headers = table.querySelectorAll('th');
+  const numericCols = new Set(opts.numericCols || []);
+  const enableFilter = opts.filter !== false; // defaults to true
+
   // Minimal sort function
   const sortTable = (colIdx, asc) => {
     // Update headers
-    document.querySelectorAll('#songTable th').forEach((h, i) => {
+    headers.forEach((h, i) => {
       h.innerHTML = h.innerHTML.replace(/[↑↓]\s*$/, '');
       if (i === colIdx) h.innerHTML += asc ? ' ↑' : ' ↓';
     });
     
     // Sort rows
-    [...document.querySelectorAll('#songTable tbody tr')]
+    [...tbody.rows]
       .sort((a, b) => {
-        const valA = a.cells[colIdx].textContent.trim();
-        const valB = b.cells[colIdx].textContent.trim();
-        return colIdx === 0 
-          ? (asc ? +valA - +valB : +valB - +valA) 
-          : (asc ? valA.localeCompare(valB) : valB.localeCompare(valA));
+        let valA = a.cells[colIdx].textContent.trim();
+        let valB = b.cells[colIdx].textContent.trim();
+        if (numericCols.has(colIdx)) {
+          valA = +valA.replace(/[^0-9.\-]/g, '');
+          valB = +valB.replace(/[^0-9.\-]/g, '');
+          return asc ? valA - valB : valB - valA;
+        }
+        return asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
       })
-      .forEach(tr => document.querySelector('#songTable tbody').appendChild(tr));
+      .forEach(tr => tbody.appendChild(tr));
   };
 
   // Add click handlers
-  document.querySelectorAll('#songTable th').forEach((th, i) => {
+  headers.forEach((th, i) => {
     th.style.cursor = 'pointer';
     th.addEventListener('click', () => sortTable(i, !th.innerHTML.includes('↑')));
   });
-  
-  // Search filter
-  document.getElementById('songSearchInput')?.addEventListener('input', e => {
-    const term = e.target.value.toLowerCase();
-    document.querySelectorAll('#songTable tbody tr').forEach(tr => {
-      tr.style.display = [...tr.cells].some(td => td.textContent.toLowerCase().includes(term)) ? '' : 'none';
+
+  // Create a plain filter input above the table
+  if (enableFilter) {
+    const filterInput = document.createElement('input');
+    filterInput.type = 'search';
+    filterInput.placeholder = 'Filter...';
+    filterInput.name = 'table-filter';
+    filterInput.classList.add('table-filter-input');
+    table.parentNode.insertBefore(filterInput, table);
+
+    filterInput.addEventListener('input', e => {
+      const term = e.target.value.toLowerCase();
+      [...tbody.rows].forEach(tr => {
+        tr.style.display = [...tr.cells].some(td => td.textContent.toLowerCase().includes(term)) ? '' : 'none';
+      });
     });
-  });
+  }
   
-  // Initial sort by Category (column 2) DESC
-  setTimeout(() => sortTable(2, false), 0);
+  // Initial sort if provided
+  if (opts.initialSort) {
+    setTimeout(() => sortTable(opts.initialSort.index, opts.initialSort.asc), 0);
+  }
+
+  return { sort: sortTable };
+};
+
+daggerwalk.initTables = function() {
+  // Commands table
+  daggerwalk.enhanceTable('.commands-table', {
+    initialSort: { index: 0, asc: true },
+  });
 }
 
 daggerwalk.initDaggerwalkStats = function() {
@@ -263,6 +295,13 @@ daggerwalk.initDaggerwalkStats = function() {
       if (!response.ok || !data.html) throw new Error('Failed to fetch stats');
 
       statsContainer.innerHTML = data.html;
+
+      document.querySelectorAll('.stats-data-wrapper table').forEach(table => {
+        daggerwalk.enhanceTable(table, {
+          initialSort: { index: 0, asc: true },
+        });
+      });
+
       attachEvents();
 
       const select = document.getElementById('rangeSelect');
@@ -395,6 +434,6 @@ daggerwalk.init = () => {
   daggerwalk.updateStatus();
   daggerwalk.startPolling();
   daggerwalk.siteMenu();
-  daggerwalk.initSongTable();
+  daggerwalk.initTables();
   daggerwalk.initDaggerwalkStats();
 }
