@@ -79,17 +79,39 @@
         </div>
     </div>
 
-    <script src="https://embed.twitch.tv/embed/v1.js"></script>
+    <script type="text/javascript" src="https://embed.twitch.tv/embed/v1.js"></script>
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalk.js"></script>
-    <script type="text/javascript">
-        document.addEventListener("DOMContentLoaded", () => {
-            daggerwalk.latestLog = {{ log|safe }};
-            daggerwalk.inOcean = {{ in_ocean }};
-            
-            window.daggerwalkMapFilters.init();
-            daggerwalk.init();
-        });
-    </script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalkMapFilters.js"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalkMap.js"></script>
+    <script type="text/javascript" defer>
+        window.BASE_S3_URL = '{% settings_value "BASE_S3_URL" %}';
+
+        fetch("{% url 'daggerwalk_data' %}", { cache: "no-store" })
+            .then(r => r.json())
+            .then(d => {
+                window.REGION_DATA = d.region_data || [];
+
+                window.daggerwalkData = {
+                    provinceShapes: d.map_data?.provinceShapes || {},
+                    regionMap: d.map_data?.regionMap || {},
+                    regionData: d.region_data || d.map_data?.regionData || [],
+                    latestLog: d.latest_log_data || {}
+                };
+
+                // latest_log_data.log is a JSON string; in_ocean is "true"/"false"
+                window.daggerwalk = window.daggerwalk || {};
+                daggerwalk.latestLog = d.latest_log_data?.log ? JSON.parse(d.latest_log_data.log) : {};
+                daggerwalk.inOcean = d.latest_log_data?.in_ocean === 'true';
+
+                // init UI bits first if needed
+                window.daggerwalkMapFilters?.init?.();
+                daggerwalk?.init?.();
+
+                // NOW that daggerwalkData is set, start the map
+                window.daggerwalkMapInit();
+                })
+            .catch(err => console.error("Failed to load daggerwalk data", err));
+    </script>   
 </body>
 </html>

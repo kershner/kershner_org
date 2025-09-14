@@ -2,6 +2,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from rest_framework.decorators import api_view, permission_classes
 from apps.daggerwalk.tasks import update_all_daggerwalk_caches
 from .models import POI, DaggerwalkLog, Region, ChatCommandLog
+from django.views.decorators.cache import cache_control
 from apps.daggerwalk.utils import get_latest_log_data
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -40,16 +41,21 @@ class DaggerwalkHomeView(APIView):
     template_path = 'daggerwalk/index.html'
 
     def get(self, request):
-        region_data = cache.get("daggerwalk_region_data") or []
-        map_data = cache.get("daggerwalk_map_data") or {}
-        latest_log_data = cache.get("daggerwalk_latest_log_data") or {}
+        return render(request, self.template_path, {})
+    
 
-        ctx = {
-            **map_data,
-            **latest_log_data,
-            'region_data': json.dumps(region_data, default=str),
+class DaggerwalkHomeDataView(APIView):
+    """View to fetch fresh cache data for the Daggerwalk home view"""
+    permission_classes = [AllowAny]
+    
+    @method_decorator(cache_control(no_cache=True, no_store=True, must_revalidate=True))
+    def get(self, request):
+        data = {
+            "region_data": cache.get("daggerwalk_region_data") or [],
+            "map_data": cache.get("daggerwalk_map_data") or {},
+            "latest_log_data": cache.get("daggerwalk_latest_log_data") or {},
         }
-        return render(request, self.template_path, ctx)
+        return Response(data)
 
 
 class DaggerwalkLogsView(APIView):

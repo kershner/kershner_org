@@ -1289,8 +1289,7 @@ class MapViewer {
   }
 }
 
-// Initialize the map viewer
-window.onload = async () => {
+const mapInit = async () => {
   window.mapViewer = new MapViewer();
   window.mapViewer.markerImage.src = `${mapViewer.config.baseS3Url}/img/daggerwalk/Daggerwalk.ico`;
   await window.mapViewer.init(); // init now adds markers after the map is ready
@@ -1327,6 +1326,51 @@ window.onload = async () => {
 
   // Cleanup on unload
   window.addEventListener('beforeunload', () => {
+    if (window.mapViewer) {
+      window.mapViewer.destroy();
+    }
+  });
+};
+
+window.daggerwalkMapInit = async () => {
+  window.mapViewer = new MapViewer();
+  window.mapViewer.markerImage.src =
+    `${window.mapViewer.config.baseS3Url}/img/daggerwalk/Daggerwalk.ico`;
+
+  await window.mapViewer.init(); // init now adds markers after the map is ready
+
+  // Handle query parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const region = urlParams.get("region");
+  const x = parseInt(urlParams.get("x"), 10);
+  const y = parseInt(urlParams.get("y"), 10);
+
+  // Check if the region parameter is a special world map value
+  const worldMapValues = ["tamriel", "all", "world"];
+  const isWorldMapRequest = region && worldMapValues.includes(region.toLowerCase());
+
+  if (isWorldMapRequest) {
+    window.mapViewer.showWorldMap();
+  } else if (region && region in window.mapViewer.state.regionMap) {
+    if (!isNaN(x) && !isNaN(y)) {
+      window.mapViewer.showRegionMap(region, x, y).then(() =>
+        window.mapViewer.addLogMarker(region, x, y)
+      );
+    } else {
+      window.mapViewer.fetchRegionData(region);
+      window.mapViewer.showRegionMap(region);
+    }
+  } else if (window.daggerwalk?.latestLog?.region) {
+    window.mapViewer.fetchRegionData(window.daggerwalk.latestLog.region);
+    window.mapViewer.showRegionMap(
+      window.daggerwalk.latestLog.region,
+      parseInt(window.daggerwalk.latestLog.map_pixel_x),
+      parseInt(window.daggerwalk.latestLog.map_pixel_y)
+    );
+  }
+
+  // Cleanup on unload
+  window.addEventListener("beforeunload", () => {
     if (window.mapViewer) {
       window.mapViewer.destroy();
     }

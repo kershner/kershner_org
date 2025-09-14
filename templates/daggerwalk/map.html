@@ -9,7 +9,6 @@
 
     <div class="map-filters-wrapper">
         <div class="world-map-link">World</div>
-
         <div class="map-filters-toggle-btn">Filters</div>
         {% include 'daggerwalk/map_filters.html' %}
     </div>
@@ -28,23 +27,4 @@
           <div id="marker" class="marker"></div>
       </div>
   </div>
-  
-  <script type="text/javascript">
-    document.addEventListener("DOMContentLoaded", () => {
-        window.BASE_S3_URL = '{% settings_value "BASE_S3_URL" %}';
-        window.REGION_DATA = {{ region_data|safe }};
-        window.daggerwalkData = {
-            provinceShapes: JSON.parse(document.getElementById('province-shapes-data').textContent),
-            regionMap: JSON.parse(document.getElementById('region-map-data').textContent),
-            regionData: JSON.parse(document.getElementById('region-data').textContent),
-        };
-    });
-  </script>
-
-  <!-- JSON Data Storage -->
-  {{ provinceShapes|json_script:"province-shapes-data" }}
-  {{ regionMap|json_script:"region-map-data" }}
-  {{ regionData|json_script:"region-data" }}
-  <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalkMapFilters.js"></script>
-  <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalkMap.js"></script>
 </div>
