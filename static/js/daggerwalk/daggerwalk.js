@@ -111,19 +111,6 @@ const daggerwalk = {
       }
   },
 
-  initTwitchPlayer() {
-    if (this.twitchPlayer) {
-      return; // Player already initialized
-    }
-    
-    this.twitchPlayer = new Twitch.Embed("twitch-embed", {
-      width: "100%",
-      height: "100%",
-      channel: "daggerwalk",
-      layout: window.innerWidth > 768 ? "video-with-chat" : "video"
-    });
-  },
-
   siteMenu() {
     const menuIcon = document.querySelector('.menu-icon');
     const siteControlsContainer = document.querySelector('.site-controls');
@@ -338,9 +325,6 @@ daggerwalk.init = () => {
     window.mapViewer.clearLogMarkers();
     window.mapViewer.stopLogPolling();
     history.pushState({}, '', window.location.pathname);
-
-    // Init Twitch player when tab is selected
-    daggerwalk.initTwitchPlayer();
   });
   
   mapTab.addEventListener('change', () => {
