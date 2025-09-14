@@ -476,16 +476,14 @@ def update_all_daggerwalk_caches():
     region_data = (
         DaggerwalkLog.objects
         .exclude(region="Ocean")
-        .values('region')
+        .values("region", "region_fk__province")
         .annotate(
-            latest_date=Max('created_at'),
-            latest_location=Max('location'),
-            latest_weather=Max('weather'),
-            latest_current_song=Max('current_song'),
+            latest_date=Max("created_at"),
+            latest_location=Max("location"),
+            latest_weather=Max("weather"),
+            latest_current_song=Max("current_song"),
         )
-        .order_by('-latest_date')
-        .values('region', 'latest_date', 'latest_location', 'latest_weather', 'latest_current_song')
-        .distinct()[:30]
+        .order_by("-latest_date")
     )
     cache.set("daggerwalk_region_data", list(region_data), timeout=None)
 

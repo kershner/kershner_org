@@ -510,15 +510,14 @@ class MapViewer {
     this.state.currentRegion = regionName;
   
     const regionData = this.state.regionMap[regionName];
-    const otherRegionData = this.state.regionData.filter(item => item.name === regionName);
+    const otherRegionData = this.state.regionData.filter(item => item.region === regionName);
     const selectedPart = this.getSelectedRegionPart(regionData, x, y);
 
     this.elements.worldMapBtn.classList.remove('active');
-  
     return new Promise((resolve) => {
       this.elements.regionMap.onload = () => {
         this.elements.regionName.textContent = regionName;
-        this.elements.provinceName.textContent = otherRegionData[0]?.province || '';
+        this.elements.provinceName.textContent = otherRegionData[0]?.region_fk__province || '';
         this.clearLogMarkers();
         resolve();
       };
