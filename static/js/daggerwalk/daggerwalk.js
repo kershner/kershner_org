@@ -303,29 +303,72 @@ daggerwalk.labelSelectActivation = function() {
     label.click();            // fires the associated radio's native click
   });
 }
+
+daggerwalk.initTwitch = function () {
+  if (this._twitchReady) return
+  this._twitchReady = true
+
+  const CHANNEL = "daggerwalk"
+  const PARENT  = window.location.hostname
+
+  // Player
+  new Twitch.Embed("twitch-embed", {
+    channel: CHANNEL,
+    parent: [PARENT],
+    width: "100%",
+    height: "100%",
+    layout: "video",
+    theme: "dark"
+  })
+
+  // Chat
+  document.getElementById("twitch-chat").src =
+    `https://www.twitch.tv/embed/${CHANNEL}/chat?parent=${PARENT}&darkpopout`
+
+  // Toggle chat
+  const panel = document.getElementById("chat-panel")
+  const btn   = document.getElementById("toggle-chat")
+
+  const savedHidden = localStorage.getItem("chatHidden") === "true"
+  setChatHidden(savedHidden)
+
+  btn.addEventListener("click", () => {
+    setChatHidden(panel.getAttribute("aria-hidden") !== "true")
+  })
+
+  function setChatHidden(hidden) {
+    panel.setAttribute("aria-hidden", hidden ? "true" : "false")
+    btn.setAttribute("aria-pressed", hidden ? "true" : "false")
+    btn.textContent = hidden ? "Show Chat" : "Hide Chat"
+    localStorage.setItem("chatHidden", String(hidden))
+    document.getElementById("player-and-chat")
+      .classList.toggle("chat-hidden", hidden)
+  }
+}
   
 daggerwalk.init = () => {
   const urlParams = new URLSearchParams(window.location.search);
   let regionParam = urlParams.get('region');
-
   const mapTab = document.querySelector('#map-tab-btn');
-  const twitchTab = document.querySelector('#twitch-tab-btn');
-
-  // Initialize Twitch player immediately if no region parameter
-  if (!regionParam) {
-    regionParam = 'current';
-  }
 
   if (regionParam && mapTab) {
     mapTab.checked = true;
     mapTab.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
-  twitchTab.addEventListener('change', () => {
-    window.mapViewer.clearLogMarkers();
-    window.mapViewer.stopLogPolling();
-    history.pushState({}, '', window.location.pathname);
-  });
+  const twitchTab = document.querySelector('#twitch-tab-btn')
+  if (twitchTab) {
+    if (twitchTab.checked) daggerwalk.initTwitch()
+
+    twitchTab.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        daggerwalk.initTwitch()
+        window.mapViewer.clearLogMarkers()
+        window.mapViewer.stopLogPolling()
+        history.pushState({}, '', window.location.pathname)
+      }
+    })
+  }
   
   mapTab.addEventListener('change', () => {
     let region = daggerwalk.latestLog?.region;
