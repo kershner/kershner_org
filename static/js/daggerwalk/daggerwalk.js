@@ -310,6 +310,7 @@ daggerwalk.initTwitch = function () {
 
   const CHANNEL = "daggerwalk"
   const PARENT  = window.location.hostname
+  const theme   = (localStorage.getItem("background") === "light") ? "light" : "dark"
 
   // Player
   new Twitch.Embed("twitch-embed", {
@@ -318,12 +319,13 @@ daggerwalk.initTwitch = function () {
     width: "100%",
     height: "100%",
     layout: "video",
-    theme: "dark"
+    theme
   })
 
   // Chat
-  document.getElementById("twitch-chat").src =
-    `https://www.twitch.tv/embed/${CHANNEL}/chat?parent=${PARENT}&darkpopout`
+  const chatBase = `https://www.twitch.tv/embed/${CHANNEL}/chat?parent=${encodeURIComponent(PARENT)}`
+  const chatUrl  = theme === "dark" ? `${chatBase}&darkpopout` : chatBase
+  document.getElementById("twitch-chat").src = chatUrl
 
   // Toggle chat
   const panel = document.getElementById("chat-panel")
