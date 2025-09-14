@@ -277,9 +277,7 @@ daggerwalk.enhanceTable = function(tableSelector, opts = {}) {
 
 daggerwalk.initTables = function() {
   // Commands table
-  daggerwalk.enhanceTable('.commands-table', {
-    initialSort: { index: 0, asc: true },
-  });
+  daggerwalk.enhanceTable('.commands-table');
 }
 
 daggerwalk.initDaggerwalkStats = function() {
@@ -297,9 +295,7 @@ daggerwalk.initDaggerwalkStats = function() {
       statsContainer.innerHTML = data.html;
 
       document.querySelectorAll('.stats-data-wrapper table').forEach(table => {
-        daggerwalk.enhanceTable(table, {
-          initialSort: { index: 0, asc: true },
-        });
+        daggerwalk.enhanceTable(table);
       });
 
       attachEvents();
