@@ -1346,7 +1346,7 @@ window.daggerwalkMapInit = async () => {
 
   // Check if the region parameter is a special world map value
   const worldMapValues = ["tamriel", "all", "world"];
-  const isWorldMapRequest = region && worldMapValues.includes(region.toLowerCase());
+  const isWorldMapRequest = !region || worldMapValues.includes(region.toLowerCase());
 
   if (isWorldMapRequest) {
     window.mapViewer.showWorldMap();
