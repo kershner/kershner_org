@@ -212,7 +212,6 @@ const daggerwalk = {
 }
 
 daggerwalk.enhanceTable = function(tableSelector, opts = {}) {
-  console.log('Enhancing table:', tableSelector, opts);
   const table = typeof tableSelector === 'string' ? document.querySelector(tableSelector) : tableSelector;
   if (!table) return;
 
