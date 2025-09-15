@@ -279,7 +279,7 @@ def complete_quest(request):
     if not isinstance(poi_name, str) or not poi_name.strip():
         return Response({"status": "error", "message": "poi_name is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Accept comma-separated string or list; keep usernames EXACT (just strip whitespace).
+    # Accept comma-separated string or list; keep usernames EXACT (trim only).
     if isinstance(viewers, str):
         viewers = [v.strip() for v in viewers.split(",")]
     elif isinstance(viewers, list):
@@ -292,11 +292,11 @@ def complete_quest(request):
     seen = set()
     viewers = [v for v in viewers if v and not (v in seen or seen.add(v))]
 
-    # Single in-progress quest (just first())
+    # Single in-progress quest (take the first())
     quest = (
         Quest.objects
         .filter(status="in_progress", poi__isnull=False)
-        .select_related("poi")
+        .select_related("poi", "poi__region")
         .order_by("-created_at")
         .first()
     )
@@ -314,13 +314,13 @@ def complete_quest(request):
         }, status=status.HTTP_409_CONFLICT)
 
     with transaction.atomic():
-        # Mark quest completed (Quest model save() sets completed_at)
+        # 1) Complete the current quest (model handles completed_at)
         if quest.status != "completed":
             quest.status = "completed"
             quest.save(update_fields=["status", "completed_at"])
 
+        # 2) Ensure viewer profiles exist; then attach quest completion
         if viewers:
-            # Ensure profiles exist. bulk_create skips auto_now_add, so set created_at manually.
             existing = set(
                 TwitchUserProfile.objects
                 .filter(twitch_username__in=viewers)
@@ -334,7 +334,6 @@ def complete_quest(request):
                     ignore_conflicts=True
                 )
 
-            # Attach quest to all viewers (bulk via M2M through table)
             profile_ids = list(
                 TwitchUserProfile.objects
                 .filter(twitch_username__in=viewers)
@@ -345,9 +344,35 @@ def complete_quest(request):
             if rows:
                 through.objects.bulk_create(rows, ignore_conflicts=True)
 
+        # 3) Create the next quest and start it immediately
+        new_quest = Quest(status="in_progress")
+        new_quest.save()  # your model auto-picks POI/xp/description/name
+        # Fetch relateds for response
+        new_quest.refresh_from_db()
+        if new_quest.poi_id:
+            new_quest = (
+                Quest.objects.select_related("poi", "poi__region")
+                .only("id", "status", "xp", "description", "quest_giver_name",
+                      "quest_giver_img_number", "poi__name", "poi__region__name")
+                .get(pk=new_quest.pk)
+            )
+
     return Response({
         "status": "success",
-        "quest_id": quest.id,
-        "poi": quest.poi.name,
-        "quest_status": quest.status,
+        "completed": {
+            "id": quest.id,
+            "poi_name": quest.poi.name,
+            "region_name": quest.poi.region.name if quest.poi and quest.poi.region_id else None,
+            "status": quest.status,
+        },
+        "next": {
+            "id": new_quest.id,
+            "status": new_quest.status,
+            "xp": new_quest.xp,
+            "poi_name": new_quest.poi.name if new_quest.poi_id else None,
+            "region_name": new_quest.poi.region.name if new_quest.poi_id and new_quest.poi.region_id else None,
+            "description": new_quest.description,
+            "quest_giver_name": new_quest.quest_giver_name,
+            "quest_giver_img_url": new_quest.quest_giver_img_url,
+        },
     }, status=status.HTTP_200_OK)

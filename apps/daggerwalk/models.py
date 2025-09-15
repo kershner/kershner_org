@@ -339,7 +339,7 @@ class Quest(models.Model):
     def _maybe_init_xp(self, is_create: bool):
         if is_create and self.xp == 0:
             # multiples of 5 between 0 and 50 inclusive
-            self.xp = random.randrange(0, 55, 5)
+            self.xp = random.randrange(5, 55, 5)
 
     def _pick_random_from_qs(self, qs):
         """
