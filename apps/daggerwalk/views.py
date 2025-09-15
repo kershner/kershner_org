@@ -346,7 +346,7 @@ def complete_quest(request):
 
         # 3) Create the next quest and start it immediately
         new_quest = Quest(status="in_progress")
-        new_quest.save()  # your model auto-picks POI/xp/description/name
+        new_quest.save()  # model auto-picks POI/xp/description/name
         # Fetch relateds for response
         new_quest.refresh_from_db()
         if new_quest.poi_id:
