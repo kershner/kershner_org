@@ -1,7 +1,7 @@
+from .models import POI, DaggerwalkLog, Quest, Region, ChatCommandLog, TwitchUserProfile
 from django.contrib.admin.views.decorators import staff_member_required
 from rest_framework.decorators import api_view, permission_classes
 from apps.daggerwalk.tasks import update_all_daggerwalk_caches
-from .models import POI, DaggerwalkLog, Region, ChatCommandLog
 from django.views.decorators.cache import cache_control
 from apps.daggerwalk.utils import get_latest_log_data
 from django.utils.decorators import method_decorator
@@ -18,6 +18,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib import messages
 from django.core.cache import cache
+from django.db import transaction
 from rest_framework import status
 from django.utils import timezone
 from .utils import EST_TIMEZONE
@@ -29,7 +30,7 @@ from .serializers import (
     RegionSerializer,
 )
 import logging
-import json
+
 
 logger = logging.getLogger(__name__)
 
@@ -261,3 +262,92 @@ def build_daggerwalk_caches(request):
         update_all_daggerwalk_caches.delay()
         messages.success(request, "Daggerwalk caches built successfully.")
     return redirect("admin:daggerwalk_daggerwalklog_changelist")
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@csrf_exempt
+def complete_quest(request):
+    API_KEY = getattr(settings, "DAGGERWALK_API_KEY", None)
+    auth_header = request.headers.get("Authorization")
+    if not API_KEY or auth_header != f"Bearer {API_KEY}":
+        return Response({"status": "error", "message": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    poi_name = request.data.get("poi_name")
+    viewers = request.data.get("twitch_viewers", [])
+
+    if not isinstance(poi_name, str) or not poi_name.strip():
+        return Response({"status": "error", "message": "poi_name is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Accept comma-separated string or list; keep usernames EXACT (just strip whitespace).
+    if isinstance(viewers, str):
+        viewers = [v.strip() for v in viewers.split(",")]
+    elif isinstance(viewers, list):
+        viewers = [v.strip() for v in viewers if isinstance(v, str)]
+    else:
+        return Response({"status": "error", "message": "twitch_viewers must be a list or comma-separated string"},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    # De-duplicate while preserving order
+    seen = set()
+    viewers = [v for v in viewers if v and not (v in seen or seen.add(v))]
+
+    # Single in-progress quest (just first())
+    quest = (
+        Quest.objects
+        .filter(status="in_progress", poi__isnull=False)
+        .select_related("poi")
+        .order_by("-created_at")
+        .first()
+    )
+    if not quest:
+        return Response({"status": "error", "message": "No in-progress quest found"}, status=status.HTTP_404_NOT_FOUND)
+
+    # Exact POI match (trim only)
+    if poi_name.strip() != quest.poi.name.strip():
+        return Response({
+            "status": "mismatch",
+            "message": "POI name does not match the active quest.",
+            "expected_poi": quest.poi.name,
+            "received_poi": poi_name,
+            "quest_id": quest.id,
+        }, status=status.HTTP_409_CONFLICT)
+
+    with transaction.atomic():
+        # Mark quest completed (Quest model save() sets completed_at)
+        if quest.status != "completed":
+            quest.status = "completed"
+            quest.save(update_fields=["status", "completed_at"])
+
+        if viewers:
+            # Ensure profiles exist. bulk_create skips auto_now_add, so set created_at manually.
+            existing = set(
+                TwitchUserProfile.objects
+                .filter(twitch_username__in=viewers)
+                .values_list("twitch_username", flat=True)
+            )
+            to_create = [u for u in viewers if u not in existing]
+            if to_create:
+                now = timezone.now()
+                TwitchUserProfile.objects.bulk_create(
+                    [TwitchUserProfile(twitch_username=u, created_at=now) for u in to_create],
+                    ignore_conflicts=True
+                )
+
+            # Attach quest to all viewers (bulk via M2M through table)
+            profile_ids = list(
+                TwitchUserProfile.objects
+                .filter(twitch_username__in=viewers)
+                .values_list("id", flat=True)
+            )
+            through = TwitchUserProfile.completed_quests.through
+            rows = [through(twitchuserprofile_id=pid, quest_id=quest.id) for pid in profile_ids]
+            if rows:
+                through.objects.bulk_create(rows, ignore_conflicts=True)
+
+    return Response({
+        "status": "success",
+        "quest_id": quest.id,
+        "poi": quest.poi.name,
+        "quest_status": quest.status,
+    }, status=status.HTTP_200_OK)

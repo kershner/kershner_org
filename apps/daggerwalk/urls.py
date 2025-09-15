@@ -8,5 +8,6 @@ daggerwalk_patterns = [
     path('logs/<int:log_id>/delete-previous/', daggerwalk_views.delete_previous_logs, name='delete_previous_logs'),
     path('logs/latest/', daggerwalk_views.latest_log, name='daggerwalk_latest_log'),
     path('log/', daggerwalk_views.create_daggerwalk_log, name='daggerwalk_log'),
+    path('quest/complete/', daggerwalk_views.complete_quest, name='complete_quest'),
     path("admin/build-daggerwalk-caches/", daggerwalk_views.build_daggerwalk_caches, name="admin-build-daggerwalk-caches"),
 ]

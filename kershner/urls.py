@@ -24,43 +24,33 @@ urlpatterns = [
 
     # Music player
     path('music/', kersh_views.music, name='music'),
-    path('music', kersh_views.music, name='music'),
 
     # Philomania
     path('phil/', phil_views.philomania),
-    path('phil', phil_views.philomania),
 
     # [ominous whoosher]
     path('whoosh/', include(whoosh_patterns)),
-    path('whoosh', include(whoosh_patterns)),
 
     # AI Quiz
     path('quiz/', include(ai_quiz_patterns)),
-    path('quiz', include(ai_quiz_patterns)),
 
     # Color Doodle
     path('doodle/', include(doodle_patterns)),
-    path('doodle', include(doodle_patterns)),
 
     # ScreenBloom landing page
     path('screenbloom/', screenbloom_landing),
-    path('screenbloom', screenbloom_landing),
 
     # Page for Bacon
     path('bacon/', bacon),
-    path('bacon', bacon),
 
     # SteamTime
     path('steamtime/', include(steamtime_patterns)),
-    path('steamtime', include(steamtime_patterns)),
 
     # public-api-explorer
     path('public-api-explorer/', include(public_api_explorer_patterns)),
-    path('public-api-explorer', include(public_api_explorer_patterns)),
 
     # Daggerwalk
     path('daggerwalk/', include(daggerwalk_patterns)),
-    path('daggerwalk', include(daggerwalk_patterns)),
 
     # API
     path('api/', include(api_patterns)),
