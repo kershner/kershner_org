@@ -1,6 +1,7 @@
-from apps.daggerwalk.models import DaggerwalkLog, Region, RegionMapPart, POI, ProvinceShape, ChatCommandLog
-from django.http import HttpResponseRedirect
+from apps.daggerwalk.models import DaggerwalkLog, Quest, Region, RegionMapPart, POI, ProvinceShape, ChatCommandLog, TwitchUserProfile
 from apps.daggerwalk.tasks import post_to_bluesky
+from django.forms.models import BaseInlineFormSet
+from django.http import HttpResponseRedirect
 from django.utils.html import format_html
 from django.contrib import messages
 from urllib.parse import urlencode
@@ -21,12 +22,28 @@ class ReadOnlyInline(admin.TabularInline):
         return False
 
 
+class ChatCommandLogInlineFormSet(BaseInlineFormSet):
+    LIMIT = 25
+
+    def get_queryset(self):
+        qs = super().get_queryset().order_by('-timestamp')
+        return qs[: self.LIMIT]
+
+
 class ChatCommandLogInline(ReadOnlyInline):
     model = ChatCommandLog
-    fields = ('timestamp', 'user', 'command', 'args', 'raw')
-    readonly_fields = ('timestamp', 'user', 'command', 'args', 'raw', 'created_at')
+    formset = ChatCommandLogInlineFormSet
+    fields = ('timestamp', 'profile_display', 'command', 'args')
+    readonly_fields = ('timestamp', 'profile_display', 'command', 'args', 'created_at')
     verbose_name = "Chat Command"
-    verbose_name_plural = "Chat Commands"
+    verbose_name_plural = "Last 25 Chat Commands"
+
+    def profile_display(self, obj):
+        if obj.profile_id:
+            url = reverse('admin:daggerwalk_twitchuserprofile_change', args=[obj.profile_id])
+            return format_html('<a href="{}">{}</a>', url, obj.profile.twitch_username)
+        return '-'
+    profile_display.short_description = 'Twitch user profile'
 
 
 @admin.register(DaggerwalkLog)
@@ -214,8 +231,8 @@ class RegionMapPartAdmin(admin.ModelAdmin):
     search_fields = ('region__name', 'fmap_image')
     list_filter = ('region',)
 
-    def has_add_permission(self, request):
-        return False
+    def get_model_perms(self, request):
+        return {}
 
     def get_readonly_fields(self, request, obj=None):
         return [f.name for f in self.model._meta.fields]
@@ -262,8 +279,8 @@ class ProvinceShapeAdmin(admin.ModelAdmin):
         return format_html('<pre style="max-width: 400px; white-space: pre-wrap;">{}</pre>', obj.coordinates)
     view_shape_data.short_description = "Shape Data"
 
-    def has_add_permission(self, request):
-        return False
+    def get_model_perms(self, request):
+        return {}
 
     def get_readonly_fields(self, request, obj=None):
         custom_fields = ['num_coordinates', 'view_shape_data']
@@ -272,10 +289,19 @@ class ProvinceShapeAdmin(admin.ModelAdmin):
 
 @admin.register(ChatCommandLog)
 class ChatCommandLogAdmin(admin.ModelAdmin):
-    list_display = ('timestamp', 'user', 'command', 'args_short', 'created_at')
-    list_filter = ('user', 'command', 'created_at')
-    search_fields = ('user', 'command', 'args', 'raw', 'request_log__region', 'request_log__location')
+    list_display = ('timestamp', 'user', 'profile', 'command', 'args_short', 'created_at')
+    list_filter = ('profile', 'user', 'command', 'created_at')
+    search_fields = (
+        'user',
+        'profile__twitch_username',
+        'command',
+        'args',
+        'raw',
+        'request_log__region',
+        'request_log__location',
+    )
     ordering = ('-timestamp',)
+    autocomplete_fields = ('profile', 'request_log')
 
     def args_short(self, obj):
         return (obj.args[:60] + '…') if obj.args and len(obj.args) > 60 else (obj.args or '')
@@ -286,3 +312,99 @@ class ChatCommandLogAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         return [f.name for f in self.model._meta.fields]
+
+@admin.register(Quest)
+class QuestAdmin(admin.ModelAdmin):
+    list_display = ('quest_name', 'status', 'quest_giver_img_thumb', 'description', 'xp', 'view_on_map_link', 'created_at')
+    list_filter = ('status', 'poi__region', 'created_at')
+    search_fields = ('description', 'poi__name', 'poi__region__name')
+    readonly_fields = ('id', 'created_at', 'view_on_map_link', 'completed_at', 'quest_name', 'quest_giver_img_thumb')
+    autocomplete_fields = ('poi',)
+
+    fieldsets = (
+        ('General', {
+            'fields': (
+                'id',
+                'quest_name',
+                'status',
+                'xp',
+                'completed_at',
+                'created_at',
+            ),
+        }),
+        ('Content', {
+            'fields': (
+                'quest_giver_img_thumb',
+                'description',
+            ),
+        }),
+        ('Location', {
+            'fields': (
+                'poi',
+                'view_on_map_link',
+            ),
+        }),
+    )
+
+    @admin.display(description="Preview")
+    def quest_giver_img_thumb(self, obj):
+        if not obj.pk:
+            return "-"
+        return format_html(f'<img src="{obj.quest_giver_img_url}" /><br>{obj.quest_giver_name}', )
+    quest_giver_img_thumb.short_description = "Quest Giver"
+
+    def view_on_map_link(self, obj):
+        poi = obj.poi
+        if poi and poi.region and poi.map_pixel_x is not None and poi.map_pixel_y is not None:
+            base_url = reverse('daggerwalk')
+            query_params = urlencode({
+                'region': poi.region.name,
+                'x': poi.map_pixel_x,
+                'y': poi.map_pixel_y
+            })
+            url = f'{base_url}?{query_params}'
+            return format_html('<a href="{}" class="button" target="_blank">Map</a>', url)
+        return '-'
+    view_on_map_link.short_description = 'View on map'
+
+@admin.register(TwitchUserProfile)
+class TwitchUserProfileAdmin(admin.ModelAdmin):
+    list_display = ('twitch_username', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('twitch_username',)
+    readonly_fields = ('id', 'twitch_username', 'created_at', 'view_all_chat_commands', 'total_xp')
+    autocomplete_fields = ('completed_quests',)
+    inlines = [ChatCommandLogInline]
+
+    fieldsets = (
+        ('General', {
+            'fields': (
+                'id',
+                'twitch_username',
+                'created_at',
+                'view_all_chat_commands',
+            ),
+        }),
+        ('Quests', {
+            'fields': (
+                'total_xp',
+                'completed_quests',
+            ),
+        }),
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if 'completed_quests' in form.base_fields:
+            form.base_fields['completed_quests'].queryset = Quest.objects.filter(status='completed')
+        return form
+
+    def view_all_chat_commands(self, obj):
+        if not obj or not obj.pk:
+            return '-'
+        url = f"{reverse('admin:daggerwalk_chatcommandlog_changelist')}?profile__id__exact={obj.pk}"
+        return format_html('<a class="button" href="{}" target="_blank">View all chat commands</a>', url)
+    view_all_chat_commands.short_description = 'Chat commands'
