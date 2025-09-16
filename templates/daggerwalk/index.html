@@ -52,13 +52,21 @@
 
     {# About tabs #}
     <div class="tabs about-tabs">
-        <input type="radio" name="tabs-group-2" id="stats-tab-btn" checked>
+        <input type="radio" name="tabs-group-2" id="quests-tab-btn" checked>
+        <input type="radio" name="tabs-group-2" id="stats-tab-btn">
         <input type="radio" name="tabs-group-2" id="commands-tab-btn">
         <input type="radio" name="tabs-group-2" id="about-tab-btn">
+
+        <label data-tab="1" for="quests-tab-btn" tabindex="0">Quests</label>
+        <label data-tab="2" for="stats-tab-btn" tabindex="0">Stats</label>
+        <label data-tab="3" for="commands-tab-btn" tabindex="0">Commands</label>
+        <label data-tab="4" for="about-tab-btn" tabindex="0">About</label>
         
-        <label data-tab="1" for="stats-tab-btn" tabindex="0">Stats</label>
-        <label data-tab="2" for="commands-tab-btn" tabindex="0">Commands</label>
-        <label data-tab="3" for="about-tab-btn" tabindex="0">About</label>
+        <div class="tab-content">
+            <div id="quests-content">
+                {% include 'daggerwalk/quests.html' %}
+            </div>
+        </div>
         
         <div class="tab-content">
             <div id="stats-content"></div>
@@ -103,7 +111,7 @@
 
                 // NOW that daggerwalkData is set, start the map
                 window.daggerwalkMapInit();
-                })
+            })
             .catch(err => console.error("Failed to load daggerwalk data", err));
     </script>   
 </body>

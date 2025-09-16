@@ -1,14 +1,14 @@
 from apps.daggerwalk.utils import calculate_daggerwalk_stats, get_map_data, get_latest_log_data
-from apps.daggerwalk.serializers import DaggerwalkLogSerializer, POISerializer
-from apps.daggerwalk.models import DaggerwalkLog, Region
+from apps.daggerwalk.serializers import DaggerwalkLogSerializer, POISerializer, QuestSerializer, TwitchUserProfileSerializer
+from apps.daggerwalk.models import DaggerwalkLog, Quest, Region, TwitchUserProfile
+from django.db.models import Sum, Count, IntegerField, Max, Q, Max
+from django.db.models.functions import Coalesce
 from playwright.sync_api import sync_playwright
 from datetime import datetime, timedelta
 from django.utils.text import slugify
 from django.core.cache import cache
 from django.utils import timezone
 from django.conf import settings
-from django.db.models import Max
-from django.db.models import Q
 from celery import shared_task
 from atproto import Client
 from io import BytesIO
@@ -500,3 +500,26 @@ def update_all_daggerwalk_caches():
             cache.set(f"daggerwalk_stats:{keyword}", stats, timeout=None)
         except Exception:
             pass  # optional: log
+
+    # Current quest (single in_progress)
+    current_quest = (
+        Quest.objects
+        .filter(status="in_progress")
+        .select_related("poi", "poi__region")
+        .order_by("-created_at")
+        .first()
+    )
+    current_quest_data = QuestSerializer(current_quest).data if current_quest else None
+    cache.set("daggerwalk_current_quest", current_quest_data, timeout=None)
+
+    # Leaderboard: top 10 by total XP
+    leaders_qs = (
+        TwitchUserProfile.objects
+        .annotate(
+            total_xp_value=Coalesce(Sum("completed_quests__xp"), 0, output_field=IntegerField()),
+            completed_quests_count=Count("completed_quests", distinct=True),
+        )
+        .order_by("-total_xp_value", "twitch_username")[:10]
+    )
+    leaderboard_data = TwitchUserProfileSerializer(leaders_qs, many=True).data
+    cache.set("daggerwalk_leaderboard_top10", leaderboard_data, timeout=None)

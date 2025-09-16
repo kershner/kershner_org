@@ -861,4 +861,77 @@ blockquote
     display: flex
     flex-direction: column
     gap: 0.5rem
-    
+
+$quests-text-color: darken(#333333, 10%)
+
+.quests-wrapper
+  display: inline-block
+  position: relative
+  margin-top: 1rem
+  padding: 2rem
+  background-repeat: no-repeat
+  background-position: center top
+  background-size: 100% 100%
+  color: $quests-text-color
+
+  .quest-card
+    display: flex
+    flex-direction: column
+    gap: 0.25rem
+
+  .quest-title-wrapper
+    display: flex
+    gap: 0.5rem
+
+  .quest-name
+    margin: 0
+    font-family: $secondary-font-family
+    font-size: 1.3rem
+    font-style: italic
+
+  .quest-map-link
+    +button-style
+    align-self: flex-start
+    color: $quests-text-color
+    border-color: $quests-text-color
+
+    &:hover
+      background-color: $quests-text-color
+      color: #FFF
+
+  .quest-info
+    display: flex
+    gap: 1rem
+    margin-top: 0.5rem
+
+  .quest-giver
+    width: 10rem
+
+    img
+      width: 100%
+      border-radius: $border-radius
+
+  .quest-desc-wrapper
+    display: flex
+    flex-direction: column
+
+  .quest-desc 
+    display: flex
+    flex-direction: column
+    gap: 0.5rem
+
+    p
+      margin: 0
+      font-family: $secondary-font-family
+      font-size: 1.2rem
+
+  .quest-giver-name
+    font-style: italic
+    padding-left: 1rem
+
+  .quest-meta
+    align-self: flex-end
+
+  .quest-xp
+    font-weight: bold
+    font-family: $secondary-font-family
