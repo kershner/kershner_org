@@ -5,7 +5,11 @@
   <article class="quest-card" aria-labelledby="quest-title">
     <div class="quest-title-wrapper">
       <h1 id="quest-title" class="quest-name">{{ current_quest.quest_name }}</h1>
-      <a title="View {{ current_quest.poi.name }} on the map" class="quest-map-link" href="?region={{ current_quest.poi.region.name }}&x={{ current_quest.poi.map_pixel_x }}&y={{ current_quest.poi.map_pixel_y }}">Map</a>
+      <a
+        title="View {{ current_quest.poi.name }} on the map"
+        class="quest-map-link"
+        href="?region={{ current_quest.poi.region.name|urlencode }}&x={{ current_quest.poi.map_pixel_x }}&y={{ current_quest.poi.map_pixel_y }}&emoji={{ current_quest.poi.emoji|urlencode }}&poi={{ current_quest.poi.name|urlencode }}"
+      >Map</a>
     </div>
 
     <div class="quest-info">

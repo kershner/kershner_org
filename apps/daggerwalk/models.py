@@ -318,7 +318,7 @@ class Quest(models.Model):
 
     @property
     def quest_name(self):
-        return f"Travel to {self.poi.name} in {self.poi.region.name}" if self.poi else "-"
+        return f"Travel to {self.poi.emoji}{self.poi.name} in {self.poi.region.name}" if self.poi else "-"
 
     @property
     def quest_giver_img_url(self):

@@ -320,65 +320,55 @@ class MapViewer {
     return markerData;
   }
 
-  async fetchRegionData(region) {
+  async fetchRegionData(region, opts = {}) {
+    const { preserveView = false, forcePart = null } = opts;
+
     try {
       const response = await fetch(`/daggerwalk/logs/?region=${encodeURIComponent(region)}`);
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-      
+
       const data = await response.json();
       if (!data.logs || !data.logs.length) return;
-  
+
       const regionData = this.state.regionMap[region];
       const mostRecentLog = data.logs[data.logs.length - 1];
-      
-      // Parse coordinates once
       const recentX = parseInt(mostRecentLog.map_pixel_x);
       const recentY = parseInt(mostRecentLog.map_pixel_y);
-      
-      // Get the selected part for the most recent log
-      const selectedPart = this.getSelectedRegionPart(regionData, recentX, recentY);
-  
-      this.clearLogMarkers();
-      
-      // Show region map with most recent log position
-      await this.showRegionMap(region, recentX, recentY);
-  
-      // Filter logs based on device type
+
+      // Only reset view/markers if we’re not preserving the current map view
+      if (!preserveView) {
+        this.clearLogMarkers();
+        await this.showRegionMap(region, recentX, recentY);
+      }
+
+      // Use the current FMAP part if provided (so markers land on the visible image)
+      const selectedPart = forcePart || this.getSelectedRegionPart(regionData, recentX, recentY);
+
       const mobileLogSamplingRate = 3;
-      const logsToShow = this.isMobile() 
+      const logsToShow = this.isMobile()
         ? data.logs.filter((_, index) => index % mobileLogSamplingRate === 0)
         : data.logs;
-      
-      // Track marker positions to avoid duplicates
+
       const markerPositions = new Set();
-      
+
       logsToShow.forEach(log => {
-        // Get region name safely
-        let regionName = log.region_fk ? log.region_fk.name : 
-                           (typeof log.region === 'object' ? log.region.name : log.region);
+        let regionName = log.region_fk ? log.region_fk.name :
+                        (typeof log.region === 'object' ? log.region.name : log.region);
 
-        // Show related ocean logs on this region's FMAP
-        if (regionName === 'Ocean') {
-          regionName = this.state.currentRegion;
-        }
+        // Ocean logs should draw on the currently visible region
+        if (regionName === 'Ocean') regionName = this.state.currentRegion;
 
-        // Get coordinates
         const x = parseInt(log.map_pixel_x);
         const y = parseInt(log.map_pixel_y);
-        
-        // Create a unique position key
         const positionKey = `${x},${y}`;
-        
-        // Only add marker if position hasn't been used yet
+
         if (!markerPositions.has(positionKey) && !isNaN(x) && !isNaN(y)) {
           markerPositions.add(positionKey);
-          
-          // Create marker data and add marker if it passes filters
           const markerData = this.createMarkerData(log);
           this.addLogMarker(regionName, x, y, selectedPart, markerData);
         }
       });
-  
+
       if (daggerwalk.latestLog && daggerwalk.latestLog.region === this.state.currentRegion) {
         this.scheduleNextLogFetch();
       }
@@ -654,65 +644,61 @@ class MapViewer {
   checkMarkerFilters(markerData) {
     const filters = window.mapFilterValues || {};
 
+    // Always show forced markers (e.g., from query params)
+    if (markerData?.forceDisplay) {
+      return { shouldDisplay: true, isPoi: true, poiFilterOn: false };
+    }
+
     const result = {
       shouldDisplay: true,
       isPoi: false,
       poiFilterOn: !filters.poiToggle
     };
-    
+
     // Determine if this is a POI
-    result.isPoi = markerData.isCapitalMarker || 
-                  markerData.type === 'landmark' || 
+    result.isPoi = markerData.isCapitalMarker ||
+                  markerData.type === 'landmark' ||
                   markerData.type === 'poi' ||
-                  (markerData.location && 
-                   !markerData.location.toLowerCase().includes("wilderness") && 
-                   !markerData.location.toLowerCase().includes("ocean"));
-    
-    // Check POI search filter
-    if (filters.poiSearch && filters.poiSearch.trim() !== '') {
-      // Non-POI markers should be hidden when searching
+                  (markerData.location &&
+                    !markerData.location.toLowerCase().includes("wilderness") &&
+                    !markerData.location.toLowerCase().includes("ocean"));
+
+    // POI search filter
+    if (filters.poiSearch?.trim()) {
       if (!result.isPoi) {
         result.shouldDisplay = false;
         return result;
       }
-      
-      // For POIs, check if they match the search
+      const search = filters.poiSearch.toLowerCase();
       const location = (markerData.location || '').toLowerCase();
       const type = (markerData.type || '').toLowerCase();
-      const capitalCity = (markerData.capitalCity || '').toLowerCase();
-      const searchTerm = filters.poiSearch.toLowerCase();
-      
-      if (!location.includes(searchTerm) && 
-          !type.includes(searchTerm) && 
-          !capitalCity.includes(searchTerm)) {
+      const capital = (markerData.capitalCity || '').toLowerCase();
+      if (!location.includes(search) && !type.includes(search) && !capital.includes(search)) {
         result.shouldDisplay = false;
         return result;
       }
     }
-    
-    // Check date range (only for regular log markers, not POIs)
+
+    // Date range filter (non-POI only)
     if (!result.isPoi && filters.dateFrom instanceof Date && filters.dateTo instanceof Date) {
       const markerDate = markerData.createdAt ? new Date(markerData.createdAt) : null;
-      
-      // Create an adjusted end date that includes the full day
-      const adjustedDateTo = new Date(filters.dateTo);
-      adjustedDateTo.setDate(adjustedDateTo.getDate() + 1);
-      
-      if (markerDate && (markerDate < filters.dateFrom || markerDate >= adjustedDateTo)) {
+      const end = new Date(filters.dateTo);
+      end.setDate(end.getDate() + 1); // inclusive to end-of-day
+      if (markerDate && (markerDate < filters.dateFrom || markerDate >= end)) {
         result.shouldDisplay = false;
         return result;
       }
     }
-    
+
     return result;
   }
   
   addLogMarker(regionName, x, y, forcePart = null, markerData = {}) {
     if (!x || !y) return;
-  
+
     // Check if this marker should be shown based on filters
     const filterResult = this.checkMarkerFilters(markerData);
-    
+
     requestAnimationFrame(() => {
       const regionData = this.state.regionMap[regionName];
       if (!regionData) return;
@@ -721,7 +707,7 @@ class MapViewer {
       if (!selectedPart?.offset) return;
   
       const marker = this.createMarkerElement(x, y, regionName, selectedPart, markerData);
-      
+
       // Apply hidden class based on current filter state
       if (!filterResult.shouldDisplay) {
         marker.classList.add('hidden');
@@ -751,8 +737,8 @@ class MapViewer {
       } else if (filterResult.isPoi) {
         marker.classList.add('poi');
         
-        // Add the POI filter class if the filter is on
-        if (filterResult.poiFilterOn) {
+        // Add the POI filter class if the filter is on (if not forceDisplay set)
+        if (filterResult.poiFilterOn && !markerData.forceDisplay) {
           marker.classList.add('hidden');
         }
       }
@@ -1288,90 +1274,53 @@ class MapViewer {
   }
 }
 
-const mapInit = async () => {
-  window.mapViewer = new MapViewer();
-  window.mapViewer.markerImage.src = `${mapViewer.config.baseS3Url}/img/daggerwalk/Daggerwalk.ico`;
-  await window.mapViewer.init(); // init now adds markers after the map is ready
-
-  // Handle query parameters
-  const urlParams = new URLSearchParams(window.location.search);
-  const region = urlParams.get("region");
-  const x = parseInt(urlParams.get("x"), 10);
-  const y = parseInt(urlParams.get("y"), 10);
-
-  // Check if the region parameter is a special world map value
-  const worldMapValues = ["tamriel", "all", "world"];
-  const isWorldMapRequest = region && worldMapValues.includes(region.toLowerCase());
-
-  if (isWorldMapRequest) {
-    window.mapViewer.showWorldMap();
-  } else if (region && region in window.mapViewer.state.regionMap) {
-    if (!isNaN(x) && !isNaN(y)) {
-      window.mapViewer.showRegionMap(region, x, y).then(() =>
-        window.mapViewer.addLogMarker(region, x, y)
-      );
-    } else {
-      window.mapViewer.fetchRegionData(region);
-      window.mapViewer.showRegionMap(region);
-    }
-  } else if (daggerwalk.latestLog && daggerwalk.latestLog.region) {
-    window.mapViewer.fetchRegionData(daggerwalk.latestLog.region);
-    window.mapViewer.showRegionMap(
-      daggerwalk.latestLog.region,
-      parseInt(daggerwalk.latestLog.map_pixel_x),
-      parseInt(daggerwalk.latestLog.map_pixel_y)
-    );
-  }
-
-  // Cleanup on unload
-  window.addEventListener('beforeunload', () => {
-    if (window.mapViewer) {
-      window.mapViewer.destroy();
-    }
-  });
-};
-
 window.daggerwalkMapInit = async () => {
   window.mapViewer = new MapViewer();
   window.mapViewer.markerImage.src =
     `${window.mapViewer.config.baseS3Url}/img/daggerwalk/Daggerwalk.ico`;
 
-  await window.mapViewer.init(); // init now adds markers after the map is ready
+  await window.mapViewer.init();
 
-  // Handle query parameters
-  const urlParams = new URLSearchParams(window.location.search);
-  const region = urlParams.get("region");
-  const x = parseInt(urlParams.get("x"), 10);
-  const y = parseInt(urlParams.get("y"), 10);
+  const sp = new URLSearchParams(window.location.search);
+  const rawRegion = sp.get("region");
+  const x = parseInt(sp.get("x"), 10);
+  const y = parseInt(sp.get("y"), 10);
 
-  // Check if the region parameter is a special world map value
+  const emoji = (sp.get("emoji") ?? "").trim() || null;
+  const poi   = (sp.get("poi") ?? "").trim() || null;
+  const markerData = (emoji && poi)
+    ? { emoji, location: poi, type: "poi", forceDisplay: true }
+    : null;
+
   const worldMapValues = ["tamriel", "all", "world"];
-  const isWorldMapRequest = !region || worldMapValues.includes(region.toLowerCase());
+  const resolveRegion = (name) => {
+    if (!name) return null;
+    const keys = Object.keys(window.mapViewer.state.regionMap || {});
+    return keys.find(k => k.toLowerCase() === name.toLowerCase()) || null;
+  };
 
+  let region = resolveRegion(rawRegion) || resolveRegion(window.daggerwalk?.latestLog?.region);
+  const isWorldMapRequest = !region || (rawRegion && worldMapValues.includes(rawRegion.toLowerCase()));
   if (isWorldMapRequest) {
     window.mapViewer.showWorldMap();
-  } else if (region && region in window.mapViewer.state.regionMap) {
-    if (!isNaN(x) && !isNaN(y)) {
-      window.mapViewer.showRegionMap(region, x, y).then(() =>
-        window.mapViewer.addLogMarker(region, x, y)
-      );
-    } else {
-      window.mapViewer.fetchRegionData(region);
-      window.mapViewer.showRegionMap(region);
-    }
-  } else if (window.daggerwalk?.latestLog?.region) {
-    window.mapViewer.fetchRegionData(window.daggerwalk.latestLog.region);
-    window.mapViewer.showRegionMap(
-      window.daggerwalk.latestLog.region,
-      parseInt(window.daggerwalk.latestLog.map_pixel_x),
-      parseInt(window.daggerwalk.latestLog.map_pixel_y)
-    );
+    return;
   }
 
-  // Cleanup on unload
-  window.addEventListener("beforeunload", () => {
-    if (window.mapViewer) {
-      window.mapViewer.destroy();
-    }
-  });
+  const hasXY = Number.isFinite(x) && Number.isFinite(y);
+
+  if (hasXY) {
+    // 1) Show the requested region/part (this clears markers)
+    await window.mapViewer.showRegionMap(region, x, y);
+
+    // 2) Compute the currently visible FMAP part and load logs onto it
+    const regionData = window.mapViewer.state.regionMap[region];
+    const forcePart = window.mapViewer.getSelectedRegionPart(regionData, x, y);
+    await window.mapViewer.fetchRegionData(region, { preserveView: true, forcePart });
+
+    // 3) Add your custom marker on top
+    if (markerData) window.mapViewer.addLogMarker(region, x, y, forcePart, markerData);
+  } else {
+    // Fallback: old behavior (let logs decide the view)
+    await window.mapViewer.fetchRegionData(region);
+  }
 };
