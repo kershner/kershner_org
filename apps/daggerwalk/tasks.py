@@ -516,10 +516,16 @@ def update_all_daggerwalk_caches():
     leaders_qs = (
         TwitchUserProfile.objects
         .annotate(
-            total_xp_value=Coalesce(Sum("completed_quests__xp"), 0, output_field=IntegerField()),
+            total_xp_value=Coalesce(
+                Sum("completed_quests__xp"),
+                0,
+                output_field=IntegerField()
+            ),
             completed_quests_count=Count("completed_quests", distinct=True),
         )
+        .filter(total_xp_value__gt=0)
         .order_by("-total_xp_value", "twitch_username")[:10]
     )
+
     leaderboard_data = TwitchUserProfileSerializer(leaders_qs, many=True).data
     cache.set("daggerwalk_leaderboard_top10", leaderboard_data, timeout=None)

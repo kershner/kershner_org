@@ -55,7 +55,7 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
     search_fields = ('region', 'location', 'weather', 'season', 'created_at',)
     
     def get_readonly_fields(self, request, obj=None):
-        custom_fields = ['view_on_map_link', 'delete_previous_button', 'world_coordinates', 'map_pixel_coordinates', 'player_coordinates']
+        custom_fields = ['view_on_map_link', 'world_coordinates', 'map_pixel_coordinates', 'player_coordinates']
         return [f.name for f in self.model._meta.fields] + custom_fields
     
     def coordinates(self, obj):
@@ -117,22 +117,6 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
             )
         return '-'
     view_on_map_link.short_description = 'View'
-
-    def delete_previous_button(self, obj):
-        url = reverse('delete_previous_logs', args=[obj.id])
-        js = f"""
-            if(confirm('Delete all logs before this one?')) {{
-                fetch('{url}', {{
-                    method: 'POST',
-                    headers: {{'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value}}
-                }}).then(() => location.reload());
-            }}
-        """
-        return format_html(
-            '<a class="button" onclick="{}" href="#">Delete Previous</a>',
-            js
-        )
-    delete_previous_button.short_description = 'Delete previous logs'
     
     fieldsets = (
         ('General', {
@@ -166,10 +150,6 @@ class DaggerwalkLogAdmin(admin.ModelAdmin):
                 'season'
             ),
         }),
-        ('Delete', {
-            'classes': ('collapse',),
-            'fields': ('delete_previous_button',),
-        })
     )
 
     def has_add_permission(self, request):

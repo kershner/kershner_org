@@ -1,12 +1,15 @@
-# quest_gen.py
-import hashlib, random, re
+from django.utils import timezone
+from django.db import transaction
 from dataclasses import dataclass
+from django.db.models import Max
 from typing import Iterable
+import hashlib, random, re
 
-# --- Context -----------------------------------------------------------------
+
 @dataclass(frozen=True)
 class QuestCtx:
     poi_name: str
+
 
 # --- Phrase Pools -------------------------------------------------------------
 DIRECT_VERBS = [
@@ -61,6 +64,7 @@ GIVER_TITLES = [
     "the Wanderer", "the Stern", "the Merchant", "the Farmer",
     "the Knight", "the Mystic", "the Blacksmith",
 ]
+
 
 # --- Helpers -----------------------------------------------------------------
 def _rng(seed_str: str) -> random.Random:
@@ -157,3 +161,77 @@ def generate_giver_name(seed_str: str) -> str:
     first = rng.choice(GIVER_PREFIXES) + rng.choice(GIVER_SUFFIXES)
     title = rng.choice(GIVER_TITLES)
     return f"{first} {title}".strip()
+
+def complete_and_rotate_quest(active_quest, completed_at, completion_request_log_id=None):
+    """
+    Marks the active quest complete, credits participants, and creates the next quest.
+    Uses a reward window of [active_quest.created_at, window_end], where window_end is:
+      max(completed_at, latest ChatCommandLog.timestamp attached to the completing request_log)
+    if completion_request_log_id is provided; otherwise window_end = completed_at.
+
+    Returns (completed_meta, next_active_quest).
+    """
+    from apps.daggerwalk.models import ChatCommandLog, Quest, TwitchUserProfile
+
+    # Resolve window_end
+    base_completed_at = completed_at or timezone.now()
+    if completion_request_log_id:
+        latest_attached_ts = (
+            ChatCommandLog.objects
+            .filter(request_log_id=completion_request_log_id)
+            .aggregate(m=Max("timestamp"))
+            .get("m")
+        )
+        window_end = max(base_completed_at, latest_attached_ts) if latest_attached_ts else base_completed_at
+    else:
+        window_end = base_completed_at
+
+    with transaction.atomic():
+        # Mark quest completed using the window_end
+        active_quest.status = "completed"
+        active_quest.completed_at = window_end
+        active_quest.save(update_fields=["status", "completed_at"])
+
+        # Unique participants during quest window (inclusive)
+        participants = list(
+            ChatCommandLog.objects
+            .filter(timestamp__gte=active_quest.created_at, timestamp__lte=window_end)
+            .values_list("user", flat=True)
+            .distinct()
+        )
+
+        # Ensure profiles (case-insensitive) + credit completion (M2M)
+        if participants:
+            profile_ids = []
+            for uname in participants:
+                # Case-insensitive ensure
+                prof, _ = TwitchUserProfile.objects.get_or_create(
+                    twitch_username=uname
+                )
+                profile_ids.append(prof.id)
+
+            through = TwitchUserProfile.completed_quests.through
+            rows = [through(twitchuserprofile_id=pid, quest_id=active_quest.id) for pid in profile_ids]
+            if rows:
+                through.objects.bulk_create(rows, ignore_conflicts=True)
+
+        # New in-progress quest
+        next_quest = Quest.objects.create(status="in_progress")
+        next_quest = (
+            Quest.objects.select_related("poi", "poi__region")
+            .only(
+                "id", "status", "xp", "description",
+                "quest_giver_name", "quest_giver_img_number",
+                "poi__name", "poi__region__name"
+            )
+            .get(pk=next_quest.pk)
+        )
+
+        completed_meta = {
+            "id": active_quest.id,
+            "poi_name": getattr(active_quest.poi, "name", None),
+            "region_name": getattr(getattr(active_quest.poi, "region", None), "name", None),
+            "status": active_quest.status,
+            "participants": participants,
+        }
+        return completed_meta, next_quest

@@ -1,5 +1,6 @@
 {% load static %}
 
+{% if current_quest %}
 <h4>Current Quest</h4>
 <div class="quests-wrapper" style="background-image: url('{% static 'img/daggerwalk/scroll.png' %}');">
   <article class="quest-card" aria-labelledby="quest-title">
@@ -34,9 +35,12 @@
     </div>
   </article>
 </div>
+{% else %}
+  <p>The Walker is not currently on a quest.</p>
+{% endif %}
 
 {% if leaderboard_top10 %}
-<h4>Quest Leaderboard</h4>
+<h4>Leaderboard</h4>
 <table class="styled-table">
   <thead>
     <tr>
@@ -47,8 +51,12 @@
   <tbody>
     {% for row in leaderboard_top10 %}
       <tr>
-        <td><strong>{{ row.twitch_username }}</strong></td>
-        <td>{{ row.total_xp }}</td>
+        <td>
+          <a href="https://www.twitch.tv/{{ row.twitch_username }}" target="_blank" rel="noopener">
+            {{ row.twitch_username }}
+          </a>
+        </td>
+        <td><strong>{{ row.total_xp }}</strong></td>
       </tr>
     {% endfor %}
   </tbody>
