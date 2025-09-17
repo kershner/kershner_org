@@ -45,7 +45,7 @@ def custom_error_view(request, exception=None):
 
 
 def custom_error_view_404(request, exception=None):
-    return render(request, 'error/404.html', {})
+    return render(request, 'error/404.html', status=404)
 
 
 def robots_txt(request):
