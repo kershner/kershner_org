@@ -934,3 +934,58 @@ $quests-text-color: darken(#333333, 10%)
   .quest-xp
     font-weight: bold
     font-family: $secondary-font-family
+
+.faq
+  margin: 1rem 0
+  padding: 0.5rem 1rem
+  // max-width: 40rem
+
+  h2
+    margin: 0 0 0.5rem
+    font-family: $secondary-font-family
+    color: var(--accent-color)
+    font-size: 2rem
+
+  details
+    background: var(--alternate-dark)
+    // border-left: $border-width solid var(--accent-color)
+    border-radius: $border-radius
+    padding: 0.75rem 1rem
+    margin: 0.5rem 0
+
+    summary
+      list-style: none
+      cursor: pointer
+      font-weight: bold
+      color: var(--text-color)
+      position: relative
+      padding-right: 1.25rem
+
+      // hide default marker
+      &::-webkit-details-marker
+        display: none
+
+      // custom caret
+      &::after
+        content: "▸"
+        position: absolute
+        right: 0
+        top: 0
+        transform: translateY(0.1rem) rotate(0deg)
+        transition: transform .2s ease
+        color: var(--accent-color)
+
+      &:hover
+        opacity: 0.9
+
+      &:focus
+        outline: 2px solid var(--accent-color)
+        outline-offset: 2px
+
+    &[open] summary::after
+      transform: translateY(0.1rem) rotate(90deg)
+
+    p
+      margin: 0.5rem 0 0
+      font-family: $secondary-font-family
+      line-height: 1.5

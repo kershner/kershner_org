@@ -35,6 +35,25 @@
     </div>
   </article>
 </div>
+
+<section class="faq" aria-labelledby="faq-title">
+  <h2 id="faq-title">Quest FAQ</h2>
+  <details open>
+    <summary>How do quests and logs work?</summary>
+    <p>Every 5 minutes the game sends a log of the current state to the server. Each log records the Walker's location, chat commands, and more. Quests are only checked and updated when a new log arrives.</p>
+  </details>
+
+  <details>
+    <summary>How do I get credit?</summary>
+    <p>Send a chat command during the quest window (from when the quest starts until the log that completes it). If your command appears in one of those logs, you’re credited.</p>
+  </details>
+
+  <details>
+    <summary>What happens when a quest completes?</summary>
+    <p>When a log matches the quest’s target POI, the quest is marked completed, all qualifying users are awarded, and a new quest immediately begins.</p>
+  </details>
+</section>
+
 {% else %}
   <p>The Walker is not currently on a quest.</p>
 {% endif %}
