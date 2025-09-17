@@ -112,27 +112,34 @@ const daggerwalk = {
   },
 
   siteMenu() {
-    const menuIcon = document.querySelector('.menu-icon');
+    const toggle = document.querySelector('.menu-toggle');
+    const menuContainer = document.querySelector('.menu-container');
     const siteControlsContainer = document.querySelector('.site-controls');
     const backgroundRadios = document.querySelectorAll('input[name="background"]');
     const accentColorInput = document.querySelector('input[name="accent-color"]');
     const resetButton = document.querySelector('.reset-default-button');
+    const chatToggleBtn = document.getElementById('toggle-chat');
     const defaultBackground = 'dark';
     const defaultAccentColor = '#F2E530';
     
-    // Set initial values from localStorage
+    const setOpen = (open) => {
+      siteControlsContainer.classList.toggle('hidden', !open);
+      menuContainer.classList.toggle('open', open);
+    };
+
+    const toggleMenu = () => {
+      const willOpen = siteControlsContainer.classList.contains('hidden');
+      setOpen(willOpen);
+    };
+
     const savedBackground = localStorage.getItem('background') || defaultBackground;
     document.querySelector(`input[name="background"][value="${savedBackground}"]`).checked = true;
     accentColorInput.value = localStorage.getItem('accentColor') || defaultAccentColor;
     document.documentElement.style.setProperty('--accent-color', accentColorInput.value);
     document.body.classList.add(savedBackground);
     
-    // Toggle menu
-    menuIcon.addEventListener('click', () => {
-      siteControlsContainer.classList.toggle('hidden');
-    });
+    toggle.addEventListener('click', toggleMenu);
     
-    // Background selection - now using radio buttons
     backgroundRadios.forEach(radio => {
       radio.addEventListener('change', (event) => {
         if (event.target.checked) {
@@ -143,13 +150,11 @@ const daggerwalk = {
       });
     });
     
-    // Accent color
     accentColorInput.addEventListener('input', (event) => {
       document.documentElement.style.setProperty('--accent-color', event.target.value);
       localStorage.setItem('accentColor', event.target.value);
     });
     
-    // Reset button
     resetButton.addEventListener('click', () => {
       document.body.classList.remove('light', 'dark');
       document.body.classList.add(defaultBackground);
@@ -160,7 +165,13 @@ const daggerwalk = {
       
       localStorage.setItem('background', defaultBackground);
       localStorage.setItem('accentColor', defaultAccentColor);
+
+      setOpen(false);
     });
+
+    if (chatToggleBtn) {
+      chatToggleBtn.addEventListener('click', () => setOpen(false));
+    }
   },
 
   // New function to handle the "tab" parameter for about-tabs group
