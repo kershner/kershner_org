@@ -17,6 +17,8 @@ MAIN_APP_NAME = 'kershner'
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = PARAMETERS['csrf_secret_key']
 
+APPEND_SLASH = True
+
 # Application definition
 INSTALLED_APPS = [
     'apps.song',
