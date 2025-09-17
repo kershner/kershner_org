@@ -1,5 +1,5 @@
+from .models import POI, DaggerwalkLog, Quest, Region, ChatCommandLog, TwitchUserProfile
 from django.contrib.admin.views.decorators import staff_member_required
-from .models import POI, DaggerwalkLog, Quest, Region, ChatCommandLog
 from rest_framework.decorators import api_view, permission_classes
 from apps.daggerwalk.quest_gen import complete_and_rotate_quest
 from apps.daggerwalk.tasks import update_all_daggerwalk_caches
@@ -13,6 +13,7 @@ from django.utils.dateparse import parse_datetime
 from apps.daggerwalk.models import ChatCommandLog
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from django.db.models.functions import Lower
 from apps.api.views import BaseListAPIView
 from rest_framework.views import APIView
 from django.utils.text import slugify
@@ -110,20 +111,40 @@ def create_daggerwalk_log(request):
             raw_chat_logs = raw_chat_logs.strip().splitlines()
 
         chat_logs_to_create = []
+        usernames = set()
+
         for ln in raw_chat_logs:
             parts = [p.strip() for p in ln.split("|")]
             if len(parts) >= 3:
                 ts = parse_datetime(parts[0])
                 if ts:
+                    user = parts[1]
+                    usernames.add(user)
                     chat_logs_to_create.append(ChatCommandLog(
                         request_log=log_entry,
                         timestamp=ts,
-                        user=parts[1],
+                        user=user,
                         command=parts[2],
                         args=" ".join(parts[3:]) if len(parts) > 3 else "",
                         raw=ln,
                     ))
+
         if chat_logs_to_create:
+            # Case-insensitive map: username_lower -> profile_id
+            uname_lowers = [u.lower() for u in usernames]
+            prof_map = dict(
+                TwitchUserProfile.objects
+                    .annotate(uname_lower=Lower('twitch_username'))
+                    .filter(uname_lower__in=uname_lowers)
+                    .values_list('uname_lower', 'id')
+                )
+
+            # Attach profile_id to each pending row (so bulk_create sets FK directly)
+            for obj in chat_logs_to_create:
+                pid = prof_map.get(obj.user.lower())
+                if pid:
+                    obj.profile_id = pid
+
             ChatCommandLog.objects.bulk_create(chat_logs_to_create)
 
         # Quest flow
