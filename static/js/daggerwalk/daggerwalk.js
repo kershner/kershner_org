@@ -142,26 +142,34 @@ const daggerwalk = {
 
     if (toggle) {
       // CLICK: pin/unpin
-      toggle.addEventListener('click', () => {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation(); // prevent outside click handler from firing
         if (!isPinned) {
           isPinned = true;
           setOpen(true);
         } else {
           isPinned = false;
-          if (!toggle.matches(':hover') && !menuContainer.matches(':hover')) setOpen(false);
+          setOpen(false);
         }
       });
 
-      // HOVER over toggle
+      // HOVER for desktop only
       toggle.addEventListener('mouseenter', () => { if (!isPinned) setOpen(true); });
-      toggle.addEventListener('mouseleave', () => {
-        if (!isPinned && !menuContainer.matches(':hover')) setOpen(false);
-      });
+      toggle.addEventListener('mouseleave', () => { if (!isPinned && !menuContainer.matches(':hover')) setOpen(false); });
     }
 
-    // HOVER over menu
+    // HOVER for desktop
     menuContainer.addEventListener('mouseenter', () => { if (!isPinned) setOpen(true); });
     menuContainer.addEventListener('mouseleave', () => { if (!isPinned) setOpen(false); });
+
+    // OUTSIDE CLICK/TAP (covers mobile)
+    document.addEventListener('click', (e) => {
+      const clickedInside = toggle.contains(e.target) || menuContainer.contains(e.target);
+      if (!clickedInside) {
+        isPinned = false;
+        setOpen(false);
+      }
+    }, true);
 
     // Optional: ESC closes & unpins
     document.addEventListener('keydown', (e) => {
