@@ -663,20 +663,19 @@ class MapViewer {
                     !markerData.location.toLowerCase().includes("wilderness") &&
                     !markerData.location.toLowerCase().includes("ocean"));
 
-    // POI search filter
+    // POI search filter — only affects POI markers
     if (filters.poiSearch?.trim()) {
-      if (!result.isPoi) {
-        result.shouldDisplay = false;
-        return result;
+      if (result.isPoi) {
+        const search = filters.poiSearch.toLowerCase();
+        const location = (markerData.location || '').toLowerCase();
+        const type = (markerData.type || '').toLowerCase();
+        const capital = (markerData.capitalCity || '').toLowerCase();
+        if (!location.includes(search) && !type.includes(search) && !capital.includes(search)) {
+          result.shouldDisplay = false;
+          return result;
+        }
       }
-      const search = filters.poiSearch.toLowerCase();
-      const location = (markerData.location || '').toLowerCase();
-      const type = (markerData.type || '').toLowerCase();
-      const capital = (markerData.capitalCity || '').toLowerCase();
-      if (!location.includes(search) && !type.includes(search) && !capital.includes(search)) {
-        result.shouldDisplay = false;
-        return result;
-      }
+      // If not a POI, leave shouldDisplay as-is (stay visible)
     }
 
     // Date range filter (non-POI only)
