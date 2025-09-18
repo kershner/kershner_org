@@ -257,6 +257,7 @@ $marker-world-size: 24px
       .menu-toggle
         color: var(--background-color)
         background: var(--accent-color)
+        border-radius: $border-radius $border-radius 0 0 
 
     .menu-toggle
       display: flex
@@ -290,7 +291,7 @@ $marker-world-size: 24px
 
       .site-controls
         position: absolute
-        top: 2rem
+        top: 1.7rem
         right: 0.5rem
         z-index: 2
         padding: 0.25rem 0.5rem
@@ -350,6 +351,9 @@ $marker-world-size: 24px
     display: inline-block
     position: relative
     z-index: 1
+
+    @media (max-width: $mobile-breakpoint)
+      font-size: 0.9rem
 
     &::after
       content: ''
@@ -442,7 +446,6 @@ $marker-world-size: 24px
     max-width: none
     margin-left: 0
     height: 60dvh    // good touch target size on phones
-
 
 .current-status
   padding: 1rem
@@ -875,7 +878,7 @@ $quests-text-color: darken(#333333, 10%)
   display: inline-block
   position: relative
   margin-top: 0.5rem
-  padding: 2.5rem
+  padding: 2.5rem 1.5rem
   background-repeat: no-repeat
   background-position: center top
   background-size: 100% 100%
@@ -894,6 +897,8 @@ $quests-text-color: darken(#333333, 10%)
     margin: 0
     font-family: $secondary-font-family
     font-size: 1.3rem
+    @media (max-width: $mobile-breakpoint)
+      font-size: 1.1rem
 
   .quest-map-link
     +button-style
@@ -936,16 +941,23 @@ $quests-text-color: darken(#333333, 10%)
     padding-left: 1rem
 
   .quest-meta
+    display: flex
+    gap: 1rem
     align-self: flex-end
+    align-items: baseline
 
-  .quest-xp
-    font-weight: bold
-    font-family: $secondary-font-family
+    .quest-started
+      font-size: 0.8rem
+      font-style: italic
+
+    .quest-xp
+      font-weight: bold
+      font-size: 1.3rem
+      font-family: $secondary-font-family
 
 .faq
   margin: 1rem 0
-  padding: 0.5rem 1rem
-  // max-width: 40rem
+  padding: 0.5rem 0
 
   h2
     margin: 0 0 0.5rem
@@ -955,7 +967,6 @@ $quests-text-color: darken(#333333, 10%)
 
   details
     background: var(--alternate-dark)
-    // border-left: $border-width solid var(--accent-color)
     border-radius: $border-radius
     padding: 0.75rem 1rem
     margin: 0.5rem 0

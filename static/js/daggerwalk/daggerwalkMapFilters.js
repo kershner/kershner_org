@@ -168,30 +168,38 @@ const daggerwalkMapFilters = {
     const showPoi = e.target.checked;
     this.state.poiToggle = showPoi;
     this.updateGlobalState();
-    
-    document.querySelectorAll('.log-marker.poi').forEach(marker => 
-      marker.classList.toggle('hidden', !showPoi));
+
+    // Re-apply search filter so toggle & search play nicely together
+    this.handlePoiSearch();
   },
   
   handlePoiSearch() {
-    const search = this.elements.poiSearch.value.toLowerCase();
+    const search = (this.elements.poiSearch.value || '').trim().toLowerCase();
     this.state.poiSearch = search;
     this.updateGlobalState();
-    
-    // Process all markers in a single loop
-    document.querySelectorAll('.log-marker').forEach(marker => {
-      const isPoi = marker.classList.contains('poi');
-      
-      // Handle non-POI markers
-      if (!isPoi) {
-        marker.classList.toggle('hidden', !!search);
+
+    const showPoi = this.state.poiToggle;
+
+    // IMPORTANT: Do NOT touch non-POI markers here.
+    // Search only affects POI markers.
+    document.querySelectorAll('.log-marker.poi').forEach(marker => {
+      // If POIs are toggled off, keep them hidden regardless of search
+      if (!showPoi) {
+        marker.classList.add('hidden');
         return;
       }
-      
-      // Handle POI markers
+
+      // No search? Show the POI (date filtering may still hide it elsewhere)
+      if (!search) {
+        marker.classList.remove('hidden');
+        return;
+      }
+
+      // Filter POIs by location/type
       const location = (marker.getAttribute('data-location') || '').toLowerCase();
       const type = (marker.getAttribute('data-type') || '').toLowerCase();
-      marker.classList.toggle('hidden', search && !location.includes(search) && !type.includes(search));
+      const matches = location.includes(search) || type.includes(search);
+      marker.classList.toggle('hidden', !matches);
     });
   },
   

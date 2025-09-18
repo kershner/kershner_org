@@ -121,25 +121,53 @@ const daggerwalk = {
     const chatToggleBtn = document.getElementById('toggle-chat');
     const defaultBackground = 'dark';
     const defaultAccentColor = '#F2E530';
-    
+
+    let isPinned = false;
+
     const setOpen = (open) => {
       siteControlsContainer.classList.toggle('hidden', !open);
       menuContainer.classList.toggle('open', open);
-    };
-
-    const toggleMenu = () => {
-      const willOpen = siteControlsContainer.classList.contains('hidden');
-      setOpen(willOpen);
+      if (toggle) toggle.classList.toggle('open', open);
     };
 
     const savedBackground = localStorage.getItem('background') || defaultBackground;
-    document.querySelector(`input[name="background"][value="${savedBackground}"]`).checked = true;
-    accentColorInput.value = localStorage.getItem('accentColor') || defaultAccentColor;
-    document.documentElement.style.setProperty('--accent-color', accentColorInput.value);
+    const savedAccent = localStorage.getItem('accentColor') || defaultAccentColor;
+
+    const bgInput = document.querySelector(`input[name="background"][value="${savedBackground}"]`);
+    if (bgInput) bgInput.checked = true;
+
+    accentColorInput.value = savedAccent;
+    document.documentElement.style.setProperty('--accent-color', savedAccent);
     document.body.classList.add(savedBackground);
-    
-    toggle.addEventListener('click', toggleMenu);
-    
+
+    if (toggle) {
+      // CLICK: pin/unpin
+      toggle.addEventListener('click', () => {
+        if (!isPinned) {
+          isPinned = true;
+          setOpen(true);
+        } else {
+          isPinned = false;
+          if (!toggle.matches(':hover') && !menuContainer.matches(':hover')) setOpen(false);
+        }
+      });
+
+      // HOVER over toggle
+      toggle.addEventListener('mouseenter', () => { if (!isPinned) setOpen(true); });
+      toggle.addEventListener('mouseleave', () => {
+        if (!isPinned && !menuContainer.matches(':hover')) setOpen(false);
+      });
+    }
+
+    // HOVER over menu
+    menuContainer.addEventListener('mouseenter', () => { if (!isPinned) setOpen(true); });
+    menuContainer.addEventListener('mouseleave', () => { if (!isPinned) setOpen(false); });
+
+    // Optional: ESC closes & unpins
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { isPinned = false; setOpen(false); }
+    });
+
     backgroundRadios.forEach(radio => {
       radio.addEventListener('change', (event) => {
         if (event.target.checked) {
@@ -149,28 +177,30 @@ const daggerwalk = {
         }
       });
     });
-    
+
     accentColorInput.addEventListener('input', (event) => {
       document.documentElement.style.setProperty('--accent-color', event.target.value);
       localStorage.setItem('accentColor', event.target.value);
     });
-    
+
     resetButton.addEventListener('click', () => {
       document.body.classList.remove('light', 'dark');
       document.body.classList.add(defaultBackground);
-      document.querySelector(`input[name="background"][value="${defaultBackground}"]`).checked = true;
-      
+      const def = document.querySelector(`input[name="background"][value="${defaultBackground}"]`);
+      if (def) def.checked = true;
+
       accentColorInput.value = defaultAccentColor;
       document.documentElement.style.setProperty('--accent-color', defaultAccentColor);
-      
+
       localStorage.setItem('background', defaultBackground);
       localStorage.setItem('accentColor', defaultAccentColor);
 
+      isPinned = false;
       setOpen(false);
     });
 
     if (chatToggleBtn) {
-      chatToggleBtn.addEventListener('click', () => setOpen(false));
+      chatToggleBtn.addEventListener('click', () => { isPinned = false; setOpen(false); });
     }
   },
 
