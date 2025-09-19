@@ -29,6 +29,7 @@ from .serializers import (
     ChatCommandLogSerializer,
     DaggerwalkLogSerializer, 
     POISerializer,
+    QuestSerializer,
     RegionSerializer,
 )
 import logging
@@ -137,19 +138,16 @@ def create_daggerwalk_log(request):
                     .annotate(uname_lower=Lower('twitch_username'))
                     .filter(uname_lower__in=uname_lowers)
                     .values_list('uname_lower', 'id')
-                )
-
-            # Attach profile_id to each pending row (so bulk_create sets FK directly)
+            )
             for obj in chat_logs_to_create:
                 pid = prof_map.get(obj.user.lower())
                 if pid:
                     obj.profile_id = pid
-
             ChatCommandLog.objects.bulk_create(chat_logs_to_create)
 
         # Quest flow
         quest_completed = False
-        completed_quest_meta = None
+        completed_quest_payload = None
 
         active_quest = (
             Quest.objects
@@ -161,37 +159,37 @@ def create_daggerwalk_log(request):
 
         # Complete if the log's resolved POI matches the active quest's POI
         if active_quest and log_entry.poi_id and active_quest.poi_id == log_entry.poi_id:
-            # Pass the completing request_log id so the helper can extend the window to the
-            # latest chat timestamp attached to THIS log (fixes “late chat excluded” edge case).
-            completed_quest_meta, active_quest = complete_and_rotate_quest(
+            completed_meta, active_quest = complete_and_rotate_quest(
                 active_quest,
                 completed_at=log_entry.created_at,
                 completion_request_log_id=log_entry.id,
             )
             quest_completed = True
 
-        current_quest_payload = None
-        if active_quest:
-            current_quest_payload = {
-                "id": active_quest.id,
-                "status": active_quest.status,
-                "xp": getattr(active_quest, "xp", None),
-                "poi_name": getattr(getattr(active_quest, "poi", None), "name", None),
-                "region_name": getattr(getattr(getattr(active_quest, "poi", None), "region", None), "name", None),
-                "description": getattr(active_quest, "description", None),
-                "quest_giver_name": getattr(active_quest, "quest_giver_name", None),
-                "quest_giver_img_url": getattr(active_quest, "quest_giver_img_url", None),
-                "quest_giver_img_number": getattr(active_quest, "quest_giver_img_number", None),
-            }
+            # Resolve completed quest by id from meta and serialize it
+            completed_id = (completed_meta or {}).get("id")
+            if completed_id:
+                completed_quest_obj = (
+                    Quest.objects
+                    .select_related("poi", "poi__region")
+                    .filter(pk=completed_id)
+                    .first()
+                )
+                if completed_quest_obj:
+                    completed_quest_payload = QuestSerializer(completed_quest_obj).data
+
+        # Serialize responses simply
+        log_payload = DaggerwalkLogSerializer(log_entry).data
+        current_quest_payload = QuestSerializer(active_quest).data if active_quest else None
 
         return Response({
             "status": "success",
             "message": "Log entry created",
             "id": log_entry.id,
-            "log_data": get_latest_log_data(),
-            "quest_completed": quest_completed,
-            "completed_quest": completed_quest_meta,  # null if not completed
-            "current_quest": current_quest_payload,   # may be null
+            "log": log_payload,                          # serialized DaggerwalkLog (nested region_fk, poi)
+            "quest_completed": quest_completed,          # bool
+            "completed_quest": completed_quest_payload,  # serialized Quest or null
+            "current_quest": current_quest_payload,      # serialized Quest or null
         }, status=status.HTTP_201_CREATED)
 
     except KeyError as e:
@@ -201,7 +199,6 @@ def create_daggerwalk_log(request):
         return Response({"status": "error", "message": f"An error occurred: {str(e)}"},
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
