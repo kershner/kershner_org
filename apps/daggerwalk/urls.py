@@ -7,5 +7,6 @@ daggerwalk_patterns = [
     path('logs/', daggerwalk_views.DaggerwalkLogsView.as_view(), name='daggerwalk_logs'),
     path('logs/latest/', daggerwalk_views.latest_log, name='daggerwalk_latest_log'),
     path('log/', daggerwalk_views.create_daggerwalk_log, name='daggerwalk_log'),
+    path("quest/", daggerwalk_views.quest_redirect_view, name="quest"),
     path("admin/build-daggerwalk-caches/", daggerwalk_views.build_daggerwalk_caches, name="admin-build-daggerwalk-caches"),
 ]

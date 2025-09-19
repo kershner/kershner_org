@@ -4,7 +4,6 @@ from rest_framework.decorators import api_view, permission_classes
 from apps.daggerwalk.quest_gen import complete_and_rotate_quest
 from apps.daggerwalk.tasks import update_all_daggerwalk_caches
 from django.views.decorators.cache import cache_control
-from apps.daggerwalk.utils import get_latest_log_data
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import cache_page
@@ -18,11 +17,13 @@ from apps.api.views import BaseListAPIView
 from rest_framework.views import APIView
 from django.utils.text import slugify
 from django.shortcuts import redirect
-from django.shortcuts import render
 from django.contrib import messages
 from django.core.cache import cache
+from django.shortcuts import render
+from urllib.parse import urlencode
 from rest_framework import status
 from django.utils import timezone
+from django.urls import reverse
 from .utils import EST_TIMEZONE
 from django.conf import settings
 from .serializers import (
@@ -178,7 +179,7 @@ def create_daggerwalk_log(request):
                 if completed_quest_obj:
                     completed_quest_payload = QuestSerializer(completed_quest_obj).data
 
-        # Serialize responses simply
+        # Serialize responses
         log_payload = DaggerwalkLogSerializer(log_entry).data
         current_quest_payload = QuestSerializer(active_quest).data if active_quest else None
 
@@ -289,3 +290,30 @@ def build_daggerwalk_caches(request):
         # update_all_daggerwalk_caches()
         messages.success(request, "Daggerwalk caches built successfully.")
     return redirect("admin:daggerwalk_daggerwalklog_changelist")
+
+
+def quest_redirect_view(request):
+    """
+    Redirect to the Daggerwalk home view with query parameters for the current quest's POI
+    """
+    q = (
+        Quest.objects
+        .filter(status="in_progress", poi__isnull=False)
+        .select_related("poi__region")
+        .order_by("-created_at")
+        .first()
+    )
+
+    base = reverse("daggerwalk")
+    if not q:
+        return redirect(base)
+
+    p = q.poi
+    params = {
+        "region": p.region.name,
+        "x": p.map_pixel_x,
+        "y": p.map_pixel_y,
+        "emoji": p.emoji or "",
+        "poi": p.name,
+    }
+    return redirect(f"{base}?{urlencode(params)}")
