@@ -9,7 +9,7 @@
       <a
         title="View {{ current_quest.poi.name }} on the map"
         class="quest-map-link"
-        href="?region={{ current_quest.poi.region.name|urlencode }}&x={{ current_quest.poi.map_pixel_x }}&y={{ current_quest.poi.map_pixel_y }}&emoji={{ current_quest.poi.emoji|urlencode }}&poi={{ current_quest.poi.name|urlencode }}"
+        href="{% url 'quest' %}"
       >Map</a>
     </div>
 
