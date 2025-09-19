@@ -296,24 +296,21 @@ def quest_redirect_view(request):
     """
     Redirect to the Daggerwalk home view with query parameters for the current quest's POI
     """
-    q = (
-        Quest.objects
-        .filter(status="in_progress", poi__isnull=False)
-        .select_related("poi__region")
-        .order_by("-created_at")
-        .first()
-    )
-
+    q = cache.get("daggerwalk_current_quest")
     base = reverse("daggerwalk")
-    if not q:
+
+    if not q or not q.get("poi"):
         return redirect(base)
 
-    p = q.poi
+    poi = q["poi"]
+    region = poi.get("region", {})
+
     params = {
-        "region": p.region.name,
-        "x": p.map_pixel_x,
-        "y": p.map_pixel_y,
-        "emoji": p.emoji or "",
-        "poi": p.name,
+        "region": region.get("name"),
+        "x": poi.get("map_pixel_x"),
+        "y": poi.get("map_pixel_y"),
+        "emoji": poi.get("emoji"),
+        "poi": poi.get("name"),
     }
     return redirect(f"{base}?{urlencode(params)}")
+
