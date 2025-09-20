@@ -363,22 +363,29 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
             page = browser.new_page()
             page.goto("https://kershner.org/daggerwalk", wait_until="networkidle")
 
-            # Wait until the world map is fully rendered
-            page.wait_for_selector("#worldMapView", timeout=10000)
+            # World map ready
+            page.locator("#worldMapView").wait_for(state="visible", timeout=30000)
+            page.locator("#worldMapView").screenshot(path=screenshots["world"])
 
-            world_map = page.query_selector("#worldMapView")
-            if world_map:
-                world_map.screenshot(path=screenshots["world"])
+            # Go to region map
+            page.locator(".world-map-link").click()
 
-                # Click the link and wait for region map view to render
-                world_map_link = page.query_selector(".world-map-link")
-                if world_map_link:
-                    world_map_link.click()
-                    page.wait_for_selector("#regionMapView", timeout=10000)
+            region = page.locator("#regionMapView")
+            region.wait_for(state="visible", timeout=30000)
 
-                    region_map = page.query_selector("#regionMapView")
-                    if region_map:
-                        region_map.screenshot(path=screenshots["region"])
+            # Wait until at least one non-hidden marker is visible
+            region.locator(".log-marker:not(.hidden)").first.wait_for(state="visible", timeout=30000)
+
+            # Give the browser a frame to flush layout/paint
+            page.wait_for_function("() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))")
+
+            region.screenshot(path=screenshots["region"])
+
+            # Take screenshot of the quest section
+            quest_element = page.locator(".quests-wrapper")
+            page.add_style_tag(content=".quests-wrapper .quest-title-wrapper a { display: none !important; }")
+            quest_element.wait_for(state="visible", timeout=30000)
+            quest_element.screenshot(path=screenshots["quest"])
 
         # Step 2: Upload screenshots
         uploaded = []
@@ -391,6 +398,8 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
                     alt = f"Daggerfall region map for {region} with markers showing the Walker's progress so far today."
                 elif label == "world":
                     alt = f"Daggerfall world map with markers showing the Walker's recent travels.  The Walker is currently in the {region} region."
+                elif label == "quest":
+                    alt = f"An image of the Walker's current quest featuring art assets from the original Daggerfall game."
 
                 uploaded.append({
                     "image": blob.blob,
