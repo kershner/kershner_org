@@ -350,7 +350,8 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
 
     screenshots = {
         "region": "region_map.png",
-        "world": "world_map.png"
+        "world": "world_map.png",
+        "quest": "quest.png"
     }
 
     try:
