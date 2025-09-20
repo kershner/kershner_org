@@ -312,19 +312,15 @@ def quest_redirect_view(request):
     """
     q = cache.get("daggerwalk_current_quest")
     base = reverse("daggerwalk")
-
-    if not q or not q.get("poi"):
+    if not q or not getattr(q, "poi", None) or not getattr(q.poi, "region", None):
         return redirect(base)
 
-    poi = q["poi"]
-    region = poi.get("region", {})
-
+    poi = q.poi
     params = {
-        "region": region.get("name"),
-        "x": poi.get("map_pixel_x"),
-        "y": poi.get("map_pixel_y"),
-        "emoji": poi.get("emoji"),
-        "poi": poi.get("name"),
+        "region": poi.region.name,
+        "x": poi.map_pixel_x,
+        "y": poi.map_pixel_y,
+        "emoji": poi.emoji,
+        "poi": poi.name,
     }
-    return redirect(f"{base}?{urlencode(params)}")
-
+    return redirect(f"{base}?{urlencode({k: v for k, v in params.items() if v is not None})}")
