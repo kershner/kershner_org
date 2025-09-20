@@ -1,5 +1,5 @@
+from apps.daggerwalk.serializers import DaggerwalkLogSerializer, POISerializer, TwitchUserProfileSerializer
 from apps.daggerwalk.utils import calculate_daggerwalk_stats, get_map_data, get_latest_log_data
-from apps.daggerwalk.serializers import DaggerwalkLogSerializer, POISerializer, QuestSerializer, TwitchUserProfileSerializer
 from apps.daggerwalk.models import DaggerwalkLog, Quest, Region, TwitchUserProfile
 from django.db.models import Sum, Count, IntegerField, Max, Q, Max
 from django.db.models.functions import Coalesce
@@ -519,8 +519,7 @@ def update_all_daggerwalk_caches():
         .order_by("-created_at")
         .first()
     )
-    current_quest_data = QuestSerializer(current_quest).data if current_quest else None
-    cache.set("daggerwalk_current_quest", current_quest_data, timeout=None)
+    cache.set("daggerwalk_current_quest", current_quest, timeout=None)
 
     # Leaderboard: top 10 by total XP
     leaders_qs = (
