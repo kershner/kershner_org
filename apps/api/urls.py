@@ -1,4 +1,4 @@
-from apps.daggerwalk.views import ChatCommandLogListAPIView, DaggerwalkLogListAPIView, POIListAPIView, RegionListAPIView, DaggerwalkStatsView
+from apps.daggerwalk.views import ChatCommandLogListAPIView, DaggerwalkLogListAPIView, POIListAPIView, QuestListAPIView, RegionListAPIView, DaggerwalkStatsView
 from apps.project.views import ProjectListAPIView
 from apps.ai_quiz.views import AiQuizListAPIView
 from apps.whoosh.views import WhooshListAPIView
@@ -24,6 +24,7 @@ GROUPED_ENDPOINTS = [
         ('pois', POIListAPIView, 'daggerwalk_pois'),
         ('stats', DaggerwalkStatsView, 'daggerwalk_stats'),
         ('chat_commands', ChatCommandLogListAPIView, 'daggerwalk_chat_commands'),
+        ('quests', QuestListAPIView, 'daggerwalk_quests'),
     ]),
     # Add more namespaces as needed
 ]

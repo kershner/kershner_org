@@ -67,6 +67,7 @@ class DaggerwalkHomeDataView(APIView):
 
 
 class DaggerwalkLogsView(APIView):
+    """View to fetch cached logs for a specific region"""
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -85,6 +86,7 @@ class DaggerwalkLogsView(APIView):
 @permission_classes([AllowAny])
 @csrf_exempt
 def create_daggerwalk_log(request):
+    """API endpoint to create a new Daggerwalk log entry along with associated chat logs and quest handling"""
     API_KEY = getattr(settings, "DAGGERWALK_API_KEY", None)
     auth_header = request.headers.get("Authorization")
     if not API_KEY or auth_header != f"Bearer {API_KEY}":
@@ -204,6 +206,7 @@ def create_daggerwalk_log(request):
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def latest_log(request):
+    """API endpoint to fetch the latest cached Daggerwalk log data"""
     return Response(cache.get("daggerwalk_latest_log_data"))
     
 
@@ -281,6 +284,17 @@ class ChatCommandLogListAPIView(BaseListAPIView):
     serializer_class = ChatCommandLogSerializer
     filterset_fields = ('user', 'command')
     ordering = ("-id",)
+
+
+class QuestListAPIView(BaseListAPIView):
+    queryset = (Quest.objects
+                .select_related('poi', 'poi__region')
+                .order_by('-id'))
+    serializer_class = QuestSerializer
+    filterset_fields = ('status', 'poi')
+    ordering_fields = ('id', 'created_at', 'completed_at', 'xp')
+    ordering = ('-id',)
+    search_fields = ('description', 'quest_giver_name', 'poi__name')
 
 
 @staff_member_required
