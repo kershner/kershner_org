@@ -522,6 +522,7 @@ def update_all_daggerwalk_caches():
     cache.set("daggerwalk_current_quest", current_quest, timeout=None)
 
     # Leaderboard: top 10 by total XP
+    excluded_usernames = ["billcrystals", "daggerwalk", "daggerwalk_bot"]
     leaders_qs = (
         TwitchUserProfile.objects
         .annotate(
@@ -533,6 +534,7 @@ def update_all_daggerwalk_caches():
             completed_quests_count=Count("completed_quests", distinct=True),
         )
         .filter(total_xp_value__gt=0)
+        .exclude(twitch_username__in=excluded_usernames)
         .order_by("-total_xp_value", "twitch_username")[:10]
     )
 
