@@ -281,7 +281,7 @@ def post_to_bluesky():
     logger.info("Starting Bluesky post process")
     
     # Initialize Bluesky client
-    client = Client()
+    client = Client(timeout=30.0)
     try:
         client.login(settings.DAGGERWALK_BLUESKY_HANDLE, settings.DAGGERWALK_BLUESKY_APP_PASSWORD)
         logger.info(f"Logged in as: {settings.DAGGERWALK_BLUESKY_HANDLE}")
