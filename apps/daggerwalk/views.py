@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import cache_page
 from django.template.loader import render_to_string
 from django.utils.dateparse import parse_datetime
+from rest_framework.renderers import JSONRenderer
 from apps.daggerwalk.models import ChatCommandLog
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -46,8 +47,11 @@ class DaggerwalkHomeView(APIView):
     template_path = 'daggerwalk/index.html'
 
     def get(self, request):
+        quest = cache.get("daggerwalk_current_quest")
+        quest_data = QuestSerializer(quest).data if quest else None
         return render(request, self.template_path, {
-            "current_quest": cache.get("daggerwalk_current_quest") or None,
+            "current_quest": quest,
+            "current_quest_json": JSONRenderer().render(quest_data).decode("utf-8"),
             "leaderboard_top10": cache.get("daggerwalk_leaderboard_top10") or []
         })
     

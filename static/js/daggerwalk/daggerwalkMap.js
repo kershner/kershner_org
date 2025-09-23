@@ -526,6 +526,9 @@ class MapViewer {
       
       // Apply filter to world-map-markers
       document.querySelectorAll('.world-map-marker').forEach(marker => {
+        // Always show quest marker
+        if (marker.classList.contains('quest-marker')) { marker.classList.remove('hidden'); return; }
+
         const latestDateStr = marker.getAttribute('data-latest-date');
         if (latestDateStr) {
           const markerDate = new Date(latestDateStr);
@@ -550,6 +553,8 @@ class MapViewer {
     
     // Apply filters after adding all markers
     setTimeout(() => this.applyFiltersToWorldMarkers(), 0);
+    
+    this.addQuestMarker();
   }
 
   addWorldMapMarker(markerData) {
@@ -613,6 +618,9 @@ class MapViewer {
     }
 
     this.drawConnectingLines();
+
+    // Apply filters after adding all markers
+    setTimeout(() => this.applyFiltersToWorldMarkers(), 0);
   }
 
 
@@ -1240,6 +1248,38 @@ class MapViewer {
         minute: "2-digit",
         hour12: true
     }).replace(",", "");
+  }
+
+  addQuestMarker() {
+    const q = window.CURRENT_QUEST;
+    if (!q || !q.poi || !q.poi.region) return;
+
+    const el = document.createElement('div');
+    el.classList.add('world-map-marker', 'quest-marker');
+
+    // Show the POI’s emoji directly
+    if (q.poi.emoji) {
+      el.textContent = q.poi.emoji;
+    }
+
+    // Tooltip + filters data
+    el.dataset.region = q.poi.region.name;
+    el.dataset.province = q.poi.region.province || '';
+    el.dataset.climate = q.poi.region.climate || '';
+    el.dataset.currentQuest = q.quest_name || '';
+    el.dataset.quest = `${q.description}`;
+    el.dataset.latestDate = q.created_at || new Date().toISOString();
+
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.showRegionMap(q.poi.region.name, q.poi.map_pixel_x, q.poi.map_pixel_y);
+      this.fetchRegionData(q.poi.region.name);
+      this.updateUrl(q.poi.region.name);
+    });
+
+    this.elements.worldMapMarkerContainer.appendChild(el);
+    this.updateWorldMarkerPositions();
   }
 
   destroy() {

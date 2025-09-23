@@ -89,6 +89,7 @@
             .then(r => r.json())
             .then(d => {
                 window.REGION_DATA = d.region_data || [];
+                window.CURRENT_QUEST = {{ current_quest_json|safe }};
 
                 window.daggerwalkData = {
                     provinceShapes: d.map_data?.provinceShapes || {},
