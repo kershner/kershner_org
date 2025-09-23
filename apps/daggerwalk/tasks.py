@@ -17,6 +17,7 @@ import requests
 import logging
 import random
 import yt_dlp
+import httpx
 import time
 import os
 
@@ -281,7 +282,8 @@ def post_to_bluesky():
     logger.info("Starting Bluesky post process")
     
     # Initialize Bluesky client
-    client = Client(timeout=30.0)
+    client = Client()
+    client.request._client.timeout = httpx.Timeout(30.0)
     try:
         client.login(settings.DAGGERWALK_BLUESKY_HANDLE, settings.DAGGERWALK_BLUESKY_APP_PASSWORD)
         logger.info(f"Logged in as: {settings.DAGGERWALK_BLUESKY_HANDLE}")
