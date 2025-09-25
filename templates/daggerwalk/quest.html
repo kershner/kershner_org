@@ -1,0 +1,45 @@
+{% load humanize %}
+
+<article class="quest-card" aria-labelledby="quest-title">
+    <div class="quest-title-wrapper">
+        <h1 id="quest-title" class="quest-name">{{ quest.quest_name }}</h1>
+        <a
+            title="View {{ quest.poi.name }} on the map"
+            class="quest-map-link"
+            href="{% url 'quest' %}"
+        >Map</a>
+    </div>
+
+    <div class="quest-info">
+        <div class="quest-giver">
+        <img
+            src="{{ quest.quest_giver_img_url }}"
+            alt="Quest giver: {{ quest.quest_giver_name }}"
+            loading="lazy"
+        />
+        </div>
+
+        <div class="quest-desc-wrapper">
+        <div class="quest-desc">
+            <p>"{{ quest.description }}"</p>
+            <span class="quest-giver-name">- {{ quest.quest_giver_name }}</span>
+        </div>
+
+        <div class="quest-meta">
+            <div class="quest-dates">
+                {% if quest.status == "completed" %}
+                <p class="quest-completed">
+                    {{ quest.created_at|naturalday }} - {{ quest.completed_at|naturalday }}
+                </p>
+                {% else %}
+                <p class="quest-started">
+                    Started {{ quest.created_at|naturalday }}
+                </p>
+                {% endif %}
+            </div>
+            
+            <p class="quest-xp">{{ quest.xp }} XP</p>
+        </div>
+        </div>
+    </div>
+</article>

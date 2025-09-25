@@ -48,11 +48,13 @@ class DaggerwalkHomeView(APIView):
 
     def get(self, request):
         quest = cache.get("daggerwalk_current_quest")
+        previous_quests = cache.get("daggerwalk_previous_quests") or []
         quest_data = QuestSerializer(quest).data if quest else None
         return render(request, self.template_path, {
             "current_quest": quest,
+            "previous_quests": previous_quests,
             "current_quest_json": JSONRenderer().render(quest_data).decode("utf-8"),
-            "leaderboard_top10": cache.get("daggerwalk_leaderboard_top10") or []
+            "leaderboard": cache.get("daggerwalk_leaderboard") or []
         })
     
 

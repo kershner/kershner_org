@@ -954,7 +954,9 @@ $quests-text-color: darken(#333333, 10%)
     align-self: flex-end
     align-items: baseline
 
-    .quest-started
+    .quest-dates
+      display: flex
+      gap: 1rem
       font-size: 0.8rem
       font-style: italic
 
@@ -964,7 +966,6 @@ $quests-text-color: darken(#333333, 10%)
       font-family: $secondary-font-family
 
 .faq
-  margin: 1rem 0
   padding: 0.5rem 0
 
   h2
@@ -1015,3 +1016,16 @@ $quests-text-color: darken(#333333, 10%)
       margin: 0.5rem 0 0
       font-family: $secondary-font-family
       line-height: 1.5
+
+.previous-quests-table
+  .quests-wrapper
+    width: 100%
+    color: var(--text-color)
+    padding: 0
+
+    .quest-desc-wrapper
+      flex-grow: 1
+      padding-right: 1rem 
+
+    .quest-map-link
+      display: none
