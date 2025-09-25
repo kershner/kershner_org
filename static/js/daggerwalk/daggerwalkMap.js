@@ -831,7 +831,16 @@ class MapViewer {
   }
 
   clearLogMarkers() {
-    document.querySelectorAll(`#${this.elements.regionMapView.id} .log-marker:not(.quest-poi-marker), #${this.elements.regionMapView.id} .capital-marker`).forEach(marker => marker.remove());
+    // Clear all markers, but only clear quest markers if we're not in the quest's region
+    const q = window.CURRENT_QUEST;
+    const questRegion = q?.poi?.region?.name;
+    const keepQuestMarkers = questRegion && questRegion === this.state.currentRegion;
+    
+    const selector = keepQuestMarkers 
+      ? `#${this.elements.regionMapView.id} .log-marker:not(.quest-poi-marker), #${this.elements.regionMapView.id} .capital-marker`
+      : `#${this.elements.regionMapView.id} .log-marker, #${this.elements.regionMapView.id} .capital-marker`;
+      
+    document.querySelectorAll(selector).forEach(marker => marker.remove());
   }
 
   getSelectedRegionPart(regionData, x, y) {
