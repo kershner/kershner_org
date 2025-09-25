@@ -31,10 +31,63 @@ API_BASE_URL = f'{BASE_URL}/api/daggerwalk'
 TWITCH_CLIP_URL = 'https://api.twitch.tv/helix/clips'
 
 
+def get_valid_access_token():
+    """
+    Get a valid Twitch access token, refreshing it if necessary.
+    Returns the access token string.
+    """
+    logger.info("Getting valid Twitch access token")
+    
+    refresh_token = settings.DAGGERWALK_TWITCH_REFRESH_TOKEN
+    client_id = settings.DAGGERWALK_TWITCH_CLIENT_ID
+    client_secret = settings.DAGGERWALK_TWITCH_SECRET
+    
+    # Check if we have a cached valid token
+    cached_token = cache.get('twitch_access_token')
+    if cached_token:
+        # Verify the token is still valid
+        headers = {'Authorization': f'Bearer {cached_token}', 'Client-Id': client_id}
+        validation_response = requests.get('https://id.twitch.tv/oauth2/validate', headers=headers)
+        
+        if validation_response.status_code == 200:
+            logger.info("Using cached valid access token")
+            return cached_token
+        else:
+            logger.info("Cached token expired or invalid, refreshing...")
+    
+    # Refresh the token
+    logger.info("Refreshing Twitch access token")
+    
+    refresh_data = {
+        'grant_type': 'refresh_token',
+        'refresh_token': refresh_token,
+        'client_id': client_id,
+        'client_secret': client_secret
+    }
+    
+    refresh_response = requests.post('https://id.twitch.tv/oauth2/token', data=refresh_data)
+    
+    if refresh_response.status_code != 200:
+        logger.error(f"Failed to refresh token: {refresh_response.status_code} - {refresh_response.text}")
+        raise Exception(f"Failed to refresh Twitch token: {refresh_response.status_code}")
+    
+    token_data = refresh_response.json()
+    new_access_token = token_data['access_token']
+    expires_in = token_data.get('expires_in', 14400)  # Default to 4 hours if not provided
+    
+    # Cache the token for slightly less than its expiration time to be safe
+    cache_timeout = expires_in - 300  # 5 minutes before expiration
+    cache.set('twitch_access_token', new_access_token, timeout=cache_timeout)
+    
+    logger.info(f"New access token cached for {cache_timeout} seconds")
+    return new_access_token
+
+
 def create_and_wait_for_clip():
     logger.info("Starting Twitch clip creation process")
     
-    token = settings.DAGGERWALK_TWITCH_REFRESH_TOKEN
+    # Get a valid access token instead of using refresh token directly
+    token = get_valid_access_token()
     client_id = settings.DAGGERWALK_TWITCH_CLIENT_ID
     broadcaster_id = settings.DAGGERWALK_TWITCH_BROADCASTER_ID
     
