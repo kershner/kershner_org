@@ -86,7 +86,6 @@ def get_valid_access_token():
 def create_and_wait_for_clip():
     logger.info("Starting Twitch clip creation process")
     
-    # Get a valid access token instead of using refresh token directly
     token = get_valid_access_token()
     client_id = settings.DAGGERWALK_TWITCH_CLIENT_ID
     broadcaster_id = settings.DAGGERWALK_TWITCH_BROADCASTER_ID
@@ -438,7 +437,7 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
             region.screenshot(path=screenshots["region"])
 
             # Take screenshot of the quest section
-            quest_element = page.locator(".quests-wrapper")
+            quest_element = page.locator(".quests-wrapper").first
             page.add_style_tag(content=".quests-wrapper .quest-title-wrapper a { display: none !important; }")
             quest_element.wait_for(state="visible", timeout=30000)
             quest_element.screenshot(path=screenshots["quest"])
