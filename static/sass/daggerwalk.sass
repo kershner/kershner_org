@@ -642,6 +642,9 @@ $marker-world-size: 24px
     :not(th)  
       background: var(--accent-color)
       color: var(--background-color)
+      
+      a
+        border-color: var(--background-color)
 
 .twitch-cmds-table
   td
@@ -650,6 +653,14 @@ $marker-world-size: 24px
 .commands-table
   td:first-of-type
     font-weight: bold
+
+.songs-table
+  a
+    +button-style
+    padding: 0.25rem 0.35rem
+    margin-left: 0.5rem
+    font-size: 0.7rem
+
 
 blockquote
   padding: 1rem
@@ -1022,6 +1033,9 @@ $quests-text-color: darken(#333333, 10%)
     width: 100%
     color: var(--text-color)
     padding: 0 0.5rem
+
+    .quest-giver
+      width: 6rem
 
     .quest-desc-wrapper
       flex-grow: 1
