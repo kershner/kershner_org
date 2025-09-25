@@ -189,9 +189,11 @@ class MapViewer {
                 displayValue = v.substring(alphaIndex);
               }
               break;
-            // Skip the emoji entry
+            // Entries to skip
             case 'emoji': return '';
             case 'latestDate': return '';
+            case 'forceDisplay': return '';
+            case 'type': return '';
           }
 
           const key = k.replace(/([A-Z])/g, ' $1')
@@ -371,6 +373,20 @@ class MapViewer {
 
       if (daggerwalk.latestLog && daggerwalk.latestLog.region === this.state.currentRegion) {
         this.scheduleNextLogFetch();
+      }
+
+      // Add quest marker if this region matches the current quest
+      const q = window.CURRENT_QUEST;
+      if (q && q.poi && q.poi.region && q.poi.region.name === region) {
+        const questMarkerData = {
+          location: `${q.poi.emoji}${q.poi.name}`,
+          type: 'quest',
+          emoji: q.poi.emoji,
+          forceDisplay: true,
+          currentQuest: q.quest_name,
+          quest: q.description
+        };
+        this.addLogMarker(region, q.poi.map_pixel_x, q.poi.map_pixel_y, selectedPart, questMarkerData);
       }
     } catch (error) {
       console.error('Error fetching logs:', error);
@@ -652,8 +668,8 @@ class MapViewer {
   checkMarkerFilters(markerData) {
     const filters = window.mapFilterValues || {};
 
-    // Always show forced markers (e.g., from query params)
-    if (markerData?.forceDisplay) {
+    // Always show forced markers (e.g., from query params) AND quest markers
+    if (markerData?.forceDisplay || markerData?.type === 'quest') {
       return { shouldDisplay: true, isPoi: true, poiFilterOn: false };
     }
 
@@ -748,6 +764,11 @@ class MapViewer {
         if (filterResult.poiFilterOn && !markerData.forceDisplay) {
           marker.classList.add('hidden');
         }
+
+        // Add quest marker class immediately if this is a quest marker
+        if (markerData.type === 'quest') {
+          marker.classList.add('quest-poi-marker');
+        }
       }
       
       mapContainer.appendChild(marker);
@@ -810,7 +831,7 @@ class MapViewer {
   }
 
   clearLogMarkers() {
-    document.querySelectorAll(`#${this.elements.regionMapView.id} .log-marker, #${this.elements.regionMapView.id} .capital-marker`).forEach(marker => marker.remove());
+    document.querySelectorAll(`#${this.elements.regionMapView.id} .log-marker:not(.quest-poi-marker), #${this.elements.regionMapView.id} .capital-marker`).forEach(marker => marker.remove());
   }
 
   getSelectedRegionPart(regionData, x, y) {
