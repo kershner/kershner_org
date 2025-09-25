@@ -326,6 +326,7 @@ daggerwalk.enhanceTable = function(tableSelector, opts = {}) {
 daggerwalk.initTables = function() {
   // Commands table
   daggerwalk.enhanceTable('.commands-table');
+  daggerwalk.enhanceTable('.songs-table');
 }
 
 daggerwalk.initDaggerwalkStats = function() {
