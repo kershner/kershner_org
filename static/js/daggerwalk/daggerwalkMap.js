@@ -365,7 +365,7 @@ class MapViewer {
         const y = parseInt(log.map_pixel_y);
         const positionKey = `${x},${y}`;
         
-        if (!markerPositions.has(positionKey) && !isNaN(x) && !isNaN(y)) {
+        if (!isNaN(x) && !isNaN(y)) {
           markerPositions.add(positionKey);
           const markerData = this.createMarkerData(log);
           
