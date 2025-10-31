@@ -181,6 +181,7 @@ class MapViewer {
             case 'createdAt': prefix = '⌚'; break;
             case 'date': prefix = '📅'; break;
             case 'capitalCity': prefix = '🏰'; break;
+            case 'discovered': prefix = '🔍'; break;
             case 'location':
               // Find the index of the first alphabetic character
               const alphaIndex = v.search(/[a-zA-Z]/);
@@ -310,7 +311,7 @@ class MapViewer {
         if (log.type) markerData.type = log.type;
       }
     }
-    
+
     // Add other properties only if they exist
     if (log.date) markerData.date = this.convertElderScrollsTime(log.date);
     if (log.season) markerData.season = log.season;
@@ -318,6 +319,7 @@ class MapViewer {
     if (log.current_song) markerData.currentSong = log.current_song;
     else if (log.currentSong) markerData.currentSong = log.currentSong;
     if (log.created_at) markerData.createdAt = this.convertToEST(log.created_at);
+    if (log.discovered) markerData.discovered = this.convertToEST(log.discovered);
     
     return markerData;
   }

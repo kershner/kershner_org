@@ -56,6 +56,7 @@ class POI(models.Model):
     map_pixel_y = models.IntegerField()
     description = models.TextField(blank=True, null=True)
     emoji = models.CharField(max_length=10, blank=True, null=True)
+    discovered = models.DateTimeField(blank=True, null=True, help_text="Timestamp when this POI was discovered")
     
     class Meta:
         unique_together = ('region', 'name')
@@ -66,6 +67,19 @@ class POI(models.Model):
     def save(self, *args, **kwargs):
         if not self.emoji:
             self.emoji = self.get_emoji()
+        
+        if not self.discovered:
+            from apps.daggerwalk.models import DaggerwalkLog  # avoid circular import
+            earliest_log = (
+                DaggerwalkLog.objects
+                .filter(poi=self)
+                .order_by("created_at")
+                .values_list("created_at", flat=True)
+                .first()
+            )
+            if earliest_log:
+                self.discovered = earliest_log
+
         super().save(*args, **kwargs)
 
     @classmethod

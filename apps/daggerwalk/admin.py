@@ -220,8 +220,8 @@ class RegionMapPartAdmin(admin.ModelAdmin):
 
 @admin.register(POI)
 class POIAdmin(admin.ModelAdmin):
-    list_display = ('name', 'region', 'type', 'map_coordinates', 'view_on_map_link')
-    list_filter = ('region', 'type')
+    list_display = ('name', 'region', 'type', 'discovered', 'map_coordinates', 'view_on_map_link')
+    list_filter = ('region', 'type', 'discovered')
     search_fields = ('name', 'region__name', 'type')
 
     def map_coordinates(self, obj):
