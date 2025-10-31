@@ -353,6 +353,7 @@ class MapViewer {
 
       const markerPositions = new Set();
 
+      const lastNonLandmark = [...logsToShow].reverse().find(e => !('type' in e));
       logsToShow.forEach(log => {
         let regionName = log.region_fk ? log.region_fk.name :
                         (typeof log.region === 'object' ? log.region.name : log.region);
@@ -363,10 +364,12 @@ class MapViewer {
         const x = parseInt(log.map_pixel_x);
         const y = parseInt(log.map_pixel_y);
         const positionKey = `${x},${y}`;
-
+        
         if (!markerPositions.has(positionKey) && !isNaN(x) && !isNaN(y)) {
           markerPositions.add(positionKey);
           const markerData = this.createMarkerData(log);
+          
+          if (log === lastNonLandmark) markerData.isLatest = true;
           this.addLogMarker(regionName, x, y, selectedPart, markerData);
         }
       });
@@ -639,29 +642,12 @@ class MapViewer {
     setTimeout(() => this.applyFiltersToWorldMarkers(), 0);
   }
 
-
   clearWorldMapMarkers() {
     if (this.elements.worldMapMarkerContainer) {
       this.elements.worldMapMarkerContainer.innerHTML = '';
     }
     this.state.worldMapMarkers.clear();
     this.drawConnectingLines();
-  }
-
-  addCapitalMarker(regionCapitalData) {
-    if (!regionCapitalData.mapPixelX || !regionCapitalData.mapPixelY) return;
-    
-    // Call addLogMarker with the capital data and the flag
-    this.addLogMarker(
-      this.state.currentRegion,
-      regionCapitalData.mapPixelX,
-      regionCapitalData.mapPixelY,
-      null,
-      {
-        capitalCity: regionCapitalData.name,
-        isCapitalMarker: true
-      }
-    );
   }
 
   // Check if a marker should be shown based on global filters
@@ -738,11 +724,6 @@ class MapViewer {
       
       const mapContainer = document.querySelector('#regionMapView .map-container');
       
-      // Only remove 'recent' class from log markers if this is not for a capital
-      if (!markerData.isCapitalMarker) {
-        document.querySelectorAll('.log-marker').forEach(m => m.classList.remove('recent'));
-      }
-  
       // If this is a capital marker, change its class before appending
       if (markerData.isCapitalMarker) {
         marker.classList.remove('log-marker', 'recent');
@@ -769,6 +750,10 @@ class MapViewer {
         if (markerData.type === 'quest') {
           marker.classList.add('quest-poi-marker');
         }
+      }
+
+      if (markerData.isLatest) {
+        marker.classList.add('recent');
       }
       
       mapContainer.appendChild(marker);
@@ -802,7 +787,7 @@ class MapViewer {
     const adjustedY = (y - selectedPart.offset.y) * scale * scaleFactor;
 
     const marker = document.createElement('div');
-    marker.classList.add('log-marker', 'recent');
+    marker.classList.add('log-marker');
     marker.style.left = `${adjustedX}px`;
     marker.style.top = `${adjustedY}px`;
 
