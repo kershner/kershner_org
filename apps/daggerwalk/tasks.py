@@ -583,6 +583,8 @@ def update_all_daggerwalk_caches():
     )
     cache.set("daggerwalk_previous_quests", previous_quests, timeout=None)
 
+    # Leaderboard
+    total_leaderboard_rows = 100
     excluded_usernames = ["billcrystals", "daggerwalk", "daggerwalk_bot"]
     leaders_qs = (
         TwitchUserProfile.objects
@@ -596,7 +598,7 @@ def update_all_daggerwalk_caches():
         )
         .filter(total_xp_value__gt=0)
         .exclude(twitch_username__in=excluded_usernames)
-        .order_by("-total_xp_value", "twitch_username")[:20]
+        .order_by("-total_xp_value", "twitch_username")[:total_leaderboard_rows]
     )
 
     leaderboard_data = TwitchUserProfileSerializer(leaders_qs, many=True).data

@@ -1,0 +1,66 @@
+{% if leaderboard %}
+  <h4>Leaderboard</h4>
+
+  <table class="styled-table" id="leaderboard">
+    <thead>
+        <tr>
+            <th></th>
+            <th>User</th>
+            <th>Total XP</th>
+        </tr>
+    </thead>
+    <tbody>
+      {% for row in leaderboard %}
+        <tr>
+            <td class="leaderboard-position">
+                <strong>{{ forloop.counter }}</strong>
+            </td>
+            
+            <td>
+                <a href="https://www.twitch.tv/{{ row.twitch_username }}" target="_blank" rel="noopener">
+                    {{ row.twitch_username }}
+                </a>
+            </td>
+
+            <td><strong>{{ row.total_xp }}</strong></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div id="pager"></div>
+
+  <script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", () => {
+      const rows = document.querySelectorAll("#leaderboard tbody tr");
+      const perPage = 20;
+      const pager = document.getElementById("pager");
+      let page = 1;
+      const total = Math.ceil(rows.length / perPage);
+
+      function render() {
+        rows.forEach((r, i) => r.style.display = i >= (page - 1) * perPage && i < page * perPage ? "" : "none");
+        pager.innerHTML = "";
+        if (page > 1) {
+            const prev = document.createElement("button");
+            prev.textContent = "Prev";
+            prev.onclick = () => { page--; render(); };
+            pager.appendChild(prev);
+        }
+
+        const info = document.createElement("span");
+        info.textContent = ` Page ${page} of ${total} `;
+        pager.appendChild(info);
+
+        if (page < total) {
+            const next = document.createElement("button");
+            next.textContent = "Next";
+            next.onclick = () => { page++; render(); };
+            pager.appendChild(next);
+        }
+      }
+
+      render();
+    });
+  </script>
+{% endif %}

@@ -27,29 +27,7 @@
   </details>
 </section>
 
-{% if leaderboard %}
-<h4>Leaderboard</h4>
-<table class="styled-table">
-  <thead>
-    <tr>
-      <th>User</th>
-      <th>Total XP</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for row in leaderboard %}
-      <tr>
-        <td>
-          <a href="https://www.twitch.tv/{{ row.twitch_username }}" target="_blank" rel="noopener">
-            {{ row.twitch_username }}
-          </a>
-        </td>
-        <td><strong>{{ row.total_xp }}</strong></td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% endif %}
+{% include 'daggerwalk/leaderboard.html' %}
 
 {% if previous_quests %}
 <h4>Previous Quests</h4>
