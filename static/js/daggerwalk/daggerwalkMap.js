@@ -742,9 +742,12 @@ class MapViewer {
         marker.dataset.capitalCity = capitalCity;
       } else if (filterResult.isPoi) {
         marker.classList.add('poi');
-        
-        // Add the POI filter class if the filter is on (if not forceDisplay set)
-        if (filterResult.poiFilterOn && !markerData.forceDisplay) {
+
+        // Hide POI marker if:
+        if (
+          filterResult.poiFilterOn &&  // POI filter is active
+          !markerData.forceDisplay &&  // Not forced to display
+          !Object.hasOwn(markerData, 'createdAt')) {  // Not a regular log marker
           marker.classList.add('hidden');
         }
 
