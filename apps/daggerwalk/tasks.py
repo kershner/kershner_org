@@ -512,7 +512,7 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
 @shared_task
 def update_all_daggerwalk_caches():
     use_sampling = True
-    step = 5
+    step = 4
 
     # Region logs (per-region)
     for region in Region.objects.all():

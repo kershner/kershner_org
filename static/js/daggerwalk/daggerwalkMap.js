@@ -668,12 +668,14 @@ class MapViewer {
     };
 
     // Determine if this is a POI
-    result.isPoi = markerData.isCapitalMarker ||
-                  markerData.type === 'landmark' ||
-                  markerData.type === 'poi' ||
-                  (markerData.location &&
-                    !markerData.location.toLowerCase().includes("wilderness") &&
-                    !markerData.location.toLowerCase().includes("ocean"));
+    result.isPoi = !('date' in markerData) && (
+      markerData.isCapitalMarker ||
+      markerData.type === 'landmark' ||
+      markerData.type === 'poi' ||
+      (markerData.location &&
+        !markerData.location.toLowerCase().includes("wilderness") &&
+        !markerData.location.toLowerCase().includes("ocean"))
+    );
 
     // POI search filter — only affects POI markers
     if (filters.poiSearch?.trim()) {
@@ -745,9 +747,9 @@ class MapViewer {
 
         // Hide POI marker if:
         if (
-          filterResult.poiFilterOn &&  // POI filter is active
-          !markerData.forceDisplay &&  // Not forced to display
-          !Object.hasOwn(markerData, 'createdAt')) {  // Not a regular log marker
+          filterResult.poiFilterOn &&
+          !markerData.forceDisplay &&
+          !Object.hasOwn(markerData, 'date')) {
           marker.classList.add('hidden');
         }
 

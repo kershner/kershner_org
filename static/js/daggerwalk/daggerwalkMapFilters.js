@@ -183,7 +183,7 @@ const daggerwalkMapFilters = {
     // IMPORTANT: Do NOT touch non-POI markers here.
     // Search only affects POI markers.
     document.querySelectorAll('.log-marker.poi').forEach(marker => {
-      const isRegularLogMarker = 'createdAt' in marker.dataset;
+      const isRegularLogMarker = !('discovered' in marker.dataset);
       // If POIs are toggled off, keep them hidden regardless of search
       if (!showPoi && !isRegularLogMarker) {
         marker.classList.add('hidden');
