@@ -29,7 +29,19 @@
             <div class="quest-dates">
                 {% if quest.status == "completed" %}
                 <p class="quest-completed">
+                    <span>
                     {{ quest.created_at|naturalday }} - {{ quest.completed_at|naturalday }}
+                    </span>
+
+                    <span class="quest-duration">
+                    {% with days=quest.total_days|default:0 %}
+                        {% if days == 0 %}
+                            1 day
+                        {% else %}
+                            {{ days }} day{{ days|pluralize }}
+                        {% endif %}
+                    {% endwith %}
+                    </span>
                 </p>
                 {% else %}
                 <p class="quest-started">
@@ -39,7 +51,6 @@
             </div>
             
             <p class="quest-xp">{{ quest.xp }} XP</p>
-        </div>
         </div>
     </div>
 </article>

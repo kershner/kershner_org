@@ -337,6 +337,12 @@ class Quest(models.Model):
     @property
     def quest_giver_img_url(self):
         return f"{settings.BASE_CLOUDFRONT_URL}daggerwalk/quests/quest_giver_images/{self.quest_giver_img_number}.png"
+    
+    @property
+    def total_days(self):
+        if self.completed_at and self.created_at:
+            return (self.completed_at - self.created_at).days
+        return None
 
     def __str__(self):
         return self.quest_name
