@@ -34,13 +34,7 @@
                     </span>
 
                     <span class="quest-duration">
-                    {% with days=quest.total_days|default:0 %}
-                        {% if days == 0 %}
-                            1 day
-                        {% else %}
-                            {{ days }} day{{ days|pluralize }}
-                        {% endif %}
-                    {% endwith %}
+                    ({{ quest.created_at|timesince:quest.completed_at }})
                     </span>
                 </p>
                 {% else %}
