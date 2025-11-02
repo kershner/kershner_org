@@ -469,8 +469,6 @@ daggerwalk.init = () => {
     const urlParams = new URLSearchParams(window.location.search);
     urlParams.set('region', region);
     history.pushState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
-
-    window.mapViewer.fetchRegionData(region);
   });
 
   daggerwalk.labelSelectActivation();

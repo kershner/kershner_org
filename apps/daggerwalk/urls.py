@@ -4,7 +4,6 @@ from django.urls import path
 daggerwalk_patterns = [
     path('', daggerwalk_views.DaggerwalkHomeView.as_view(), name='daggerwalk'),
     path('data/', daggerwalk_views.DaggerwalkHomeDataView.as_view(), name='daggerwalk_data'),
-    path('logs/', daggerwalk_views.DaggerwalkLogsView.as_view(), name='daggerwalk_logs'),
     path('logs/latest/', daggerwalk_views.latest_log, name='daggerwalk_latest_log'),
     path('log/', daggerwalk_views.create_daggerwalk_log, name='daggerwalk_log'),
     path("quest/", daggerwalk_views.quest_redirect_view, name="quest"),

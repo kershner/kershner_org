@@ -1,6 +1,6 @@
-from apps.daggerwalk.serializers import DaggerwalkLogSerializer, POISerializer, TwitchUserProfileSerializer
+from apps.daggerwalk.serializers import DaggerwalkLogSerializer, POISerializer, QuestSerializer, TwitchUserProfileSerializer
 from apps.daggerwalk.utils import calculate_daggerwalk_stats, get_map_data, get_latest_log_data
-from apps.daggerwalk.models import DaggerwalkLog, Quest, Region, TwitchUserProfile
+from apps.daggerwalk.models import POI, DaggerwalkLog, ProvinceShape, Quest, Region, TwitchUserProfile
 from django.db.models import Sum, Count, IntegerField, Max, Q, Max
 from django.db.models.functions import Coalesce
 from playwright.sync_api import sync_playwright
@@ -511,31 +511,6 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
 
 @shared_task
 def update_all_daggerwalk_caches():
-    use_sampling = True
-    step = 4
-
-    # Region logs (per-region)
-    for region in Region.objects.all():
-        pois = region.points_of_interest.all()
-        two_weeks_ago = timezone.now() - timedelta(weeks=2)
-        queryset = (
-            DaggerwalkLog.objects
-            .filter(Q(region_fk=region) | Q(last_known_region=region), created_at__gte=two_weeks_ago)
-            .select_related('region_fk', 'poi', 'last_known_region')
-            .order_by('created_at')
-        )
-
-        if use_sampling and queryset.exists():
-            all_logs = list(queryset)
-            logs = all_logs[::step]
-            if all_logs and all_logs[-1] not in logs:
-                logs.append(all_logs[-1])
-        else:
-            logs = list(queryset)
-
-        combined = POISerializer(pois, many=True).data + DaggerwalkLogSerializer(logs, many=True).data
-        cache.set(f"daggerwalk_region_logs:{slugify(region.name)}", combined, timeout=None)
-
     # Global datasets
     region_data = (
         DaggerwalkLog.objects
@@ -603,3 +578,26 @@ def update_all_daggerwalk_caches():
 
     leaderboard_data = TwitchUserProfileSerializer(leaders_qs, many=True).data
     cache.set("daggerwalk_leaderboard", leaderboard_data, timeout=None)
+
+    # New map data
+    two_weeks_ago = timezone.now() - timedelta(weeks=2)
+    logs_qs = DaggerwalkLog.objects.filter(created_at__gte=two_weeks_ago).order_by('-id')
+    logs_json = DaggerwalkLogSerializer(logs_qs, many=True).data
+    cache.set("daggerwalk_map_logs", logs_json, timeout=None)
+
+    pois_qs = POI.objects.all()
+    poi_json = POISerializer(pois_qs, many=True).data
+    cache.set("daggerwalk_map_pois", poi_json, timeout=None)
+    
+    quest_qs = Quest.objects.filter(status="in_progress").select_related("poi", "poi__region")
+    quest_json = QuestSerializer(quest_qs, many=True).data
+    cache.set("daggerwalk_map_quest", quest_json, timeout=None)
+
+    shape_data = []
+    for shape in ProvinceShape.objects.select_related("region"):
+        shape_data.append({
+            "name": shape.region.name,
+            "province": shape.region.province,
+            "coordinates": shape.coordinates,
+        })
+    cache.set("daggerwalk_map_shape_data", shape_data, timeout=None)

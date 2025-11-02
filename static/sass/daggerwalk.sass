@@ -28,6 +28,18 @@ $mobile-breakpoint: 768px
     background-color: var(--accent-color)
     color: var(--background-color)
 
+// Mixin for pulse animation
+@mixin pulse-animation($scale: 1.5, $opacity: 1.0, $duration: 1.5s)
+  animation: pulse $duration infinite ease-in-out
+
+  @keyframes pulse
+    0%
+      transform: translate(-50%, -50%) scale(1)
+    50%
+      transform: translate(-50%, -50%) scale($scale)
+    100%
+      transform: translate(-50%, -50%) scale(1)
+
 button
   cursor: pointer
 
@@ -98,149 +110,101 @@ a
   font-weight: normal
   font-size: 1.5rem
   color: var(--accent-color)
+
+.map-container
+  height: 40vw
+  margin-bottom: 1rem
   
-.daggerwalk-map  
-  width: 100%
-  min-height: 50vw
+  #filters
+    background: #000
+    color: #FFF
 
-.map-container 
-  position: relative
-  top: 4px
-  overflow: hidden
+    label
+      top: 0
+      &:first-of-type
+        margin-left: 0.25rem
+    input
+      display: unset
+    
+  #map
+    height: 100%
+    margin: 0
+    background: #000
 
-#worldMap 
-  width: 100%
-  height: 100%
-  object-fit: contain
+  /* Base cluster */
+  .custom-cluster
+    div
+      width: 36px
+      height: 36px
+      border-radius: 50%
+      display: flex
+      align-items: center
+      justify-content: center
+      font-weight: bold
 
-#regionMap 
-  width: 100%
-  height: auto
-  object-fit: contain
-  cursor: pointer
+  /* POI and Log cluster types */
+  .poi-cluster
+    .cluster-circle
+      background: #4a90e2
+      color: #fff
+      flex-direction: column
 
-canvas 
-  position: absolute
-  top: 0
-  left: 0
-  pointer-events: none
+  .log-cluster
+    .cluster-icon
+      border: 2px solid var(--accent-color)
+      background: url('/static/img/daggerwalk/daggerwalk.ico') center/cover no-repeat
+      filter: grayscale(90%)
+    &.latest-log
+      .cluster-icon
+        filter: none
+
+  /* Pin + count in POI clusters */
+  .cluster-emoji
+    font-size: 14px
+    line-height: 1
+
+  .cluster-count
+    font-size: 12px
+
+  /* Highlight for latest cluster or marker */
+  .log-marker
+    div
+      width: 6px
+      height: 6px
+      background: var(--accent-color)
+      border-radius: 50%
+
+    &.latest-log
+      div
+        width: 12px
+        height: 12px
+        @include pulse-animation(2, 1, 1.8s)
+    
+  .quest-marker
+  .poi-marker
+  .latest-log
+    div
+      @include pulse-animation(1.8, 1, 1.8s)
+
+  /* Province name labels */
+  .region-label
+    color: #fff
+    font-weight: bold
+    text-shadow: 0 0 4px #000
+    font-size: 14px
+    text-align: center
+    pointer-events: none
+
+  /* Ensure markers stay above overlay */
+  .leaflet-marker-pane,
+  .leaflet-shadow-pane
+    z-index: 600
 
 .hidden 
   display: none !important
 
 .error 
   color: $error
-
-// Marker base styles
-%marker-base
-  position: absolute
-  transform: translate(-50%, -50%)
-  pointer-events: none
-
-// Mixin for pulse animation
-@mixin pulse-animation($scale: 1.5, $opacity: 1.0, $duration: 1.5s)
-  animation: pulse $duration infinite ease-in-out
-
-  @keyframes pulse
-    0%
-      transform: translate(-50%, -50%) scale(1)
-    50%
-      transform: translate(-50%, -50%) scale($scale)
-    100%
-      transform: translate(-50%, -50%) scale(1)
-
-// Styles for regional and world map markers
-%marker-base
-  position: absolute
-  transform: translate(-50%, -50%)
-
-// Mixin for pulse animation
-@mixin pulse-animation($scale: 1.5, $opacity: 1.0, $duration: 1.5s)
-  animation: pulse $duration infinite ease-in-out
-
-  @keyframes pulse
-    0%
-      transform: translate(-50%, -50%) scale(1)
-    50%
-      transform: translate(-50%, -50%) scale($scale)
-    100%
-      transform: translate(-50%, -50%) scale(1)
-
-// Styles for regional and world map markers
-$marker-size: 6px
-$marker-recent-size: 16px
-$marker-world-size: 24px
-
-.log-marker, .world-marker
-  @extend %marker-base
-
-.log-marker
-  width: $marker-size
-  height: $marker-size
-  border-radius: 50%
-  background-color: var(--accent-color)
-  cursor: pointer
-  pointer-events: auto
-
-  &:hover
-    width: $marker-recent-size
-    height: $marker-recent-size
-
-  &.recent
-    width: $marker-recent-size
-    height: $marker-recent-size
-    @include pulse-animation
-
-  &.poi
-    background-color: transparent
-
-    &::before
-      content: attr(data-emoji)
-      font-size: $marker-size * 2
-      position: absolute
-      top: 50%
-      left: 50%
-      transform: translate(-50%, -50%)
-      
-      @media (max-width: $mobile-breakpoint)
-        font-size: $marker-size * 1.5
-        
-.world-marker-container
-  position: absolute
-  top: 0
-  left: 0
-  width: 100%
-  height: 100%
-  pointer-events: none
-  z-index: 1
-
-  .world-map-marker
-    position: absolute
-    border-radius: 50%
-    cursor: pointer
-    pointer-events: auto
-    z-index: 15
-    border: 2px solid var(--accent-color)
-    filter: grayscale(100%) brightness(0.8)
-    transform: scale(0.7)
-
-    &:hover
-      transform: scale(1.4)
-      &::after
-        opacity: 1
-    
-    &.recent
-      transform: scale(1)
-      filter: grayscale(0%) brightness(1)
-      @include pulse-animation($scale: 1.7, $opacity: 0.5)
-
-    &.quest-marker
-      display: flex
-      justify-content: center
-      align-items: center
-      border: unset
-      font-size: 2rem
-      filter: unset
 
 .top-row
   display: flex
@@ -407,10 +371,6 @@ $marker-world-size: 24px
     #chat-panel
       display: none   // remove from flow completely when hidden
 
-#twitch-container
-  width: 100%
-  margin: 0
-
 #player-and-chat
   display: flex
   align-items: stretch
@@ -529,50 +489,6 @@ $marker-world-size: 24px
         div
           display: flex
           flex-direction: column
-
-.tooltip
-  position: fixed
-  background: var(--background-color)
-  padding: 0.25rem 0.5rem
-  min-width: 14rem
-  border-radius: $border-radius
-  border: 0.15rem solid var(--accent-color)
-  transform: translate(-50%, -100%)
-  opacity: 0
-  font-size: 0.8rem
-  pointer-events: none
-  
-  &.visible
-    opacity: 1
-    z-index: 10
-    pointer-events: auto
-
-  .row
-    display: flex
-    padding: 0.25rem 0
-    border-bottom: 1px solid var(--alternate-dark)
-
-    &:last-of-type
-      border-bottom: none
-    
-    .key
-      font-weight: bold
-      width: 40%
-
-    .value
-      width: 60%
-      display: flex
-
-      span
-        width: 100%
-        &:first-of-type
-          width: 2rem
-          display: flex
-          justify-content: center
-        &:last-of-type
-          position: relative
-          top: 3px
-          
 
 .main-tabs
   label
@@ -758,115 +674,6 @@ blockquote
   .highlight
     color: var(--accent-color)
     font-weight: bold
-
-.map-nav
-  display: flex
-  justify-content: space-between
-  align-items: flex-end
-
-  .map-filters-wrapper
-    display: flex
-    align-items: baseline
-    gap: 0.5rem
-    position: relative
-    padding-right: 0.5rem
-    padding-bottom: 0.25rem
-
-    .map-filters-toggle-btn,
-    .world-map-link
-      +button-style
-
-    .map-filters
-      position: absolute
-      margin-top: 2rem
-      right: 0.35rem
-      z-index: 2
-      padding: 0.25rem 0.75rem
-      background-color: var(--background-color)
-      border: $border-width solid var(--accent-color)
-      border-radius: $border-radius
-
-      input
-        display: unset
-
-      label
-        padding: unset
-        top: unset
-        margin-left: unset
-        &::after
-          content: none
-          all: unset
-      
-      .map-filter-row
-        padding: 0.5rem 0
-        border-bottom: 0.1rem solid var(--alternate-dark)
-        &:last-of-type
-          border-bottom: none
-        
-      .map-filter-label
-        display: block
-        margin-bottom: 0.25rem
-        font-weight: bold
-        color: var(--accent-color)
-      
-      .map-filter-input-wrapper
-        display: flex
-
-      .map-filter-input
-        align-items: center
-
-        &.date-input
-          display: flex
-
-        .poi-checkbox
-          width: 1.65rem
-          height: 1.65rem
-          margin: 0 0.25rem
-          cursor: pointer
-          vertical-align: middle
-        
-        button
-          all: unset
-          +button-style
-        
-      .date-picker
-        width: 45%
-        padding: 0.25rem
-
-      .date-separator
-        margin: 0 0.25rem
-        color: var(--accent-color)
-
-      .date-filter-shortcuts
-        display: flex
-        padding: 0.25rem 0
-        font-size: 0.8rem
-        
-        span
-          cursor: pointer
-          color: var(--accent-color)
-          text-decoration: underline
-          padding: 0.1rem 0.3rem
-          white-space: nowrap
-
-          &.active
-            background-color: var(--accent-color)
-            color: var(--background-color)
-            text-decoration: none
-            text-align: center
-            border-radius: $border-radius
-
-          &:hover
-            opacity: 0.6
-        
-      .search-input
-        flex: 1
-        input
-          width: 95%
-          padding: 0.25rem
-        
-      .poi-checkbox
-        margin-right: 0.25rem
 
 .table-filter-input
   display: unset !important

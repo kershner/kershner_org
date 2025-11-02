@@ -9,6 +9,8 @@
     <title>Daggerwalk</title>
     <link rel="icon" type="image/png" href="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/Daggerwalk.ico">
     <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/daggerwalk.css">
+
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
     {# Main tabs - Twitch/Map #}
@@ -87,8 +89,7 @@
 
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalk.js"></script>
-    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalkMapFilters.js"></script>
-    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalkMap.js"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/map.js"></script>
     <script type="text/javascript" defer>
         window.BASE_S3_URL = '{% settings_value "BASE_S3_URL" %}';
 
@@ -111,11 +112,9 @@
                 daggerwalk.inOcean = d.latest_log_data?.in_ocean === 'true';
 
                 // init UI bits first if needed
-                window.daggerwalkMapFilters?.init?.();
                 daggerwalk?.init?.();
 
-                // NOW that daggerwalkData is set, start the map
-                window.daggerwalkMapInit();
+                daggerwalkMapInit();
             })
             .catch(err => console.error("Failed to load daggerwalk data", err));
     </script>   

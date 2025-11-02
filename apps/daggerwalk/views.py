@@ -6,7 +6,6 @@ from apps.daggerwalk.tasks import update_all_daggerwalk_caches
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.cache import cache_page
 from django.template.loader import render_to_string
 from django.utils.dateparse import parse_datetime
 from rest_framework.renderers import JSONRenderer
@@ -24,7 +23,9 @@ from django.shortcuts import render
 from urllib.parse import urlencode
 from rest_framework import status
 from django.utils import timezone
+from .models import ProvinceShape
 from django.urls import reverse
+from datetime import timedelta
 from .utils import EST_TIMEZONE
 from django.conf import settings
 from .serializers import (
@@ -54,7 +55,11 @@ class DaggerwalkHomeView(APIView):
             "current_quest": quest,
             "previous_quests": previous_quests,
             "current_quest_json": JSONRenderer().render(quest_data).decode("utf-8"),
-            "leaderboard": cache.get("daggerwalk_leaderboard") or []
+            "leaderboard": cache.get("daggerwalk_leaderboard") or [],
+            "logs_json": cache.get("daggerwalk_map_logs") or [],
+            "poi_json": cache.get("daggerwalk_map_pois") or [],
+            "quest_json": cache.get("daggerwalk_map_quest") or [],
+            "shape_data": cache.get("daggerwalk_map_shape_data" or []),
         })
     
 
@@ -70,23 +75,7 @@ class DaggerwalkHomeDataView(APIView):
             "latest_log_data": cache.get("daggerwalk_latest_log_data") or {}
         }
         return Response(data)
-
-
-class DaggerwalkLogsView(APIView):
-    """View to fetch cached logs for a specific region"""
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        region = request.query_params.get("region")
-        if not region:
-            return Response({"error": "Region parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-        cache_key = f"daggerwalk_region_logs:{slugify(region)}"
-        data = cache.get(cache_key)
-        if data is None:
-            return Response({"error": "No cached data available"}, status=status.HTTP_404_NOT_FOUND)
-        return Response({"logs": data})
-
+    
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
