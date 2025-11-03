@@ -318,23 +318,89 @@ async function refreshMapData() {
     });
 
     // Build new layers
-    const latest = data.logs.reduce((a, b) => new Date(a.created_at) > new Date(b.created_at) ? a : b, data.logs[0]);
+    const latest = data.logs.reduce((a, b) =>
+      new Date(a.created_at) > new Date(b.created_at) ? a : b, data.logs[0]);
 
     poiLayer = buildLayer(data.pois, { isPOI: true });
     logLayer = buildLayer(data.logs, { highlightId: latest.id });
     questLayer = buildLayer(data.quests, { isQuest: true });
 
-    // Re-add layers and visuals
-    map.addLayer(logLayer);
-    map.addLayer(questLayer);
+    // Re-add only if toggled on
+    if (document.getElementById("toggle-logs").checked) map.addLayer(logLayer);
+    if (document.getElementById("toggle-quest").checked) map.addLayer(questLayer);
+    if (document.getElementById("toggle-pois").checked) map.addLayer(poiLayer);
+
     highlightLatestMarker();
     drawLogTrail(logLayer);
+
+    // Reapply the current date filter after refresh
+    filterLogsByDate();
+
+    // Reapply region shapes toggle
+    if (document.getElementById("toggle-shapes").checked)
+      drawRegionShapes(true);
+
   } catch (err) {
     console.error("Refresh failed:", err);
   } finally {
     btn.disabled = false;
     btn.textContent = "Refresh";
   }
+}
+
+function filterLogsByDate() {
+  const value = document.getElementById("log-date-filter").value;
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let start = null, end = now;
+
+  switch (value) {
+    case "today": {
+      start = todayStart; // today 00:00 → now
+      break;
+    }
+    case "yesterday": {
+      end = todayStart; // yesterday 00:00 → today 00:00
+      start = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
+      break;
+    }
+    case "1w": {
+      // ISO week logic: Monday=0,...,Sunday=6
+      const weekday = (todayStart.getDay() + 6) % 7;
+      const startOfThisWeek = new Date(todayStart);
+      startOfThisWeek.setDate(todayStart.getDate() - weekday); // this week's Monday 00:00
+      const startOfLastWeek = new Date(startOfThisWeek);
+      startOfLastWeek.setDate(startOfThisWeek.getDate() - 7);  // last week's Monday 00:00
+      const endOfLastWeek = startOfThisWeek;                   // last week's end boundary (exclusive)
+      start = startOfLastWeek;
+      end = endOfLastWeek;
+      break;
+    }
+    default: {
+      // "2w" → show all logs (no filtering)
+      start = null;
+      break;
+    }
+  }
+
+  const allLogs = JSON.parse(document.getElementById('logs-data').textContent);
+  const filtered = start
+    ? allLogs.filter(l => {
+        const t = new Date(l.created_at);
+        return t >= start && t < end; // end-exclusive
+      })
+    : allLogs;
+
+  if (!filtered.length) return;
+
+  const latest = filtered.reduce((a, b) =>
+    new Date(a.created_at) > new Date(b.created_at) ? a : b, filtered[0]);
+
+  if (map.hasLayer(logLayer)) map.removeLayer(logLayer);
+  logLayer = buildLayer(filtered, { highlightId: latest.id });
+  map.addLayer(logLayer);
+  highlightLatestMarker();
+  drawLogTrail(logLayer);
 }
 
 function bindUIEvents() {
@@ -360,6 +426,7 @@ function bindUIEvents() {
   toggle("toggle-quest", () => questLayer);
   document.getElementById("toggle-shapes").addEventListener("change", e => drawRegionShapes(e.target.checked));
   document.getElementById("refresh-map").addEventListener("click", refreshMapData);
+  document.getElementById("log-date-filter").addEventListener("change", filterLogsByDate);
 }
 
 // Main entry point

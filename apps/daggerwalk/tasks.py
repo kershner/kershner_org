@@ -579,10 +579,14 @@ def update_all_daggerwalk_caches():
     leaderboard_data = TwitchUserProfileSerializer(leaders_qs, many=True).data
     cache.set("daggerwalk_leaderboard", leaderboard_data, timeout=None)
 
-    # New map data
+    # Map data
     two_weeks_ago = timezone.now() - timedelta(weeks=2)
-    logs_qs = DaggerwalkLog.objects.filter(created_at__gte=two_weeks_ago).order_by('-id')
-    logs_json = DaggerwalkLogSerializer(logs_qs, many=True).data
+    logs_qs = DaggerwalkLog.objects.filter(created_at__gte=two_weeks_ago).order_by('id')
+    logs_list = list(logs_qs)
+    step = 4  # downsample factor
+    sampled = [logs_list[0]] + logs_list[1:-1:step] + [logs_list[-1]]
+
+    logs_json = DaggerwalkLogSerializer(sampled, many=True).data
     cache.set("daggerwalk_map_logs", logs_json, timeout=None)
 
     pois_qs = POI.objects.all()
