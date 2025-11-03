@@ -63,6 +63,20 @@ class DaggerwalkHomeView(APIView):
         })
     
 
+@api_view(["GET"])
+@permission_classes([AllowAny])
+@cache_control(no_cache=True, no_store=True, must_revalidate=True)
+def daggerwalk_refresh_data(request):
+    """Fetch latest map data without reloading the page."""
+    data = {
+        "logs": cache.get("daggerwalk_map_logs") or [],
+        "pois": cache.get("daggerwalk_map_pois") or [],
+        "quests": cache.get("daggerwalk_map_quest") or [],
+        "shapes": cache.get("daggerwalk_map_shape_data") or [],
+    }
+    return Response(data)
+    
+
 class DaggerwalkHomeDataView(APIView):
     """View to fetch fresh cache data for the Daggerwalk home view"""
     permission_classes = [AllowAny]

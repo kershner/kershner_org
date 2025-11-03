@@ -3,6 +3,7 @@ from django.urls import path
 
 daggerwalk_patterns = [
     path('', daggerwalk_views.DaggerwalkHomeView.as_view(), name='daggerwalk'),
+    path('refresh-data/', daggerwalk_views.daggerwalk_refresh_data, name='daggerwalk_refresh_data'),
     path('data/', daggerwalk_views.DaggerwalkHomeDataView.as_view(), name='daggerwalk_data'),
     path('logs/latest/', daggerwalk_views.latest_log, name='daggerwalk_latest_log'),
     path('log/', daggerwalk_views.create_daggerwalk_log, name='daggerwalk_log'),

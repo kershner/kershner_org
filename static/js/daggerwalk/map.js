@@ -2,6 +2,7 @@ const imageUrl = window.daggerwalkMap.imageUrl;
 const imageWidth = 1000, imageHeight = 500;
 const bounds = [[0, 0], [imageHeight, imageWidth]];
 const SCALAR = 0.15, BASE_EMOJI_SIZE = 14, DOT_COLOR = 'red';
+const refreshDataUrl = '/daggerwalk/refresh-data/';
 let map, poiLayer, logLayer, questLayer, regionShapeLayer;
 
 function setupMap() {
@@ -50,7 +51,7 @@ function setupMap() {
 
 function createClusterGroup() {
   const clusterGroup = L.markerClusterGroup({
-    maxClusterRadius: zoom => Math.min(200, 90 - zoom * 5),
+    maxClusterRadius: 180,
     disableClusteringAtZoom: 3,
     chunkedLoading: true,
     chunkInterval: 100,
@@ -302,6 +303,42 @@ function drawRegionShapes(show = true) {
   regionShapeLayer.addTo(map);
 }
 
+async function refreshMapData() {
+  const btn = document.getElementById("refresh-map");
+  btn.disabled = true;
+  btn.textContent = "Refreshing...";
+
+  try {
+    const res = await fetch(refreshDataUrl);
+    if (!res.ok) throw new Error("Failed to refresh map data");
+    const data = await res.json();
+
+    // Remove old layers
+    [logLayer, poiLayer, questLayer].forEach(layer => {
+      if (map.hasLayer(layer)) map.removeLayer(layer);
+    });
+
+    // Build new layers
+    const latest = data.logs.reduce((a, b) => new Date(a.created_at) > new Date(b.created_at) ? a : b, data.logs[0]);
+
+    poiLayer = buildLayer(data.pois, { isPOI: true });
+    logLayer = buildLayer(data.logs, { highlightId: latest.id });
+    questLayer = buildLayer(data.quests, { isQuest: true });
+
+    // Re-add layers and visuals
+    map.addLayer(logLayer);
+    map.addLayer(questLayer);
+    highlightLatestMarker();
+    drawLogTrail(logLayer);
+
+  } catch (err) {
+    console.error("Refresh failed:", err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Refresh";
+  }
+}
+
 function bindUIEvents() {
   const toggle = (id, layer) =>
     document.getElementById(id).addEventListener("change", e => {
@@ -321,6 +358,7 @@ function bindUIEvents() {
   toggle("toggle-logs", logLayer);
   toggle("toggle-quest", questLayer);
   document.getElementById("toggle-shapes").addEventListener("change", e => drawRegionShapes(e.target.checked));
+  document.getElementById("refresh-map").addEventListener("click", refreshMapData);
 }
 
 // Main entry point
