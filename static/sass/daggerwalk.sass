@@ -112,11 +112,12 @@ a
   color: var(--accent-color)
 
 .map-container
-  height: 55vw
+  height: 50vh
   overflow: hidden
   
   #filters
     display: flex
+    flex-wrap: wrap
     align-items: center
     gap: 0.5rem
     padding: 0.25rem 0
@@ -591,6 +592,10 @@ a
   :is(th, td):nth-child(3)
     width: 50%
 
+  td
+    white-space: normal
+    overflow-wrap: break-word
+
 #pager
   margin-top: 1rem
   
@@ -692,6 +697,7 @@ blockquote
 .footer
   padding: 0 1rem
   display: flex
+  flex-wrap: wrap
   gap: 0.25rem
   margin: 0.25rem 0
 
