@@ -39,7 +39,6 @@ function setupMap() {
 
   // Controls
   L.control.scale({ position: 'bottomleft', imperial: false }).addTo(map);
-  L.control.zoom({ position: 'bottomright' }).addTo(map);
 
   // Fullscreen control
   if (L.control.fullscreen) {
@@ -49,10 +48,10 @@ function setupMap() {
   return { map, imageLayer, imgBounds };
 }
 
-function createClusterGroup() {
+function createClusterGroup(isPOI = false) {
   const clusterGroup = L.markerClusterGroup({
     maxClusterRadius: 180,
-    disableClusteringAtZoom: 3,
+    disableClusteringAtZoom: isPOI ? 3 : 2,
     chunkedLoading: true,
     chunkInterval: 100,
     chunkDelay: 30,
@@ -240,7 +239,7 @@ function createMarker(lat, lng, icon, item) {
 }
 
 function buildLayer(data, { isPOI = false, isQuest = false, highlightId = null }) {
-  const layer = createClusterGroup();
+  const layer = createClusterGroup(isPOI);
   data.forEach(item => {
     let lat, lng, icon;
     if (isQuest) {
@@ -330,7 +329,6 @@ async function refreshMapData() {
     map.addLayer(questLayer);
     highlightLatestMarker();
     drawLogTrail(logLayer);
-
   } catch (err) {
     console.error("Refresh failed:", err);
   } finally {
@@ -340,23 +338,26 @@ async function refreshMapData() {
 }
 
 function bindUIEvents() {
-  const toggle = (id, layer) =>
-    document.getElementById(id).addEventListener("change", e => {
+  const toggle = (id, getLayer, isLog = false) => {
+    const checkbox = document.getElementById(id);
+    checkbox.addEventListener("change", e => {
+      const layer = getLayer(); // always fetch current layer
       if (e.target.checked) {
         map.addLayer(layer);
-        drawLogTrail(logLayer);
+        if (isLog) drawLogTrail(layer);
       } else {
-        map.removeLayer(layer);
-        if (map._logTrail) {
+        if (map.hasLayer(layer)) map.removeLayer(layer);
+        if (isLog && map._logTrail) {
           map.removeLayer(map._logTrail);
           map._logTrail = null;
         }
       }
     });
+  };
 
-  toggle("toggle-pois", poiLayer);
-  toggle("toggle-logs", logLayer);
-  toggle("toggle-quest", questLayer);
+  toggle("toggle-pois", () => poiLayer);
+  toggle("toggle-logs", () => logLayer, true);
+  toggle("toggle-quest", () => questLayer);
   document.getElementById("toggle-shapes").addEventListener("change", e => drawRegionShapes(e.target.checked));
   document.getElementById("refresh-map").addEventListener("click", refreshMapData);
 }
