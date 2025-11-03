@@ -113,18 +113,27 @@ a
 
 .map-container
   height: 40vw
-  margin-bottom: 1rem
+  overflow: hidden
   
   #filters
+    display: flex
+    align-items: center
+    gap: 0.5rem
+    padding: 0.25rem 0
+    padding-left: 0.5rem
     background: var(--background-color)
     color: var(--text-color)
 
     label
       top: 0
-      &:first-of-type
-        margin-left: 0.25rem
+      margin: 0
+      padding: 0
+
     input
       display: unset
+    button
+      all: unset
+      +button-style
     
   #map
     height: 100%
