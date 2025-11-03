@@ -583,7 +583,7 @@ def update_all_daggerwalk_caches():
     two_weeks_ago = timezone.now() - timedelta(weeks=2)
     logs_qs = DaggerwalkLog.objects.filter(created_at__gte=two_weeks_ago).order_by('id')
     logs_list = list(logs_qs)
-    step = 4  # downsample factor
+    step = 2  # downsample factor
     sampled = [logs_list[0]] + logs_list[1:-1:step] + [logs_list[-1]]
 
     logs_json = DaggerwalkLogSerializer(sampled, many=True).data
