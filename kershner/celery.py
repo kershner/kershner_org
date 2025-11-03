@@ -15,10 +15,6 @@ app.conf.worker_cancel_long_running_tasks_on_connection_loss = True  # Prevents 
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
 app.conf.beat_schedule = {
-    'update_all_daggerwalk_caches_5_minutes': {
-        'task': 'apps.daggerwalk.tasks.update_all_daggerwalk_caches',
-        'schedule': crontab(minute='*/5'),
-    },
     'daggerwalk-post-to-bluesky-afternoon': {
         'task': 'apps.daggerwalk.tasks.post_to_bluesky',
         'schedule': crontab(minute=0, hour=14),  # 2:00 PM Eastern

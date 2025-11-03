@@ -194,6 +194,8 @@ def create_daggerwalk_log(request):
         log_payload = DaggerwalkLogSerializer(log_entry).data
         current_quest_payload = QuestSerializer(active_quest).data if active_quest else None
 
+        update_all_daggerwalk_caches.delay()
+
         return Response({
             "status": "success",
             "message": "Log entry created",
