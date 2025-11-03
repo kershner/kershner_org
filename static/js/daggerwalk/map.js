@@ -312,6 +312,12 @@ async function refreshMapData() {
     if (!res.ok) throw new Error("Failed to refresh map data");
     const data = await res.json();
 
+    // Update JSON script contents so filters use fresh data
+    document.getElementById("logs-data").textContent = JSON.stringify(data.logs);
+    document.getElementById("poi-data").textContent = JSON.stringify(data.pois);
+    document.getElementById("quest-data").textContent = JSON.stringify(data.quests);
+    document.getElementById("shape-data").textContent = JSON.stringify(data.shapes);
+
     // Remove old layers
     [logLayer, poiLayer, questLayer].forEach(layer => {
       if (map.hasLayer(layer)) map.removeLayer(layer);
@@ -325,7 +331,7 @@ async function refreshMapData() {
     logLayer = buildLayer(data.logs, { highlightId: latest.id });
     questLayer = buildLayer(data.quests, { isQuest: true });
 
-    // Re-add only if toggled on
+    // Re-add according to toggles
     if (document.getElementById("toggle-logs").checked) map.addLayer(logLayer);
     if (document.getElementById("toggle-quest").checked) map.addLayer(questLayer);
     if (document.getElementById("toggle-pois").checked) map.addLayer(poiLayer);
@@ -333,13 +339,11 @@ async function refreshMapData() {
     highlightLatestMarker();
     drawLogTrail(logLayer);
 
-    // Reapply the current date filter after refresh
+    // Reapply filters and shapes
     filterLogsByDate();
-
-    // Reapply region shapes toggle
-    if (document.getElementById("toggle-shapes").checked)
+    if (document.getElementById("toggle-shapes").checked) {
       drawRegionShapes(true);
-
+    }
   } catch (err) {
     console.error("Refresh failed:", err);
   } finally {
