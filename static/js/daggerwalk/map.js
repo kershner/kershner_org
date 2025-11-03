@@ -10,7 +10,7 @@ function setupMap() {
 
   const map = L.map('map', {
     crs: L.CRS.Simple,
-    minZoom: -2,
+    minZoom: 0,
     maxZoom: 6,
     zoomControl: false,
     zoomAnimation: true,
@@ -43,18 +43,6 @@ function setupMap() {
   // Fullscreen control
   if (L.control.fullscreen) {
     L.control.fullscreen({ position: 'topleft' }).addTo(map);
-  }
-
-  // Mini-map
-  if (L.Control.MiniMap) {
-    const miniImageLayer = L.imageOverlay(imageUrl, imgBounds);
-    const miniMap = new L.Control.MiniMap(miniImageLayer, {
-      toggleDisplay: true,
-      minimized: true,
-      position: 'bottomleft',
-      zoomLevelFixed: 0,
-    });
-    miniMap.addTo(map);
   }
 
   return { map, imageLayer, imgBounds };
@@ -316,9 +304,19 @@ function drawRegionShapes(show = true) {
 
 function bindUIEvents() {
   const toggle = (id, layer) =>
-    document.getElementById(id).addEventListener("change", e =>
-      e.target.checked ? map.addLayer(layer) : map.removeLayer(layer)
-    );
+    document.getElementById(id).addEventListener("change", e => {
+      if (e.target.checked) {
+        map.addLayer(layer);
+        drawLogTrail(logLayer);
+      } else {
+        map.removeLayer(layer);
+        if (map._logTrail) {
+          map.removeLayer(map._logTrail);
+          map._logTrail = null;
+        }
+      }
+    });
+
   toggle("toggle-pois", poiLayer);
   toggle("toggle-logs", logLayer);
   toggle("toggle-quest", questLayer);
