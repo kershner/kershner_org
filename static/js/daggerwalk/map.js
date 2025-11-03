@@ -368,20 +368,18 @@ function filterLogsByDate() {
       start = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
       break;
     }
-    case "1w": {
-      // ISO week logic: Monday=0,...,Sunday=6
-      const weekday = (todayStart.getDay() + 6) % 7;
-      const startOfThisWeek = new Date(todayStart);
-      startOfThisWeek.setDate(todayStart.getDate() - weekday); // this week's Monday 00:00
-      const startOfLastWeek = new Date(startOfThisWeek);
-      startOfLastWeek.setDate(startOfThisWeek.getDate() - 7);  // last week's Monday 00:00
-      const endOfLastWeek = startOfThisWeek;                   // last week's end boundary (exclusive)
-      start = startOfLastWeek;
-      end = endOfLastWeek;
+    case "thisweek": {
+      start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
+      end = now; // up to now
+      break;
+    }
+    case "lastweek": {
+      end = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);   // 7 days ago
+      start = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000); // 14–7 days ago
       break;
     }
     default: {
-      // "2w" → show all logs (no filtering)
+      // "all" → show all logs (no filtering)
       start = null;
       break;
     }
@@ -470,4 +468,6 @@ function daggerwalkMapInit() {
   drawLogTrail(logLayer);
   map.on('zoomend moveend', () => drawLogTrail(logLayer));
   logLayer.on('layeradd layerremove', () => drawLogTrail(logLayer));
+
+  filterLogsByDate();
 }
