@@ -50,7 +50,7 @@ function setupMap() {
 
 function createClusterGroup(isPOI = false) {
   const clusterGroup = L.markerClusterGroup({
-    maxClusterRadius: 180,
+    maxClusterRadius: 90,
     disableClusteringAtZoom: isPOI ? 3 : 2,
     chunkedLoading: true,
     chunkInterval: 100,
