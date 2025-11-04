@@ -40,10 +40,12 @@ function setupMap() {
   // Controls
   L.control.scale({ position: 'bottomleft', imperial: false }).addTo(map);
 
-  // Fullscreen control
-  if (L.control.fullscreen) {
-    L.control.fullscreen({ position: 'bottomleft' }).addTo(map);
-  }
+  // Fullscreen map
+  document.getElementById('fullscreen-map').onclick = () => {
+    const el = map.getContainer();
+    if (!document.fullscreenElement) el.requestFullscreen();
+    else document.exitFullscreen();
+  };
 
   return { map, imageLayer, imgBounds };
 }
@@ -383,7 +385,7 @@ function drawRegionShapes(show = true) {
 async function refreshMapData() {
   const btn = document.getElementById("refresh-map");
   btn.disabled = true;
-  btn.textContent = "Refreshing...";
+  btn.textContent = "...";
 
   try {
     const res = await fetch(refreshDataUrl);
@@ -426,7 +428,7 @@ async function refreshMapData() {
     console.error("Refresh failed:", err);
   } finally {
     btn.disabled = false;
-    btn.textContent = "Refresh";
+    btn.textContent = "↻";
   }
 }
 
