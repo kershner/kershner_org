@@ -116,6 +116,14 @@
 
                 daggerwalkMapInit();
             })
+            .then(() => {
+                const params = new URLSearchParams(window.location.search);
+                const x = parseFloat(params.get("map_focus_x"));
+                const y = parseFloat(params.get("map_focus_y"));
+                if (!isNaN(x) && !isNaN(y) && typeof focusMapOn === "function") {
+                    focusMapOn(x, y);
+                }
+            })
             .catch(err => console.error("Failed to load daggerwalk data", err));
     </script>   
 </body>

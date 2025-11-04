@@ -502,6 +502,13 @@ function bindUIEvents() {
   document.getElementById("log-date-filter").addEventListener("change", filterLogsByDate);
 }
 
+function focusMapOn(x, y, zoom = 3) {
+  if (!map) return;
+  const lat = imageHeight - y;
+  const lng = x;
+  map.setView([lat, lng], zoom, { animate: true });
+}
+
 // Main entry point
 function daggerwalkMapInit() {
   // assign destructured return so global "map" is defined

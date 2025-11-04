@@ -328,10 +328,7 @@ def quest_redirect_view(request):
 
     poi = q.poi
     params = {
-        "region": poi.region.name,
-        "x": poi.map_pixel_x,
-        "y": poi.map_pixel_y,
-        "emoji": poi.emoji,
-        "poi": poi.name,
+        "map_focus_x": poi.map_pixel_x,
+        "map_focus_y": poi.map_pixel_y,
     }
     return redirect(f"{base}?{urlencode({k: v for k, v in params.items() if v is not None})}")
