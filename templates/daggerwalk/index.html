@@ -100,8 +100,6 @@
                 window.CURRENT_QUEST = {{ current_quest_json|safe }};
 
                 window.daggerwalkData = {
-                    provinceShapes: d.map_data?.provinceShapes || {},
-                    regionMap: d.map_data?.regionMap || {},
                     regionData: d.region_data || d.map_data?.regionData || [],
                     latestLog: d.latest_log_data || {}
                 };

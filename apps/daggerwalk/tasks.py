@@ -1,11 +1,10 @@
-from apps.daggerwalk.serializers import DaggerwalkLogSerializer, POISerializer, QuestSerializer, TwitchUserProfileSerializer
-from apps.daggerwalk.utils import calculate_daggerwalk_stats, get_map_data, get_latest_log_data
+from apps.daggerwalk.serializers import  POISerializer, QuestSerializer, TwitchUserProfileSerializer
 from apps.daggerwalk.models import POI, DaggerwalkLog, ProvinceShape, Quest, Region, TwitchUserProfile
-from django.db.models import Sum, Count, IntegerField, Max, Q, Max
+from apps.daggerwalk.utils import calculate_daggerwalk_stats, get_latest_log_data
+from django.db.models import Sum, Count, IntegerField, Max, Max
 from django.db.models.functions import Coalesce
 from playwright.sync_api import sync_playwright
 from datetime import datetime, timedelta
-from django.utils.text import slugify
 from django.core.cache import cache
 from django.utils import timezone
 from django.conf import settings
@@ -511,7 +510,7 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
 
 @shared_task
 def update_all_daggerwalk_caches():
-    # Global datasets
+    # 1. Region data
     region_data = (
         DaggerwalkLog.objects
         .exclude(region="Ocean")
@@ -526,21 +525,20 @@ def update_all_daggerwalk_caches():
     )
     cache.set("daggerwalk_region_data", list(region_data), timeout=None)
 
-    map_data = get_map_data()
-    cache.set("daggerwalk_map_data", map_data, timeout=None)
-
+    # 2. Latest log
     latest_log_data = get_latest_log_data()
     cache.set("daggerwalk_latest_log_data", latest_log_data, timeout=None)
 
-    # Stats slices
+    # 3. Stats slices
+    all_logs = list(DaggerwalkLog.objects.only("created_at", "region", "weather", "current_song"))
     for keyword in ['all', 'today', 'yesterday', 'last_7_days', 'this_month']:
         try:
-            stats = calculate_daggerwalk_stats(keyword)
+            stats = calculate_daggerwalk_stats(keyword, logs=all_logs)
             cache.set(f"daggerwalk_stats:{keyword}", stats, timeout=None)
         except Exception:
-            pass  # optional: log
+            pass
 
-    # Current quest (single in_progress)
+    # 4. Current and previous quests
     current_quest = (
         Quest.objects
         .filter(status="in_progress")
@@ -558,37 +556,49 @@ def update_all_daggerwalk_caches():
     )
     cache.set("daggerwalk_previous_quests", previous_quests, timeout=None)
 
-    # Leaderboard
+    # 5. Leaderboard
     total_leaderboard_rows = 100
     excluded_usernames = ["billcrystals", "daggerwalk", "daggerwalk_bot"]
     leaders_qs = (
         TwitchUserProfile.objects
         .annotate(
-            total_xp_value=Coalesce(
-                Sum("completed_quests__xp"),
-                0,
-                output_field=IntegerField()
-            ),
+            total_xp_value=Coalesce(Sum("completed_quests__xp"), 0, output_field=IntegerField()),
             completed_quests_count=Count("completed_quests", distinct=True),
         )
         .filter(total_xp_value__gt=0)
         .exclude(twitch_username__in=excluded_usernames)
         .order_by("-total_xp_value", "twitch_username")[:total_leaderboard_rows]
     )
-
     leaderboard_data = TwitchUserProfileSerializer(leaders_qs, many=True).data
     cache.set("daggerwalk_leaderboard", leaderboard_data, timeout=None)
 
-    # Map data
+    # 6. Map logs (downsample + include related fields)
     two_weeks_ago = timezone.now() - timedelta(weeks=2)
-    logs_qs = DaggerwalkLog.objects.filter(created_at__gte=two_weeks_ago).order_by('id')
+    logs_qs = (
+        DaggerwalkLog.objects
+        .filter(created_at__gte=two_weeks_ago)
+        .select_related("region_fk", "poi")
+        .values(
+            "id", "map_pixel_x", "map_pixel_y",
+            "region", "location", "weather", "season", "current_song", "created_at",
+            "date", "created_at",
+            "region_fk__name", "region_fk__province", "region_fk__climate", "region_fk__emoji",
+            "poi__name", "poi__emoji", "poi__type"
+        )
+        .order_by("id")
+    )
+
     logs_list = list(logs_qs)
-    step = 3  # downsample factor
-    sampled = [logs_list[0]] + logs_list[1:-1:step] + [logs_list[-1]]
+    if len(logs_list) > 2:
+        step = 3
+        sampled = [logs_list[0]] + logs_list[1:-1:step] + [logs_list[-1]]
+    else:
+        sampled = logs_list
 
-    logs_json = DaggerwalkLogSerializer(sampled, many=True).data
-    cache.set("daggerwalk_map_logs", logs_json, timeout=None)
+    cache.set("daggerwalk_map_logs", sampled, timeout=None)
 
+
+    # 7. POIs + quests + shapes
     pois_qs = POI.objects.all()
     poi_json = POISerializer(pois_qs, many=True).data
     cache.set("daggerwalk_map_pois", poi_json, timeout=None)

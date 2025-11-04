@@ -215,13 +215,20 @@ function popupHtml(item) {
   };
 
   const isQuest = !!item.quest_name;
-  const isLog = !!item.player_x && !isQuest;
+  const isLog = !!item.date;
   const source = item.poi || item;
 
-  // Only use source.region if it's an object, not a string
+  // Region: POIs may have nested region; logs have flattened region_fk__*
   const region =
     (typeof source.region === "object" && source.region) ||
-    item.region_fk ||
+    (item.region_fk__name
+      ? {
+          name: item.region_fk__name,
+          province: item.region_fk__province,
+          climate: item.region_fk__climate,
+          emoji: item.region_fk__emoji
+        }
+      : {}) ||
     {};
 
   const regionEmoji = region.emoji || "";
@@ -230,8 +237,8 @@ function popupHtml(item) {
   const climate = region.climate || "";
 
   // Title & subtitle
-  title.textContent = `${source.emoji || regionEmoji || "📍"} ${
-    source.name || item.quest_name || item.location || "(Unknown)"
+  title.textContent = `${item.poi__emoji || source.emoji || regionEmoji || "📍"} ${
+    item.poi__name || source.name || item.quest_name || item.location || "(Unknown)"
   }`;
   subtitle.textContent = [regionName, province].filter(Boolean).join(", ");
 
@@ -262,7 +269,7 @@ function popupHtml(item) {
       <hr class="popup-divider">
       <div><b>Date:</b> ${item.date}</div>
       <div><b>Recorded:</b> ${new Date(item.created_at).toLocaleString("en-US")}</div>
-      <div class="popup-coords"><b>Coords:</b> X${item.player_x}, Y${item.player_y}, Z${item.player_z}</div>
+      <div class="popup-coords"><b>Coords:</b> X: ${item.map_pixel_x ?? "?"}, Y: ${item.map_pixel_y ?? "?"}</div>
     `);
   } else {
     add(

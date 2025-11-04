@@ -85,7 +85,6 @@ class DaggerwalkHomeDataView(APIView):
     def get(self, request):
         data = {
             "region_data": cache.get("daggerwalk_region_data") or [],
-            "map_data": cache.get("daggerwalk_map_data") or {},
             "latest_log_data": cache.get("daggerwalk_latest_log_data") or {}
         }
         return Response(data)
