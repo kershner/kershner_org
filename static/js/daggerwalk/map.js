@@ -161,81 +161,152 @@ function drawLogTrail(clusterGroup) {
 }
 
 // Marker icon styles
-function makeIcon({ emoji, scale = 1, dot = false, quest = false, highlight = false }) {
+function makeIcon({ emoji, dot = false, quest = false, highlight = false }) {
+  const baseClass = "map-marker";
+
   if (dot)
     return L.divIcon({
-      html: `<div></div>`,
-      className: highlight ? "log-marker latest-log" : "log-marker",
-      iconSize: [6, 6],
-      iconAnchor: [3, 3],
+      html: `<div>${emoji || ""}</div>`,
+      className: `${baseClass} log-marker${highlight ? " latest-log" : ""}`,
+      iconSize: [8, 8],
+      iconAnchor: [4, 4]
     });
+
   if (quest)
     return L.divIcon({
-      html: `<span>${emoji || "⭐"}</span>`,
-      className: "quest-marker",
-      iconSize: [22 * scale, 22 * scale],
-      iconAnchor: [11 * scale, 11 * scale],
+      html: `<div>${emoji || "⭐"}</div>`,
+      className: `${baseClass} quest-marker`,
+      iconSize: [8, 8],
+      iconAnchor: [4, 4]
     });
+
   return L.divIcon({
-    html: `<span style="font-size:${BASE_EMOJI_SIZE * scale}px">${emoji || "📍"}</span>`,
-    className: "poi-marker",
-    iconSize: [20 * scale, 20 * scale],
-    iconAnchor: [10 * scale, 10 * scale],
+    html: `<div>${emoji || "📍"}</div>`,
+    className: `${baseClass} poi-marker`,
+    iconSize: [8, 8],
+    iconAnchor: [4, 4]
   });
 }
 
 // Hover popup builder for logs, quests, and POIs
 function popupHtml(item) {
-  const questData = item.poi || null;
+  const tpl = document.getElementById("popup-template");
+  const el = tpl.content.cloneNode(true);
+  const title = el.querySelector(".popup-title");
+  const subtitle = el.querySelector(".popup-subtitle");
+  const body = el.querySelector(".popup-body");
+
+  const WEATHER_EMOJIS = {
+    Sunny: "☀️",
+    Clear: "🌙",
+    Overcast: "🌥️",
+    Cloudy: "☁️",
+    Foggy: "🌫️",
+    Rainy: "🌧️",
+    Snowy: "🌨️",
+    Thunderstorm: "⛈️"
+  };
+
+  const SEASON_EMOJIS = {
+    Winter: "☃️",
+    Spring: "🌸",
+    Summer: "🌻",
+    Autumn: "🍂"
+  };
+
   const isQuest = !!item.quest_name;
   const isLog = !!item.player_x && !isQuest;
-  const source = questData || item;
-  const emoji = source.emoji || source.region?.emoji || "📍";
-  const name = source.name || item.quest_name || item.location || "(Unknown)";
-  const region = source.region?.name || source.region_fk?.name || "";
-  const province = source.region?.province || source.region_fk?.province || "";
-  let html = `<div style="min-width:180px;font-family:sans-serif">
-                <div style="font-size:16px;font-weight:bold;margin-bottom:4px">${emoji} ${name}</div>
-                <div style="color:#666">${region}${province ? `, ${province}` : ""}</div>`;
+  const source = item.poi || item;
+
+  // Only use source.region if it's an object, not a string
+  const region =
+    (typeof source.region === "object" && source.region) ||
+    item.region_fk ||
+    {};
+
+  const regionEmoji = region.emoji || "";
+  const regionName = region.name || "";
+  const province = region.province || "";
+  const climate = region.climate || "";
+
+  // Title & subtitle
+  title.textContent = `${source.emoji || regionEmoji || "📍"} ${
+    source.name || item.quest_name || item.location || "(Unknown)"
+  }`;
+  subtitle.textContent = [regionName, province].filter(Boolean).join(", ");
+
+  const add = html => (body.innerHTML += html);
+
   if (isQuest) {
-    html += `<div style="margin-top:6px;font-style:italic">${item.description || ""}</div>`;
-    if (item.quest_giver_name) html += `<div><b>Quest Giver:</b> ${item.quest_giver_name}</div>`;
-    if (item.xp) html += `<div><b>XP:</b> ${item.xp}</div>`;
-    if (item.quest_giver_img_url)
-      html += `<img src="${item.quest_giver_img_url}" width="64" height="64"
-                style="border-radius:4px;margin-top:6px">`;
+    add(
+      [
+        item.description && `<div class="popup-description">${item.description}</div>`,
+        item.quest_giver_name && `<div><b>Quest Giver:</b> ${item.quest_giver_name}</div>`,
+        item.xp && `<div><b>XP:</b> ${item.xp}</div>`,
+        item.quest_giver_img_url &&
+          `<img src="${item.quest_giver_img_url}" width="64" height="64" class="popup-quest-img">`,
+      ]
+        .filter(Boolean)
+        .join("")
+    );
   } else if (isLog) {
-    const weather = item.weather || "";
-    const song = item.current_song ? item.current_song.replace("song_", "") : "";
-    html += `<div style="margin-top:6px"><b>Weather:</b> ${weather || "—"}</div>
-             <div><b>Season:</b> ${item.season || "—"}</div>
-             ${song ? `<div><b>Song:</b> 🎵 ${song}</div>` : ""}
-             <hr style="margin:6px 0;border:none;border-top:1px solid #ccc">
-             <div><b>Date:</b> ${item.date}</div>
-             <div><b>Recorded:</b> ${new Date(item.created_at).toLocaleString("en-US")}</div>
-             <div style="margin-top:4px;font-size:12px;color:#666">
-             <b>Coords:</b> X${item.player_x}, Y${item.player_y}, Z${item.player_z}</div>`;
+    const weatherEmoji = WEATHER_EMOJIS[item.weather] || "";
+    const seasonEmoji = SEASON_EMOJIS[item.season] || "";
+    const song = item.current_song?.replace("song_", "");
+
+    add(`
+      <div><b>Weather:</b> ${weatherEmoji} ${item.weather || "—"}</div>
+      <div><b>Season:</b> ${seasonEmoji} ${item.season || "—"}</div>
+      <div><b>Climate:</b> ${regionEmoji} ${climate || "—"}</div>
+      ${song ? `<div><b>Song:</b> 🎵 ${song}</div>` : ""}
+      <hr class="popup-divider">
+      <div><b>Date:</b> ${item.date}</div>
+      <div><b>Recorded:</b> ${new Date(item.created_at).toLocaleString("en-US")}</div>
+      <div class="popup-coords"><b>Coords:</b> X${item.player_x}, Y${item.player_y}, Z${item.player_z}</div>
+    `);
   } else {
-    if (source.type) html += `<div style="margin-top:6px"><i>${source.type}</i></div>`;
-    if (source.description) html += `<div>${source.description}</div>`;
-    if (source.discovered)
-      html += `<div style="font-size:12px;color:#666">
-               Discovered: ${new Date(source.discovered).toLocaleDateString("en-US")}</div>`;
+    add(
+      [
+        source.description && `<div>${source.description}</div>`,
+        source.discovered &&
+          `<div class="popup-discovered">Discovered: ${new Date(source.discovered).toLocaleDateString("en-US")}</div>`,
+      ]
+        .filter(Boolean)
+        .join("")
+    );
   }
-  return html + "</div>";
+
+  return el.firstElementChild.outerHTML;
 }
 
 // Marker creation
 function createMarker(lat, lng, icon, item) {
   const marker = L.marker([lat, lng], { icon });
-
-  // attach the full data object for cluster tooltips later
   marker.options.item = item;
 
-  return marker
-    .bindPopup(popupHtml(item))
-    .on("mouseover", e => e.target.openPopup())
-    .on("mouseout", e => e.target.closePopup());
+  // Configure popup — stays open on touch until user closes it
+  marker.bindPopup(popupHtml(item), {
+    autoPan: false,
+    closeOnClick: true,  // clicking another popup closes the previous one
+    closeButton: true,
+  });
+
+  // Detect touch vs. mouse devices
+  const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+  if (isTouch) {
+    // On touch devices: tap to open (handled by Leaflet)
+    marker.on("click", e => {
+      e.originalEvent.stopPropagation();
+      e.target.openPopup();
+    });
+  } else {
+    // On mouse devices: hover only
+    marker.on("mouseover", e => e.target.openPopup());
+    marker.on("mouseout", e => e.target.closePopup());
+  }
+
+  return marker;
 }
 
 function buildLayer(data, { isPOI = false, isQuest = false, highlightId = null }) {
@@ -251,7 +322,7 @@ function buildLayer(data, { isPOI = false, isQuest = false, highlightId = null }
       lat = imageHeight - item.map_pixel_y;
       lng = item.map_pixel_x;
       const highlight = highlightId && item.id === highlightId;
-      icon = isPOI ? makeIcon({ emoji: item.emoji }) : makeIcon({ dot: true, highlight });
+      icon = isPOI ? makeIcon({ emoji: item.emoji }) : makeIcon({ emoji: item.emoji, dot: true, highlight });
     }
     const marker = createMarker(lat, lng, icon, item);
     if (isPOI) marker.options.isPOI = true;

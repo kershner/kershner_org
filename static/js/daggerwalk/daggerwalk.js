@@ -448,29 +448,12 @@ daggerwalk.init = () => {
 
     twitchTab.addEventListener('change', (e) => {
       if (e.target.checked) {
-        daggerwalk.initTwitch()
-        window.mapViewer.clearLogMarkers()
-        window.mapViewer.stopLogPolling()
+        daggerwalk.initTwitch();
         history.pushState({}, '', window.location.pathname)
       }
     })
   }
   
-  mapTab.addEventListener('change', () => {
-    let region = daggerwalk.latestLog?.region;
-    if (!region) {
-      return;
-    }
-
-    if (region === 'Ocean') {
-      region = 'world';
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    urlParams.set('region', region);
-    history.pushState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
-  });
-
   daggerwalk.labelSelectActivation();
   daggerwalk.handleAboutTabParameter();
   daggerwalk.initAboutTabs();

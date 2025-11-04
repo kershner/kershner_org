@@ -29,16 +29,16 @@ $mobile-breakpoint: 768px
     color: var(--background-color)
 
 // Mixin for pulse animation
-@mixin pulse-animation($scale: 1.5, $opacity: 1.0, $duration: 1.5s)
+@mixin pulse-animation($scale: 1.5, $duration: 1.5s)
   animation: pulse $duration infinite ease-in-out
 
   @keyframes pulse
     0%
-      transform: translate(-50%, -50%) scale(1)
+      transform: scale(1)
     50%
-      transform: translate(-50%, -50%) scale($scale)
+      transform: scale($scale)
     100%
-      transform: translate(-50%, -50%) scale(1)
+      transform: scale(1)
 
 button
   cursor: pointer
@@ -141,7 +141,6 @@ a
     margin: 0
     background: var(--background-color)
 
-  /* Base cluster */
   .custom-cluster
     div
       width: 36px
@@ -152,7 +151,6 @@ a
       justify-content: center
       font-weight: bold
 
-  /* POI and Log cluster types */
   .poi-cluster
     .cluster-circle
       color: #fff
@@ -167,7 +165,6 @@ a
       .cluster-icon
         filter: none
 
-  /* Pin + count in POI clusters */
   .cluster-emoji
     font-size: 14px
     line-height: 1
@@ -175,25 +172,36 @@ a
   .cluster-count
     font-size: 12px
 
-  /* Highlight for latest cluster or marker */
-  .log-marker
+  .map-marker
     div
-      width: 6px
-      height: 6px
+      display: flex
+      align-items: center
+      justify-content: center
+      font-size: 0.9rem
       background: var(--accent-color)
       border-radius: 50%
+      width: 100%
+      height: 100%
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8), 0 0 2px rgba(255,255,255,0.4)
+      transition: transform 0.2s ease, box-shadow 0.2s ease
 
-    &.latest-log
+    &:hover div
+      transform: scale(3)
+      box-shadow: 0 3px 6px rgba(0,0,0,0.7)
+
+    &.poi-marker
       div
-        width: 12px
-        height: 12px
-        @include pulse-animation(2, 1, 1.8s)
-    
-  .quest-marker
-  .poi-marker
-  .latest-log
-    div
-      @include pulse-animation(1.8, 1, 1.8s)
+        background: unset
+        text-shadow: unset
+        border: unset
+
+    &.quest-marker
+      div
+        background: unset
+
+    &.log-marker
+      div
+        border: unset
 
   /* Province name labels */
   .region-label
@@ -208,6 +216,44 @@ a
   .leaflet-marker-pane,
   .leaflet-shadow-pane
     z-index: 600
+
+  // Map marker popup
+  .popup-content
+    min-width: 180px
+    font-family: $primary-font-family
+
+    .popup-title
+      font-size: 16px
+      font-weight: bold
+      margin-bottom: 4px
+
+    .popup-subtitle
+      color: #666
+      margin-bottom: 6px
+      font-style: italic
+
+    .popup-description
+      margin: 6px 0
+
+    .popup-divider
+      margin: 6px 0
+      border: none
+
+    .popup-coords
+      margin-top: 4px
+      font-size: 12px
+      color: #666
+
+    .popup-discovered
+      font-size: 12px
+      color: #666
+      margin-top: 4px
+
+    .popup-quest-img
+      border-radius: 4px
+      margin-top: 6px
+      width: 64px
+      height: 64px
 
 .hidden 
   display: none !important
@@ -887,3 +933,10 @@ $quests-text-color: darken(#333333, 10%)
 
     .quest-map-link
       display: none
+
+// Pulse latest log marker
+.log-marker.latest-log div
+  @include pulse-animation(3, 1.5s)
+.latest-log
+  .cluster-icon
+    transform: scale(1.5)
