@@ -18,25 +18,25 @@
 {% endblock %}
 
 <div class="map-container">
-  {# Map filter controls #}
-  <div id="filters">
-    <label><input type="checkbox" id="toggle-logs" checked> Logs</label>
-    <select id="log-date-filter">
-      <option value="thisweek" selected>This Week</option>
-      <option value="lastweek">Last Week</option>
-      <option value="today">Today</option>
-      <option value="yesterday">Yesterday</option>
-      <option value="all">Last 2 Weeks</option>
-    </select>
-    <label><input type="checkbox" id="toggle-quest" checked> Quest</label>
-    <label><input type="checkbox" id="toggle-pois"> POIs</label>
-    <label><input type="checkbox" id="toggle-shapes"> Labels</label>
-    
-    <button id="refresh-map">Refresh</button>
-  </div>
-
   {# Leaflet map container #}
-  <div id="map"></div>
+  <div id="map">
+    {# Map filter controls #}
+    <div id="filters">
+      <label><input type="checkbox" id="toggle-logs" checked> Logs</label>
+      <select id="log-date-filter">
+        <option value="thisweek" selected>This Week</option>
+        <option value="lastweek">Last Week</option>
+        <option value="today">Today</option>
+        <option value="yesterday">Yesterday</option>
+        <option value="all">Last 2 Weeks</option>
+      </select>
+      <label><input type="checkbox" id="toggle-quest" checked> Quest</label>
+      <label><input type="checkbox" id="toggle-pois"> POIs</label>
+      <label><input type="checkbox" id="toggle-shapes"> Labels</label>
+      
+      <button id="refresh-map">Refresh</button>
+    </div>
+  </div>
 </div>
 
 {# Data elements used by JS #}

@@ -116,14 +116,16 @@ a
   overflow: hidden
   
   #filters
-    display: flex
+    position: relative
+    z-index: 999
+    display: inline-flex
     flex-wrap: wrap
     align-items: center
     gap: 0.5rem
-    padding: 0.25rem 0
-    padding-left: 0.5rem
+    padding: 0.25rem 0.5rem
     background: var(--background-color)
     color: var(--text-color)
+    border-radius: 0 0 $border-radius 0
 
     label
       top: 0

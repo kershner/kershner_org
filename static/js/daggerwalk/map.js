@@ -42,7 +42,7 @@ function setupMap() {
 
   // Fullscreen control
   if (L.control.fullscreen) {
-    L.control.fullscreen({ position: 'topleft' }).addTo(map);
+    L.control.fullscreen({ position: 'bottomleft' }).addTo(map);
   }
 
   return { map, imageLayer, imgBounds };
