@@ -590,12 +590,15 @@ def update_all_daggerwalk_caches():
 
     logs_list = list(logs_qs)
     if len(logs_list) > 2:
+        latest_logs = logs_list[-5:]  # always include most recent 5
+        remaining_logs = logs_list[:-5]
         step = 3
-        sampled = [logs_list[0]] + logs_list[1:-1:step] + [logs_list[-1]]
+        sampled = [remaining_logs[0]] + remaining_logs[1:-1:step] + [remaining_logs[-1]] if remaining_logs else []
+        combined = sampled + latest_logs
     else:
-        sampled = logs_list
+        combined = logs_list
 
-    cache.set("daggerwalk_map_logs", sampled, timeout=None)
+    cache.set("daggerwalk_map_logs", combined, timeout=None)
 
 
     # 7. POIs + quests + shapes
