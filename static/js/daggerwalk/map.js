@@ -355,19 +355,50 @@ function projectShapePoint(x, y) {
   return [imageHeight - py, px];
 }
 
+
+const REGION_LABEL_OFFSETS = {
+  "Shalgora": { x: 20, y: 20},
+  "Daenia": { x: 10, y: 0},
+  "Phrygias": { x: 0, y: 15},
+  "Alcaire": { x: -25, y: 0},
+  "Wrothgarian Mountains": { x: 25, y: 50},
+  "Dragontail Mountains": { x: -60, y: -10},
+  "Wayrest": { x: -20, y: 0},
+  "Gavaudon": { x: -30, y: 20},
+  "Mournoth": { x: 10, y: 20},
+  "Cybiades": { x: 0, y: 30},
+  "Myrkwasa": { x: 20, y: 0},
+  "Pothago": { x: 5, y: 10},
+  "Kairou": { x: 15, y: 15},
+  "Antiphyllos": { x: 20, y: 10},
+  "Alik'r Desert": { x: -100, y: -40},
+};
 function drawRegionShapes(show = true) {
-  const shapes = window.shapes || []
+  const shapes = window.shapes || [];
   if (regionShapeLayer) map.removeLayer(regionShapeLayer);
   if (!show) return;
+
   regionShapeLayer = L.layerGroup();
+
   shapes.forEach(shape => {
     const points = shape.coordinates.map(([x, y]) => projectShapePoint(x, y));
     const poly = L.polygon(points, { opacity: 0, fillOpacity: 0 }).addTo(regionShapeLayer);
     const center = poly.getBounds().getCenter();
-    L.marker(center, {
-      icon: L.divIcon({ className: 'region-label', html: shape.name, iconSize: [100, 20] })
+
+    // Apply offset if defined
+    const offset = REGION_LABEL_OFFSETS[shape.name] || { x: 0, y: 0 };
+    const offsetLatLng = L.latLng(center.lat + offset.y, center.lng + offset.x);
+
+    // Create label marker
+    L.marker(offsetLatLng, {
+      icon: L.divIcon({
+        className: 'region-label',
+        html: shape.name,
+        iconSize: [100, 20]
+      })
     }).addTo(regionShapeLayer);
   });
+
   regionShapeLayer.addTo(map);
 }
 
