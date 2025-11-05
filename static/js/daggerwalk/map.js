@@ -592,7 +592,8 @@ function focusMapOn(x, y, zoom = 3) {
 function daggerwalkMapInit() {
   // assign destructured return so global "map" is defined
   const { map: leafletMap } = setupMap();
-  map = leafletMap; // make it global for other functions
+  map = leafletMap;
+  window.daggerwalkMap = map;
 
   const pois = JSON.parse(document.getElementById('poi-data').textContent);
   const logs = JSON.parse(document.getElementById('logs-data').textContent);
