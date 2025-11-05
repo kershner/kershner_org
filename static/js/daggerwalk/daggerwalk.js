@@ -271,25 +271,28 @@ daggerwalk.enhanceTable = function(tableSelector, opts = {}) {
 
   // Minimal sort function
   const sortTable = (colIdx, asc) => {
-    // Update headers
     headers.forEach((h, i) => {
       h.innerHTML = h.innerHTML.replace(/[↑↓]\s*$/, '');
       if (i === colIdx) h.innerHTML += asc ? ' ↑' : ' ↓';
     });
-    
-    // Sort rows
-    [...tbody.rows]
-      .sort((a, b) => {
-        let valA = a.cells[colIdx].textContent.trim();
-        let valB = b.cells[colIdx].textContent.trim();
-        if (numericCols.has(colIdx)) {
-          valA = +valA.replace(/[^0-9.\-]/g, '');
-          valB = +valB.replace(/[^0-9.\-]/g, '');
-          return asc ? valA - valB : valB - valA;
-        }
+
+    const rows = Array.from(tbody.rows);
+    const isNumeric = numericCols.has(colIdx) || rows.every(r => !isNaN(parseFloat(r.cells[colIdx].textContent)));
+
+    rows.sort((a, b) => {
+      let valA = a.cells[colIdx].textContent.trim();
+      let valB = b.cells[colIdx].textContent.trim();
+
+      if (isNumeric) {
+        const numA = parseFloat(valA.replace(/[^\d.\-]/g, '')) || 0;
+        const numB = parseFloat(valB.replace(/[^\d.\-]/g, '')) || 0;
+        return asc ? numA - numB : numB - numA;
+      } else {
         return asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
-      })
-      .forEach(tr => tbody.appendChild(tr));
+      }
+    });
+
+    rows.forEach(tr => tbody.appendChild(tr));
   };
 
   // Add click handlers
@@ -327,6 +330,7 @@ daggerwalk.initTables = function() {
   // Commands table
   daggerwalk.enhanceTable('.commands-table');
   daggerwalk.enhanceTable('.songs-table');
+  daggerwalk.enhanceTable('#leaderboard');
 }
 
 daggerwalk.initDaggerwalkStats = function() {
@@ -344,7 +348,7 @@ daggerwalk.initDaggerwalkStats = function() {
       statsContainer.innerHTML = data.html;
 
       document.querySelectorAll('.stats-data-wrapper table').forEach(table => {
-        daggerwalk.enhanceTable(table);
+        daggerwalk.enhanceTable(table, {'filter': false});
       });
 
       attachEvents();
