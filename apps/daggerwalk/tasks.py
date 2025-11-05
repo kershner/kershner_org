@@ -398,14 +398,65 @@ def post_to_bluesky():
 
 def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data):
     """
-    Captures two map screenshots and posts them as a reply to the specified video post.
+    Captures screenshots of the map and quest elements and posts them as a reply to the specified video post.
     """
-
     screenshots = {
-        "region": "region_map.png",
         "world": "world_map.png",
         "quest": "quest.png"
     }
+
+    def prepare_leaflet_map(page, x=500, y=250, zoom_level=4, delay=1.0):
+        """Click fullscreen and manually control zoom/pan."""
+        logger.info("Waiting for Leaflet map to initialize...")
+        page.wait_for_function(
+            "!!(window.daggerwalkMap && window.daggerwalkMap.setView)",
+            timeout=45000
+        )
+
+        logger.info("Clicking fullscreen button...")
+        try:
+            page.click("#fullscreen-map", timeout=5000)
+            time.sleep(1)
+        except Exception:
+            logger.warning("Fullscreen button not found or failed to click.")
+
+        logger.info("Setting log-date-filter to 'thisweek'...")
+        page.evaluate("""
+            const select = document.getElementById('log-date-filter');
+            if (select) {
+                select.value = 'thisweek';
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        """)
+        time.sleep(1)
+        
+        logger.info("Clicking labels button...")
+        try:
+            page.click("#toggle-shapes", timeout=5000)
+            time.sleep(1)
+        except Exception:
+            logger.warning("Labels button not found or failed to click.")
+
+        logger.info(f"Setting view to x={x}, y={y}, zoom={zoom_level}")
+        page.evaluate(f"""
+            (() => {{
+                const map = window.daggerwalkMap;
+                if (!map) return;
+                map.setView(L.latLng({y}, {x}), {zoom_level}, {{ animate: false }});
+                map.invalidateSize();
+                map.fire('zoomend');
+                map.fire('moveend');
+            }})();
+        """)
+
+        time.sleep(delay)
+
+        logger.info(f"Hiding UI elements...")
+        page.evaluate("""
+            document.querySelectorAll(
+                '.leaflet-control, .stats-panel, .current-status, .header, .footer, .ui-toolbar, #filters'
+            ).forEach(el => el.style.display = 'none');
+        """)
 
     try:
         # Step 1: Take screenshots
@@ -414,32 +465,31 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
                 headless=True,
                 executable_path=settings.PLAYWRIGHT_CHROMIUM_PATH
             )
-            page = browser.new_page()
+            page = browser.new_page(
+                viewport={"width": 1920, "height": 1080},
+                device_scale_factor=2
+            )
+
+            logger.info(f"Setting window.DISABLE_CLUSTERING = true")
+            page.add_init_script("window.DISABLE_CLUSTERING = true;")
+            
+            logger.info("Opening Daggerwalk map page...")
             page.goto("https://kershner.org/daggerwalk", wait_until="networkidle")
+            page.locator("#map").wait_for(state="visible", timeout=30000)
 
-            # World map ready
-            page.locator("#worldMapView").wait_for(state="visible", timeout=30000)
-            page.locator("#worldMapView").screenshot(path=screenshots["world"])
-
-            # Go to region map
-            page.locator(".world-map-link").click()
-
-            region = page.locator("#regionMapView")
-            region.wait_for(state="visible", timeout=30000)
-
-            # Wait until at least one non-hidden marker is visible
-            region.locator(".log-marker:not(.hidden)").first.wait_for(state="visible", timeout=30000)
-
-            # Give the browser a frame to flush layout/paint
-            page.wait_for_function("() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))")
-
-            region.screenshot(path=screenshots["region"])
-
-            # Take screenshot of the quest section
+            logger.info("Taking quest screenshot...")
             quest_element = page.locator(".quests-wrapper").first
-            page.add_style_tag(content=".quests-wrapper .quest-title-wrapper a { display: none !important; }")
             quest_element.wait_for(state="visible", timeout=30000)
             quest_element.screenshot(path=screenshots["quest"])
+            logger.info(f"Screenshot saved: {screenshots['quest']}")
+
+            prepare_leaflet_map(page, x=525, y=250, zoom_level=1.123, delay=1.5)
+
+            logger.info("Taking map screenshot...")
+            page.locator("#map").screenshot(path=screenshots["world"])
+            logger.info(f"Screenshot saved: {screenshots['world']}")
+
+            browser.close()
 
         # Step 2: Upload screenshots
         uploaded = []
@@ -448,10 +498,8 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
                 blob = client.com.atproto.repo.upload_blob(BytesIO(f.read()))
 
                 region = log_data['region']
-                if label == "region":
-                    alt = f"Daggerfall region map for {region} with markers showing the Walker's progress so far today."
-                elif label == "world":
-                    alt = f"Daggerfall world map with markers showing the Walker's recent travels.  The Walker is currently in the {region} region."
+                if label == "world":
+                    alt = f"Daggerfall world map with markers showing the Walker's travels for the past week.  The Walker is currently in the {region} region."
                 elif label == "quest":
                     alt = f"An image of the Walker's current quest featuring art assets from the original Daggerfall game."
 
