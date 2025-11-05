@@ -432,7 +432,6 @@ async function refreshMapData() {
     questLayer = buildLayer(data.quests, { isQuest: true });
 
     // Re-add according to toggles
-    if (document.getElementById("toggle-logs").checked) map.addLayer(logLayer);
     if (document.getElementById("toggle-quest").checked) map.addLayer(questLayer);
     if (document.getElementById("toggle-pois").checked) map.addLayer(poiLayer);
 
