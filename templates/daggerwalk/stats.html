@@ -56,9 +56,35 @@
       </div>
     </div>
 
-    {% if stats.chatCommandStats.last_20 %}
+    {% if stats.commandSummary %}
     <div class="stats-data-wrapper">
-      <h4>Last 20 Commands</h4>
+      <h4>Command Summary</h4>
+
+      <div class="stats-data-item">
+        <dt>Total Commands</dt>
+        <dd>{{ stats.commandSummary.totalCommands|default:"0" }}</dd>
+      </div>
+
+      <div class="stats-data-item">
+        <dt>Most Common Command</dt>
+        <dd>{{ stats.commandSummary.mostCommonCommand|default:"N/A" }}</dd>
+      </div>
+
+      <div class="stats-data-item">
+        <dt>Number of Walkers</dt>
+        <dd>{{ stats.commandSummary.numWalkers|default:"0" }}</dd>
+      </div>
+
+      <div class="stats-data-item">
+        <dt>Average Commands per Walker</dt>
+        <dd>{{ stats.commandSummary.avgCommandsPerWalker|default:"0" }}</dd>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if stats.chatCommandStats.last_100 %}
+    <div class="stats-data-wrapper">
+      <h4>Last 100 Commands</h4>
       <table class="styled-table twitch-cmds-table">
         <thead>
           <tr>
@@ -68,7 +94,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for c in stats.chatCommandStats.last_20 %}
+          {% for c in stats.chatCommandStats.last_100 %}
             <tr>
               <td>
                 <strong><time datetime="{{ c.timestamp|date:'c' }}">{{ c.timestamp|date:"g:i A" }}</time></strong><br>
@@ -83,6 +109,37 @@
           {% endfor %}
         </tbody>
       </table>
+    </div>
+    {% endif %}
+
+    {% if stats.questStats %}
+    <div class="stats-data-wrapper">
+      <h4>Quest Stats</h4>
+
+      <div class="stats-data-item">
+        <dt>Completed Quests</dt>
+        <dd>{{ stats.questStats.completedQuests|default:"0" }}</dd>
+      </div>
+
+      <div class="stats-data-item">
+        <dt>Average Quest Time</dt>
+        <dd>{{ stats.questStats.avgQuestTime|default:"-" }}</dd>
+      </div>
+
+      <div class="stats-data-item">
+        <dt>Total XP Awarded</dt>
+        <dd>{{ stats.questStats.totalXpAwarded|default:"0" }}</dd>
+      </div>
+
+      <div class="stats-data-item">
+        <dt>Walkers Who Earned XP</dt>
+        <dd>{{ stats.questStats.walkersWithXp|default:"0" }}</dd>
+      </div>
+
+      <div class="stats-data-item">
+        <dt>Average Distance Traveled</dt>
+        <dd>{{ stats.questStats.avgDistanceTraveled|default:"0" }} km</dd>
+      </div>
     </div>
     {% endif %}
 

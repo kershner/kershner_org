@@ -29,40 +29,4 @@
       </tbody>
     </table>
   </div>
-
-  <div id="pager"></div>
-
-  <script type="text/javascript">
-    document.addEventListener("DOMContentLoaded", () => {
-      const rows = document.querySelectorAll("#leaderboard tbody tr");
-      const perPage = 20;
-      const pager = document.getElementById("pager");
-      let page = 1;
-      const total = Math.ceil(rows.length / perPage);
-
-      function render() {
-        rows.forEach((r, i) => r.style.display = i >= (page - 1) * perPage && i < page * perPage ? "" : "none");
-        pager.innerHTML = "";
-        if (page > 1) {
-            const prev = document.createElement("button");
-            prev.textContent = "Prev";
-            prev.onclick = () => { page--; render(); };
-            pager.appendChild(prev);
-        }
-
-        const info = document.createElement("span");
-        info.textContent = ` Page ${page} of ${total} `;
-        pager.appendChild(info);
-
-        if (page < total) {
-            const next = document.createElement("button");
-            next.textContent = "Next";
-            next.onclick = () => { page++; render(); };
-            pager.appendChild(next);
-        }
-      }
-
-      render();
-    });
-  </script>
 {% endif %}

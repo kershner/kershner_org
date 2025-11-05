@@ -326,11 +326,63 @@ daggerwalk.enhanceTable = function(tableSelector, opts = {}) {
   return { sort: sortTable };
 };
 
+daggerwalk.addPagination = function(tableSelector, perPage = 20) {
+  const table = typeof tableSelector === 'string'
+    ? document.querySelector(tableSelector)
+    : tableSelector;
+  if (!table) return;
+
+  const rows = Array.from(table.querySelectorAll('tbody tr'));
+  if (!rows.length) return;
+
+  // Create or reuse a pager just after the table
+  let pager = table.nextElementSibling;
+  if (!pager || !pager.classList.contains('pager')) {
+    pager = document.createElement('div');
+    pager.className = 'pager';
+    table.insertAdjacentElement('afterend', pager);
+  }
+
+  let page = 1;
+  const total = Math.ceil(rows.length / perPage);
+
+  function render() {
+    rows.forEach((r, i) => {
+      r.style.display = (i >= (page - 1) * perPage && i < page * perPage) ? '' : 'none';
+    });
+
+    pager.innerHTML = '';
+    if (total <= 1) return;
+
+    if (page > 1) {
+      const prev = document.createElement('button');
+      prev.textContent = 'Prev';
+      prev.onclick = () => { page--; render(); };
+      pager.appendChild(prev);
+    }
+
+    const info = document.createElement('span');
+    info.textContent = ` Page ${page} / ${total} `;
+    pager.appendChild(info);
+
+    if (page < total) {
+      const next = document.createElement('button');
+      next.textContent = 'Next';
+      next.onclick = () => { page++; render(); };
+      pager.appendChild(next);
+    }
+  }
+
+  render();
+  return { goto(p) { page = Math.min(Math.max(1, p), total); render(); } };
+}
+
 daggerwalk.initTables = function() {
   // Commands table
   daggerwalk.enhanceTable('.commands-table');
   daggerwalk.enhanceTable('.songs-table');
   daggerwalk.enhanceTable('#leaderboard');
+  daggerwalk.addPagination('#leaderboard');
 }
 
 daggerwalk.initDaggerwalkStats = function() {
@@ -348,8 +400,14 @@ daggerwalk.initDaggerwalkStats = function() {
       statsContainer.innerHTML = data.html;
 
       document.querySelectorAll('.stats-data-wrapper table').forEach(table => {
-        daggerwalk.enhanceTable(table, {'filter': false});
+        if (table.classList.contains('twitch-cmds-table')) {
+          daggerwalk.enhanceTable(table, {'filter': true});
+        } else {
+          daggerwalk.enhanceTable(table, {'filter': false});
+        }
       });
+
+      daggerwalk.addPagination('.twitch-cmds-table');
 
       attachEvents();
 

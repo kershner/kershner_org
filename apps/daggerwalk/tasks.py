@@ -530,12 +530,12 @@ def update_all_daggerwalk_caches():
     cache.set("daggerwalk_latest_log_data", latest_log_data, timeout=None)
 
     # 3. Stats slices
-    all_logs = list(DaggerwalkLog.objects.only("created_at", "region", "weather", "current_song"))
     for keyword in ['all', 'today', 'yesterday', 'last_7_days', 'this_month']:
         try:
-            stats = calculate_daggerwalk_stats(keyword, logs=all_logs)
+            stats = calculate_daggerwalk_stats(keyword)
             cache.set(f"daggerwalk_stats:{keyword}", stats, timeout=None)
-        except Exception:
+        except Exception as e:
+            print(e)
             pass
 
     # 4. Current and previous quests
@@ -599,7 +599,6 @@ def update_all_daggerwalk_caches():
         combined = logs_list
 
     cache.set("daggerwalk_map_logs", combined, timeout=None)
-
 
     # 7. POIs + quests + shapes
     pois_qs = POI.objects.all()
