@@ -2,8 +2,16 @@ const imageUrl = window.daggerwalkMap.imageUrl;
 const imageWidth = 1000, imageHeight = 500;
 const bounds = [[0, 0], [imageHeight, imageWidth]];
 const SCALAR = 0.15, BASE_EMOJI_SIZE = 14, DOT_COLOR = 'red';
+const WEATHER_EMOJIS = {
+  Sunny: "☀️", Clear: "🌙", Overcast: "🌥️", Cloudy: "☁️",
+  Foggy: "🌫️", Rainy: "🌧️", Snowy: "🌨️", Thunderstorm: "⛈️"
+};
+const SEASON_EMOJIS = {
+  Winter: "☃️", Spring: "🌸", Summer: "🌻", Autumn: "🍂"
+};
 const refreshDataUrl = '/daggerwalk/refresh-data/';
 let map, poiLayer, logLayer, questLayer, regionShapeLayer;
+let CURRENT_LOG_TYPE_FILTER = "default";
 
 function setupMap() {
   const imgBounds = (bounds instanceof L.LatLngBounds) ? bounds : L.latLngBounds(bounds);
@@ -40,7 +48,7 @@ function setupMap() {
   // Controls
   L.control.scale({ position: 'bottomleft', imperial: false }).addTo(map);
 
-  // Fullscreen map
+  // Fullscreen map button
   document.getElementById('fullscreen-map').onclick = () => {
     const el = map.getContainer();
     if (!document.fullscreenElement) el.requestFullscreen();
@@ -197,25 +205,6 @@ function popupHtml(item) {
   const title = el.querySelector(".popup-title");
   const subtitle = el.querySelector(".popup-subtitle");
   const body = el.querySelector(".popup-body");
-
-  const WEATHER_EMOJIS = {
-    Sunny: "☀️",
-    Clear: "🌙",
-    Overcast: "🌥️",
-    Cloudy: "☁️",
-    Foggy: "🌫️",
-    Rainy: "🌧️",
-    Snowy: "🌨️",
-    Thunderstorm: "⛈️"
-  };
-
-  const SEASON_EMOJIS = {
-    Winter: "☃️",
-    Spring: "🌸",
-    Summer: "🌻",
-    Autumn: "🍂"
-  };
-
   const isQuest = !!item.quest_name;
   const isLog = !!item.date;
   const source = item.poi || item;
@@ -418,9 +407,10 @@ async function refreshMapData() {
 
     highlightLatestMarker();
     drawLogTrail(logLayer);
-
+    
     // Reapply filters and shapes
     filterLogsByDate();
+    applyLogTypeFilter();
     if (document.getElementById("toggle-shapes").checked) {
       drawRegionShapes(true);
     }
@@ -483,6 +473,55 @@ function filterLogsByDate() {
   map.addLayer(logLayer);
   highlightLatestMarker();
   drawLogTrail(logLayer);
+  applyLogTypeFilter();
+}
+
+function applyLogTypeFilter() {
+  const select = document.getElementById("log-type-filter");
+  if (!select || !logLayer) return;
+
+  const type = select.value;
+  CURRENT_LOG_TYPE_FILTER = type; // remember the user’s choice globally
+
+  logLayer.eachLayer(marker => {
+    if (!marker.options.item) return;
+    const item = marker.options.item;
+    const el = marker.getElement();
+    if (!el) return;
+
+    let emoji = "";
+    switch (type) {
+      case "weather":
+        emoji = WEATHER_EMOJIS[item.weather] || "";
+        break;
+      case "season":
+        emoji = SEASON_EMOJIS[item.season] || "";
+        break;
+      case "terrain":
+        emoji = item.region_fk__emoji || "";
+        break;
+    }
+
+    if (type === "hidden") {
+      // Hide the entire marker element
+      el.style.display = "none";
+    } else {
+      el.style.display = "";
+      const div = el.querySelector("div");
+      if (div) div.textContent = type === "default" ? "" : emoji;
+    }
+  });
+
+  // Handle the dotted trail visibility
+  if (type === "hidden") {
+    if (map._logTrail) {
+      map.removeLayer(map._logTrail);
+      map._logTrail = null;
+    }
+  } else {
+    // Redraw the dotted trail after markers update
+    drawLogTrail(logLayer);
+  }
 }
 
 function bindUIEvents() {
@@ -504,11 +543,12 @@ function bindUIEvents() {
   };
 
   toggle("toggle-pois", () => poiLayer);
-  toggle("toggle-logs", () => logLayer, true);
   toggle("toggle-quest", () => questLayer);
   document.getElementById("toggle-shapes").addEventListener("change", e => drawRegionShapes(e.target.checked));
   document.getElementById("refresh-map").addEventListener("click", refreshMapData);
   document.getElementById("log-date-filter").addEventListener("change", filterLogsByDate);
+  document.getElementById("log-type-filter").addEventListener("change", applyLogTypeFilter);
+
 }
 
 function focusMapOn(x, y, zoom = 3) {
@@ -553,8 +593,14 @@ function daggerwalkMapInit() {
   bindUIEvents();
 
   drawLogTrail(logLayer);
-  map.on('zoomend moveend', () => drawLogTrail(logLayer));
-  logLayer.on('layeradd layerremove', () => drawLogTrail(logLayer));
+  map.on('zoomend moveend', () => {
+    drawLogTrail(logLayer);
+    applyLogTypeFilter();
+  });
+  logLayer.on('layeradd layerremove', () => {
+    drawLogTrail(logLayer);
+    applyLogTypeFilter();
+  });
 
   filterLogsByDate();
 }
