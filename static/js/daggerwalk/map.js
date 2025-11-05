@@ -59,6 +59,10 @@ function setupMap() {
 }
 
 function createClusterGroup(isPOI = false) {
+  if (window.DISABLE_CLUSTERING) {
+    return L.layerGroup();
+  }
+
   const clusterGroup = L.markerClusterGroup({
     maxClusterRadius: 90,
     disableClusteringAtZoom: isPOI ? 3 : 2,
