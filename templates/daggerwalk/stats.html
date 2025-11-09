@@ -56,7 +56,7 @@
       </div>
     </div>
 
-    {% if stats.commandSummary %}
+    {% if stats.commandSummary and stats.commandSummary.totalCommands > 0 %}
     <div class="stats-data-wrapper">
       <h4>Command Summary</h4>
 
@@ -112,7 +112,7 @@
     </div>
     {% endif %}
 
-    {% if stats.questStats %}
+    {% if stats.questStats and stats.questStats.completedQuests > 0 %}
     <div class="stats-data-wrapper">
       <h4>Quest Stats</h4>
 
