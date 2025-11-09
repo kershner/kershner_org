@@ -149,23 +149,28 @@ function attachClusterTooltip(clusterGroup) {
 /* -------------------- Icons / Popups / Markers -------------------- */
 function makeIcon({ emoji, dot = false, quest = false, highlight = false }) {
   const baseClass = "map-marker";
+  function baseIconOptions() {
+    return {
+      iconSize: [8, 8],
+      iconAnchor: [4, 4],
+      popupAnchor: [0, -8]
+    };
+  }
+
   if (dot) return L.divIcon({
+    ...baseIconOptions(),
     html: `<div>${emoji || ""}</div>`,
     className: `${baseClass} log-marker${highlight ? " latest-log" : ""}`,
-    iconSize: [8, 8],
-    iconAnchor: [4, 4]
   });
   if (quest) return L.divIcon({
+    ...baseIconOptions(),
     html: `<div>${emoji || "⭐"}</div>`,
     className: `${baseClass} quest-marker`,
-    iconSize: [8, 8],
-    iconAnchor: [4, 4]
   });
   return L.divIcon({
+    ...baseIconOptions(),
     html: `<div>${emoji || "📍"}</div>`,
     className: `${baseClass} poi-marker`,
-    iconSize: [8, 8],
-    iconAnchor: [4, 4]
   });
 }
 
