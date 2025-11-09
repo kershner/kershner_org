@@ -1,4 +1,4 @@
-{% load kershner_tags %}
+{% load static kershner_tags %}
 
 {% block extra_head %}
   <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/vendor/leaflet/css/leaflet.css" />
@@ -17,7 +17,7 @@
 
 <div class="map-container">
   {# Leaflet map container #}
-  <div id="map">
+  <div id="map" data-alt-image="{% static 'img/daggerwalk/daggerfall_world_map.png' %}">
     {# Map filter controls #}
     <div id="filters">
       <button id="refresh-map" title="Refresh map data">↻</button>

@@ -21,7 +21,7 @@ function setupMap() {
 
   const map = L.map('map', {
     crs: L.CRS.Simple,
-    minZoom: 0,
+    minZoom: -1,
     maxZoom: 6,
     zoomControl: false,
     zoomAnimation: true,
@@ -30,8 +30,8 @@ function setupMap() {
     inertia: true,
     wheelPxPerZoomLevel: 120,
     scrollWheelZoom: 'center',
-    zoomSnap: 0.25,
-    zoomDelta: 0.5,
+    zoomSnap: 1,
+    zoomDelta: 1,
     bounceAtZoomLimits: false,
     maxBoundsViscosity: 1.0,
     attributionControl: false,
@@ -46,6 +46,9 @@ function setupMap() {
   imageLayer.addTo(map);
   map.fitBounds(imgBounds);
   map.setMaxBounds(imgBounds.pad(0.5));
+
+  // Start one level above minZoom
+  map.setZoom(map.getMinZoom() + 1);
 
   L.control.scale({ position: 'bottomleft', imperial: false }).addTo(map);
 
@@ -388,6 +391,37 @@ function drawLogLine(show = true) {
   }).addTo(map);
 }
 
+function handleZoomImageSwap(map) {
+  const altUrl = document.getElementById('map')?.dataset.altImage;
+  if (!altUrl) return;
+
+  map.on('zoomend', () => {
+    const currentZoom = map.getZoom();
+    const altZoomLevel = map.getMinZoom();
+
+    // Show alt map only at the new lowest zoom level
+    if (currentZoom <= altZoomLevel && !map.altImageLayer) {
+      map.altImageLayer = L.imageOverlay(altUrl, map.getBounds(), { zIndex: 9999 }).addTo(map);
+      ['markerPane', 'shadowPane', 'tooltipPane', 'popupPane'].forEach(p => {
+        if (map.getPanes()[p]) map.getPanes()[p].style.display = 'none';
+      });
+      map.dragging.disable();   // lock panning
+      map.touchZoom.disable();  // lock touch dragging
+    }
+
+    // Restore normal map when zooming back in
+    if (currentZoom > altZoomLevel && map.altImageLayer) {
+      map.removeLayer(map.altImageLayer);
+      map.altImageLayer = null;
+      ['markerPane', 'shadowPane', 'tooltipPane', 'popupPane'].forEach(p => {
+        if (map.getPanes()[p]) map.getPanes()[p].style.display = '';
+      });
+      map.dragging.enable();
+      map.touchZoom.enable();
+    }
+  });
+}
+
 /* -------------------- Data Refresh / Filters -------------------- */
 async function refreshMapData() {
   const btn = document.getElementById("refresh-map");
@@ -523,12 +557,7 @@ function daggerwalkMapInit() {
   const { map: leafletMap } = setupMap();
   map = leafletMap;
   window.daggerwalkMap = map;
-
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && window.daggerwalkMap) {
-      setTimeout(() => window.daggerwalkMap.invalidateSize(), 100);
-    }
-  });
+  handleZoomImageSwap(map);
 
   const { pois, logs, quests, shapes } = getMapData();
   window.shapes = shapes;
