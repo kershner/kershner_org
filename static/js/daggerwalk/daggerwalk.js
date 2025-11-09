@@ -498,6 +498,18 @@ daggerwalk.init = () => {
   const urlParams = new URLSearchParams(window.location.search);
   let regionParam = urlParams.get('region');
   const mapTab = document.querySelector('#map-tab-btn');
+  if (mapTab) {
+    mapTab.addEventListener('change', (e) => {
+      if (e.target.checked && window.daggerwalkMap) {
+        const map = window.daggerwalkMap;
+        setTimeout(() => {
+          // Fix Leaflet map misalignment when returning to the Map tab
+          map.invalidateSize();
+          map.setView(map.getCenter(), map.getZoom(), { animate: false });
+        }, 150);
+      }
+    });
+  }
 
   if (regionParam && mapTab) {
     mapTab.checked = true;
