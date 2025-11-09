@@ -12,7 +12,9 @@ const SEASON_EMOJIS = {
 const refreshDataUrl = '/daggerwalk/refresh-data/';
 let map, poiLayer, logLayer, questLayer, regionShapeLayer;
 let CURRENT_LOG_TYPE_FILTER = "default";
+let logLineLayer = null;
 
+/* -------------------- Map Setup -------------------- */
 function setupMap() {
   const imgBounds = (bounds instanceof L.LatLngBounds) ? bounds : L.latLngBounds(bounds);
   const imageLayer = L.imageOverlay(imageUrl, imgBounds);
@@ -38,17 +40,15 @@ function setupMap() {
     dragging: true,
     touchZoom: true,
     doubleClickZoom: false,
-    keyboard: false
+    keyboard: false,
   });
 
   imageLayer.addTo(map);
   map.fitBounds(imgBounds);
   map.setMaxBounds(imgBounds.pad(0.5));
 
-  // Controls
   L.control.scale({ position: 'bottomleft', imperial: false }).addTo(map);
 
-  // Fullscreen map button
   document.getElementById('fullscreen-map').onclick = () => {
     const el = map.getContainer();
     if (!document.fullscreenElement) el.requestFullscreen();
@@ -58,10 +58,40 @@ function setupMap() {
   return { map, imageLayer, imgBounds };
 }
 
+/* -------------------- Utilities -------------------- */
+function getMapData() {
+  return {
+    pois: JSON.parse(document.getElementById('poi-data').textContent),
+    logs: JSON.parse(document.getElementById('logs-data').textContent),
+    quests: JSON.parse(document.getElementById('quest-data').textContent),
+    shapes: JSON.parse(document.getElementById('shape-data').textContent),
+  };
+}
+
+function computeShapeExtents(shapes) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  shapes.forEach(s => s.coordinates.forEach(([x, y]) => {
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x);
+    maxY = Math.max(maxY, y);
+  }));
+  return { minX, minY, maxX, maxY, spanX: maxX - minX, spanY: maxY - minY };
+}
+
+function rebuildLogLayer(logs) {
+  const latest = logs.reduce((a, b) =>
+    new Date(a.created_at) > new Date(b.created_at) ? a : b, logs[0]);
+  if (map.hasLayer(logLayer)) map.removeLayer(logLayer);
+  logLayer = buildLayer(logs, { highlightId: latest.id });
+  map.addLayer(logLayer);
+  highlightLatestMarker();
+  drawLogLine(true);
+}
+
+/* -------------------- Clustering (POIs only) -------------------- */
 function createClusterGroup(isPOI = false) {
-  if (window.DISABLE_CLUSTERING) {
-    return L.layerGroup();
-  }
+  if (window.DISABLE_CLUSTERING) return L.layerGroup();
 
   const clusterGroup = L.markerClusterGroup({
     maxClusterRadius: 90,
@@ -73,7 +103,6 @@ function createClusterGroup(isPOI = false) {
     animate: false,
     spiderfyOnMaxZoom: false,
     showCoverageOnHover: false,
-
     iconCreateFunction: cluster => {
       const markers = cluster.getAllChildMarkers();
       const count = cluster.getChildCount();
@@ -81,25 +110,15 @@ function createClusterGroup(isPOI = false) {
       const scale = Math.max(0.6, 1 - (2 - Math.min(zoom, 2)) * SCALAR);
       const hasLatest = markers.some(m => m.options.isLatest);
       const isPOICluster = markers.every(m => m.options.isPOI);
-
       const cls = [
         "custom-cluster",
         isPOICluster ? "poi-cluster" : "log-cluster",
         hasLatest ? "latest-log" : ""
       ].join(" ");
-
       const html = isPOICluster
-        ? `<div class="cluster-circle">
-             <span class="cluster-emoji">📍</span>
-             <span class="cluster-count">${count}</span>
-           </div>`
+        ? `<div class="cluster-circle"><span class="cluster-emoji">📍</span><span class="cluster-count">${count}</span></div>`
         : `<div class="cluster-icon"></div>`;
-
-      return L.divIcon({
-        html,
-        className: cls,
-        iconSize: [36 * scale, 36 * scale],
-      });
+      return L.divIcon({ html, className: cls, iconSize: [36 * scale, 36 * scale] });
     },
   });
 
@@ -110,8 +129,6 @@ function createClusterGroup(isPOI = false) {
 function attachClusterTooltip(clusterGroup) {
   clusterGroup.on('clustermouseover', e => {
     const markers = e.layer.getAllChildMarkers();
-
-    // only show for log clusters
     const isLogCluster = markers.some(m => !m.options.isPOI && !m.options.isQuest);
     if (!isLogCluster) return;
 
@@ -123,77 +140,27 @@ function attachClusterTooltip(clusterGroup) {
     const count = logs.length;
     const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const range = count > 1 ? `${fmt(new Date(logs[0].created_at))} – ${fmt(new Date(logs[count - 1].created_at))}` : '';
-
-    const html = `<div style="text-align:center;">
-      <b>${count}</b> logs<br>${range || ''}
-    </div>`;
+    const html = `<div style="text-align:center;"><b>${count}</b> logs<br>${range || ''}</div>`;
 
     e.layer.bindTooltip(html, { direction: 'top', offset: [0, -10] }).openTooltip();
   });
 }
 
-function drawLogTrail(clusterGroup) {
-  if (!map) return;
-
-  // remove existing trail
-  if (map._logTrail) {
-    map.removeLayer(map._logTrail);
-    map._logTrail = null;
-  }
-
-  // collect visible cluster centers only (ignores individual markers)
-  const centers = [];
-  clusterGroup._featureGroup.eachLayer(layer => {
-    if (layer instanceof L.MarkerCluster) {
-      const markers = layer.getAllChildMarkers();
-      const isLogCluster = markers.some(m => !m.options.isPOI && !m.options.isQuest);
-      if (isLogCluster) centers.push({ latlng: layer.getLatLng(), markers });
-    }
-  });
-
-  if (centers.length < 2) return;
-
-  // sort by earliest log timestamp in each cluster
-  centers.sort((a, b) => {
-    const aTime = Math.min(...a.markers.map(m => new Date(m.options.item?.created_at || 0)));
-    const bTime = Math.min(...b.markers.map(m => new Date(m.options.item?.created_at || 0)));
-    return aTime - bTime;
-  });
-
-  const points = centers.map(c => c.latlng);
-
-  // create dotted polyline
-  const color = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim()
-  const trail = L.polyline(points, {
-    color: color,
-    weight: 2,
-    opacity: 1,
-    dashArray: '5,8'
-  }).addTo(map);
-
-  map._logTrail = trail;
-}
-
-// Marker icon styles
+/* -------------------- Icons / Popups / Markers -------------------- */
 function makeIcon({ emoji, dot = false, quest = false, highlight = false }) {
   const baseClass = "map-marker";
-
-  if (dot)
-    return L.divIcon({
-      html: `<div>${emoji || ""}</div>`,
-      className: `${baseClass} log-marker${highlight ? " latest-log" : ""}`,
-      iconSize: [8, 8],
-      iconAnchor: [4, 4]
-    });
-
-  if (quest)
-    return L.divIcon({
-      html: `<div>${emoji || "⭐"}</div>`,
-      className: `${baseClass} quest-marker`,
-      iconSize: [8, 8],
-      iconAnchor: [4, 4]
-    });
-
+  if (dot) return L.divIcon({
+    html: `<div>${emoji || ""}</div>`,
+    className: `${baseClass} log-marker${highlight ? " latest-log" : ""}`,
+    iconSize: [8, 8],
+    iconAnchor: [4, 4]
+  });
+  if (quest) return L.divIcon({
+    html: `<div>${emoji || "⭐"}</div>`,
+    className: `${baseClass} quest-marker`,
+    iconSize: [8, 8],
+    iconAnchor: [4, 4]
+  });
   return L.divIcon({
     html: `<div>${emoji || "📍"}</div>`,
     className: `${baseClass} poi-marker`,
@@ -202,7 +169,6 @@ function makeIcon({ emoji, dot = false, quest = false, highlight = false }) {
   });
 }
 
-// Hover popup builder for logs, quests, and POIs
 function popupHtml(item) {
   const tpl = document.getElementById("popup-template");
   const el = tpl.content.cloneNode(true);
@@ -213,25 +179,20 @@ function popupHtml(item) {
   const isLog = !!item.date;
   const source = item.poi || item;
 
-  // Region: POIs may have nested region; logs have flattened region_fk__*
   const region =
     (typeof source.region === "object" && source.region) ||
-    (item.region_fk__name
-      ? {
-          name: item.region_fk__name,
-          province: item.region_fk__province,
-          climate: item.region_fk__climate,
-          emoji: item.region_fk__emoji
-        }
-      : {}) ||
-    {};
+    (item.region_fk__name ? {
+      name: item.region_fk__name,
+      province: item.region_fk__province,
+      climate: item.region_fk__climate,
+      emoji: item.region_fk__emoji
+    } : {}) || {};
 
   const regionEmoji = region.emoji || "";
   const regionName = region.name || "";
   const province = region.province || "";
   const climate = region.climate || "";
 
-  // Title & subtitle
   title.textContent = `${item.poi__emoji || source.emoji || regionEmoji || "📍"} ${
     item.poi__name || source.name || item.quest_name || item.location || "(Unknown)"
   }`;
@@ -240,22 +201,16 @@ function popupHtml(item) {
   const add = html => (body.innerHTML += html);
 
   if (isQuest) {
-    add(
-      [
-        item.description && `<div class="popup-description">${item.description}</div>`,
-        item.quest_giver_name && `<div><b>Quest Giver:</b> ${item.quest_giver_name}</div>`,
-        item.xp && `<div><b>XP:</b> ${item.xp}</div>`,
-        item.quest_giver_img_url &&
-          `<img src="${item.quest_giver_img_url}" width="64" height="64" class="popup-quest-img">`,
-      ]
-        .filter(Boolean)
-        .join("")
-    );
+    add([
+      item.description && `<div class="popup-description">${item.description}</div>`,
+      item.quest_giver_name && `<div><b>Quest Giver:</b> ${item.quest_giver_name}</div>`,
+      item.xp && `<div><b>XP:</b> ${item.xp}</div>`,
+      item.quest_giver_img_url && `<img src="${item.quest_giver_img_url}" width="64" height="64" class="popup-quest-img">`,
+    ].filter(Boolean).join(""));
   } else if (isLog) {
     const weatherEmoji = WEATHER_EMOJIS[item.weather] || "";
     const seasonEmoji = SEASON_EMOJIS[item.season] || "";
     const song = item.current_song?.replace("song_", "");
-
     add(`
       <div><b>Weather:</b> ${weatherEmoji} ${item.weather || "—"}</div>
       <div><b>Season:</b> ${seasonEmoji} ${item.season || "—"}</div>
@@ -267,53 +222,64 @@ function popupHtml(item) {
       <div class="popup-coords"><b>Coords:</b> X: ${item.map_pixel_x ?? "?"}, Y: ${item.map_pixel_y ?? "?"}</div>
     `);
   } else {
-    add(
-      [
-        source.description && `<div>${source.description}</div>`,
-        source.discovered &&
-          `<div class="popup-discovered">Discovered: ${new Date(source.discovered).toLocaleDateString("en-US")}</div>`,
-      ]
-        .filter(Boolean)
-        .join("")
-    );
+    add([
+      source.description && `<div>${source.description}</div>`,
+      source.discovered && `<div class="popup-discovered">Discovered: ${new Date(source.discovered).toLocaleDateString("en-US")}</div>`,
+    ].filter(Boolean).join(""));
   }
 
   return el.firstElementChild.outerHTML;
 }
 
-// Marker creation
 function createMarker(lat, lng, icon, item) {
   const marker = L.marker([lat, lng], { icon });
   marker.options.item = item;
 
-  // Configure popup — stays open on touch until user closes it
   marker.bindPopup(popupHtml(item), {
     autoPan: false,
-    closeOnClick: true,  // clicking another popup closes the previous one
-    closeButton: true,
+    closeOnClick: false,
+    closeButton: true
   });
 
-  // Detect touch vs. mouse devices
   const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
   if (isTouch) {
-    // On touch devices: tap to open (handled by Leaflet)
+    // Touch: tap opens popup (stays open) and zooms
     marker.on("click", e => {
-      e.originalEvent.stopPropagation();
-      e.target.openPopup();
+      e.originalEvent?.stopPropagation();
+      marker.openPopup();
+      const curZoom = map.getZoom?.() ?? 0;
+      const maxZoom = map.getMaxZoom?.() ?? 6;
+      const targetZoom = Math.max(3, Math.min(curZoom + 1, maxZoom));
+      map.setView(e.latlng, targetZoom, { animate: true });
     });
   } else {
-    // On mouse devices: hover only
+    // Mouse: hover shows popup, click zooms (popup not persistent)
     marker.on("mouseover", e => e.target.openPopup());
     marker.on("mouseout", e => e.target.closePopup());
+    marker.on("click", e => {
+      e.originalEvent?.stopPropagation();
+      const curZoom = map.getZoom?.() ?? 0;
+      const maxZoom = map.getMaxZoom?.() ?? 6;
+      const targetZoom = Math.max(3, Math.min(curZoom + 1, maxZoom));
+      map.setView(e.latlng, targetZoom, { animate: true });
+    });
   }
 
   return marker;
 }
 
+/* -------------------- Layers -------------------- */
 function buildLayer(data, { isPOI = false, isQuest = false, highlightId = null }) {
-  const layer = createClusterGroup(isPOI);
-  data.forEach(item => {
+  const layer = isPOI ? createClusterGroup(true) : L.layerGroup();
+  const zoom = map?.getZoom?.() ?? 1;
+
+  let filteredData = data;
+  if (!isPOI && !isQuest && zoom < 2) {
+    filteredData = data.filter((_, i) => i % 20 === 0);
+  }
+
+  filteredData.forEach(item => {
     let lat, lng, icon;
     if (isQuest) {
       const poi = item.poi;
@@ -326,31 +292,26 @@ function buildLayer(data, { isPOI = false, isQuest = false, highlightId = null }
       const highlight = highlightId && item.id === highlightId;
       icon = isPOI ? makeIcon({ emoji: item.emoji }) : makeIcon({ emoji: item.emoji, dot: true, highlight });
     }
+
     const marker = createMarker(lat, lng, icon, item);
     if (isPOI) marker.options.isPOI = true;
-    if (!isPOI && !isQuest && highlightId && item.id === highlightId) {
-        marker.options.isLatest = true;
-    }
-    if (marker.options.isLatest) marker._icon?.classList.add('latest-log');
+    if (!isPOI && !isQuest && highlightId && item.id === highlightId) marker.options.isLatest = true;
     layer.addLayer(marker);
   });
+
   return layer;
 }
 
 function highlightLatestMarker() {
-  // Wait a bit so clusters render first
   setTimeout(() => {
-    // Find the Leaflet marker element tagged as latest
     const latestMarker = document.querySelector('.log-marker.latest-log');
     if (!latestMarker) return;
-
-    // Highlight the cluster that contains it (if any)
     const cluster = latestMarker.closest('.marker-cluster');
     if (cluster) cluster.classList.add('latest-log');
   }, 300);
 }
 
-// Compute coordinate scaling for region outlines
+/* -------------------- Region Shapes -------------------- */
 function projectShapePoint(x, y) {
   const sx = imageWidth / SHAPE_EXTENTS.spanX;
   const sy = imageHeight / SHAPE_EXTENTS.spanY;
@@ -359,24 +320,16 @@ function projectShapePoint(x, y) {
   return [imageHeight - py, px];
 }
 
-
 const REGION_LABEL_OFFSETS = {
-  "Shalgora": { x: 20, y: 20},
-  "Daenia": { x: 10, y: 0},
-  "Phrygias": { x: 0, y: 15},
-  "Alcaire": { x: -25, y: 0},
-  "Wrothgarian Mountains": { x: 25, y: 50},
-  "Dragontail Mountains": { x: -60, y: -10},
-  "Wayrest": { x: -20, y: 0},
-  "Gavaudon": { x: -30, y: 20},
-  "Mournoth": { x: 10, y: 20},
-  "Cybiades": { x: 0, y: 30},
-  "Myrkwasa": { x: 20, y: 0},
-  "Pothago": { x: 5, y: 10},
-  "Kairou": { x: 15, y: 15},
-  "Antiphyllos": { x: 20, y: 10},
-  "Alik'r Desert": { x: -100, y: -40},
+  "Shalgora": { x: 20, y: 20}, "Daenia": { x: 10, y: 0}, "Phrygias": { x: 0, y: 15},
+  "Alcaire": { x: -25, y: 0}, "Wrothgarian Mountains": { x: 25, y: 50},
+  "Dragontail Mountains": { x: -60, y: -10}, "Wayrest": { x: -20, y: 0},
+  "Gavaudon": { x: -30, y: 20}, "Mournoth": { x: 10, y: 20},
+  "Cybiades": { x: 0, y: 30}, "Myrkwasa": { x: 20, y: 0},
+  "Pothago": { x: 5, y: 10}, "Kairou": { x: 15, y: 15},
+  "Antiphyllos": { x: 20, y: 10}, "Alik'r Desert": { x: -100, y: -40},
 };
+
 function drawRegionShapes(show = true) {
   const shapes = window.shapes || [];
   if (regionShapeLayer) map.removeLayer(regionShapeLayer);
@@ -389,23 +342,52 @@ function drawRegionShapes(show = true) {
     const poly = L.polygon(points, { opacity: 0, fillOpacity: 0 }).addTo(regionShapeLayer);
     const center = poly.getBounds().getCenter();
 
-    // Apply offset if defined
     const offset = REGION_LABEL_OFFSETS[shape.name] || { x: 0, y: 0 };
     const offsetLatLng = L.latLng(center.lat + offset.y, center.lng + offset.x);
 
-    // Create label marker
     L.marker(offsetLatLng, {
-      icon: L.divIcon({
-        className: 'region-label',
-        html: shape.name,
-        iconSize: [100, 20]
-      })
+      icon: L.divIcon({ className: 'region-label', html: shape.name, iconSize: [100, 20] })
     }).addTo(regionShapeLayer);
   });
 
   regionShapeLayer.addTo(map);
 }
 
+/* -------------------- Path (Log Line) -------------------- */
+function drawLogLine(show = true) {
+  // Clear any existing line
+  if (logLineLayer) {
+    map.removeLayer(logLineLayer);
+    logLineLayer = null;
+  }
+  if (!show || !logLayer) return;
+
+  // Collect all visible log markers in chronological order
+  const points = [];
+  logLayer.eachLayer(marker => {
+    const item = marker.options.item || {};
+    const x = item.map_pixel_x, y = item.map_pixel_y, created_at = item.created_at;
+    if (Number.isFinite(x) && Number.isFinite(y) && created_at) {
+      points.push({ lat: imageHeight - y, lng: x, time: new Date(created_at) });
+    }
+  });
+
+  points.sort((a, b) => a.time - b.time);
+  if (points.length < 2) return;
+
+  const lineColor = getComputedStyle(document.documentElement)
+    .getPropertyValue('--accent-color')
+    .trim() || 'gold';
+  
+  logLineLayer = L.polyline(points.map(p => [p.lat, p.lng]), {
+    color: lineColor,
+    weight: 2,
+    opacity: 1,
+    dashArray: '4, 8'
+  }).addTo(map);
+}
+
+/* -------------------- Data Refresh / Filters -------------------- */
 async function refreshMapData() {
   const btn = document.getElementById("refresh-map");
   btn.disabled = true;
@@ -416,35 +398,23 @@ async function refreshMapData() {
     if (!res.ok) throw new Error("Failed to refresh map data");
     const data = await res.json();
 
-    // Update JSON script contents so filters use fresh data
     document.getElementById("logs-data").textContent = JSON.stringify(data.logs);
     document.getElementById("poi-data").textContent = JSON.stringify(data.pois);
     document.getElementById("quest-data").textContent = JSON.stringify(data.quests);
     document.getElementById("shape-data").textContent = JSON.stringify(data.shapes);
 
-    // Remove old layers
-    [logLayer, poiLayer, questLayer].forEach(layer => {
-      if (map.hasLayer(layer)) map.removeLayer(layer);
-    });
-
-    // Build new layers
-    const latest = data.logs.reduce((a, b) =>
-      new Date(a.created_at) > new Date(b.created_at) ? a : b, data.logs[0]);
+    [logLayer, poiLayer, questLayer].forEach(layer => map.hasLayer(layer) && map.removeLayer(layer));
 
     poiLayer = buildLayer(data.pois, { isPOI: true });
-    logLayer = buildLayer(data.logs, { highlightId: latest.id });
+    rebuildLogLayer(data.logs);
     questLayer = buildLayer(data.quests, { isQuest: true });
 
-    // Re-add according to toggles
     if (document.getElementById("toggle-quest").checked) map.addLayer(questLayer);
     if (document.getElementById("toggle-pois").checked) map.addLayer(poiLayer);
 
-    highlightLatestMarker();
-    drawLogTrail(logLayer);
-    
-    // Reapply filters and shapes
     filterLogsByDate();
     applyLogTypeFilter();
+
     if (document.getElementById("toggle-shapes").checked) {
       drawRegionShapes(true);
     }
@@ -463,50 +433,24 @@ function filterLogsByDate() {
   let start = null, end = now;
 
   switch (value) {
-    case "today": {
-      start = todayStart; // today 00:00 → now
-      break;
-    }
-    case "yesterday": {
-      end = todayStart; // yesterday 00:00 → today 00:00
-      start = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
-      break;
-    }
-    case "thisweek": {
-      start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
-      end = now; // up to now
-      break;
-    }
-    case "lastweek": {
-      end = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);   // 7 days ago
-      start = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000); // 14–7 days ago
-      break;
-    }
-    default: {
-      // "all" → show all logs (no filtering)
-      start = null;
-      break;
-    }
+    case "today": start = todayStart; break;
+    case "yesterday": end = todayStart; start = new Date(todayStart.getTime() - 86400000); break;
+    case "thisweek": start = new Date(now.getTime() - 7 * 86400000); break;
+    case "lastweek": end = new Date(now.getTime() - 7 * 86400000); start = new Date(now.getTime() - 14 * 86400000); break;
+    default: start = null; break;
   }
 
-  const allLogs = JSON.parse(document.getElementById('logs-data').textContent);
+  const { logs: allLogs } = getMapData();
   const filtered = start
     ? allLogs.filter(l => {
         const t = new Date(l.created_at);
-        return t >= start && t < end; // end-exclusive
+        return t >= start && t < end;
       })
     : allLogs;
 
   if (!filtered.length) return;
 
-  const latest = filtered.reduce((a, b) =>
-    new Date(a.created_at) > new Date(b.created_at) ? a : b, filtered[0]);
-
-  if (map.hasLayer(logLayer)) map.removeLayer(logLayer);
-  logLayer = buildLayer(filtered, { highlightId: latest.id });
-  map.addLayer(logLayer);
-  highlightLatestMarker();
-  drawLogTrail(logLayer);
+  rebuildLogLayer(filtered);
   applyLogTypeFilter();
 }
 
@@ -515,29 +459,21 @@ function applyLogTypeFilter() {
   if (!select || !logLayer) return;
 
   const type = select.value;
-  CURRENT_LOG_TYPE_FILTER = type; // remember the user’s choice globally
+  CURRENT_LOG_TYPE_FILTER = type;
 
   logLayer.eachLayer(marker => {
-    if (!marker.options.item) return;
     const item = marker.options.item;
     const el = marker.getElement();
-    if (!el) return;
+    if (!item || !el) return;
 
     let emoji = "";
     switch (type) {
-      case "weather":
-        emoji = WEATHER_EMOJIS[item.weather] || "";
-        break;
-      case "season":
-        emoji = SEASON_EMOJIS[item.season] || "";
-        break;
-      case "terrain":
-        emoji = item.region_fk__emoji || "";
-        break;
+      case "weather": emoji = WEATHER_EMOJIS[item.weather] || ""; break;
+      case "season":  emoji = SEASON_EMOJIS[item.season] || ""; break;
+      case "terrain": emoji = item.region_fk__emoji || ""; break;
     }
 
     if (type === "hidden") {
-      // Hide the entire marker element
       el.style.display = "none";
     } else {
       el.style.display = "";
@@ -545,33 +481,18 @@ function applyLogTypeFilter() {
       if (div) div.textContent = type === "default" ? "" : emoji;
     }
   });
-
-  // Handle the dotted trail visibility
-  if (type === "hidden") {
-    if (map._logTrail) {
-      map.removeLayer(map._logTrail);
-      map._logTrail = null;
-    }
-  } else {
-    // Redraw the dotted trail after markers update
-    drawLogTrail(logLayer);
-  }
 }
 
+/* -------------------- UI Bindings -------------------- */
 function bindUIEvents() {
-  const toggle = (id, getLayer, isLog = false) => {
+  const toggle = (id, getLayer) => {
     const checkbox = document.getElementById(id);
     checkbox.addEventListener("change", e => {
-      const layer = getLayer(); // always fetch current layer
+      const layer = getLayer();
       if (e.target.checked) {
         map.addLayer(layer);
-        if (isLog) drawLogTrail(layer);
       } else {
         if (map.hasLayer(layer)) map.removeLayer(layer);
-        if (isLog && map._logTrail) {
-          map.removeLayer(map._logTrail);
-          map._logTrail = null;
-        }
       }
     });
   };
@@ -582,7 +503,6 @@ function bindUIEvents() {
   document.getElementById("refresh-map").addEventListener("click", refreshMapData);
   document.getElementById("log-date-filter").addEventListener("change", filterLogsByDate);
   document.getElementById("log-type-filter").addEventListener("change", applyLogTypeFilter);
-
 }
 
 function focusMapOn(x, y, zoom = 3) {
@@ -592,57 +512,41 @@ function focusMapOn(x, y, zoom = 3) {
   map.setView([lat, lng], zoom, { animate: true });
 }
 
-// Main entry point
+/* -------------------- Init -------------------- */
 function daggerwalkMapInit() {
-  // assign destructured return so global "map" is defined
   const { map: leafletMap } = setupMap();
   map = leafletMap;
   window.daggerwalkMap = map;
 
-  // Force Leaflet to redraw markers when returning to the map tab or window
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && window.daggerwalkMap) {
       setTimeout(() => window.daggerwalkMap.invalidateSize(), 100);
     }
   });
 
-  const pois = JSON.parse(document.getElementById('poi-data').textContent);
-  const logs = JSON.parse(document.getElementById('logs-data').textContent);
-  const quest = JSON.parse(document.getElementById('quest-data').textContent);
-  window.shapes = JSON.parse(document.getElementById('shape-data').textContent);
-
-  window.SHAPE_EXTENTS = (() => {
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    (window.shapes || []).forEach(s => s.coordinates.forEach(([x, y]) => {
-        minX = Math.min(minX, x);
-        minY = Math.min(minY, y);
-        maxX = Math.max(maxX, x);
-        maxY = Math.max(maxY, y);
-    }));
-    return { minX, minY, maxX, maxY, spanX: maxX - minX, spanY: maxY - minY };
-  })();
+  const { pois, logs, quests, shapes } = getMapData();
+  window.shapes = shapes;
+  window.SHAPE_EXTENTS = computeShapeExtents(window.shapes || []);
 
   const latest = logs.reduce((a, b) =>
     new Date(a.created_at) > new Date(b.created_at) ? a : b, logs[0]);
 
-  poiLayer = buildLayer(pois, { isPOI: true });
-  logLayer = buildLayer(logs, { highlightId: latest.id });
-  questLayer = buildLayer(quest, { isQuest: true });
+  poiLayer  = buildLayer(pois,  { isPOI: true });
+  logLayer  = buildLayer(logs,  { highlightId: latest.id });
+  questLayer = buildLayer(quests, { isQuest: true });
 
   map.addLayer(logLayer);
   map.addLayer(questLayer);
   highlightLatestMarker();
   bindUIEvents();
 
-  drawLogTrail(logLayer);
-  map.on('zoomend moveend', () => {
-    drawLogTrail(logLayer);
-    applyLogTypeFilter();
+  map.on('zoomend', () => {
+    filterLogsByDate();      // rebuilds the filtered logs
+    applyLogTypeFilter();    // reapply current emoji view
   });
-  logLayer.on('layeradd layerremove', () => {
-    drawLogTrail(logLayer);
-    applyLogTypeFilter();
-  });
+
+  // Emoji overlays respond to pan as well
+  map.on('moveend', applyLogTypeFilter);
 
   filterLogsByDate();
 }
