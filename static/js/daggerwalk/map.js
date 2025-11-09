@@ -80,12 +80,9 @@ function computeShapeExtents(shapes) {
 }
 
 function rebuildLogLayer(logs) {
-  const latest = logs.reduce((a, b) =>
-    new Date(a.created_at) > new Date(b.created_at) ? a : b, logs[0]);
   if (map.hasLayer(logLayer)) map.removeLayer(logLayer);
-  logLayer = buildLayer(logs, { highlightId: latest.id });
+  logLayer = buildLayer(logs);
   map.addLayer(logLayer);
-  highlightLatestMarker();
   drawLogLine(true);
 }
 
@@ -280,32 +277,26 @@ function createMarker(lat, lng, icon, item) {
 }
 
 /* -------------------- Layers -------------------- */
-function buildLayer(data, { isPOI = false, isQuest = false, highlightId = null }) {
+function buildLayer(data, { isPOI = false, isQuest = false, highlightId = null } = {}) {
   const layer = isPOI ? createClusterGroup(true) : L.layerGroup();
   const zoom = map?.getZoom?.() ?? 1;
 
   let filteredData = data;
-  if (!isPOI && !isQuest && zoom < 2) {
-    filteredData = data.filter((_, i) => i % 20 === 0);
-  }
+  if (!isPOI && !isQuest && zoom < 2) filteredData = data.filter((_, i) => i % 20 === 0);
+
+  const effectiveHighlightId = highlightId ?? (filteredData[filteredData.length - 1]?.id);
 
   filteredData.forEach(item => {
-    let lat, lng, icon;
-    if (isQuest) {
-      const poi = item.poi;
-      lat = imageHeight - poi.map_pixel_y;
-      lng = poi.map_pixel_x;
-      icon = makeIcon({ emoji: poi.emoji, quest: true, questImg: item.quest_giver_img_url });
-    } else {
-      lat = imageHeight - item.map_pixel_y;
-      lng = item.map_pixel_x;
-      const highlight = highlightId && item.id === highlightId;
-      icon = isPOI ? makeIcon({ emoji: item.emoji }) : makeIcon({ emoji: item.emoji, dot: true, highlight: highlight });
-    }
+    const lat = isQuest ? imageHeight - item.poi.map_pixel_y : imageHeight - item.map_pixel_y;
+    const lng = isQuest ? item.poi.map_pixel_x : item.map_pixel_x;
+    const highlight = !!(effectiveHighlightId && item.id === effectiveHighlightId);
+    const icon = isQuest
+      ? makeIcon({ emoji: item.poi.emoji, quest: true, questImg: item.quest_giver_img_url })
+      : (isPOI ? makeIcon({ emoji: item.emoji }) : makeIcon({ emoji: item.emoji, dot: true, highlight }));
 
     const marker = createMarker(lat, lng, icon, item);
     if (isPOI) marker.options.isPOI = true;
-    if (!isPOI && !isQuest && highlightId && item.id === highlightId) marker.options.isLatest = true;
+    if (!isPOI && !isQuest && highlight) marker.options.isLatest = true;
     layer.addLayer(marker);
   });
 
@@ -491,6 +482,11 @@ function applyLogTypeFilter() {
       if (div) div.textContent = type === "default" ? "" : emoji;
     }
   });
+
+  if (logLineLayer) {
+    if (type === "hidden") map.removeLayer(logLineLayer);
+    else if (!map.hasLayer(logLineLayer)) map.addLayer(logLineLayer);
+  }
 }
 
 /* -------------------- UI Bindings -------------------- */
