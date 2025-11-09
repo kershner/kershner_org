@@ -599,6 +599,13 @@ function daggerwalkMapInit() {
   map = leafletMap;
   window.daggerwalkMap = map;
 
+  // Force Leaflet to redraw markers when returning to the map tab or window
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && window.daggerwalkMap) {
+      setTimeout(() => window.daggerwalkMap.invalidateSize(), 100);
+    }
+  });
+
   const pois = JSON.parse(document.getElementById('poi-data').textContent);
   const logs = JSON.parse(document.getElementById('logs-data').textContent);
   const quest = JSON.parse(document.getElementById('quest-data').textContent);
