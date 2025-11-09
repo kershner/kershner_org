@@ -147,7 +147,7 @@ function attachClusterTooltip(clusterGroup) {
 }
 
 /* -------------------- Icons / Popups / Markers -------------------- */
-function makeIcon({ emoji, dot = false, quest = false, highlight = false }) {
+function makeIcon({ emoji, dot = false, quest = false, questImg = null, highlight = false }) {
   const baseClass = "map-marker";
   function baseIconOptions() {
     return {
@@ -164,8 +164,9 @@ function makeIcon({ emoji, dot = false, quest = false, highlight = false }) {
   });
   if (quest) return L.divIcon({
     ...baseIconOptions(),
-    html: `<div>${emoji || "⭐"}</div>`,
+    html: `<div class="quest-marker"><img src="${questImg}"></img></div>`,
     className: `${baseClass} quest-marker`,
+    popupAnchor: [8, -20],
   });
   return L.divIcon({
     ...baseIconOptions(),
@@ -206,12 +207,16 @@ function popupHtml(item) {
   const add = html => (body.innerHTML += html);
 
   if (isQuest) {
-    add([
-      item.description && `<div class="popup-description">${item.description}</div>`,
-      item.quest_giver_name && `<div><b>Quest Giver:</b> ${item.quest_giver_name}</div>`,
-      item.xp && `<div><b>XP:</b> ${item.xp}</div>`,
-      item.quest_giver_img_url && `<img src="${item.quest_giver_img_url}" width="64" height="64" class="popup-quest-img">`,
-    ].filter(Boolean).join(""));
+    add(`
+      ${item.description ? `<div class="popup-description">${item.description}</div>` : ""}
+      <div class="popup-quest-row">
+        ${item.quest_giver_img_url ? `<img src="${item.quest_giver_img_url}" class="popup-quest-img">` : ""}
+        <div class="popup-quest-info">
+          ${item.quest_giver_name ? `<div class="quest-giver"><b>${item.quest_giver_name}</b></div>` : ""}
+          ${item.xp ? `<div class="quest-xp"><b>XP:</b> ${item.xp}</div>` : ""}
+        </div>
+      </div>
+    `);
   } else if (isLog) {
     const weatherEmoji = WEATHER_EMOJIS[item.weather] || "";
     const seasonEmoji = SEASON_EMOJIS[item.season] || "";
@@ -224,7 +229,7 @@ function popupHtml(item) {
       <hr class="popup-divider">
       <div><b>Date:</b> ${item.date}</div>
       <div><b>Recorded:</b> ${new Date(item.created_at).toLocaleString("en-US")}</div>
-      <div class="popup-coords"><b>Coords:</b> X: ${item.map_pixel_x ?? "?"}, Y: ${item.map_pixel_y ?? "?"}</div>
+      <div><b>Coordinates:</b> X: ${item.map_pixel_x ?? "?"}, Y: ${item.map_pixel_y ?? "?"}</div>
     `);
   } else {
     add([
@@ -290,12 +295,12 @@ function buildLayer(data, { isPOI = false, isQuest = false, highlightId = null }
       const poi = item.poi;
       lat = imageHeight - poi.map_pixel_y;
       lng = poi.map_pixel_x;
-      icon = makeIcon({ emoji: poi.emoji, quest: true });
+      icon = makeIcon({ emoji: poi.emoji, quest: true, questImg: item.quest_giver_img_url });
     } else {
       lat = imageHeight - item.map_pixel_y;
       lng = item.map_pixel_x;
       const highlight = highlightId && item.id === highlightId;
-      icon = isPOI ? makeIcon({ emoji: item.emoji }) : makeIcon({ emoji: item.emoji, dot: true, highlight });
+      icon = isPOI ? makeIcon({ emoji: item.emoji }) : makeIcon({ emoji: item.emoji, dot: true, highlight: highlight });
     }
 
     const marker = createMarker(lat, lng, icon, item);

@@ -198,8 +198,12 @@ a
         border: unset
 
     &.quest-marker
-      div
-        background: unset
+      width: 1.5rem !important
+
+      img        
+        border: 2px solid var(--accent-color)
+        border-radius: 50%
+        width: 100%
 
     &.log-marker
       div
@@ -231,7 +235,7 @@ a
     border: 2px solid var(--accent-color)
   .leaflet-tooltip-top::before
     border-top-color: var(--accent-color) !important
-
+    
   .popup-content
     min-width: 180px
     font-family: $primary-font-family
@@ -253,17 +257,17 @@ a
       margin: 6px 0
       border: none
 
-    .popup-coords
-      margin-top: 4px
-      font-size: 12px
-
     .popup-discovered
       font-size: 12px
       margin-top: 4px
 
+    .popup-quest-row
+      display: flex
+      align-items: flex-end
+      gap: 0.5rem
+      
     .popup-quest-img
       border-radius: 4px
-      margin-top: 6px
       width: 64px
       height: 64px
 
