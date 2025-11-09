@@ -411,8 +411,8 @@ function handleZoomImageSwap(map) {
       .forEach(p => (map.getPanes()[p].style.display = show ? '' : 'none'))
 
   const alt1Labels = [
-    { text: 'High Rock', x: 320, y: 550 },
-    { text: 'Hammerfell', x: 680, y: -50 },
+    { text: 'High Rock', x: 320, y: 700 },
+    { text: 'Hammerfell', x: 500, y: -200 },
   ]
 
   const clearLayer = name => {
