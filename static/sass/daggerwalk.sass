@@ -143,6 +143,22 @@ a
     margin: 0
     background: var(--background-color)
 
+    #alt2-dom-img
+      position: absolute
+      top: 50%
+      left: 50%
+      transform: translate(-50%, -50%)
+      height: 100%
+      width: auto
+      object-fit: contain
+      z-index: 9999
+      cursor: pointer
+      pointer-events: auto
+      opacity: 1
+      transition: opacity .3s ease
+      &.fade-out
+        opacity: 0
+
   .custom-cluster
     div
       width: 36px

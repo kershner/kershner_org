@@ -21,7 +21,7 @@ function setupMap() {
 
   const map = L.map('map', {
     crs: L.CRS.Simple,
-    minZoom: -1,
+    minZoom: -2,
     maxZoom: 6,
     zoomControl: false,
     zoomAnimation: true,
@@ -47,8 +47,8 @@ function setupMap() {
   map.fitBounds(imgBounds);
   map.setMaxBounds(imgBounds.pad(0.5));
 
-  // Start one level above minZoom
-  map.setZoom(map.getMinZoom() + 1);
+  // Start two levels above minZoom
+  map.setZoom(map.getMinZoom() + 2);
 
   L.control.scale({ position: 'bottomleft', imperial: false }).addTo(map);
 
@@ -62,6 +62,10 @@ function setupMap() {
 }
 
 /* -------------------- Utilities -------------------- */
+function isAltMapActive() {
+  return map?.getZoom?.() < 0;
+}
+
 function getMapData() {
   return {
     pois: JSON.parse(document.getElementById('poi-data').textContent),
@@ -335,6 +339,12 @@ const REGION_LABEL_OFFSETS = {
 };
 
 function drawRegionShapes(show = true) {
+  if (isAltMapActive()) {
+    if (regionShapeLayer && map.hasLayer(regionShapeLayer))
+      map.removeLayer(regionShapeLayer);
+    return;
+  }
+
   const shapes = window.shapes || [];
   if (regionShapeLayer) map.removeLayer(regionShapeLayer);
   if (!show) return;
@@ -392,34 +402,126 @@ function drawLogLine(show = true) {
 }
 
 function handleZoomImageSwap(map) {
-  const altUrl = document.getElementById('map')?.dataset.altImage;
-  if (!altUrl) return;
+  const el = document.getElementById('map')
+  const alt1 = el?.dataset.altImage, alt2 = el?.dataset.altImage2
+  if (!alt1 && !alt2) return
+
+  const togglePanes = show =>
+    ['shadowPane', 'tooltipPane', 'popupPane']
+      .forEach(p => (map.getPanes()[p].style.display = show ? '' : 'none'))
+
+  const alt1Labels = [
+    { text: 'High Rock', x: 320, y: 550 },
+    { text: 'Hammerfell', x: 680, y: -50 },
+  ]
+
+  const clearLayer = name => {
+    if (map[name]) { map.removeLayer(map[name]); map[name] = null }
+  }
 
   map.on('zoomend', () => {
-    const currentZoom = map.getZoom();
-    const altZoomLevel = map.getMinZoom();
+    const z = map.getZoom(), minZ = map.getMinZoom()
+    const mode = z <= minZ ? 2 : z <= minZ + 1 ? 1 : 0
+    const url = mode === 2 ? alt2 : mode === 1 ? alt1 : null
 
-    // Show alt map only at the new lowest zoom level
-    if (currentZoom <= altZoomLevel && !map.altImageLayer) {
-      map.altImageLayer = L.imageOverlay(altUrl, map.getBounds(), { zIndex: 9999 }).addTo(map);
-      ['markerPane', 'shadowPane', 'tooltipPane', 'popupPane'].forEach(p => {
-        if (map.getPanes()[p]) map.getPanes()[p].style.display = 'none';
-      });
-      map.dragging.disable();   // lock panning
-      map.touchZoom.disable();  // lock touch dragging
-    }
+    clearLayer('altImageLayer')
+    clearLayer('altLabelLayer')
+    el.style.background = mode === 2 ? 'black' : ''
 
-    // Restore normal map when zooming back in
-    if (currentZoom > altZoomLevel && map.altImageLayer) {
-      map.removeLayer(map.altImageLayer);
-      map.altImageLayer = null;
-      ['markerPane', 'shadowPane', 'tooltipPane', 'popupPane'].forEach(p => {
-        if (map.getPanes()[p]) map.getPanes()[p].style.display = '';
-      });
-      map.dragging.enable();
-      map.touchZoom.enable();
+    if (url) {
+      ;[poiLayer, logLayer, questLayer, regionShapeLayer, logLineLayer]
+        .forEach(l => l && map.hasLayer(l) && map.removeLayer(l))
+
+      togglePanes(false)
+      map.dragging.disable()
+
+      if (mode === 2) {
+        const bounds = map.getBounds()
+        const center = bounds.getCenter()
+        const img = new Image()
+        img.src = url
+        img.onload = () => {
+          const imageAspect = img.width / img.height
+          const mapAspect =
+            (bounds.getEast() - bounds.getWest()) /
+            (bounds.getNorth() - bounds.getSouth())
+
+          let imgBounds
+          if (imageAspect < mapAspect) {
+            // narrower image → full height, letterboxed sides
+            const scaledWidth = (bounds.getNorth() - bounds.getSouth()) * imageAspect
+            imgBounds = [
+              [bounds.getSouth(), center.lng - scaledWidth / 2],
+              [bounds.getNorth(), center.lng + scaledWidth / 2]
+            ]
+          } else {
+            // wider image → full width
+            const scaledHeight = (bounds.getEast() - bounds.getWest()) / imageAspect
+            imgBounds = [
+              [center.lat - scaledHeight / 2, bounds.getWest()],
+              [center.lat + scaledHeight / 2, bounds.getEast()]
+            ]
+          }
+
+          map.altImageLayer = L.imageOverlay(url, imgBounds, {
+            zIndex: 9999,
+            interactive: true
+          }).addTo(map)
+
+          map.altImageLayer.on('click', () => map.setZoom(z + 1))
+        }
+      } else {
+        map.altImageLayer = L.imageOverlay(url, map.getBounds(), {
+          zIndex: 9999, interactive: true
+        }).addTo(map)
+        map.altImageLayer.on('click', () => map.setZoom(z + 1))
+
+        // only show labels if not in fullscreen
+        if (!document.fullscreenElement) {
+          map.altLabelLayer = L.layerGroup(
+            alt1Labels.map(l =>
+              L.marker([l.y, l.x], {
+                icon: L.divIcon({
+                  className: 'region-label',
+                  html: l.text,
+                  iconSize: [100, 20],
+                  iconAnchor: [50, 10]
+                }),
+                interactive: false
+              })
+            )
+          ).addTo(map)
+        }
+      }
+    } else {
+      togglePanes(true)
+      map.dragging.enable()
+      el.style.background = ''
+
+      const toggles = {
+        poi: document.getElementById("toggle-pois")?.checked,
+        quest: document.getElementById("toggle-quest")?.checked,
+        shapes: document.getElementById("toggle-shapes")?.checked
+      }
+
+      if (toggles.poi && poiLayer) map.addLayer(poiLayer)
+      if (toggles.quest && questLayer) map.addLayer(questLayer)
+      if (logLayer) map.addLayer(logLayer)
+      if (toggles.shapes) drawRegionShapes(true)
+      if (logLineLayer) map.addLayer(logLineLayer)
+
+      filterLogsByDate()
+      applyLogTypeFilter()
     }
-  });
+  })
+
+  // hide altmap-1 labels in fullscreen
+  document.addEventListener('fullscreenchange', () => {
+    const isFull = !!document.fullscreenElement
+    if (map.altLabelLayer) {
+      isFull ? map.removeLayer(map.altLabelLayer) : map.addLayer(map.altLabelLayer)
+    }
+  })
 }
 
 /* -------------------- Data Refresh / Filters -------------------- */
@@ -462,6 +564,8 @@ async function refreshMapData() {
 }
 
 function filterLogsByDate() {
+  if (isAltMapActive()) return;
+
   const value = document.getElementById("log-date-filter").value;
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -490,6 +594,8 @@ function filterLogsByDate() {
 }
 
 function applyLogTypeFilter() {
+  if (isAltMapActive()) return;
+
   const select = document.getElementById("log-type-filter");
   if (!select || !logLayer) return;
 
@@ -530,9 +636,9 @@ function bindUIEvents() {
     checkbox.addEventListener("change", e => {
       const layer = getLayer();
       if (e.target.checked) {
-        map.addLayer(layer);
+        if (!isAltMapActive() && layer) map.addLayer(layer);
       } else {
-        if (map.hasLayer(layer)) map.removeLayer(layer);
+        if (layer && map.hasLayer(layer)) map.removeLayer(layer);
       }
     });
   };
@@ -576,8 +682,11 @@ function daggerwalkMapInit() {
   bindUIEvents();
 
   map.on('zoomend', () => {
-    filterLogsByDate();      // rebuilds the filtered logs
-    applyLogTypeFilter();    // reapply current emoji view
+    const z = map.getZoom();
+    if (z >= 0) {
+      filterLogsByDate();
+      applyLogTypeFilter();
+    }
   });
 
   // Emoji overlays respond to pan as well
