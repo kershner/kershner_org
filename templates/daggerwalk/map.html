@@ -22,20 +22,20 @@
     <div id="filters">
       <button id="refresh-map" title="Refresh map data">↻</button>
       
-      <select id="log-type-filter">
-        <option value="logs" selected>Default</option>
-        <option value="terrain">Terrain</option>
-        <option value="weather">Weather</option>
-        <option value="season">Season</option>
-        <option value="hidden">Hidden</option>
-      </select>
-
       <select id="log-date-filter">
         <option value="today">Today</option>
         <option value="yesterday">Yesterday</option>
         <option value="thisweek" selected>This week</option>
         <option value="lastweek">Last week</option>
         <option value="all">2 weeks</option>
+      </select>
+      
+      <select id="log-type-filter">
+        <option value="logs" selected>Dot</option>
+        <option value="terrain">Terrain</option>
+        <option value="weather">Weather</option>
+        <option value="season">Season</option>
+        <option value="hidden">Hide</option>
       </select>
       
       <label><input type="checkbox" id="toggle-quest" checked> Quest</label>
