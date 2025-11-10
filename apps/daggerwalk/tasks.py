@@ -466,13 +466,10 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
                 executable_path=settings.PLAYWRIGHT_CHROMIUM_PATH
             )
             page = browser.new_page(
-                viewport={"width": 1400, "height": 710},
+                viewport={"width": 1000, "height": 500},
                 device_scale_factor=2
             )
 
-            logger.info(f"Setting window.DISABLE_CLUSTERING = true")
-            page.add_init_script("window.DISABLE_CLUSTERING = true;")
-            
             logger.info("Opening Daggerwalk map page...")
             page.goto("https://kershner.org/daggerwalk", wait_until="networkidle")
             page.locator("#map").wait_for(state="visible", timeout=30000)
