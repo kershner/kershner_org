@@ -480,7 +480,7 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
             quest_element.screenshot(path=screenshots["quest"])
             logger.info(f"Screenshot saved: {screenshots['quest']}")
 
-            prepare_leaflet_map(page, x=500, y=250, zoom_level=0.6, delay=1.5)
+            prepare_leaflet_map(page, x=500, y=250, zoom_level=0.0, delay=1.5)
 
             logger.info("Taking map screenshot...")
             page.locator("#map").screenshot(path=screenshots["world"])
