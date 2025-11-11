@@ -258,14 +258,21 @@ function createMarker(lat, lng, icon, item) {
   const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
   if (isTouch) {
-    // Touch: tap opens popup (stays open) and zooms
-    marker.on("click", e => {
+    // Touch: use touchend to ensure popup always opens
+    marker.on("touchend", e => {
       e.originalEvent?.stopPropagation();
-      marker.openPopup();
-      const curZoom = map.getZoom?.() ?? 0;
-      const maxZoom = map.getMaxZoom?.() ?? 6;
-      const targetZoom = Math.max(3, Math.min(curZoom + 1, maxZoom));
-      map.setView(e.latlng, targetZoom, { animate: true });
+      e.originalEvent?.preventDefault();
+
+      // Close any other open popups
+      map.eachLayer(layer => {
+        if (layer instanceof L.Marker && layer !== marker && layer.isPopupOpen()) {
+          layer.closePopup();
+        }
+      });
+
+      // Toggle this popup only, no zoom
+      if (marker.isPopupOpen()) marker.closePopup();
+      else marker.openPopup();
     });
   } else {
     // Mouse: hover shows popup, click zooms (popup not persistent)
