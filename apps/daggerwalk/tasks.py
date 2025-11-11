@@ -466,7 +466,7 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
                 executable_path=settings.PLAYWRIGHT_CHROMIUM_PATH
             )
             page = browser.new_page(
-                viewport={"width": 1000, "height": 500},
+                viewport={"width": 1000, "height": 1000},
                 device_scale_factor=2
             )
 
