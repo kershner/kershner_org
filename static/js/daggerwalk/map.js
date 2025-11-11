@@ -17,9 +17,8 @@ let logLineLayer = null;
 /* -------------------- Map Setup -------------------- */
 function setupMap() {
   const imgBounds = (bounds instanceof L.LatLngBounds) ? bounds : L.latLngBounds(bounds);
-  const imageLayer = L.imageOverlay(imageUrl, imgBounds);
 
-  const map = L.map('map', {
+  map = L.map('map', {
     crs: L.CRS.Simple,
     minZoom: -2,
     maxZoom: 6,
@@ -44,7 +43,8 @@ function setupMap() {
     fullscreenControl: { position: 'bottomright' },
   });
 
-  imageLayer.addTo(map);
+  const imageLayer = L.imageOverlay(imageUrl, imgBounds).addTo(map);
+  map.baseImageLayer = imageLayer;
   map.fitBounds(imgBounds);
   map.setMaxBounds(imgBounds.pad(0.5));
 
@@ -445,58 +445,46 @@ function handleZoomImageSwap(map) {
 
     clearLayer('altImageLayer')
     clearLayer('altLabelLayer')
-    el.style.background = mode === 2 ? 'black' : ''
 
     if (url) {
+      // hide everything else underneath
+      el.style.background = 'black'
+      const base = map.baseImageLayer?.getElement?.()
+      if (base) base.style.display = 'none'
+
       ;[poiLayer, logLayer, questLayer, regionShapeLayer, logLineLayer]
         .forEach(l => l && map.hasLayer(l) && map.removeLayer(l))
 
       togglePanes(false)
       map.dragging.disable()
 
-      if (mode === 2) {
-        const bounds = map.getBounds()
-        const center = bounds.getCenter()
-        const img = new Image()
-        img.src = url
-        img.onload = () => {
-          const imageAspect = img.width / img.height
-          const mapAspect =
-            (bounds.getEast() - bounds.getWest()) /
-            (bounds.getNorth() - bounds.getSouth())
+      const bounds = map.getBounds(), center = bounds.getCenter()
+      const img = new Image()
+      img.src = url
+      img.onload = () => {
+        const imageAspect = img.width / img.height
+        const mapAspect =
+          (bounds.getEast() - bounds.getWest()) /
+          (bounds.getNorth() - bounds.getSouth())
 
-          let imgBounds
-          if (imageAspect < mapAspect) {
-            // narrower image → full height, letterboxed sides
-            const scaledWidth = (bounds.getNorth() - bounds.getSouth()) * imageAspect
-            imgBounds = [
-              [bounds.getSouth(), center.lng - scaledWidth / 2],
-              [bounds.getNorth(), center.lng + scaledWidth / 2]
+        // keep image aspect ratio (letterboxing via hiding lower layers)
+        const imgBounds = (imageAspect < mapAspect)
+          ? [
+              [bounds.getSouth(), center.lng - (bounds.getNorth() - bounds.getSouth()) * imageAspect / 2],
+              [bounds.getNorth(), center.lng + (bounds.getNorth() - bounds.getSouth()) * imageAspect / 2]
             ]
-          } else {
-            // wider image → full width
-            const scaledHeight = (bounds.getEast() - bounds.getWest()) / imageAspect
-            imgBounds = [
-              [center.lat - scaledHeight / 2, bounds.getWest()],
-              [center.lat + scaledHeight / 2, bounds.getEast()]
+          : [
+              [center.lat - (bounds.getEast() - bounds.getWest()) / imageAspect / 2, bounds.getWest()],
+              [center.lat + (bounds.getEast() - bounds.getWest()) / imageAspect / 2, bounds.getEast()]
             ]
-          }
 
-          map.altImageLayer = L.imageOverlay(url, imgBounds, {
-            zIndex: 9999,
-            interactive: true
-          }).addTo(map)
-
-          map.altImageLayer.on('click', () => map.setZoom(z + 1))
-        }
-      } else {
-        map.altImageLayer = L.imageOverlay(url, map.getBounds(), {
+        map.altImageLayer = L.imageOverlay(url, imgBounds, {
           zIndex: 9999, interactive: true
         }).addTo(map)
         map.altImageLayer.on('click', () => map.setZoom(z + 1))
 
-        // only show labels if not in fullscreen
-        if (!map.isFullscreen()) {
+        // only show labels for altmap-1 when not in fullscreen
+        if (mode === 1 && !map.isFullscreen()) {
           map.altLabelLayer = L.layerGroup(
             alt1Labels.map(l =>
               L.marker([l.y, l.x], {
@@ -509,13 +497,16 @@ function handleZoomImageSwap(map) {
                 interactive: false
               })
             )
-          ).addTo(map);
+          ).addTo(map)
         }
       }
     } else {
+      // restore everything when zoomed in
+      el.style.background = ''
+      const base = map.baseImageLayer?.getElement?.()
+      if (base) base.style.display = ''
       togglePanes(true)
       map.dragging.enable()
-      el.style.background = ''
 
       const toggles = {
         poi: document.getElementById("toggle-pois")?.checked,
