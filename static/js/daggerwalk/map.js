@@ -289,21 +289,38 @@ function buildLayer(data, { isPOI = false, isQuest = false, highlightId = null }
   const zoom = map?.getZoom?.() ?? 1;
 
   let filteredData = data;
-  if (!isPOI && !isQuest && zoom < 2) filteredData = data.filter((_, i) => i % 20 === 0);
+  if (!isPOI && !isQuest && zoom < 2) {
+    filteredData = data.filter((_, i) => i % 20 === 0);
 
-  const effectiveHighlightId = highlightId ?? (filteredData[filteredData.length - 1]?.id);
+    // Always include the latest log so it's visible even when filtered
+    if (data.length) {
+      const latestLog = data.reduce((a, b) =>
+        new Date(a.created_at) > new Date(b.created_at) ? a : b, data[0]);
+      if (!filteredData.some(l => l.id === latestLog.id)) {
+        filteredData.push(latestLog);
+      }
+    }
+  }
+
+  // Determine which log to highlight
+  const effectiveHighlightId =
+    highlightId ?? (filteredData[filteredData.length - 1]?.id);
 
   filteredData.forEach(item => {
     const lat = isQuest ? imageHeight - item.poi.map_pixel_y : imageHeight - item.map_pixel_y;
     const lng = isQuest ? item.poi.map_pixel_x : item.map_pixel_x;
     const highlight = !!(effectiveHighlightId && item.id === effectiveHighlightId);
+
     const icon = isQuest
       ? makeIcon({ emoji: item.poi.emoji, quest: true, questImg: item.quest_giver_img_url })
-      : (isPOI ? makeIcon({ emoji: item.emoji }) : makeIcon({ emoji: item.emoji, dot: true, highlight }));
+      : (isPOI
+          ? makeIcon({ emoji: item.emoji })
+          : makeIcon({ emoji: item.emoji, dot: true, highlight }));
 
     const marker = createMarker(lat, lng, icon, item);
     if (isPOI) marker.options.isPOI = true;
     if (!isPOI && !isQuest && highlight) marker.options.isLatest = true;
+
     layer.addLayer(marker);
   });
 
