@@ -4,11 +4,13 @@
   <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/vendor/leaflet/css/leaflet.css" />
   <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/vendor/leaflet/css/MarkerCluster.Default.css" />
   <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/vendor/leaflet/css/MarkerCluster.css" />
-
+  <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/vendor/leaflet/css/leaflet.fullscreen.css" />
+  
   <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/leaflet/js/leaflet.js"></script>
   <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/leaflet/js/leaflet.markercluster.js"></script>
+  <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/leaflet/js/Leaflet.fullscreen.min.js"></script>
 
-  <script>
+  <script type="text/javascript">
     window.daggerwalkMap = {
       imageUrl: "{% settings_value "BASE_S3_URL" %}/img/daggerwalk/world_map_stitched_native.png"
     };
@@ -41,8 +43,6 @@
       <label><input type="checkbox" id="toggle-quest" checked> Quest</label>
       <label><input type="checkbox" id="toggle-pois"> POIs</label>
       <label><input type="checkbox" id="toggle-shapes"> Labels</label>
-
-      <button id="fullscreen-map" title="Toggle map fullscreen">⤢</button>
     </div>
   </div>
 </div>

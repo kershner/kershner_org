@@ -415,7 +415,7 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
 
         logger.info("Clicking fullscreen button...")
         try:
-            page.click("#fullscreen-map", timeout=5000)
+            page.click(".leaflet-control-zoom-fullscreen", timeout=5000)
             time.sleep(1)
         except Exception:
             logger.warning("Fullscreen button not found or failed to click.")

@@ -41,6 +41,7 @@ function setupMap() {
     touchZoom: true,
     doubleClickZoom: false,
     keyboard: false,
+    fullscreenControl: { position: 'bottomright' },
   });
 
   imageLayer.addTo(map);
@@ -51,12 +52,6 @@ function setupMap() {
   map.setZoom(map.getMinZoom() + 2);
 
   L.control.scale({ position: 'bottomleft', imperial: false }).addTo(map);
-
-  document.getElementById('fullscreen-map').onclick = () => {
-    const el = map.getContainer();
-    if (!document.fullscreenElement) el.requestFullscreen();
-    else document.exitFullscreen();
-  };
 
   return { map, imageLayer, imgBounds };
 }
@@ -501,7 +496,7 @@ function handleZoomImageSwap(map) {
         map.altImageLayer.on('click', () => map.setZoom(z + 1))
 
         // only show labels if not in fullscreen
-        if (!document.fullscreenElement) {
+        if (!map.isFullscreen()) {
           map.altLabelLayer = L.layerGroup(
             alt1Labels.map(l =>
               L.marker([l.y, l.x], {
@@ -514,7 +509,7 @@ function handleZoomImageSwap(map) {
                 interactive: false
               })
             )
-          ).addTo(map)
+          ).addTo(map);
         }
       }
     } else {
