@@ -185,7 +185,8 @@ class DaggerwalkLog(models.Model):
                     region=self.region_fk,
                     type='landmark',
                     map_pixel_x=self.map_pixel_x,
-                    map_pixel_y=self.map_pixel_y
+                    map_pixel_y=self.map_pixel_y,
+                    discovered=timezone.now()
                 )
 
         super().save(*args, **kwargs)
