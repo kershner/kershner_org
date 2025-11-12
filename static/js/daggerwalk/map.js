@@ -429,11 +429,6 @@ function handleZoomImageSwap(map) {
     ['shadowPane', 'tooltipPane', 'popupPane']
       .forEach(p => (map.getPanes()[p].style.display = show ? '' : 'none'))
 
-  const alt1Labels = [
-    { text: 'High Rock', x: 320, y: 700 },
-    { text: 'Hammerfell', x: 500, y: -200 },
-  ]
-
   const clearLayer = name => {
     if (map[name]) { map.removeLayer(map[name]); map[name] = null }
   }
@@ -444,10 +439,8 @@ function handleZoomImageSwap(map) {
     const url = mode === 2 ? alt2 : mode === 1 ? alt1 : null
 
     clearLayer('altImageLayer')
-    clearLayer('altLabelLayer')
 
     if (url) {
-      // hide everything else underneath
       el.style.background = 'black'
       const base = map.baseImageLayer?.getElement?.()
       if (base) base.style.display = 'none'
@@ -467,7 +460,6 @@ function handleZoomImageSwap(map) {
           (bounds.getEast() - bounds.getWest()) /
           (bounds.getNorth() - bounds.getSouth())
 
-        // keep image aspect ratio (letterboxing via hiding lower layers)
         const imgBounds = (imageAspect < mapAspect)
           ? [
               [bounds.getSouth(), center.lng - (bounds.getNorth() - bounds.getSouth()) * imageAspect / 2],
@@ -482,26 +474,8 @@ function handleZoomImageSwap(map) {
           zIndex: 9999, interactive: true
         }).addTo(map)
         map.altImageLayer.on('click', () => map.setZoom(z + 1))
-
-        // only show labels for altmap-1 when not in fullscreen
-        if (mode === 1 && !map.isFullscreen()) {
-          map.altLabelLayer = L.layerGroup(
-            alt1Labels.map(l =>
-              L.marker([l.y, l.x], {
-                icon: L.divIcon({
-                  className: 'region-label',
-                  html: l.text,
-                  iconSize: [100, 20],
-                  iconAnchor: [50, 10]
-                }),
-                interactive: false
-              })
-            )
-          ).addTo(map)
-        }
       }
     } else {
-      // restore everything when zoomed in
       el.style.background = ''
       const base = map.baseImageLayer?.getElement?.()
       if (base) base.style.display = ''
@@ -522,14 +496,6 @@ function handleZoomImageSwap(map) {
 
       filterLogsByDate()
       applyLogTypeFilter()
-    }
-  })
-
-  // hide altmap-1 labels in fullscreen
-  document.addEventListener('fullscreenchange', () => {
-    const isFull = !!document.fullscreenElement
-    if (map.altLabelLayer) {
-      isFull ? map.removeLayer(map.altLabelLayer) : map.addLayer(map.altLabelLayer)
     }
   })
 }
