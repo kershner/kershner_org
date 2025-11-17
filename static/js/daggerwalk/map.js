@@ -51,8 +51,6 @@ function setupMap() {
   // Start two levels above minZoom
   map.setZoom(map.getMinZoom() + 2);
 
-  L.control.scale({ position: 'bottomleft', imperial: false }).addTo(map);
-
   return { map, imageLayer, imgBounds };
 }
 
@@ -352,7 +350,7 @@ const REGION_LABEL_OFFSETS = {
   "Alcaire": { x: -25, y: 0}, "Wrothgarian Mountains": { x: 25, y: 50},
   "Dragontail Mountains": { x: -60, y: -10}, "Wayrest": { x: -20, y: 0},
   "Gavaudon": { x: -30, y: 20}, "Mournoth": { x: 10, y: 20},
-  "Cybiades": { x: 0, y: 30}, "Myrkwasa": { x: 20, y: 0},
+  "Cybiades": { x: 30, y: 5}, "Myrkwasa": { x: 20, y: 0},
   "Pothago": { x: 5, y: 10}, "Kairou": { x: 15, y: 15},
   "Antiphyllos": { x: 20, y: 10}, "Alik'r Desert": { x: -100, y: -40},
 };
