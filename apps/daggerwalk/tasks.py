@@ -419,16 +419,6 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
             time.sleep(1)
         except Exception:
             logger.warning("Fullscreen button not found or failed to click.")
-
-        logger.info("Setting log-date-filter to 'thisweek'...")
-        page.evaluate("""
-            const select = document.getElementById('log-date-filter');
-            if (select) {
-                select.value = 'thisweek';
-                select.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-        """)
-        time.sleep(1)
         
         logger.info("Clicking labels button...")
         try:
