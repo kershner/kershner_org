@@ -546,8 +546,11 @@ function filterLogsByDate() {
   let start = null, end = now;
 
   switch (value) {
-    case "today": start = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    case "yesterday": end = todayStart; start = new Date(todayStart.getTime() - 86400000); break;
+    case "today": start = new Date(Date.now() - 24 * 60 * 60 * 1000); break;
+    case "yesterday":
+      end = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
+      break;
     case "thisweek": start = new Date(now.getTime() - 7 * 86400000); break;
     case "lastweek": end = new Date(now.getTime() - 7 * 86400000); start = new Date(now.getTime() - 14 * 86400000); break;
     default: start = null; break;
