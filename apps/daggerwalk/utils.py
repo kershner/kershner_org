@@ -88,7 +88,7 @@ def get_top_values_by_time_counts(value_counts, attr, top_n=10):
         results.append(entry)
     return results
 
-def calculate_daggerwalk_stats(range_keyword):
+def calculate_daggerwalk_stats(range_keyword, all_logs, all_chats, all_quests):
     def format_last_seen(dt):
         if not isinstance(dt, datetime):
             return None
@@ -101,58 +101,75 @@ def calculate_daggerwalk_stats(range_keyword):
     if range_keyword not in (ranges := get_stats_date_ranges()) and range_keyword != 'all':
         raise ValueError(f'Invalid range: {range_keyword}. Must be one of: {", ".join(list(ranges) + ["all"])}')
 
+    # Determine date range and filter logs
     if range_keyword == 'all':
-        dates = DaggerwalkLog.objects.aggregate(start=Min('created_at'), end=Max('created_at'))
-        if not dates['start'] or not dates['end']:
+        if not all_logs:
             raise ValueError('No logs available.')
-        start_date, end_date = dates['start'].date(), dates['end'].date()
-        queryset = DaggerwalkLog.objects.all()
+        start_date = all_logs[0]['created_at'].date()
+        end_date = all_logs[-1]['created_at'].date()
+        filtered_logs = all_logs
     else:
         start_date, end_date = ranges[range_keyword]
-        queryset = DaggerwalkLog.objects.filter(created_at__date__range=(start_date, end_date))
+        filtered_logs = [
+            log for log in all_logs 
+            if start_date <= log['created_at'].date() <= end_date
+        ]
+    
+    filtered_chats = [
+        chat for chat in all_chats
+        if start_date <= chat['request_log__created_at'].date() <= end_date
+    ]
+    
+    filtered_quests = [
+        quest for quest in all_quests
+        if quest.get('completed_at') and start_date <= quest['completed_at'].date() <= end_date
+    ]
 
-    # --- Command stats: compute once from one queryset ---
-    chat_qs = ChatCommandLog.objects.filter(
-        request_log__created_at__date__range=(start_date, end_date)
-    )
-
-    total_cmds = chat_qs.count()
-    walker_count = chat_qs.values("user").distinct().count()
-    most_common_cmd = (
-        chat_qs.values("command")
-        .annotate(count=Count("id"))
-        .order_by("-count")
-        .first()
-    )
-
+    # Chat command stats
+    total_cmds = len(filtered_chats)
+    unique_users = set(chat['user'] for chat in filtered_chats)
+    walker_count = len(unique_users)
+    
+    cmd_counts = {}
+    user_counts = {}
+    for chat in filtered_chats:
+        cmd_counts[chat['command']] = cmd_counts.get(chat['command'], 0) + 1
+        user_counts[chat['user']] = user_counts.get(chat['user'], 0) + 1
+    
+    most_common_cmd = max(cmd_counts.items(), key=lambda x: x[1])[0] if cmd_counts else None
+    
     command_summary = {
         "totalCommands": total_cmds,
-        "mostCommonCommand": most_common_cmd["command"] if most_common_cmd else None,
+        "mostCommonCommand": most_common_cmd,
         "numWalkers": walker_count,
         "avgCommandsPerWalker": round(total_cmds / walker_count, 2) if walker_count else 0,
     }
 
-    # Build the detailed chatCommandStats from the same chat_qs
-    top_cmds = chat_qs.values('command').annotate(count=Count('id')).order_by('-count')[:10]
-    top_users = chat_qs.values('user').annotate(count=Count('id')).order_by('-count')[:10]
-    last_100 = chat_qs.order_by('-timestamp')[:100]
+    top_cmds = sorted(cmd_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+    top_users = sorted(user_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+    last_100 = filtered_chats[:100]
+    
     chat_command_stats = {
         "total": total_cmds,
-        "top_commands": [{"command": c['command'], "count": c['count']} for c in top_cmds],
-        "top_users": [{"user": u['user'], "count": u['count']} for u in top_users],
+        "top_commands": [{"command": cmd, "count": count} for cmd, count in top_cmds],
+        "top_users": [{"user": user, "count": count} for user, count in top_users],
         "last_100": [
             {
-                "timestamp": timezone.localtime(c.timestamp, EST_TIMEZONE),
-                "user": c.user,
-                "command": c.command,
-                "args": c.args,
-                "raw": c.raw,
+                "timestamp": timezone.localtime(
+                    datetime.fromisoformat(str(c['timestamp'])) if isinstance(c['timestamp'], str) 
+                    else c['timestamp'], 
+                    EST_TIMEZONE
+                ),
+                "user": c['user'],
+                "command": c['command'],
+                "args": c['args'],
+                "raw": c['raw'],
             }
             for c in last_100
         ],
     }
 
-    total_logs = queryset.count()
+    total_logs = len(filtered_logs)
     if total_logs == 0:
         return {
             'startDate': start_date.isoformat(),
@@ -168,29 +185,27 @@ def calculate_daggerwalk_stats(range_keyword):
             'totalSongsHeard': 0,
             'topSongs': [],
             'topWeather': [],
+            'inGameTimeRange': {},
+            'chatCommandStats': chat_command_stats,
+            'commandSummary': command_summary,
+            'questStats': {},
         }
 
     total_minutes = total_logs * 5
 
-    # --- Stream distance calc (no full materialization) ---
-    # Only fetch the numeric coords + created_at
-    coords_iter = queryset.order_by('created_at').values_list('player_x', 'player_z', 'created_at').iterator(chunk_size=5000)
+    # Calculate total distance traveled
     total_distance_km = 0.0
     prev_x = prev_z = None
-    for x, z, created in coords_iter:
-        fx, fz = float(x), float(z)
+    for log in filtered_logs:
+        fx, fz = float(log['player_x']), float(log['player_z'])
         if prev_x is not None and prev_z is not None:
             dx = fx - prev_x
             dz = fz - prev_z
             total_distance_km += math.sqrt(dx * dx + dz * dz) / 1000.0
         prev_x, prev_z = fx, fz
 
-    # --- Quest Stats (after distance computed) ---
-    completed_qs = Quest.objects.filter(
-        status="completed",
-        completed_at__date__range=(start_date, end_date),
-    )
-    quest_count = completed_qs.count()
+    # Quest stats
+    quest_count = len(filtered_quests)
     quest_stats = {
         "completedQuests": quest_count,
         "avgQuestTime": None,
@@ -198,16 +213,16 @@ def calculate_daggerwalk_stats(range_keyword):
         "walkersWithXp": 0,
         "avgDistanceTraveled": None,
     }
+    
     if quest_count > 0:
-        durations = completed_qs.values_list('created_at', 'completed_at')
         dur_minutes = [
-            int((completed_at - created_at).total_seconds() / 60)
-            for created_at, completed_at in durations
-            if created_at and completed_at
+            int((q['completed_at'] - q['created_at']).total_seconds() / 60)
+            for q in filtered_quests
+            if q.get('created_at') and q.get('completed_at')
         ]
         avg_duration = (sum(dur_minutes) / len(dur_minutes)) if dur_minutes else 0
-
-        total_xp = completed_qs.aggregate(total=Sum("xp"))["total"] or 0
+        total_xp = sum(q.get('xp', 0) for q in filtered_quests)
+        
         walkers_with_xp = (
             TwitchUserProfile.objects.filter(
                 completed_quests__status="completed",
@@ -217,6 +232,7 @@ def calculate_daggerwalk_stats(range_keyword):
             .distinct()
             .count()
         )
+        
         avg_distance_traveled = float(total_distance_km) / quest_count if quest_count else 0.0
 
         quest_stats.update({
@@ -226,56 +242,88 @@ def calculate_daggerwalk_stats(range_keyword):
             "avgDistanceTraveled": format_distance(avg_distance_traveled),
         })
 
-    # --- Region frequency + last seen in one pass, then sort by last seen ---
-    region_stats = list(
-        queryset.values('region')
-        .annotate(count=Count('id'), last_seen=Max('created_at'))
-        .order_by('-count')[:10]
-    )
+    # Region frequency and last seen
+    region_data = {}
+    for log in filtered_logs:
+        region = log['region']
+        if region not in region_data:
+            region_data[region] = {'count': 0, 'last_seen': log['created_at']}
+        region_data[region]['count'] += 1
+        if log['created_at'] > region_data[region]['last_seen']:
+            region_data[region]['last_seen'] = log['created_at']
+    
+    region_stats = sorted(region_data.items(), key=lambda x: x[1]['count'], reverse=True)[:10]
     mostVisitedRegions = sorted(
         [
             {
-                'region': r['region'],
-                'lastSeen': format_last_seen(r['last_seen']),
+                'region': region,
+                'lastSeen': format_last_seen(data['last_seen']),
             }
-            for r in region_stats
+            for region, data in region_stats
         ],
         key=lambda r: (r['lastSeen'] is not None, r['lastSeen']),
         reverse=True
     )
 
-    # --- POIs ---
-    top_pois = queryset.exclude(poi__isnull=True).values(
-        'poi__name', 'poi__emoji', 'region_fk__name'
-    ).annotate(log_count=Count('id')).order_by('-log_count')[:10]
+    # POI stats
+    poi_data = {}
+    for log in filtered_logs:
+        if log.get('poi__name'):
+            key = (log['poi__name'], log.get('region_fk__name'), log.get('poi__emoji'))
+            poi_data[key] = poi_data.get(key, 0) + 1
+    
+    top_pois = sorted(poi_data.items(), key=lambda x: x[1], reverse=True)[:10]
     topPOIsVisited = [
         {
-            'poi': p['poi__name'],
-            'region': p['region_fk__name'],
-            'emoji': p['poi__emoji'],
-            'timeSpentMinutes': p['log_count'] * 5
+            'poi': poi_name,
+            'region': region_name,
+            'emoji': emoji,
+            'timeSpentMinutes': count * 5
         }
-        for p in top_pois
+        for (poi_name, region_name, emoji), count in top_pois
     ]
 
-    # --- Songs ---
-    song_counts = queryset.exclude(current_song__isnull=True).values('current_song') \
-        .annotate(count=Count('id')).order_by('-count')
-    most_common_song = song_counts.first()
-    total_songs_heard = song_counts.count()
+    # Song stats
+    song_counts = {}
+    for log in filtered_logs:
+        if log.get('current_song'):
+            song = log['current_song']
+            song_counts[song] = song_counts.get(song, 0) + 1
+    
+    song_items = sorted(song_counts.items(), key=lambda x: x[1], reverse=True)
+    most_common_song = song_items[0][0] if song_items else None
+    total_songs_heard = len(song_counts)
 
-    # --- Weather ---
-    weather_counts = queryset.values('weather').annotate(count=Count('id')).order_by('-count')
-    most_common_weather = weather_counts.first()
+    # Weather stats
+    weather_counts = {}
+    for log in filtered_logs:
+        weather = log['weather']
+        weather_counts[weather] = weather_counts.get(weather, 0) + 1
+    
+    weather_items = sorted(weather_counts.items(), key=lambda x: x[1], reverse=True)
+    most_common_weather = weather_items[0][0] if weather_items else None
 
-    # --- In-game time range + unique days (stream dates only) ---
-    first_entry = queryset.order_by('created_at').only('date', 'season').first()
-    last_entry = queryset.order_by('-created_at').only('date', 'season').first()
+    # In-game time range and unique days
+    first_entry = filtered_logs[0] if filtered_logs else None
+    last_entry = filtered_logs[-1] if filtered_logs else None
 
     unique_days = set()
-    for d in queryset.values_list('date', flat=True).iterator(chunk_size=5000):
-        if d:
-            unique_days.add(extract_date_key(d))
+    for log in filtered_logs:
+        if log.get('date'):
+            unique_days.add(extract_date_key(log['date']))
+
+    def get_top_values(items_dict, attr_name, top_n=10):
+        results = []
+        sorted_items = sorted(items_dict.items(), key=lambda x: x[1], reverse=True)[:top_n]
+        for value, count in sorted_items:
+            entry = {
+                'name': value,
+                'time': format_minutes(count * 5)
+            }
+            if attr_name == 'weather':
+                entry['emoji'] = DaggerwalkLog.get_weather_emoji(value)
+            results.append(entry)
+        return results
 
     return {
         'startDate': start_date.isoformat(),
@@ -285,17 +333,17 @@ def calculate_daggerwalk_stats(range_keyword):
         'formattedPlaytime': format_minutes(total_minutes),
         'totalDistanceKm': format_distance(total_distance_km),
         'mostVisitedRegions': mostVisitedRegions,
-        'mostCommonWeather': most_common_weather['weather'] if most_common_weather else None,
+        'mostCommonWeather': most_common_weather,
         'topPOIsVisited': topPOIsVisited,
-        'mostCommonSong': most_common_song['current_song'] if most_common_song else None,
+        'mostCommonSong': most_common_song,
         'totalSongsHeard': total_songs_heard,
-        'topSongs': get_top_values_by_time_counts(song_counts, 'current_song'),
-        'topWeather': get_top_values_by_time_counts(weather_counts, 'weather'),
+        'topSongs': get_top_values(song_counts, 'current_song'),
+        'topWeather': get_top_values(weather_counts, 'weather'),
         'inGameTimeRange': {
-            "startDate": extract_date_key(first_entry.date) if first_entry else None,
-            "endDate": extract_date_key(last_entry.date) if last_entry else None,
-            "startSeason": first_entry.season if first_entry else None,
-            "endSeason": last_entry.season if last_entry else None,
+            "startDate": extract_date_key(first_entry['date']) if first_entry else None,
+            "endDate": extract_date_key(last_entry['date']) if last_entry else None,
+            "startSeason": first_entry.get('season') if first_entry else None,
+            "endSeason": last_entry.get('season') if last_entry else None,
             "uniqueDays": len(unique_days),
         },
         'chatCommandStats': chat_command_stats,

@@ -1,5 +1,5 @@
 from apps.daggerwalk.serializers import  POISerializer, QuestSerializer, TwitchUserProfileSerializer
-from apps.daggerwalk.models import POI, DaggerwalkLog, ProvinceShape, Quest, Region, TwitchUserProfile
+from apps.daggerwalk.models import POI, ChatCommandLog, DaggerwalkLog, ProvinceShape, Quest, Region, TwitchUserProfile
 from apps.daggerwalk.utils import calculate_daggerwalk_stats, get_latest_log_data
 from django.db.models import Sum, Count, IntegerField, Max, Max
 from django.db.models.functions import Coalesce
@@ -549,6 +549,7 @@ def update_all_daggerwalk_caches():
     region_data = (
         DaggerwalkLog.objects
         .exclude(region="Ocean")
+        .select_related('region_fk')
         .values("region", "region_fk__province")
         .annotate(
             latest_date=Max("created_at"),
@@ -565,13 +566,39 @@ def update_all_daggerwalk_caches():
     cache.set("daggerwalk_latest_log_data", latest_log_data, timeout=None)
 
     # 3. Stats slices
+    all_logs = list(
+        DaggerwalkLog.objects
+        .select_related('region_fk', 'poi')
+        .order_by('created_at')
+        .values(
+            'id', 'created_at', 'player_x', 'player_z', 'date', 'season',
+            'region', 'weather', 'current_song', 'poi__name', 'poi__emoji',
+            'region_fk__name'
+        )
+    )
+    
+    all_chats = list(
+        ChatCommandLog.objects
+        .select_related('request_log')
+        .order_by('-timestamp')
+        .values(
+            'id', 'request_log__created_at', 'timestamp', 'user', 
+            'command', 'args', 'raw'
+        )
+    )
+    
+    all_quests = list(
+        Quest.objects
+        .filter(status="completed")
+        .values('id', 'created_at', 'completed_at', 'xp')
+    )
+    
     for keyword in ['all', 'today', 'yesterday', 'last_7_days', 'this_month']:
         try:
-            stats = calculate_daggerwalk_stats(keyword)
+            stats = calculate_daggerwalk_stats(keyword, all_logs, all_chats, all_quests)
             cache.set(f"daggerwalk_stats:{keyword}", stats, timeout=None)
         except Exception as e:
-            print(e)
-            pass
+            logger.error(f"Stats calculation failed for {keyword}: {e}")
 
     # 4. Current and previous quests
     current_quest = (
@@ -636,7 +663,7 @@ def update_all_daggerwalk_caches():
     cache.set("daggerwalk_map_logs", combined, timeout=None)
 
     # 7. POIs + quests + shapes
-    pois_qs = POI.objects.all()
+    pois_qs = POI.objects.select_related('region').all()
     poi_json = POISerializer(pois_qs, many=True).data
     cache.set("daggerwalk_map_pois", poi_json, timeout=None)
     
