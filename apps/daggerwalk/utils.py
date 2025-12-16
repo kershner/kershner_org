@@ -42,15 +42,42 @@ def get_latest_log_data():
 
 
 def get_stats_date_ranges():
-    now_est = timezone.now().astimezone(EST_TIMEZONE).date()
+    """
+    Get date ranges for streaming days (9am EST to midnight EST).
+    Each streaming day is 15 hours: 9:00am - 11:59:59pm on the same calendar day.
+    """
+    now_est = timezone.now().astimezone(EST_TIMEZONE)
+    current_date = now_est.date()
+    
+    # Today's streaming day: 9am today to midnight tonight (or now if before midnight)
+    today_start = EST_TIMEZONE.localize(datetime.combine(current_date, datetime.min.time().replace(hour=9)))
+    today_end = EST_TIMEZONE.localize(datetime.combine(current_date, datetime.max.time()))  # 11:59:59.999999pm
+    
+    # Use current time if we haven't reached midnight yet
+    if now_est < today_end:
+        today_end = now_est
+    
+    # Yesterday's streaming day: 9am yesterday to midnight yesterday
+    yesterday_date = current_date - timedelta(days=1)
+    yesterday_start = EST_TIMEZONE.localize(datetime.combine(yesterday_date, datetime.min.time().replace(hour=9)))
+    yesterday_end = EST_TIMEZONE.localize(datetime.combine(yesterday_date, datetime.max.time()))
+    
+    # Last 7 streaming days: 9am 6 days ago to now (or midnight today)
+    seven_days_ago_date = current_date - timedelta(days=6)
+    seven_days_start = EST_TIMEZONE.localize(datetime.combine(seven_days_ago_date, datetime.min.time().replace(hour=9)))
+    seven_days_end = today_end
+    
+    # This month: 9am on the 1st to now (or midnight today)
+    first_of_month = current_date.replace(day=1)
+    month_start = EST_TIMEZONE.localize(datetime.combine(first_of_month, datetime.min.time().replace(hour=9)))
+    month_end = today_end
 
     return {
-        'today': (now_est, now_est),
-        'yesterday': (now_est - timedelta(days=1), now_est - timedelta(days=1)),
-        'last_7_days': (now_est - timedelta(days=6), now_est),
-        'this_month': (now_est.replace(day=1), now_est),
+        'today': (today_start, today_end),
+        'yesterday': (yesterday_start, yesterday_end),
+        'last_7_days': (seven_days_start, seven_days_end),
+        'this_month': (month_start, month_end),
     }
-
 
 def format_minutes(total_minutes):
     hours = total_minutes // 60
@@ -105,24 +132,36 @@ def calculate_daggerwalk_stats(range_keyword, all_logs, all_chats, all_quests):
     if range_keyword == 'all':
         if not all_logs:
             raise ValueError('No logs available.')
-        start_date = all_logs[0]['created_at'].date()
-        end_date = all_logs[-1]['created_at'].date()
+        start_datetime = all_logs[0]['created_at']
+        end_datetime = all_logs[-1]['created_at']
         filtered_logs = all_logs
+        # For 'all', no UTC conversion needed since we use all logs
+        start_datetime_utc = start_datetime
+        end_datetime_utc = end_datetime
     else:
-        start_date, end_date = ranges[range_keyword]
+        start_datetime, end_datetime = ranges[range_keyword]
+        # Convert to UTC for comparison (logs are stored in UTC)
+        start_datetime_utc = start_datetime.astimezone(pytz.UTC)
+        end_datetime_utc = end_datetime.astimezone(pytz.UTC)
+        
+        # Filter by datetime (not just date) to respect streaming day hours
         filtered_logs = [
             log for log in all_logs 
-            if start_date <= log['created_at'].date() <= end_date
+            if start_datetime_utc <= log['created_at'] <= end_datetime_utc
         ]
+    
+    # Convert to dates for display purposes
+    start_date = start_datetime.date() if hasattr(start_datetime, 'date') else start_datetime
+    end_date = end_datetime.date() if hasattr(end_datetime, 'date') else end_datetime
     
     filtered_chats = [
         chat for chat in all_chats
-        if start_date <= chat['request_log__created_at'].date() <= end_date
+        if start_datetime_utc <= chat['request_log__created_at'] <= end_datetime_utc
     ]
     
     filtered_quests = [
         quest for quest in all_quests
-        if quest.get('completed_at') and start_date <= quest['completed_at'].date() <= end_date
+        if quest.get('completed_at') and start_datetime_utc <= quest['completed_at'] <= end_datetime_utc
     ]
 
     # Chat command stats
@@ -191,7 +230,15 @@ def calculate_daggerwalk_stats(range_keyword, all_logs, all_chats, all_quests):
             'questStats': {},
         }
 
-    total_minutes = total_logs * 5
+    # Calculate walking time from actual time span instead of log count
+    # (to account for duplicate logs created in quick succession)
+    if total_logs > 1:
+        first_time = filtered_logs[0]['created_at']
+        last_time = filtered_logs[-1]['created_at']
+        time_diff_minutes = (last_time - first_time).total_seconds() / 60
+        total_minutes = int(time_diff_minutes)
+    else:
+        total_minutes = total_logs * 5
 
     # Calculate total distance traveled
     total_distance_km = 0.0
@@ -226,7 +273,7 @@ def calculate_daggerwalk_stats(range_keyword, all_logs, all_chats, all_quests):
         walkers_with_xp = (
             TwitchUserProfile.objects.filter(
                 completed_quests__status="completed",
-                completed_quests__completed_at__date__range=(start_date, end_date),
+                completed_quests__completed_at__range=(start_datetime, end_datetime),
             )
             .values("id")
             .distinct()
