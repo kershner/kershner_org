@@ -211,6 +211,12 @@ def complete_and_rotate_quest(active_quest, completed_at, completion_request_log
                     # Create with the exact casing from this command
                     prof = TwitchUserProfile.objects.create(twitch_username=uname)
                 profile_ids.append(prof.id)
+                
+                # Link any orphaned chat logs for this user
+                ChatCommandLog.objects.filter(
+                    user__iexact=uname,
+                    profile__isnull=True
+                ).update(profile=prof)
 
             through = TwitchUserProfile.completed_quests.through
             rows = [through(twitchuserprofile_id=pid, quest_id=active_quest.id) for pid in profile_ids]
