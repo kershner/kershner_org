@@ -142,18 +142,26 @@ def create_daggerwalk_log(request):
                     ))
 
         if chat_logs_to_create:
-            # Case-insensitive map: username_lower -> profile_id
-            uname_lowers = [u.lower() for u in usernames]
-            prof_map = dict(
-                TwitchUserProfile.objects
-                    .annotate(uname_lower=Lower('twitch_username'))
-                    .filter(uname_lower__in=uname_lowers)
-                    .values_list('uname_lower', 'id')
-            )
+            # Case-insensitive lookup: get or create profiles
+            profile_map = {}  # username_lower -> profile_id
+            
+            for uname in usernames:
+                uname_lower = uname.lower()
+                # Try case-insensitive lookup first
+                try:
+                    prof = TwitchUserProfile.objects.get(twitch_username__iexact=uname)
+                except TwitchUserProfile.DoesNotExist:
+                    # Create profile if it doesn't exist
+                    prof = TwitchUserProfile.objects.create(twitch_username=uname)
+                
+                profile_map[uname_lower] = prof.id
+            
+            # Assign profile IDs to chat logs
             for obj in chat_logs_to_create:
-                pid = prof_map.get(obj.user.lower())
+                pid = profile_map.get(obj.user.lower())
                 if pid:
                     obj.profile_id = pid
+                    
             ChatCommandLog.objects.bulk_create(chat_logs_to_create)
 
         # Quest flow

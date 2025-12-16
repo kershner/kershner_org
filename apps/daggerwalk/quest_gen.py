@@ -204,10 +204,12 @@ def complete_and_rotate_quest(active_quest, completed_at, completion_request_log
         if participants:
             profile_ids = []
             for uname in participants:
-                # Case-insensitive ensure
-                prof, _ = TwitchUserProfile.objects.get_or_create(
-                    twitch_username=uname
-                )
+                # Case-insensitive lookup first
+                try:
+                    prof = TwitchUserProfile.objects.get(twitch_username__iexact=uname)
+                except TwitchUserProfile.DoesNotExist:
+                    # Create with the exact casing from this command
+                    prof = TwitchUserProfile.objects.create(twitch_username=uname)
                 profile_ids.append(prof.id)
 
             through = TwitchUserProfile.completed_quests.through
