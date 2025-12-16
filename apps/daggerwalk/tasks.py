@@ -486,7 +486,7 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
 
                 region = log_data['region']
                 if label == "world":
-                    alt = f"Daggerfall world map with markers showing the Walker's travels for the past week.  The Walker is currently in the {region} region."
+                    alt = f"Daggerfall world map with markers showing the Walker's travels for the past day.  The Walker is currently in the {region} region."
                 elif label == "quest":
                     alt = f"An image of the Walker's current quest featuring art assets from the original Daggerfall game."
 
