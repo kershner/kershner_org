@@ -16,6 +16,9 @@ Disallow: /
 User-agent: MJ12bot
 Disallow: /
 
+User-agent: Bingbot
+Disallow: /
+
 # Allow everything else
 User-agent: *
 Disallow:
