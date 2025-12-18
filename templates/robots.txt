@@ -19,6 +19,12 @@ Disallow: /
 User-agent: Bingbot
 Disallow: /
 
+User-agent: TikTokSpider
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
 # Allow everything else
 User-agent: *
 Disallow:
