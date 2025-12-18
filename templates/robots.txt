@@ -25,6 +25,10 @@ Disallow: /
 User-agent: Bytespider
 Disallow: /
 
+# Block all bots from API endpoints
+User-agent: *
+Disallow: /api/
+
 # Allow everything else
 User-agent: *
 Disallow:
