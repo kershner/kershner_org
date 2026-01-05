@@ -115,45 +115,52 @@ def create_and_wait_for_clip():
 
 
 def download_twitch_clip(clip_url):
-    """Download Twitch clip to temporary file using direct Twitch API"""
+    """Download Twitch clip using the official Get Clips Download API"""
     logger.info(f"Downloading video from: {clip_url}")
     
     temp_dir = tempfile.mkdtemp()
     
-    # Extract clip ID from URL (e.g., https://clips.twitch.tv/AbstruseAbnegateWatercressBudStar-mssOn2tZNSEB0kqV)
+    # Extract clip ID from URL (e.g., https://clips.twitch.tv/PuzzledGiftedOilVoHiYo-IpnHHbx1Nv_D5Av5)
     clip_id = clip_url.rstrip('/').split('/')[-1]
     
     try:
         # Get access token and client ID
         token = get_valid_access_token()
         client_id = settings.DAGGERWALK_TWITCH_CLIENT_ID
+        broadcaster_id = settings.DAGGERWALK_TWITCH_BROADCASTER_ID
+        
         headers = {'Authorization': f'Bearer {token}', 'Client-Id': client_id}
         
-        # Get clip metadata from Twitch API
-        logger.info(f"Fetching clip metadata for ID: {clip_id}")
-        r = requests.get(TWITCH_CLIP_URL, headers=headers, params={'id': clip_id})
+        # Use the official Get Clips Download API endpoint
+        # Requires editor:manage:clips or channel:manage:clips scope
+        logger.info(f"Fetching clip download URL for ID: {clip_id}")
+        r = requests.get(
+            'https://api.twitch.tv/helix/clips/downloads',
+            headers=headers,
+            params={
+                'broadcaster_id': broadcaster_id,
+                'editor_id': broadcaster_id,  # Using broadcaster as editor since it's the same account
+                'clip_id': clip_id
+            }
+        )
         
         if r.status_code != 200:
-            logger.error(f"Failed to fetch clip metadata: {r.status_code} - {r.text}")
-            raise Exception(f"Failed to fetch clip metadata: {r.status_code}")
+            logger.error(f"Failed to fetch clip download URL: {r.status_code} - {r.text}")
+            raise Exception(f"Failed to fetch clip download URL: {r.status_code}")
         
         clip_data = r.json().get('data', [])
         if not clip_data:
-            raise Exception("Clip data not available from Twitch API")
+            raise Exception("No clip download data returned from Twitch API")
         
-        # Extract video URL from thumbnail URL
-        # Thumbnail format: https://clips-media-assets2.twitch.tv/{slug}-preview-480x272.jpg
-        # Video format: https://clips-media-assets2.twitch.tv/{slug}.mp4
-        thumbnail_url = clip_data[0].get('thumbnail_url')
-        if not thumbnail_url:
-            raise Exception("No thumbnail URL available for clip")
+        # Get the landscape download URL
+        download_url = clip_data[0].get('landscape_download_url')
+        if not download_url:
+            raise Exception("No download URL available for clip")
         
-        # Convert thumbnail URL to video URL
-        video_url = thumbnail_url.split('-preview-')[0] + '.mp4'
-        logger.info(f"Downloading video from: {video_url}")
+        logger.info(f"Downloading video from: {download_url}")
         
         # Download the video file
-        video_response = requests.get(video_url, stream=True)
+        video_response = requests.get(download_url, stream=True)
         if video_response.status_code != 200:
             logger.error(f"Failed to download video: {video_response.status_code}")
             raise Exception(f"Failed to download video: {video_response.status_code}")
