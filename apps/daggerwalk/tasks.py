@@ -15,7 +15,6 @@ import tempfile
 import requests
 import logging
 import random
-import yt_dlp
 import httpx
 import time
 import os
@@ -116,40 +115,69 @@ def create_and_wait_for_clip():
 
 
 def download_twitch_clip(clip_url):
-    """Download Twitch clip to temporary file and return path"""
+    """Download Twitch clip to temporary file using direct Twitch API"""
     logger.info(f"Downloading video from: {clip_url}")
     
     temp_dir = tempfile.mkdtemp()
     
-    ydl_opts = {
-        'outtmpl': os.path.join(temp_dir, '%(title)s.%(ext)s'),
-        'format': 'best[ext=mp4]',  # Prefer mp4 format for Bluesky compatibility
-        'quiet': True,  # Suppress yt-dlp output
-    }
+    # Extract clip ID from URL (e.g., https://clips.twitch.tv/AbstruseAbnegateWatercressBudStar-mssOn2tZNSEB0kqV)
+    clip_id = clip_url.rstrip('/').split('/')[-1]
     
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(clip_url, download=True)
-            filename = ydl.prepare_filename(info)
-            
-            # Handle potential filename changes during download
-            if not os.path.exists(filename):
-                files = os.listdir(temp_dir)
-                if files:
-                    filename = os.path.join(temp_dir, files[0])
-                else:
-                    raise Exception("Downloaded file not found")
-            
-            # Get file info
-            file_size = os.path.getsize(filename) / 1024 / 1024  # MB
-            logger.info(f"Video downloaded: {file_size:.2f} MB")
-            
-            return filename
-            
+        # Get access token and client ID
+        token = get_valid_access_token()
+        client_id = settings.DAGGERWALK_TWITCH_CLIENT_ID
+        headers = {'Authorization': f'Bearer {token}', 'Client-Id': client_id}
+        
+        # Get clip metadata from Twitch API
+        logger.info(f"Fetching clip metadata for ID: {clip_id}")
+        r = requests.get(TWITCH_CLIP_URL, headers=headers, params={'id': clip_id})
+        
+        if r.status_code != 200:
+            logger.error(f"Failed to fetch clip metadata: {r.status_code} - {r.text}")
+            raise Exception(f"Failed to fetch clip metadata: {r.status_code}")
+        
+        clip_data = r.json().get('data', [])
+        if not clip_data:
+            raise Exception("Clip data not available from Twitch API")
+        
+        # Extract video URL from thumbnail URL
+        # Thumbnail format: https://clips-media-assets2.twitch.tv/{slug}-preview-480x272.jpg
+        # Video format: https://clips-media-assets2.twitch.tv/{slug}.mp4
+        thumbnail_url = clip_data[0].get('thumbnail_url')
+        if not thumbnail_url:
+            raise Exception("No thumbnail URL available for clip")
+        
+        # Convert thumbnail URL to video URL
+        video_url = thumbnail_url.split('-preview-')[0] + '.mp4'
+        logger.info(f"Downloading video from: {video_url}")
+        
+        # Download the video file
+        video_response = requests.get(video_url, stream=True)
+        if video_response.status_code != 200:
+            logger.error(f"Failed to download video: {video_response.status_code}")
+            raise Exception(f"Failed to download video: {video_response.status_code}")
+        
+        # Save video to file
+        filename = os.path.join(temp_dir, f"{clip_id}.mp4")
+        with open(filename, 'wb') as f:
+            for chunk in video_response.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+        
+        # Verify file was downloaded
+        if not os.path.exists(filename):
+            raise Exception("Downloaded file not found")
+        
+        # Get file info
+        file_size = os.path.getsize(filename) / 1024 / 1024  # MB
+        logger.info(f"Video downloaded successfully: {file_size:.2f} MB")
+        
+        return filename
+        
     except Exception as e:
         logger.error(f"Failed to download video: {str(e)}")
         raise
-
 
 def upload_video_as_blob(client: Client, video_path: str):
     logger.info("Uploading video to Bluesky")
