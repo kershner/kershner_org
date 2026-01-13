@@ -1,0 +1,107 @@
+{% load kershner_tags %}
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Tyler's Pi Stuff</title>
+  <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/pi_stuff.css">
+</head>
+
+<body>
+  <!-- transparent click target -->
+  <button class="menu-button" type="button" aria-label="Open menu"></button>
+
+  <!-- menu overlay -->
+  <div class="menu" id="menu" hidden>
+    <div class="menu-grid">
+      <button data-action="reload" type="button">reload</button>
+      <button data-action="screen" type="button">screen</button>
+      <button data-action="close" type="button">close</button>
+    </div>
+  </div>
+
+  <div id="player"></div>
+
+  <script type="text/javascript">
+    /* ---------- Menu ---------- */
+    const menuBtn = document.querySelector('.menu-button');
+    const menu = document.getElementById('menu');
+
+    menuBtn.addEventListener('click', () => {
+      menu.hidden = false;
+    });
+
+    menu.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+
+      const action = btn.dataset.action;
+      if (action === 'close') {
+        menu.hidden = true;
+        return;
+      }
+
+      handleMenuAction(action);
+      menu.hidden = true;
+    });
+
+    function handleMenuAction(action) {
+      switch (action) {
+        case 'reload':
+          location.reload();
+          break;
+
+        case 'screen':
+          document.body.classList.toggle('screen-off');
+          break;
+      }
+    }
+
+    // When "screen" is off, any click restores it
+    document.addEventListener('click', (e) => {
+        if (!document.body.classList.contains('screen-off')) return;
+        if (e.target.closest('.menu-button, .menu')) return;
+        document.body.classList.remove('screen-off');
+    }, true);
+
+    /* ---------- YouTube ---------- */
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    const PLAYLIST_ID = 'PLAtCvsbFyJ9YZQw2_naAAl0VEtX0wMWmV';
+    let player, shuffled = false;
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        playerVars: {
+          listType: 'playlist',
+          list: PLAYLIST_ID,
+          autoplay: 1,
+          mute: 1,
+          controls: 1,
+          loop: 1,
+          fs: 1
+        },
+        events: { onStateChange }
+      });
+    }
+
+    function onStateChange(e) {
+      if (e.data === YT.PlayerState.CUED || e.data === YT.PlayerState.PLAYING) {
+
+        if (!shuffled) {
+          shuffled = true;
+          player.setShuffle(true);
+          player.nextVideo(); // makes shuffle actually apply
+        }
+
+        if (e.data === YT.PlayerState.PLAYING) {
+          player.setPlaybackQuality('small'); // force low quality for Pi
+        }
+      }
+    }
+  </script>
+</body>
+</html>

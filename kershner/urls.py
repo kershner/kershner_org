@@ -3,6 +3,7 @@ from apps.screenbloom.views import screenbloom_landing
 from apps.daggerwalk.urls import daggerwalk_patterns
 from apps.color_doodle.urls import doodle_patterns
 from apps.steamtime.urls import steamtime_patterns
+from apps.pi_stuff.urls import pi_stuff_patterns
 from apps.project import views as project_views
 from apps.ai_quiz.urls import ai_quiz_patterns
 from apps.whoosh.urls import whoosh_patterns
@@ -51,6 +52,9 @@ urlpatterns = [
 
     # Daggerwalk
     path('daggerwalk/', include(daggerwalk_patterns)),
+
+    # Pi stuff
+    path('pi/', include(pi_stuff_patterns)),
 
     # API
     path('api/', include(api_patterns)),
