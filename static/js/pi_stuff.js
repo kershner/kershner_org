@@ -151,25 +151,50 @@ const PiStuff = {
     }
 
     this.player = new YT.Player('player', {
+      // Slightly reduces tracking + sometimes behaves better on kiosks
+      host: 'https://www.youtube-nocookie.com',
+
       playerVars: {
         listType: 'playlist',
         list: this.currentPlaylist,
+
         autoplay: 1,
-        mute: 1,
+        playsinline: 1,
+
+        // Performance / UI reductions
         controls: 1,
-        loop: 1,
-        fs: 1,
+        fs: 0,
+        disablekb: 1,
+        modestbranding: 1,
+        rel: 0,
+        iv_load_policy: 3,     // annotations off
+        cc_load_policy: 0,     // captions off
+
+        // Strong hint to start low-res (biases H.264 likelihood)
+        vq: 'small',
       },
+
       events: {
         onReady: (e) => {
+          // Required for reliable autoplay
+          e.target.mute();
+
+          // Force lowest practical quality immediately
+          e.target.setPlaybackQuality('small');
+
           if (!this.playerReady) {
             this.playerReady = true;
             e.target.setShuffle(true);
             e.target.nextVideo();
           }
         },
+
         onStateChange: (e) => {
-          // When a new playlist starts playing after loadPlaylist
+          if (e.data === YT.PlayerState.PLAYING) {
+            // Re-assert low quality (YouTube likes to bump it)
+            this.player.setPlaybackQuality('small');
+          }
+
           if (e.data === YT.PlayerState.PLAYING && this.pendingPlaylistLoad) {
             const loadedPlaylist = this.player.getPlaylistId?.();
             if (loadedPlaylist === this.pendingPlaylistLoad) {
@@ -177,10 +202,6 @@ const PiStuff = {
               this.player.nextVideo();
               this.pendingPlaylistLoad = null;
             }
-          }
-          
-          if (e.data === YT.PlayerState.PLAYING) {
-            this.player.setPlaybackQuality('small');
           }
         }
       }
