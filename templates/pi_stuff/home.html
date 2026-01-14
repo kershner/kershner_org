@@ -14,94 +14,41 @@
 
   <!-- menu overlay -->
   <div class="menu" id="menu" hidden>
-    <div class="menu-grid">
-      <button data-action="reload" type="button">reload</button>
-      <button data-action="screen" type="button">screen</button>
-      <button data-action="close" type="button">close</button>
+    <div class="menu-inner">
+      <div class="menu-header">
+        <div class="menu-actions">
+          <button data-action="reload" type="button">reload</button>
+          <button data-action="screen" type="button">screen</button>
+        </div>
+
+        <hr>
+
+        <div class="menu-categories">
+          {% for category in categories %}
+            <button data-category="cat-{{ category.id }}" type="button">{{ category.name }}</button>
+          {% endfor %}
+        </div>
+      </div>  
+
+      <hr>
+      
+      <div class="menu-playlists" id="playlists"></div>
+
+      <hr>
+
+      <div class="menu-footer">
+        <div class="menu-actions">
+          <button data-action="close" type="button">close</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <div id="player"></div>
 
-  <script type="text/javascript">
-    /* ---------- Menu ---------- */
-    const menuBtn = document.querySelector('.menu-button');
-    const menu = document.getElementById('menu');
-
-    menuBtn.addEventListener('click', () => {
-      menu.hidden = false;
-    });
-
-    menu.addEventListener('click', (e) => {
-      const btn = e.target.closest('button');
-      if (!btn) return;
-
-      const action = btn.dataset.action;
-      if (action === 'close') {
-        menu.hidden = true;
-        return;
-      }
-
-      handleMenuAction(action);
-      menu.hidden = true;
-    });
-
-    function handleMenuAction(action) {
-      switch (action) {
-        case 'reload':
-          location.reload();
-          break;
-
-        case 'screen':
-          document.body.classList.toggle('screen-off');
-          break;
-      }
-    }
-
-    // When "screen" is off, any click restores it
-    document.addEventListener('click', (e) => {
-        if (!document.body.classList.contains('screen-off')) return;
-        if (e.target.closest('.menu-button, .menu')) return;
-        document.body.classList.remove('screen-off');
-    }, true);
-
-    /* ---------- YouTube ---------- */
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    document.head.appendChild(tag);
-
-    const PLAYLIST_ID = 'PLAtCvsbFyJ9YZQw2_naAAl0VEtX0wMWmV';
-    let player, shuffled = false;
-
-    function onYouTubeIframeAPIReady() {
-      player = new YT.Player('player', {
-        playerVars: {
-          listType: 'playlist',
-          list: PLAYLIST_ID,
-          autoplay: 1,
-          mute: 1,
-          controls: 1,
-          loop: 1,
-          fs: 1
-        },
-        events: { onStateChange }
-      });
-    }
-
-    function onStateChange(e) {
-      if (e.data === YT.PlayerState.CUED || e.data === YT.PlayerState.PLAYING) {
-
-        if (!shuffled) {
-          shuffled = true;
-          player.setShuffle(true);
-          player.nextVideo(); // makes shuffle actually apply
-        }
-
-        if (e.data === YT.PlayerState.PLAYING) {
-          player.setPlaybackQuality('small'); // force low quality for Pi
-        }
-      }
-    }
+  <script>
+    window.CATEGORIES_DATA = {{ categories_json|safe }};
   </script>
+  <script src="{% settings_value "BASE_S3_URL" %}/js/pi_stuff.js"></script>
 </body>
 </html>

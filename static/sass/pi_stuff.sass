@@ -1,11 +1,34 @@
 *
   margin: 0
   padding: 0
+  box-sizing: border-box
+
+$border-color: rgba(255, 255, 255, 0.3)
 
 html, body
   width: 100%
   height: 100%
   overflow: hidden
+
+hr
+  border: 0
+  border-top: 2px solid $border-color
+  margin: 0.5em 0
+
+button
+  padding: 1.5em
+  font-size: 1em
+  background: rgba(255, 255, 255, 0.15)
+  color: white
+  border: 1px solid $border-color
+  border-radius: 4px
+
+  &:active
+    transform: scale(0.95)
+
+  &.selected
+    background: white
+    color: black
 
 #player
   width: 100%
@@ -15,39 +38,60 @@ html, body
   position: fixed
   top: 0
   left: 0
-  width: 5em
-  height: 5em
-  background: rgba(85, 43, 43, 0)
+  width: 10em
+  height: 10em
+  background: transparent
   border: 0
   z-index: 2
-//   border: 1px solid red
 
 .menu
   position: fixed
+  z-index: 2
   inset: 0
   display: flex
-  place-content: center
-  place-items: center
-  background: rgba(0,0,0,0.35)
-  z-index: 3
+  justify-content: center
+  background: rgba(0, 0, 0, 0.9)
 
 .menu[hidden]
-  display: none !important
+  display: none
 
-.menu-grid
-  display: grid
-  grid-template-columns: repeat(2, 10em)
-  gap: 1em
+.menu-inner
+  display: flex
+  flex-direction: column
+  padding: 1rem 0
+  height: 100%
+  width: 60rem
 
-.menu-grid button
-  padding: 1em
-  font-size: 1em
-  background: rgba(0,0,0,0.75)
-  color: rgb(255,255,255)
-  border: 1px solid rgba(255,255,255,0.2)
+.menu-header
+
+.menu-actions
+  display: flex
+  gap: 0.5rem
+  padding-bottom: 0.5rem
+
+.menu-actions button
+  flex: 1
+
+.menu-categories
+  display: flex
+  gap: 0.5rem
+  padding: 0.5rem 0
+  overflow-x: auto
+
+.menu-playlists
+  display: flex
+  gap: 0.5rem
+  padding: 0.5rem 0
+  overflow-y: auto
+
+.menu-playlists[hidden]
+  display: none
+
+.menu-footer
+  padding-top: 0.5rem
 
 body.screen-off
-  background: rgb(0,0,0)
+  background: black
 
 body.screen-off #player
   visibility: hidden
