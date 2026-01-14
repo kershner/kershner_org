@@ -159,7 +159,6 @@ const PiStuff = {
         controls: 1,
         loop: 1,
         fs: 1,
-        cc_load_policy: 1,
       },
       events: {
         onReady: (e) => {
