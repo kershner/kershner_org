@@ -21,20 +21,14 @@
           <button data-action="screen" type="button">screen</button>
         </div>
 
-        <hr>
-
         <div class="menu-categories">
           {% for category in categories %}
             <button data-category="cat-{{ category.id }}" type="button">{{ category.name }}</button>
           {% endfor %}
         </div>
       </div>  
-
-      <hr>
       
       <div class="menu-playlists" id="playlists"></div>
-
-      <hr>
 
       <div class="menu-footer">
         <div class="menu-actions">

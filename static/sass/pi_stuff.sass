@@ -4,21 +4,17 @@
   box-sizing: border-box
 
 $border-color: rgba(255, 255, 255, 0.3)
+$background-color: rgba(255, 255, 255, 0.15)
 
 html, body
   width: 100%
   height: 100%
   overflow: hidden
 
-hr
-  border: 0
-  border-top: 2px solid $border-color
-  margin: 0.5em 0
-
 button
   padding: 1.5em
   font-size: 1em
-  background: rgba(255, 255, 255, 0.15)
+  background: $background-color
   color: white
   border: 1px solid $border-color
   border-radius: 4px
@@ -58,22 +54,25 @@ button
 .menu-inner
   display: flex
   flex-direction: column
-  padding: 1rem 0
+  justify-content: space-between
+  padding: 0.5rem 0
   height: 100%
   width: 60rem
 
-.menu-header
+.menu-header,
+.menu-footer
+  flex: 0 0 auto
 
 .menu-actions
   display: flex
   gap: 0.5rem
-  padding-bottom: 0.5rem
 
 .menu-actions button
   flex: 1
 
 .menu-categories
   display: flex
+  flex: 1 1 auto
   gap: 0.5rem
   padding: 0.5rem 0
   overflow-x: auto
@@ -84,9 +83,14 @@ button
 .menu-playlists
   display: flex
   flex-wrap: wrap
+  flex-grow: 1
+  align-items: flex-start
+  align-content: flex-start
   gap: 0.5rem
   padding: 0.5rem 0
   overflow-y: auto
+  border-top: 2px solid $border-color
+  border-bottom: 2px solid $border-color
 
 .menu-playlists[hidden]
   display: none
