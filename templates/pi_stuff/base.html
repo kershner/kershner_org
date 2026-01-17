@@ -1,0 +1,27 @@
+{% load kershner_tags %}
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}Tyler's Pi Stuff{% endblock %}</title>
+  <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/pi_stuff.css">
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+  {% block content %}{% endblock %}
+
+  <script type="text/javascript">
+    {% block window_vars %}{% endblock %}
+  </script>
+
+  <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/pi_stuff.js"></script>
+  
+  <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', () => {
+      {% block js_init %}{% endblock %}
+    });
+  </script>
+</body>
+</html>

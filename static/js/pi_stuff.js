@@ -1,216 +1,293 @@
-const PiStuff = {
-  player: null,
-  playerReady: false,
-  currentPlaylist: null,
-  playlists: {},
-  pendingPlaylistLoad: null,
+const DeviceManager = (() => {
+  function getOrCreateDeviceId() {
+    let deviceId = localStorage.getItem('pi_device_id');
+    if (!deviceId) {
+      // Generate a random device ID (using crypto for better randomness)
+      const array = new Uint8Array(16);
+      crypto.getRandomValues(array);
+      deviceId = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+      localStorage.setItem('pi_device_id', deviceId);
+    }
+    return deviceId;
+  }
 
-  _skipTimer: null,
-  _consecutiveSkips: 0,
-  _lastVideoId: null,
+  function ensureDeviceIdInUrl() {
+    const deviceId = getOrCreateDeviceId();
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (!urlParams.has('device_id')) {
+      // Reload with device_id to get proper QR code
+      urlParams.set('device_id', deviceId);
+      window.location.search = urlParams.toString();
+      return false; // Signal that we're reloading
+    }
+    
+    return deviceId;
+  }
 
-  _skipUnplayable() {
-    this._consecutiveSkips++;
-    if (this._consecutiveSkips >= 12) {
-      this.player?.stopVideo();
+  return { getOrCreateDeviceId, ensureDeviceIdInUrl };
+})();
+
+const SubmitForm = (() => {
+  function init() {
+    const form = document.getElementById('f');
+    if (!form) {
+      console.error('Submit form not found');
       return;
     }
-    clearTimeout(this._skipTimer);
-    this._skipTimer = setTimeout(() => {
-      try { this.player.nextVideo(); } catch (_) {}
-    }, 250);
-  },
+    
+    const messageEl = document.getElementById('message');
+    const submitBtn = form.querySelector('.submit-button');
 
-  init(playlistId) {
-    // If a playlist is explicitly requested, honor it.
-    if (playlistId) {
-      this.currentPlaylist = playlistId;
+    function showMessage(text, isError = false) {
+      messageEl.textContent = text;
+      messageEl.className = 'submit-message show ' + (isError ? 'error' : 'success');
     }
 
-    if (!this.player) {
-      this.loadPlaylistsData();
-
-      // Pick a random category + playlist on first load (only if nothing was specified).
-      if (!this.currentPlaylist) {
-        const categories = Object.keys(this.playlists);
-        if (categories.length) {
-          const cat = categories[Math.floor(Math.random() * categories.length)];
-          const list = this.playlists[cat];
-          if (list && list.length) {
-            this.currentPlaylist = list[Math.floor(Math.random() * list.length)].id;
-          }
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      
+      submitBtn.disabled = true;
+      messageEl.className = 'submit-message';
+      
+      try {
+        const data = new URLSearchParams(new FormData(e.target));
+        const r = await fetch(window.API_PLAY_URL, { method: 'POST', body: data });
+        const json = await r.json();
+        
+        if (r.ok) {
+          showMessage('✓ Video sent successfully!');
+          form.reset();
+          // Restore hidden fields after reset
+          form.querySelector('[name="token"]').value = window.SUBMIT_TOKEN || '';
+          form.querySelector('[name="device_id"]').value = window.SUBMIT_DEVICE_ID || '';
+        } else {
+          // Handle specific error types
+          const errorMessages = {
+            'already_used': 'This QR code has already been used. Please scan a new one.',
+            'invalid_or_expired': 'This QR code is invalid or expired. Please scan a new one.',
+            'not_youtube': 'Please provide a valid YouTube URL.',
+            'missing_token': 'Invalid request. Please scan the QR code again.',
+            'missing_device': 'Invalid request. Please scan the QR code again.'
+          };
+          
+          const message = errorMessages[json.error] || json.message || 'An error occurred. Please try again.';
+          showMessage(message, true);
         }
+      } catch (err) {
+        showMessage('Network error. Please check your connection and try again.', true);
+      } finally {
+        submitBtn.disabled = false;
       }
+    });
+  }
 
-      this.initMenu();
-      this.initScreenToggle();
-      this.loadYouTube();
-    } else {
-      // When already initialized, just switch playlists.
-      this.player.loadPlaylist({ listType: 'playlist', list: this.currentPlaylist });
+  return { init };
+})();
+
+const PiStuff = (() => {
+  // Config
+  const POLL_INTERVAL_MS = 5000;
+  const QR_TTL_MS = 120000;
+
+  // State
+  let player = null;
+  let playerReady = false;
+  let playlists = {};
+  let currentPlaylist = null;
+  let currentCategoryKey = null;
+  let pendingPlaylistLoad = null;
+
+  let skipTimer = null;
+  let consecutiveSkips = 0;
+  let lastVideoId = null;
+
+  let pollIntervalId = null;
+  let lastTsSeen = 0;
+  let qrHideTimer = null;
+  let qrVisible = false;
+
+  let deviceId = null;
+
+  // DOM cache
+  const $ = sel => document.querySelector(sel);
+  const $all = sel => Array.from(document.querySelectorAll(sel));
+  const getMenu = () => $('#menu');
+  const getPlaylistsContainer = () => $('#playlists');
+  const getQrContainer = () => $('#qr-container');
+  const getPlayerIframe = () => document.getElementById('player');
+
+  const safe = fn => { try { return fn(); } catch (_) { return null; } };
+
+  function playVideo(videoId) {
+    if (!videoId) return;
+    if (player && typeof player.loadVideoById === 'function') {
+      try {
+        player.loadVideoById({ videoId, startSeconds: 0 });
+        return;
+      } catch (_) {}
     }
-  },
+    const iframe = getPlayerIframe();
+    if (iframe) iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+  }
 
-  loadPlaylistsData() {
-    // Build in-memory category -> playlist list from server-provided data.
-    const categories = window.CATEGORIES_DATA || [];
-    categories.forEach(category => {
-      this.playlists[`cat-${category.id}`] = category.playlists.map(p => ({
+  function skipUnplayable() {
+    consecutiveSkips++;
+    if (consecutiveSkips >= 12) {
+      player?.stopVideo();
+      return;
+    }
+    clearTimeout(skipTimer);
+    skipTimer = setTimeout(() => safe(() => player.nextVideo()), 250);
+  }
+
+  function renderPlaylistsForCategory(categoryKey) {
+    const container = getPlaylistsContainer();
+    if (!container) return;
+    const list = playlists[categoryKey] || [];
+    container.innerHTML = list
+      .map(p => `<button data-playlist="${p.id}">${escapeHtml(p.name)}</button>`)
+      .join('');
+    
+    // Re-apply selected state to the playlist button if it exists
+    if (currentPlaylist) {
+      const playlistBtn = document.querySelector(`[data-playlist="${currentPlaylist}"]`);
+      if (playlistBtn) {
+        playlistBtn.classList.add('selected');
+      }
+    }
+  }
+
+  function setInitialActiveStates() {
+    // Mark the category button as selected
+    if (currentCategoryKey) {
+      const categoryBtn = document.querySelector(`[data-category="${currentCategoryKey}"]`);
+      if (categoryBtn) {
+        categoryBtn.classList.add('selected');
+      }
+    }
+
+    // Render playlists for the selected category
+    if (currentCategoryKey) {
+      renderPlaylistsForCategory(currentCategoryKey);
+    }
+  }
+
+  function showQr() {
+    const playlistsContainer = getPlaylistsContainer();
+    const qrContainer = getQrContainer();
+    
+    if (playlistsContainer) playlistsContainer.hidden = true;
+    if (qrContainer) qrContainer.hidden = false;
+    
+    qrVisible = true;
+    
+    clearTimeout(qrHideTimer);
+    qrHideTimer = setTimeout(() => {
+      hideQr();
+    }, QR_TTL_MS);
+  }
+
+  function hideQr() {
+    const playlistsContainer = getPlaylistsContainer();
+    const qrContainer = getQrContainer();
+    
+    if (playlistsContainer) playlistsContainer.hidden = false;
+    if (qrContainer) qrContainer.hidden = true;
+    
+    qrVisible = false;
+    clearTimeout(qrHideTimer);
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"]/g, c => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;'
+    }[c]));
+  }
+
+  function loadPlaylistsData() {
+    const cats = window.CATEGORIES_DATA || [];
+    playlists = {};
+    cats.forEach(cat => {
+      playlists[`cat-${cat.id}`] = (cat.playlists || []).map(p => ({
         id: p.youtube_playlist_id,
         name: p.name
       }));
     });
-  },
+  }
 
-  initMenu() {
-    const menu = document.getElementById('menu');
-    const playlists = document.getElementById('playlists');
+  function initMenu() {
+    const menu = getMenu();
+    if (!menu) return;
 
-    // Render the category that contains currentPlaylist (fallback: first category button in DOM).
-    const categoryEntries = Object.entries(this.playlists);
-    let matchedCategory = null;
-
-    for (const [cat, lists] of categoryEntries) {
-      if (lists.some(p => p.id === this.currentPlaylist)) {
-        matchedCategory = cat;
-        break;
-      }
-    }
-
-    const categoryBtn = document.querySelector(
-      matchedCategory ? `[data-category="${matchedCategory}"]` : '[data-category]'
-    );
-
-    if (categoryBtn) {
-      const category = categoryBtn.dataset.category;
-
-      // Highlight selected category.
-      document.querySelectorAll('[data-category]').forEach(btn => btn.classList.remove('selected'));
-      categoryBtn.classList.add('selected');
-
-      // Populate playlists for that category.
-      if (this.playlists[category]) {
-        playlists.innerHTML = this.playlists[category]
-          .map(p => `<button data-playlist="${p.id}">${p.name}</button>`)
-          .join('');
-        playlists.hidden = false;
-
-        // Highlight selected playlist if present.
-        if (this.currentPlaylist) {
-          const btn = playlists.querySelector(`[data-playlist="${this.currentPlaylist}"]`);
-          if (btn) btn.classList.add('selected');
-        }
-      }
-    }
-
-    // Open menu overlay.
-    document.querySelector('.menu-button').addEventListener('click', () => {
+    document.querySelector('.menu-button')?.addEventListener('click', () => {
       menu.hidden = false;
     });
 
-    // Single delegated click handler for category/playlist/actions.
-    menu.addEventListener('click', (e) => {
-      const category = e.target.dataset.category;
-      const playlist = e.target.dataset.playlist;
-      const action = e.target.dataset.action;
+    menu.addEventListener('click', ev => {
+      const t = ev.target;
+      const category = t.dataset.category;
+      const playlist = t.dataset.playlist;
+      const action = t.dataset.action;
 
-      if (category && this.playlists[category]) {
-        // Select category and render its playlists.
-        document.querySelectorAll('[data-category]').forEach(btn => {
-          btn.classList.remove('selected');
-        });
-        e.target.classList.add('selected');
-
-        playlists.innerHTML = this.playlists[category]
-          .map(p => `<button data-playlist="${p.id}">${p.name}</button>`)
-          .join('');
-        playlists.hidden = false;
-
-        // If current playlist exists in this category, keep it highlighted.
-        if (this.currentPlaylist) {
-          const currentBtn = playlists.querySelector(`[data-playlist="${this.currentPlaylist}"]`);
-          if (currentBtn) {
-            currentBtn.classList.add('selected');
-          }
-        }
+      if (category && playlists[category]) {
+        $all('[data-category]').forEach(b => b.classList.remove('selected'));
+        t.classList.add('selected');
+        currentCategoryKey = category;
+        renderPlaylistsForCategory(category);
+        hideQr(); // Hide QR if showing
         return;
       }
 
       if (playlist) {
-        // Select playlist and load it into the player.
-        document.querySelectorAll('[data-playlist]').forEach(btn => {
-          btn.classList.remove('selected');
-        });
-        e.target.classList.add('selected');
+        $all('[data-playlist]').forEach(b => b.classList.remove('selected'));
+        t.classList.add('selected');
 
-        this.currentPlaylist = playlist;
-        this.pendingPlaylistLoad = playlist;
+        currentPlaylist = playlist;
+        pendingPlaylistLoad = playlist;
+        consecutiveSkips = 0;
+        lastVideoId = null;
+        clearTimeout(skipTimer);
 
-        this._consecutiveSkips = 0;
-        this._lastVideoId = null;
-        clearTimeout(this._skipTimer);
-
-        if (this.player) {
-          this.player.stopVideo();
-          this.player.loadPlaylist({
-            listType: 'playlist',
-            list: playlist,
-            index: 0,
-            startSeconds: 0
-          });
-        }
-
+        player?.stopVideo();
+        player?.loadPlaylist({ listType: 'playlist', list: playlist, index: 0 });
         menu.hidden = true;
+        hideQr();
         return;
       }
 
-      // Simple menu actions.
-      if (action === 'reload') {
-        location.reload();
-        return;
-      }
-
+      if (action === 'qr') return showQr();
+      if (action === 'reload') return location.reload();
       if (action === 'screen') {
-        document.body.classList.toggle('screen-off');
+        ev.stopPropagation();  // Prevent event from bubbling to body
+        document.body.className = 'screen-off';
         menu.hidden = true;
         return;
       }
-
-      if (action === 'close') {
-        menu.hidden = true;
-      }
+      if (action === 'close') menu.hidden = true;
     });
-  },
+  }
 
-  initScreenToggle() {
-    // Clicking anywhere exits "screen off" mode, except inside the menu UI.
-    document.addEventListener('click', (e) => {
-      if (document.body.classList.contains('screen-off') &&
-          !e.target.closest('.menu-button, .menu')) {
-        document.body.classList.remove('screen-off');
-      }
-    }, true);
-  },
+  function loadYouTubeApi() {
+    if (document.querySelector('script[src*="youtube.com/iframe_api"]')) return;
+    const s = document.createElement('script');
+    s.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(s);
+  }
 
-  loadYouTube() {
-    // Load the YouTube IFrame API, which calls onYouTubeIframeAPIReady().
-    const script = document.createElement('script');
-    script.src = 'https://www.youtube.com/iframe_api';
-    document.head.appendChild(script);
-  },
-
-  createPlayer() {
-    this.player = new YT.Player('player', {
+  function createPlayer() {
+    player = new YT.Player('player', {
       // Slightly reduces tracking + sometimes behaves better on kiosks
       host: 'https://www.youtube-nocookie.com',
-
       playerVars: {
         listType: 'playlist',
-        list: this.currentPlaylist,
-
+        list: currentPlaylist,
         autoplay: 1,
         playsinline: 1,
-
+        
         // Performance / UI reductions
         controls: 1,
         fs: 0,
@@ -219,66 +296,56 @@ const PiStuff = {
         rel: 0,
         iv_load_policy: 3,     // annotations off
         cc_load_policy: 1,     // captions on
-
+        
         // Strong hint to start low-res (biases H.264 likelihood)
         vq: 'small',
       },
-
       events: {
-        onReady: (e) => {
+        onReady(e) {
           // Required for reliable autoplay
           e.target.mute();
-
+          
           // Force lowest practical quality immediately
           e.target.setPlaybackQuality('small');
-
-          // One-time setup: shuffle + advance once to start playback cleanly.
-          if (!this.playerReady) {
-            this.playerReady = true;
+          
+          if (!playerReady) {
+            playerReady = true;
             e.target.setShuffle(true);
             e.target.nextVideo();
           }
         },
-
-        onError: () => {
-          // Age restricted / embed blocked / removed / unplayable: just skip.
-          this._skipUnplayable();
-        },
-
-        onStateChange: (e) => {
+        onError: skipUnplayable,
+        onStateChange(e) {
           if (e.data === YT.PlayerState.PLAYING) {
             // Re-assert low quality (YouTube likes to bump it)
-            this.player.setPlaybackQuality('small');
-
-            // Reset skip counter when a new video successfully plays.
-            const vid = this.player.getVideoData?.().video_id || null;
-            if (vid && vid !== this._lastVideoId) {
-              this._lastVideoId = vid;
-              this._consecutiveSkips = 0;
+            player.setPlaybackQuality('small');
+            
+            const vid = safe(() => player.getVideoData().video_id);
+            if (vid && vid !== lastVideoId) {
+              lastVideoId = vid;
+              consecutiveSkips = 0;
+            }
+            if (pendingPlaylistLoad) {
+              const loaded = safe(() => player.getPlaylistId());
+              if (loaded === pendingPlaylistLoad) {
+                player.setShuffle(true);
+                player.nextVideo();
+                pendingPlaylistLoad = null;
+              }
             }
           }
-
-          // After a user-initiated playlist change, re-enable shuffle and advance.
-          if (e.data === YT.PlayerState.PLAYING && this.pendingPlaylistLoad) {
-            const loadedPlaylist = this.player.getPlaylistId?.();
-            if (loadedPlaylist === this.pendingPlaylistLoad) {
-              this.player.setShuffle(true);
-              this.player.nextVideo();
-              this.pendingPlaylistLoad = null;
-            }
-          }
-
-          // Some “blocked” cases never fire onError; if stuck UNSTARTED, skip after a delay.
+          
+          // Some "blocked" cases never fire onError; if stuck UNSTARTED, skip after a delay
           if (e.data === YT.PlayerState.UNSTARTED) {
-            clearTimeout(this._skipTimer);
-
-            const startVid = this.player.getVideoData?.().video_id || null;
-            this._skipTimer = setTimeout(() => {
-              const state = this.player.getPlayerState?.();
-              const nowVid = this.player.getVideoData?.().video_id || null;
-
+            clearTimeout(skipTimer);
+            
+            const startVid = safe(() => player.getVideoData().video_id);
+            skipTimer = setTimeout(() => {
+              const state = safe(() => player.getPlayerState());
+              const nowVid = safe(() => player.getVideoData().video_id);
+              
               if (state !== YT.PlayerState.PLAYING && nowVid && nowVid === startVid) {
-                this._skipUnplayable();
+                skipUnplayable();
               }
             }, 4000);
           }
@@ -286,13 +353,82 @@ const PiStuff = {
       }
     });
   }
-};
 
-window.onYouTubeIframeAPIReady = () => PiStuff.createPlayer();
+  async function primeLatestTs() {
+    try {
+      if (!deviceId) return;
+      
+      const url = window.LATEST_URL || 'latest/';
+      const fullUrl = `${url}?device=${encodeURIComponent(deviceId)}`;
+      const r = await fetch(fullUrl);
+      if (r.status === 204) return;
+      const j = await r.json();
+      if (j?.ts) lastTsSeen = j.ts;
+    } catch (_) {}
+  }
 
-// Initialize once DOM is ready (for menu elements), then load YouTube API.
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => PiStuff.init());
-} else {
-  PiStuff.init();
-}
+  function startLatestPoller() {
+    if (pollIntervalId) return;
+    pollIntervalId = setInterval(async () => {
+      try {
+        if (!deviceId) return;
+        
+        const url = window.LATEST_URL || 'latest/';
+        const fullUrl = `${url}?device=${encodeURIComponent(deviceId)}`;
+        const r = await fetch(fullUrl);
+        if (r.status === 204) return;
+        const j = await r.json();
+        if (!j?.ts || j.ts === lastTsSeen) return;
+        lastTsSeen = j.ts;
+        playVideo(j.youtube_id);
+        if (qrVisible) hideQr();
+      } catch (_) {}
+    }, POLL_INTERVAL_MS);
+  }
+
+  function init() {
+    // Get device ID from DeviceManager
+    deviceId = DeviceManager.ensureDeviceIdInUrl();
+    if (!deviceId) return; // We're reloading with device_id
+    
+    loadPlaylistsData();
+
+    // Select random playlist on first load
+    if (!currentPlaylist) {
+      const cats = Object.keys(playlists);
+      if (cats.length) {
+        const catKey = cats[Math.floor(Math.random() * cats.length)];
+        const list = playlists[catKey];
+        if (list?.length) {
+          currentCategoryKey = catKey;
+          currentPlaylist = list[Math.floor(Math.random() * list.length)].id;
+          pendingPlaylistLoad = currentPlaylist;
+        }
+      }
+    }
+
+    initMenu();
+    
+    // Set the initial active states after menu is initialized
+    setInitialActiveStates();
+    
+    // Click anywhere when screen is off to turn it back on
+    document.body.addEventListener('click', (e) => {
+      if (document.body.className === 'screen-off') {
+        // Don't interfere with menu button
+        if (!e.target.closest('.menu-button')) {
+          document.body.className = '';
+        }
+      }
+    });
+    
+    loadYouTubeApi();
+
+    primeLatestTs().finally(startLatestPoller);
+
+    window.onYouTubeIframeAPIReady = createPlayer;
+    if (window.YT?.Player) createPlayer();
+  }
+
+  return { init };
+})();

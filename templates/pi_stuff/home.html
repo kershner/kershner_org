@@ -1,34 +1,35 @@
-{% load kershner_tags %}
+{% extends "pi_stuff/base.html" %}
 
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Tyler's Pi Stuff</title>
-  <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/pi_stuff.css">
-</head>
-
-<body>
-  <!-- transparent click target -->
+{% block content %}
   <button class="menu-button" type="button" aria-label="Open menu"></button>
 
-  <!-- menu overlay -->
   <div class="menu" id="menu" hidden>
     <div class="menu-inner">
       <div class="menu-header">
         <div class="menu-actions">
           <button data-action="reload" type="button">reload</button>
+          <button data-action="qr" type="button">show qr</button>
           <button data-action="screen" type="button">screen</button>
         </div>
 
         <div class="menu-categories">
           {% for category in categories %}
-            <button data-category="cat-{{ category.id }}" type="button">{{ category.name }}</button>
+            <button data-category="cat-{{ category.id }}" type="button">
+              {{ category.name }}
+            </button>
           {% endfor %}
         </div>
-      </div>  
-      
-      <div class="menu-playlists" id="playlists"></div>
+      </div>
+
+      <div class="menu-content">
+        <div class="menu-playlists" id="playlists"></div>
+        
+        <div class="menu-qr" id="qr-container" hidden>
+          <div class="qr-box">
+            <img class="qr-img" src="data:image/png;base64,{{ qr_code_b64 }}" alt="QR Code">
+          </div>
+        </div>
+      </div>
 
       <div class="menu-footer">
         <div class="menu-actions">
@@ -39,10 +40,14 @@
   </div>
 
   <div id="player"></div>
+{% endblock %}
 
-  <script>
-    window.CATEGORIES_DATA = {{ categories_json|safe }};
-  </script>
-  <script src="{% settings_value "BASE_S3_URL" %}/js/pi_stuff.js"></script>
-</body>
-</html>
+{% block window_vars %}
+  window.CATEGORIES_DATA = {{ categories_json|safe }};
+  window.API_PLAY_URL = "{{ api_play_url }}";
+  window.LATEST_URL = "{{ latest_url }}";
+{% endblock %}
+
+{% block js_init %}
+  PiStuff.init();
+{% endblock %}

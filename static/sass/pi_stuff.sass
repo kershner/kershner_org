@@ -3,8 +3,23 @@
   padding: 0
   box-sizing: border-box
 
+// Color variables
 $border-color: rgba(255, 255, 255, 0.3)
+$border-color-hover: rgba(255, 255, 255, 0.6)
 $background-color: rgba(255, 255, 255, 0.15)
+$background-color-hover: rgba(255, 255, 255, 0.2)
+$background-dark: rgba(0, 0, 0, 0.9)
+$text-color: white
+$text-color-inverted: black
+$text-color-dimmed: rgba(255, 255, 255, 0.5)
+
+$success-bg: rgba(76, 175, 80, 0.2)
+$success-border: rgba(76, 175, 80, 0.5)
+$success-text: #81c784
+
+$error-bg: rgba(244, 67, 54, 0.2)
+$error-border: rgba(244, 67, 54, 0.5)
+$error-text: #e57373
 
 html, body
   width: 100%
@@ -15,7 +30,7 @@ button
   padding: 1.5em
   font-size: 1em
   background: $background-color
-  color: white
+  color: $text-color
   border: 1px solid $border-color
   border-radius: 4px
 
@@ -23,8 +38,8 @@ button
     transform: scale(0.95)
 
   &.selected
-    background: white
-    color: black
+    background: $text-color
+    color: $text-color-inverted
 
 #player
   width: 100%
@@ -46,7 +61,7 @@ button
   inset: 0
   display: flex
   justify-content: center
-  background: rgba(0, 0, 0, 0.9)
+  background: $background-dark
 
 .menu[hidden]
   display: none
@@ -81,19 +96,51 @@ button
     padding: 0.75rem 1rem
     font-weight: bold
 
+.menu-content
+  flex: 1 1 auto
+  display: flex
+  position: relative
+  overflow-y: auto
+  border-top: 2px solid $border-color
+  min-height: 0
+
+.menu-playlists,
+.menu-qr
+  position: absolute
+  top: 0
+  left: 0
+  right: 0
+  bottom: 0
+  padding: 0.5rem 0
+
 .menu-playlists
   display: flex
   flex-wrap: wrap
-  flex-grow: 1
   align-items: flex-start
   align-content: flex-start
   gap: 0.5rem
-  padding: 0.5rem 0
   overflow-y: auto
-  border-top: 2px solid $border-color
 
-.menu-playlists[hidden]
-  display: none
+  &[hidden]
+    display: none
+
+.menu-qr
+  display: flex
+  justify-content: center
+  align-items: center
+  padding: 2rem
+
+  &[hidden]
+    display: none
+
+.qr-box
+  text-align: center
+
+.qr-img
+  max-width: 100%
+  max-height: 100%
+  border: 4px solid $border-color
+  border-radius: 8px
 
 .menu-footer
   padding-top: 0.5rem
@@ -103,3 +150,89 @@ body.screen-off
 
 body.screen-off #player
   visibility: hidden
+
+body.screen-off::before
+  content: ''
+  position: fixed
+  inset: 0
+  background: black
+  z-index: 1
+  pointer-events: none
+.submit-page
+  background: $background-dark
+  color: $text-color
+  min-height: 100vh
+  display: flex
+  flex-direction: column
+  justify-content: center
+  align-items: center
+  padding: 2rem
+
+.submit-container
+  width: 100%
+  max-width: 500px
+
+.submit-title
+  font-size: 2em
+  margin-bottom: 1.5rem
+  text-align: center
+  font-weight: bold
+
+.submit-form
+  display: flex
+  flex-direction: column
+  gap: 0.5rem
+
+.submit-input
+  padding: 1.5em
+  font-size: 1em
+  background: $background-color
+  color: $text-color
+  border: 1px solid $border-color
+  border-radius: 4px
+
+  &::placeholder
+    color: $text-color-dimmed
+
+  &:focus
+    outline: none
+    border-color: $border-color-hover
+    background: $background-color-hover
+
+.submit-button
+  padding: 1.5em
+  font-size: 1em
+  background: $background-color
+  color: $text-color
+  border: 1px solid $border-color
+  border-radius: 4px
+  cursor: pointer
+  font-weight: bold
+
+  &:active
+    transform: scale(0.95)
+
+  &:disabled
+    opacity: 0.5
+    cursor: not-allowed
+    transform: none
+
+.submit-message
+  padding: 1em
+  border-radius: 4px
+  margin-top: 0.5rem
+  display: none
+  border: 1px solid $border-color
+
+  &.success
+    background: $success-bg
+    border-color: $success-border
+    color: $success-text
+
+  &.error
+    background: $error-bg
+    border-color: $error-border
+    color: $error-text
+
+  &.show
+    display: block

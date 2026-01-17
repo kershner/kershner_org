@@ -1,6 +1,9 @@
-import apps.pi_stuff.views as pi_stuff_views
 from django.urls import path
+from . import views
 
-pi_stuff_patterns = [
-    path('', pi_stuff_views.PiStuffHomeView.as_view(), name='pi_stuff_home'),
+pi_stuff_patterns  = [
+    path("", views.PiStuffHomeView.as_view(), name="pi_home"),
+    path("submit/", views.submit_form, name="submit"),
+    path("play/", views.api_play, name="api_play"),
+    path("latest/", views.latest, name="latest"),
 ]
