@@ -141,14 +141,15 @@ const YouTubeSearch = (() => {
         return;
       }
 
-      if (query.length < 2) {
+      // Require at least 3 characters
+      if (query.length < 3) {
         dropdownElement.classList.add('hidden');
         return;
       }
 
       currentQuery = query;
 
-      // Debounce the API calls
+      // Debounce API calls
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(async () => {
         if (currentQuery === query) {
@@ -158,7 +159,7 @@ const YouTubeSearch = (() => {
           const html = await searchVideos(query);
           renderResults(html, dropdownElement, inputElement);
         }
-      }, 400);
+      }, 1000);
     });
 
     inputElement.addEventListener('keydown', (e) => {

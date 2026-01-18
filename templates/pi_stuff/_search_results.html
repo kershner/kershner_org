@@ -15,9 +15,6 @@
         <div class="result-title">{{ video.title }}</div>
         <div class="result-meta">
           <span class="result-author">{{ video.author }}</span>
-          {% if video.duration %}
-            <span class="result-duration">{{ video.duration }}</span>
-          {% endif %}
           {% if video.published_at %}
             <span class="result-date">{{ video.published_at }}</span>
           {% endif %}

@@ -182,15 +182,21 @@ def latest(request):
 def youtube_search(request):
     template = 'pi_stuff/_search_results.html'
 
-    """Server-side YouTube search API endpoint."""
+    """Server-side YouTube search API endpoint with caching."""
     query = request.GET.get('q', '').strip()
     
-    # Handle empty or short queries
-    if not query or len(query) < 2:
+    # Handle empty or short queries (require at least 3 chars)
+    if not query or len(query) < 3:
         return render(request, template, {
             'videos': [],
             'error': None
         })
+    
+    # Check cache first (5 minute cache to reduce API calls)
+    cache_key = f'youtube_search:{query.lower()}'
+    cached_results = cache.get(cache_key)
+    if cached_results:
+        return render(request, template, cached_results)
     
     # Check API key configuration
     youtube_api_key = getattr(settings, 'YOUTUBE_API_KEY', None)
@@ -208,7 +214,7 @@ def youtube_search(request):
                 'part': 'snippet',
                 'q': query,
                 'type': 'video',
-                'maxResults': 8,
+                'maxResults': 5,
                 'key': youtube_api_key,
                 'videoEmbeddable': 'true',
                 'safeSearch': 'moderate'
@@ -225,42 +231,24 @@ def youtube_search(request):
                 'error': error_msg
             })
         
-        # Transform results
+        # Transform results (no second API call needed)
         data = response.json()
-        video_ids = [item['id']['videoId'] for item in data.get('items', [])]
-        
-        # Fetch full video details (snippet + duration) in a second API call
-        # Note: YouTube API requires 2 calls - search returns IDs, videos returns details
-        videos = []
-        if video_ids:
-            videos_response = requests.get(
-                'https://www.googleapis.com/youtube/v3/videos',
-                params={
-                    'part': 'snippet,contentDetails',
-                    'id': ','.join(video_ids),
-                    'key': youtube_api_key
-                },
-                timeout=5
-            )
-            
-            if videos_response.ok:
-                videos_data = videos_response.json()
-                videos = [
-                    {
-                        'video_id': item['id'],
-                        'title': unescape(item['snippet']['title']),
-                        'author': unescape(item['snippet']['channelTitle']),
-                        'thumbnail': item['snippet']['thumbnails']['medium']['url'],
-                        'duration': format_duration(item.get('contentDetails', {}).get('duration', '')),
-                        'published_at': item['snippet'].get('publishedAt', '')[:10],
-                    }
-                    for item in videos_data.get('items', [])
-                ]
+        videos = [
+            {
+                'video_id': item['id']['videoId'],
+                'title': unescape(item['snippet']['title']),
+                'author': unescape(item['snippet']['channelTitle']),
+                'thumbnail': item['snippet']['thumbnails']['medium']['url'],
+                'published_at': item['snippet'].get('publishedAt', '')[:10],
+            }
+            for item in data.get('items', [])
+        ]
 
-        return render(request, template, {
-            'videos': videos,
-            'error': None
-        })
+        # Cache results for 5 minutes
+        result_data = {'videos': videos, 'error': None}
+        cache.set(cache_key, result_data, timeout=300)
+
+        return render(request, template, result_data)
         
     except requests.Timeout:
         return render(request, template, {
