@@ -1,0 +1,23 @@
+{# templates/pi_stuff/_search_results.html #}
+
+{% if error %}
+  <div class="search-error">{{ error }}</div>
+{% elif not videos %}
+  <div class="search-no-results">No videos found</div>
+{% else %}
+  {% for video in videos %}
+    <div class="search-result-item" data-video-id="{{ video.video_id }}">
+      <img class="result-thumbnail" 
+           src="{{ video.thumbnail }}" 
+           alt="{{ video.title }}" 
+           loading="lazy">
+      <div class="result-info">
+        <div class="result-title">{{ video.title }}</div>
+        <div class="result-meta">
+          <span class="result-author">{{ video.author }}</span>
+          <span class="result-duration">{{ video.published_at }}</span>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+{% endif %}

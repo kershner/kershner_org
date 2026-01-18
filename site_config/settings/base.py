@@ -207,3 +207,5 @@ DAGGERWALK_TWITCH_BROADCASTER_ID = PARAMETERS['daggerwalk_twitch_broadcaster_id'
 DAGGERWALK_TWITCH_REFRESH_TOKEN = PARAMETERS['daggerwalk_twitch_refresh_token']
 
 PLAYWRIGHT_CHROMIUM_PATH = os.getenv("PLAYWRIGHT_CHROMIUM_PATH", "/opt/playwright-browsers/chromium-1181/chrome-linux/chrome")
+
+YOUTUBE_API_KEY = PARAMETERS['youtube_api_key']

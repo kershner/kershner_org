@@ -28,6 +28,163 @@ const DeviceManager = (() => {
   return { getOrCreateDeviceId, ensureDeviceIdInUrl };
 })();
 
+const YouTubeSearch = (() => {
+  let currentQuery = '';
+  let debounceTimer = null;
+  let cache = new Map();
+  let selectedIndex = -1;
+  let results = [];
+
+  // Server-side search endpoint - pulled from Django
+  const SEARCH_ENDPOINT = window.YOUTUBE_SEARCH_URL;
+  
+  function isYouTubeUrl(str) {
+    return /^https?:\/\/(www\.)?(youtube\.com|youtu\.be)/.test(str);
+  }
+
+  async function searchVideos(query) {
+    if (cache.has(query)) {
+      return cache.get(query);
+    }
+
+    try {
+      const response = await fetch(`${SEARCH_ENDPOINT}?q=${encodeURIComponent(query)}`);
+      
+      if (!response.ok) {
+        console.error('Search failed:', response.status);
+        return '<div class="search-error">Search failed. Please try again.</div>';
+      }
+      
+      const html = await response.text();
+      cache.set(query, html);
+      return html;
+      
+    } catch (error) {
+      console.error('Search failed:', error);
+      return '<div class="search-error">Network error. Please try again.</div>';
+    }
+  }
+
+  function renderResults(html, dropdown, input) {
+    selectedIndex = -1;
+
+    // Insert the server-rendered HTML
+    dropdown.innerHTML = html;
+    dropdown.classList.remove('hidden');
+
+    // Get all result items from the rendered HTML
+    const items = dropdown.querySelectorAll('.search-result-item');
+    results = Array.from(items);
+
+    if (items.length === 0) {
+      return;
+    }
+
+    // Add click handlers and index for keyboard navigation
+    items.forEach((item, index) => {
+      item.dataset.index = index;
+      
+      item.addEventListener('click', () => {
+        const videoId = item.dataset.videoId;
+        input.value = `https://www.youtube.com/watch?v=${videoId}`;
+        dropdown.classList.add('hidden');
+        
+        // Trigger change event so form knows the value updated
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+  }
+
+  function handleKeyNavigation(e, dropdown, input) {
+    const items = dropdown.querySelectorAll('.search-result-item');
+    
+    if (items.length === 0) return;
+    
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+      updateSelection(items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedIndex = Math.max(selectedIndex - 1, -1);
+      updateSelection(items);
+    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+      e.preventDefault();
+      const videoId = items[selectedIndex].dataset.videoId;
+      input.value = `https://www.youtube.com/watch?v=${videoId}`;
+      dropdown.classList.add('hidden');
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    } else if (e.key === 'Escape') {
+      dropdown.classList.add('hidden');
+      selectedIndex = -1;
+    }
+  }
+
+  function updateSelection(items) {
+    items.forEach((item, index) => {
+      if (index === selectedIndex) {
+        item.classList.add('selected');
+        item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      } else {
+        item.classList.remove('selected');
+      }
+    });
+  }
+
+  function init(inputElement, dropdownElement) {
+    inputElement.addEventListener('input', async (e) => {
+      const query = e.target.value.trim();
+      
+      // If it's a URL, don't show results
+      if (isYouTubeUrl(query)) {
+        dropdownElement.classList.add('hidden');
+        return;
+      }
+
+      if (query.length < 2) {
+        dropdownElement.classList.add('hidden');
+        return;
+      }
+
+      currentQuery = query;
+
+      // Debounce the API calls
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(async () => {
+        if (currentQuery === query) {
+          dropdownElement.innerHTML = '<div class="search-loading">Searching YouTube...</div>';
+          dropdownElement.classList.remove('hidden');
+          
+          const html = await searchVideos(query);
+          renderResults(html, dropdownElement, inputElement);
+        }
+      }, 400);
+    });
+
+    inputElement.addEventListener('keydown', (e) => {
+      if (!dropdownElement.classList.contains('hidden')) {
+        handleKeyNavigation(e, dropdownElement, inputElement);
+      }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!inputElement.contains(e.target) && !dropdownElement.contains(e.target)) {
+        dropdownElement.classList.add('hidden');
+      }
+    });
+
+    // Show dropdown when focusing input if there are results
+    inputElement.addEventListener('focus', () => {
+      if (results.length > 0 && !isYouTubeUrl(inputElement.value)) {
+        dropdownElement.classList.remove('hidden');
+      }
+    });
+  }
+
+  return { init };
+})();
+
 const SubmitForm = (() => {
   function init() {
     const form = document.getElementById('f');
@@ -38,6 +195,13 @@ const SubmitForm = (() => {
     
     const messageEl = document.getElementById('message');
     const submitBtn = form.querySelector('.submit-button');
+    const searchInput = document.getElementById('search-input');
+    const dropdown = document.getElementById('autocomplete-dropdown');
+
+    // Initialize YouTube search
+    if (searchInput && dropdown) {
+      YouTubeSearch.init(searchInput, dropdown);
+    }
 
     function showMessage(text, isError = false) {
       messageEl.textContent = text;

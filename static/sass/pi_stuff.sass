@@ -1,9 +1,21 @@
+// =============================================================================
+// RESET & BASE
+// =============================================================================
 *
   margin: 0
   padding: 0
   box-sizing: border-box
 
-// Color variables
+html, body
+  width: 100%
+  height: 100%
+  overflow: hidden
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif
+
+// =============================================================================
+// VARIABLES
+// =============================================================================
+// Colors - Base
 $border-color: rgba(255, 255, 255, 0.3)
 $border-color-hover: rgba(255, 255, 255, 0.6)
 $background-color: rgba(255, 255, 255, 0.15)
@@ -13,6 +25,7 @@ $text-color: white
 $text-color-inverted: black
 $text-color-dimmed: rgba(255, 255, 255, 0.5)
 
+// Colors - States
 $success-bg: rgba(76, 175, 80, 0.2)
 $success-border: rgba(76, 175, 80, 0.5)
 $success-text: #81c784
@@ -21,26 +34,47 @@ $error-bg: rgba(244, 67, 54, 0.2)
 $error-border: rgba(244, 67, 54, 0.5)
 $error-text: #e57373
 
-html, body
-  width: 100%
-  height: 100%
-  overflow: hidden
+// Colors - Search specific
+$search-bg: rgba(0, 0, 0, 0.95)
+$search-border: rgba(255, 255, 255, 0.2)
+$search-item-hover: rgba(255, 255, 255, 0.1)
+$search-item-selected: rgba(255, 255, 255, 0.15)
 
-button
+// Spacing
+$border-radius: 4px
+$spacing-sm: 0.5rem
+$spacing-md: 1rem
+$spacing-lg: 1.5rem
+
+// =============================================================================
+// MIXINS
+// =============================================================================
+@mixin button-base
   padding: 1.5em
   font-size: 1em
   background: $background-color
   color: $text-color
   border: 1px solid $border-color
-  border-radius: 4px
+  border-radius: $border-radius
+  cursor: pointer
 
+@mixin active-scale
   &:active
     transform: scale(0.95)
 
-  &.selected
-    background: $text-color
-    color: $text-color-inverted
+@mixin flex-center
+  display: flex
+  justify-content: center
+  align-items: center
 
+@mixin text-truncate
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+
+// =============================================================================
+// HOME PAGE - PLAYER & MENU
+// =============================================================================
 #player
   width: 100%
   height: 100%
@@ -59,18 +93,17 @@ button
   position: fixed
   z-index: 2
   inset: 0
-  display: flex
-  justify-content: center
+  @include flex-center
   background: $background-dark
 
-.menu[hidden]
-  display: none
+  &[hidden]
+    display: none
 
 .menu-inner
   display: flex
   flex-direction: column
   justify-content: space-between
-  padding: 0.5rem 0
+  padding: $spacing-sm 0
   height: 100%
   width: 60rem
 
@@ -80,16 +113,16 @@ button
 
 .menu-actions
   display: flex
-  gap: 0.5rem
+  gap: $spacing-sm
 
-.menu-actions button
-  flex: 1
+  button
+    flex: 1
 
 .menu-categories
   display: flex
   flex: 1 1 auto
-  gap: 0.5rem
-  padding: 0.5rem 0
+  gap: $spacing-sm
+  padding: $spacing-sm 0
   overflow-x: auto
   
   button
@@ -109,8 +142,8 @@ button
   flex-wrap: wrap
   align-items: flex-start
   align-content: flex-start
-  gap: 0.5rem
-  padding: 0.5rem 0
+  gap: $spacing-sm
+  padding: $spacing-sm 0
   overflow-y: auto
   flex: 1
 
@@ -118,10 +151,8 @@ button
     display: none
 
 .menu-qr
-  display: flex
-  justify-content: center
-  align-items: center
-  padding: 1rem
+  @include flex-center
+  padding: $spacing-md
   flex: 1
   overflow: hidden
   min-height: 0
@@ -130,9 +161,7 @@ button
     display: none
 
 .qr-box
-  display: flex
-  justify-content: center
-  align-items: center
+  @include flex-center
   max-width: 100%
   max-height: 100%
   width: 100%
@@ -148,28 +177,43 @@ button
   border-radius: 8px
 
 .menu-footer
-  padding-top: 0.5rem
+  padding-top: $spacing-sm
 
+// Screen off state
 body.screen-off
   background: black
 
-body.screen-off #player
-  visibility: hidden
+  #player
+    visibility: hidden
 
-body.screen-off::before
-  content: ''
-  position: fixed
-  inset: 0
-  background: black
-  z-index: 1
-  pointer-events: none
+  &::before
+    content: ''
+    position: fixed
+    inset: 0
+    background: black
+    z-index: 1
+    pointer-events: none
+
+// =============================================================================
+// SHARED BUTTON STYLES
+// =============================================================================
+button
+  @include button-base
+  @include active-scale
+
+  &.selected
+    background: $text-color
+    color: $text-color-inverted
+
+// =============================================================================
+// SUBMIT PAGE
+// =============================================================================
 .submit-page
   background: $background-dark
   color: $text-color
   min-height: 100vh
   display: flex
   flex-direction: column
-  justify-content: center
   align-items: center
   padding: 2rem
 
@@ -179,22 +223,22 @@ body.screen-off::before
 
 .submit-title
   font-size: 2em
-  margin-bottom: 1.5rem
+  margin-bottom: $spacing-lg
   text-align: center
   font-weight: bold
 
 .submit-form
   display: flex
   flex-direction: column
-  gap: 0.5rem
+  gap: $spacing-sm
+
+.search-wrapper
+  position: relative
+  width: 100%
 
 .submit-input
-  padding: 1.5em
-  font-size: 1em
-  background: $background-color
-  color: $text-color
-  border: 1px solid $border-color
-  border-radius: 4px
+  @include button-base
+  width: 100%
 
   &::placeholder
     color: $text-color-dimmed
@@ -205,17 +249,9 @@ body.screen-off::before
     background: $background-color-hover
 
 .submit-button
-  padding: 1.5em
-  font-size: 1em
-  background: $background-color
-  color: $text-color
-  border: 1px solid $border-color
-  border-radius: 4px
-  cursor: pointer
+  @include button-base
+  @include active-scale
   font-weight: bold
-
-  &:active
-    transform: scale(0.95)
 
   &:disabled
     opacity: 0.5
@@ -224,8 +260,8 @@ body.screen-off::before
 
 .submit-message
   padding: 1em
-  border-radius: 4px
-  margin-top: 0.5rem
+  border-radius: $border-radius
+  margin-top: $spacing-sm
   display: none
   border: 1px solid $border-color
 
@@ -241,3 +277,142 @@ body.screen-off::before
 
   &.show
     display: block
+
+// =============================================================================
+// YOUTUBE SEARCH DROPDOWN
+// =============================================================================
+@keyframes slideDown
+  from
+    opacity: 0
+    transform: translateY(-8px)
+  to
+    opacity: 1
+    transform: translateY(0)
+
+.autocomplete-dropdown
+  position: absolute
+  top: 100%
+  left: 0
+  right: 0
+  margin-top: 4px
+  background: $search-bg
+  border: 1px solid $search-border
+  border-radius: $border-radius
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5)
+  max-height: 480px
+  overflow-y: auto
+  z-index: 1000
+  animation: slideDown 0.15s ease-out
+  backdrop-filter: blur(10px)
+
+  &.hidden
+    display: none
+
+  // Custom scrollbar
+  &::-webkit-scrollbar
+    width: 8px
+
+  &::-webkit-scrollbar-track
+    background: rgba(255, 255, 255, 0.05)
+    border-radius: 0 $border-radius $border-radius 0
+
+  &::-webkit-scrollbar-thumb
+    background: rgba(255, 255, 255, 0.2)
+    border-radius: $border-radius
+
+    &:hover
+      background: rgba(255, 255, 255, 0.3)
+
+.search-result-item
+  display: flex
+  gap: 12px
+  padding: 12px
+  cursor: pointer
+  transition: background-color 0.15s ease
+  border-bottom: 1px solid $search-border
+
+  &:last-child
+    border-bottom: none
+
+  &:hover
+    background: $search-item-hover
+
+  &.selected
+    background: $search-item-selected
+
+.result-thumbnail
+  width: 120px
+  height: 68px
+  object-fit: cover
+  border-radius: $border-radius
+  flex-shrink: 0
+  background: rgba(255, 255, 255, 0.05)
+
+.result-info
+  flex: 1
+  display: flex
+  flex-direction: column
+  justify-content: center
+  min-width: 0
+
+.result-title
+  font-size: 14px
+  font-weight: 500
+  color: $text-color
+  line-height: 1.3
+  margin-bottom: 4px
+  overflow: hidden
+  text-overflow: ellipsis
+  display: -webkit-box
+  -webkit-line-clamp: 2
+  -webkit-box-orient: vertical
+
+.result-meta
+  display: flex
+  gap: 8px
+  align-items: center
+  font-size: 12px
+  color: $text-color-dimmed
+
+.result-author
+  @include text-truncate
+
+.result-duration
+  flex-shrink: 0
+  padding: 2px 6px
+  background: rgba(0, 0, 0, 0.6)
+  border-radius: 3px
+  font-size: 11px
+
+// Search states
+.search-loading,
+.search-no-results,
+.search-error
+  padding: 24px
+  text-align: center
+  color: $text-color-dimmed
+  font-size: 14px
+
+.search-error
+  color: $error-text
+
+// =============================================================================
+// RESPONSIVE
+// =============================================================================
+@media (max-width: 768px)
+  .autocomplete-dropdown
+    max-height: 360px
+  
+  .search-result-item
+    padding: 10px
+    gap: 10px
+  
+  .result-thumbnail
+    width: 100px
+    height: 56px
+  
+  .result-title
+    font-size: 13px
+  
+  .result-meta
+    font-size: 11px

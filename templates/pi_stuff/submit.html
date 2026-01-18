@@ -9,12 +9,17 @@
     <h2 class="submit-title">Send YouTube Video</h2>
 
     <form id="f" class="submit-form">
-      <input
-        class="submit-input"
-        name="url"
-        type="url"
-        placeholder="https://youtube.com/..."
-        required>
+      <div class="search-wrapper">
+        <input
+          id="search-input"
+          class="submit-input"
+          name="url"
+          type="text"
+          placeholder="Search YouTube or paste URL..."
+          autocomplete="off"
+          required>
+        <div id="autocomplete-dropdown" class="autocomplete-dropdown hidden"></div>
+      </div>
       <input type="hidden" name="token" value="{{ token }}">
       <input type="hidden" name="device_id" value="{{ device_id }}">
       <button class="submit-button" type="submit">Send to Display</button>
@@ -28,6 +33,7 @@
   window.API_PLAY_URL = "{{ api_play_url }}";
   window.SUBMIT_TOKEN = "{{ token }}";
   window.SUBMIT_DEVICE_ID = "{{ device_id }}";
+  window.YOUTUBE_SEARCH_URL = "{{ youtube_search_url }}";
 {% endblock %}
 
 {% block js_init %}
