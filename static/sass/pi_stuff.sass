@@ -195,6 +195,67 @@ body.screen-off
     pointer-events: none
 
 // =============================================================================
+// DISPLAY MESSAGE (for home page)
+// =============================================================================
+@keyframes fadeInScale
+  from
+    opacity: 0
+    transform: translate(-50%, -50%) scale(0.9)
+  to
+    opacity: 1
+    transform: translate(-50%, -50%) scale(1)
+
+@keyframes fadeOutScale
+  from
+    opacity: 1
+    transform: translate(-50%, -50%) scale(1)
+  to
+    opacity: 0
+    transform: translate(-50%, -50%) scale(0.9)
+
+.display-message
+  position: fixed
+  top: 50%
+  left: 50%
+  transform: translate(-50%, -50%)
+  z-index: 3
+  padding: 2rem 3rem
+  border-radius: 12px
+  font-size: 2.5rem
+  font-weight: bold
+  text-align: center
+  border: 2px solid $border-color
+  backdrop-filter: blur(20px)
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5)
+  opacity: 0
+  pointer-events: none
+  transition: opacity 0.3s ease
+
+  &.show
+    opacity: 1
+    animation: fadeInScale 0.3s ease-out
+
+  &.success
+    background: $success-bg
+    border-color: $success-border
+    color: $success-text
+
+  &.error
+    background: $error-bg
+    border-color: $error-border
+    color: $error-text
+
+  &.info
+    background: rgba(33, 150, 243, 0.2)
+    border-color: rgba(33, 150, 243, 0.5)
+    color: #64b5f6
+
+  &.warning
+    background: rgba(255, 152, 0, 0.2)
+    border-color: rgba(255, 152, 0, 0.5)
+    color: #ffb74d
+
+// =============================================================================
 // SHARED BUTTON STYLES
 // =============================================================================
 button

@@ -270,6 +270,7 @@ const PiStuff = (() => {
   let lastTsSeen = 0;
   let qrHideTimer = null;
   let qrVisible = false;
+  let successMessageTimer = null;
 
   let deviceId = null;
 
@@ -280,8 +281,43 @@ const PiStuff = (() => {
   const getPlaylistsContainer = () => $('#playlists');
   const getQrContainer = () => $('#qr-container');
   const getPlayerIframe = () => document.getElementById('player');
+  const getDisplayMessage = () => $('#display-message');
 
   const safe = fn => { try { return fn(); } catch (_) { return null; } };
+
+  function showMessage(message, type = 'success', duration = 3000) {
+    const messageEl = getDisplayMessage();
+    if (!messageEl) return;
+
+    // Clear any existing timer
+    clearTimeout(successMessageTimer);
+
+    // Hide UI elements and show message
+    const playlistsContainer = getPlaylistsContainer();
+    const qrContainer = getQrContainer();
+    const menu = getMenu();
+    
+    if (playlistsContainer) playlistsContainer.hidden = true;
+    if (qrContainer) qrContainer.hidden = true;
+    if (menu) menu.hidden = true;
+    
+    // Set message content and type
+    messageEl.textContent = message;
+    messageEl.className = 'display-message'; // Reset classes
+    messageEl.classList.add('show', type);
+
+    // Hide message after duration and restore UI
+    successMessageTimer = setTimeout(() => {
+      messageEl.classList.remove('show');
+      
+      // Restore playlists view (unless QR was showing)
+      setTimeout(() => {
+        if (!qrVisible && playlistsContainer) {
+          playlistsContainer.hidden = false;
+        }
+      }, 300); // Wait for fade out animation
+    }, duration);
+  }
 
   function playVideo(videoId) {
     if (!videoId) return;
@@ -545,6 +581,7 @@ const PiStuff = (() => {
         if (!j?.ts || j.ts === lastTsSeen) return;
         lastTsSeen = j.ts;
         playVideo(j.youtube_id);
+        showMessage('✓ Video playing!', 'success');
         if (qrVisible) hideQr();
       } catch (_) {}
     }, POLL_INTERVAL_MS);

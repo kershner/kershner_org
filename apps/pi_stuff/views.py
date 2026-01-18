@@ -21,8 +21,7 @@ from .models import Category
 from .serializers import CategorySerializer
 
 
-# Constants
-TOKEN_TTL = 120  # seconds
+TOKEN_TTL = 60 * 20  # 20 minutes (1200 seconds)
 LATEST_PLAY_TTL = 60 * 60 * 24 * 7  # 7 days
 YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search'
 
@@ -119,20 +118,10 @@ def api_play(request):
     # Check token validity
     token_key = f"pi_token:{token}:{device_id}"
     if not cache.get(token_key):
-        # Check if already used
-        if cache.get(f"pi_token_used:{token}"):
-            return JsonResponse(
-                {"error": "already_used", "message": "This QR code has already been used"}, 
-                status=400
-            )
         return JsonResponse(
             {"error": "invalid_or_expired", "message": "Invalid or expired QR code"}, 
             status=400
         )
-
-    # Mark token as used
-    cache.delete(token_key)
-    cache.set(f"pi_token_used:{token}", True, timeout=300)
 
     # Validate YouTube URL
     video_id = extract_youtube_id(url)
