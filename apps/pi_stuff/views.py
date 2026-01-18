@@ -6,6 +6,9 @@ from urllib.parse import urlparse, parse_qs
 from html import unescape
 
 import qrcode
+from qrcode.image.styledpil import StyledPilImage
+from qrcode.image.styles.moduledrawers import GappedSquareModuleDrawer
+from qrcode.image.styles.colormasks import SolidFillColorMask
 import json
 import requests
 
@@ -95,9 +98,26 @@ class PiStuffHomeView(TemplateView):
             f"{reverse('submit')}?token={token}&device_id={device_id}"
         )
 
-        qr = qrcode.make(submit_url)
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_H,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(submit_url)
+        qr.make(fit=True)
+
+        img = qr.make_image(
+            image_factory=StyledPilImage,
+            module_drawer=GappedSquareModuleDrawer(),
+            color_mask=SolidFillColorMask(
+                front_color=(255, 255, 255),
+                back_color=(26, 26, 26),
+            ),
+        ).convert("RGBA")
+
         buf = BytesIO()
-        qr.save(buf, format="PNG")
+        img.save(buf, format="PNG")
         ctx["qr_code_b64"] = base64.b64encode(buf.getvalue()).decode()
         
         # API URLs for JavaScript
