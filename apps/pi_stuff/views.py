@@ -3,6 +3,7 @@ import secrets
 import base64
 from io import BytesIO
 from urllib.parse import urlparse, parse_qs
+from html import unescape
 
 import qrcode
 import json
@@ -24,6 +25,28 @@ from .serializers import CategorySerializer
 TOKEN_TTL = 60 * 20  # 20 minutes (1200 seconds)
 LATEST_PLAY_TTL = 60 * 60 * 24 * 7  # 7 days
 YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search'
+
+
+def format_duration(iso_duration):
+    """Convert ISO 8601 duration (PT1H2M10S) to readable format (1:02:10)."""
+    import re
+    
+    if not iso_duration:
+        return ''
+    
+    # Parse PT1H2M10S format
+    match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', iso_duration)
+    if not match:
+        return ''
+    
+    hours = int(match.group(1) or 0)
+    minutes = int(match.group(2) or 0)
+    seconds = int(match.group(3) or 0)
+    
+    if hours > 0:
+        return f"{hours}:{minutes:02d}:{seconds:02d}"
+    else:
+        return f"{minutes}:{seconds:02d}"
 
 
 def extract_youtube_id(url):
@@ -204,16 +227,35 @@ def youtube_search(request):
         
         # Transform results
         data = response.json()
-        videos = [
-            {
-                'video_id': item['id']['videoId'],
-                'title': item['snippet']['title'],
-                'author': item['snippet']['channelTitle'],
-                'thumbnail': item['snippet']['thumbnails']['medium']['url'],
-                'published_at': item['snippet'].get('publishedAt', '')[:10],
-            }
-            for item in data.get('items', [])
-        ]
+        video_ids = [item['id']['videoId'] for item in data.get('items', [])]
+        
+        # Fetch full video details (snippet + duration) in a second API call
+        # Note: YouTube API requires 2 calls - search returns IDs, videos returns details
+        videos = []
+        if video_ids:
+            videos_response = requests.get(
+                'https://www.googleapis.com/youtube/v3/videos',
+                params={
+                    'part': 'snippet,contentDetails',
+                    'id': ','.join(video_ids),
+                    'key': youtube_api_key
+                },
+                timeout=5
+            )
+            
+            if videos_response.ok:
+                videos_data = videos_response.json()
+                videos = [
+                    {
+                        'video_id': item['id'],
+                        'title': unescape(item['snippet']['title']),
+                        'author': unescape(item['snippet']['channelTitle']),
+                        'thumbnail': item['snippet']['thumbnails']['medium']['url'],
+                        'duration': format_duration(item.get('contentDetails', {}).get('duration', '')),
+                        'published_at': item['snippet'].get('publishedAt', '')[:10],
+                    }
+                    for item in videos_data.get('items', [])
+                ]
 
         return render(request, template, {
             'videos': videos,
