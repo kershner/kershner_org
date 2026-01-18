@@ -5,6 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  {% block extra_meta %}{% endblock%}
   <title>{% block title %}Tyler's Pi Stuff{% endblock %}</title>
   <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/pi_stuff.css">
 </head>

@@ -1,12 +1,17 @@
 {% extends "pi_stuff/base.html" %}
 
-{% block title %}Send to Display{% endblock %}
+{% block extra_meta %}
+  <meta property="og:title" content="Send video to the Pi Display">
+  <meta name="description" content="Send YouTube video to the Pi Display.">
+{% endblock %}
+
+{% block title %}Send video to the Pi Display{% endblock %}
 
 {% block body_class %}submit-page{% endblock %}
 
 {% block content %}
   <div class="submit-container">
-    <h2 class="submit-title">Send YouTube Video</h2>
+    <h2 class="submit-title">Send video to the Pi Display</h2>
 
     <form id="f" class="submit-form">
       <div class="search-wrapper">
