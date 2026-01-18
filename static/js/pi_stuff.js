@@ -452,10 +452,25 @@ const PiStuff = (() => {
         lastVideoId = null;
         clearTimeout(skipTimer);
 
+        // Find the playlist name for the message
+        let playlistName = 'playlist';
+        if (currentCategoryKey && playlists[currentCategoryKey]) {
+          const playlistObj = playlists[currentCategoryKey].find(p => p.id === playlist);
+          if (playlistObj) {
+            playlistName = playlistObj.name;
+          }
+        }
+
         player?.stopVideo();
         player?.loadPlaylist({ listType: 'playlist', list: playlist, index: 0 });
         menu.hidden = true;
         hideQr();
+
+        // Show message after menu closes
+        setTimeout(() => {
+          showMessage(`Playing ${playlistName}`, 'success', 2000);
+        }, 100);
+
         return;
       }
 

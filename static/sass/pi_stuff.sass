@@ -205,14 +205,6 @@ body.screen-off
     opacity: 1
     transform: translate(-50%, -50%) scale(1)
 
-@keyframes fadeOutScale
-  from
-    opacity: 1
-    transform: translate(-50%, -50%) scale(1)
-  to
-    opacity: 0
-    transform: translate(-50%, -50%) scale(0.9)
-
 .display-message
   position: fixed
   top: 50%
@@ -220,14 +212,13 @@ body.screen-off
   transform: translate(-50%, -50%)
   z-index: 3
   padding: 1.5rem 2.5rem
-  border-radius: 8px
+  border-radius: 12px
   font-size: 1.75rem
   font-weight: bold
   text-align: center
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3)
   opacity: 0
   pointer-events: none
-  transition: opacity 0.3s ease
+  transition: opacity 0.3s ease-out
   
   // Responsive width constraints
   max-width: calc(100vw - 2rem)
@@ -240,20 +231,24 @@ body.screen-off
     animation: fadeInScale 0.3s ease-out
 
   &.success
-    background: rgba(76, 175, 80, 0.85)
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.95) 0%, rgba(56, 142, 60, 0.95) 100%)
     color: white
+    box-shadow: 0 8px 24px rgba(76, 175, 80, 0.4), 0 0 0 2px rgba(139, 195, 74, 0.3)
 
   &.error
-    background: rgba(244, 67, 54, 0.85)
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.95) 0%, rgba(211, 47, 47, 0.95) 100%)
     color: white
+    box-shadow: 0 8px 24px rgba(244, 67, 54, 0.4), 0 0 0 2px rgba(239, 83, 80, 0.3)
 
   &.info
-    background: rgba(33, 150, 243, 0.85)
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.95) 0%, rgba(25, 118, 210, 0.95) 100%)
     color: white
+    box-shadow: 0 8px 24px rgba(33, 150, 243, 0.4), 0 0 0 2px rgba(66, 165, 245, 0.3)
 
   &.warning
-    background: rgba(255, 152, 0, 0.85)
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.95) 0%, rgba(245, 124, 0, 0.95) 100%)
     color: white
+    box-shadow: 0 8px 24px rgba(255, 152, 0, 0.4), 0 0 0 2px rgba(255, 167, 38, 0.3)
 
 // Mobile optimizations
 @media (max-width: 767px)
