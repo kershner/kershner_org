@@ -15,20 +15,30 @@
 
     <form id="f" class="submit-form">
       <div class="search-wrapper">
-        <input
-          id="search-input"
-          class="submit-input"
-          name="url"
-          type="search"
-          placeholder="Search YouTube or paste URL..."
-          autocomplete="off"
-          required>
-        <div id="autocomplete-dropdown" class="autocomplete-dropdown hidden"></div>
+        <div class="search-controls">
+          <input
+            id="search-input"
+            class="submit-input"
+            name="url"
+            type="search"
+            placeholder="Search YouTube or paste URL..."
+            autocomplete="off"
+            required>
+          <button
+            type="button"
+            id="search-button"
+            class="search-button">
+            Search
+          </button>
+        </div>
       </div>
       <input type="hidden" name="token" value="{{ token }}">
       <input type="hidden" name="device_id" value="{{ device_id }}">
       <button class="submit-button" type="submit">Send to Display</button>
     </form>
+
+    {# Search results container - appears below the form #}
+    <div id="search-results-container" class="search-results-container hidden"></div>
   </div>
 {% endblock %}
 

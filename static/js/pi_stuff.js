@@ -29,8 +29,6 @@ const DeviceManager = (() => {
 })();
 
 const YouTubeSearch = (() => {
-  let currentQuery = '';
-  let debounceTimer = null;
   let cache = new Map();
   let selectedIndex = -1;
   let results = [];
@@ -65,15 +63,20 @@ const YouTubeSearch = (() => {
     }
   }
 
-  function renderResults(html, dropdown, input) {
+  function renderResults(html, container, input) {
     selectedIndex = -1;
 
-    // Insert the server-rendered HTML
-    dropdown.innerHTML = html;
-    dropdown.classList.remove('hidden');
+    // Wrap results in a styled container with title
+    const hasResults = !html.includes('search-error') && !html.includes('search-no-results');
+    const wrappedHtml = hasResults 
+      ? `<div class="search-results-title">Search Results</div><div class="search-results">${html}</div>`
+      : `<div class="search-results">${html}</div>`;
+    
+    container.innerHTML = wrappedHtml;
+    container.classList.remove('hidden');
 
     // Get all result items from the rendered HTML
-    const items = dropdown.querySelectorAll('.search-result-item');
+    const items = container.querySelectorAll('.search-result-item');
     results = Array.from(items);
 
     if (items.length === 0) {
@@ -87,7 +90,6 @@ const YouTubeSearch = (() => {
       item.addEventListener('click', () => {
         const videoId = item.dataset.videoId;
         input.value = `https://www.youtube.com/watch?v=${videoId}`;
-        dropdown.classList.add('hidden');
         
         // Trigger change event so form knows the value updated
         input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -112,7 +114,6 @@ const YouTubeSearch = (() => {
       e.preventDefault();
       const videoId = items[selectedIndex].dataset.videoId;
       input.value = `https://www.youtube.com/watch?v=${videoId}`;
-      dropdown.classList.add('hidden');
       input.dispatchEvent(new Event('change', { bubbles: true }));
     } else if (e.key === 'Escape') {
       dropdown.classList.add('hidden');
@@ -131,54 +132,44 @@ const YouTubeSearch = (() => {
     });
   }
 
-  function init(inputElement, dropdownElement) {
-    inputElement.addEventListener('input', async (e) => {
-      const query = e.target.value.trim();
-      
-      // If it's a URL, don't show results
-      if (isYouTubeUrl(query)) {
-        dropdownElement.classList.add('hidden');
-        return;
-      }
+  async function performSearch(inputElement, containerElement) {
+    const query = inputElement.value.trim();
+    
+    // If it's a URL, don't search
+    if (isYouTubeUrl(query)) {
+      return;
+    }
 
-      // Require at least 3 characters
-      if (query.length < 3) {
-        dropdownElement.classList.add('hidden');
-        return;
-      }
+    // Require at least 3 characters
+    if (query.length < 3) {
+      return;
+    }
 
-      currentQuery = query;
+    containerElement.innerHTML = '<div class="search-results"><div class="search-loading">Searching YouTube...</div></div>';
+    containerElement.classList.remove('hidden');
+    
+    const html = await searchVideos(query);
+    renderResults(html, containerElement, inputElement);
+  }
 
-      // Debounce API calls
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(async () => {
-        if (currentQuery === query) {
-          dropdownElement.innerHTML = '<div class="search-loading">Searching YouTube...</div>';
-          dropdownElement.classList.remove('hidden');
-          
-          const html = await searchVideos(query);
-          renderResults(html, dropdownElement, inputElement);
-        }
-      }, 1000);
+  function init(inputElement, resultsContainer, searchButton) {
+    // Search button click handler
+    searchButton.addEventListener('click', () => {
+      performSearch(inputElement, resultsContainer);
     });
 
+    // Enter key in input field triggers search
     inputElement.addEventListener('keydown', (e) => {
-      if (!dropdownElement.classList.contains('hidden')) {
-        handleKeyNavigation(e, dropdownElement, inputElement);
-      }
-    });
-
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!inputElement.contains(e.target) && !dropdownElement.contains(e.target)) {
-        dropdownElement.classList.add('hidden');
-      }
-    });
-
-    // Show dropdown when focusing input if there are results
-    inputElement.addEventListener('focus', () => {
-      if (results.length > 0 && !isYouTubeUrl(inputElement.value)) {
-        dropdownElement.classList.remove('hidden');
+      if (e.key === 'Enter' && !resultsContainer.classList.contains('hidden')) {
+        // If results are open, handle navigation
+        handleKeyNavigation(e, resultsContainer, inputElement);
+      } else if (e.key === 'Enter') {
+        // If results are closed, perform search
+        e.preventDefault();
+        performSearch(inputElement, resultsContainer);
+      } else if (!resultsContainer.classList.contains('hidden')) {
+        // Handle other navigation keys when results are open
+        handleKeyNavigation(e, resultsContainer, inputElement);
       }
     });
   }
@@ -196,11 +187,12 @@ const SubmitForm = (() => {
     
     const submitBtn = form.querySelector('.submit-button');
     const searchInput = document.getElementById('search-input');
-    const dropdown = document.getElementById('autocomplete-dropdown');
+    const searchBtn = document.getElementById('search-button');
+    const resultsContainer = document.getElementById('search-results-container');
 
     // Initialize YouTube search
-    if (searchInput && dropdown) {
-      YouTubeSearch.init(searchInput, dropdown);
+    if (searchInput && resultsContainer && searchBtn) {
+      YouTubeSearch.init(searchInput, resultsContainer, searchBtn);
     }
 
     function showMessage(text, type = 'success', duration = 3000) {
