@@ -193,7 +193,6 @@ const SubmitForm = (() => {
       return;
     }
     
-    const messageEl = document.getElementById('message');
     const submitBtn = form.querySelector('.submit-button');
     const searchInput = document.getElementById('search-input');
     const dropdown = document.getElementById('autocomplete-dropdown');
@@ -203,16 +202,25 @@ const SubmitForm = (() => {
       YouTubeSearch.init(searchInput, dropdown);
     }
 
-    function showMessage(text, isError = false) {
+    function showMessage(text, type = 'success', duration = 3000) {
+      const messageEl = document.getElementById('display-message');
+      if (!messageEl) return;
+
+      // Set message content and type
       messageEl.textContent = text;
-      messageEl.className = 'submit-message show ' + (isError ? 'error' : 'success');
+      messageEl.className = 'display-message'; // Reset classes
+      messageEl.classList.add('show', type);
+
+      // Hide message after duration
+      setTimeout(() => {
+        messageEl.classList.remove('show');
+      }, duration);
     }
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
       
       submitBtn.disabled = true;
-      messageEl.className = 'submit-message';
       
       try {
         const data = new URLSearchParams(new FormData(e.target));
@@ -220,7 +228,7 @@ const SubmitForm = (() => {
         const json = await r.json();
         
         if (r.ok) {
-          showMessage('✓ Video sent successfully!');
+          showMessage('✓ Video sent successfully!', 'success');
           form.reset();
           // Restore hidden fields after reset
           form.querySelector('[name="token"]').value = window.SUBMIT_TOKEN || '';
@@ -228,7 +236,6 @@ const SubmitForm = (() => {
         } else {
           // Handle specific error types
           const errorMessages = {
-            'already_used': 'This QR code has already been used. Please scan a new one.',
             'invalid_or_expired': 'This QR code is invalid or expired. Please scan a new one.',
             'not_youtube': 'Please provide a valid YouTube URL.',
             'missing_token': 'Invalid request. Please scan the QR code again.',
@@ -236,10 +243,10 @@ const SubmitForm = (() => {
           };
           
           const message = errorMessages[json.error] || json.message || 'An error occurred. Please try again.';
-          showMessage(message, true);
+          showMessage(message, 'error');
         }
       } catch (err) {
-        showMessage('Network error. Please check your connection and try again.', true);
+        showMessage('Network error. Please check your connection and try again.', 'error');
       } finally {
         submitBtn.disabled = false;
       }

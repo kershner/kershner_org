@@ -220,40 +220,47 @@ body.screen-off
   transform: translate(-50%, -50%)
   z-index: 3
   padding: 2rem 3rem
-  border-radius: 12px
+  border-radius: 8px
   font-size: 2.5rem
   font-weight: bold
   text-align: center
-  border: 2px solid $border-color
-  backdrop-filter: blur(20px)
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5)
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3)
   opacity: 0
   pointer-events: none
   transition: opacity 0.3s ease
+  
+  // Responsive width constraints
+  max-width: calc(100vw - 2rem)
+  width: auto
+  word-wrap: break-word
+  overflow-wrap: break-word
 
   &.show
     opacity: 1
     animation: fadeInScale 0.3s ease-out
 
   &.success
-    background: $success-bg
-    border-color: $success-border
-    color: $success-text
+    background: #4caf50
+    color: white
 
   &.error
-    background: $error-bg
-    border-color: $error-border
-    color: $error-text
+    background: #f44336
+    color: white
 
   &.info
-    background: rgba(33, 150, 243, 0.2)
-    border-color: rgba(33, 150, 243, 0.5)
-    color: #64b5f6
+    background: #2196f3
+    color: white
 
   &.warning
-    background: rgba(255, 152, 0, 0.2)
-    border-color: rgba(255, 152, 0, 0.5)
-    color: #ffb74d
+    background: #ff9800
+    color: white
+
+// Mobile optimizations
+@media (max-width: 767px)
+  .display-message
+    font-size: 1.75rem
+    padding: 1.5rem 2rem
+    max-width: calc(100vw - 1rem)
 
 // =============================================================================
 // SHARED BUTTON STYLES
@@ -318,26 +325,6 @@ button
     opacity: 0.5
     cursor: not-allowed
     transform: none
-
-.submit-message
-  padding: 1em
-  border-radius: $border-radius
-  margin-top: $spacing-sm
-  display: none
-  border: 1px solid $border-color
-
-  &.success
-    background: $success-bg
-    border-color: $success-border
-    color: $success-text
-
-  &.error
-    background: $error-bg
-    border-color: $error-border
-    color: $error-text
-
-  &.show
-    display: block
 
 // =============================================================================
 // YOUTUBE SEARCH DROPDOWN
