@@ -58,6 +58,9 @@ $spacing-lg: 1.5rem
   border-radius: $border-radius
   cursor: pointer
 
+@mixin button-alt
+  background: $background-dark
+
 @mixin active-scale
   &:active
     transform: scale(0.95)
@@ -116,7 +119,9 @@ $spacing-lg: 1.5rem
   gap: $spacing-sm
 
   button
+    @include button-alt
     flex: 1
+    font-weight: bold
 
 .menu-categories
   display: flex
@@ -301,6 +306,7 @@ button
 
 .search-controls
   display: flex
+  flex-wrap: wrap
   gap: 0.5rem
   width: 100%
 
@@ -334,6 +340,7 @@ button
 
 .submit-button
   @include button-base
+  @include button-alt
   @include active-scale
   font-weight: bold
   padding: 1rem
@@ -472,9 +479,9 @@ button
 
 .search-button
   @include button-base
+  @include button-alt
   @include active-scale
   padding: 1rem
   font-size: 1rem
   font-weight: bold
-  flex-shrink: 0
   white-space: nowrap
