@@ -30,28 +30,6 @@ LATEST_PLAY_TTL = 60 * 60 * 24 * 7  # 7 days
 YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search'
 
 
-def format_duration(iso_duration):
-    """Convert ISO 8601 duration (PT1H2M10S) to readable format (1:02:10)."""
-    import re
-    
-    if not iso_duration:
-        return ''
-    
-    # Parse PT1H2M10S format
-    match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', iso_duration)
-    if not match:
-        return ''
-    
-    hours = int(match.group(1) or 0)
-    minutes = int(match.group(2) or 0)
-    seconds = int(match.group(3) or 0)
-    
-    if hours > 0:
-        return f"{hours}:{minutes:02d}:{seconds:02d}"
-    else:
-        return f"{minutes}:{seconds:02d}"
-
-
 def extract_youtube_id(url):
     """Extract video ID from various YouTube URL formats."""
     try:
@@ -68,14 +46,30 @@ def extract_youtube_id(url):
         return None
     except Exception:
         return None
+    
 
+def generate_qr_code(data):
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
 
-def render_search_error(error_message):
-    """Helper to render search results with an error."""
-    return render(None, 'pi_stuff/_search_results.html', {
-        'videos': [],
-        'error': error_message
-    })
+    img = qr.make_image(
+        image_factory=StyledPilImage,
+        module_drawer=GappedSquareModuleDrawer(),
+        color_mask=SolidFillColorMask(
+            front_color=(255, 255, 255),
+            back_color=(26, 26, 26),
+        ),
+    ).convert("RGBA")
+
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    return base64.b64encode(buf.getvalue()).decode()
 
 
 class PiStuffHomeView(TemplateView):
@@ -84,11 +78,8 @@ class PiStuffHomeView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
 
-        # Load and serialize categories
         categories = Category.objects.prefetch_related("playlists").all()
-        ctx["categories"] = categories
-        ctx["categories_json"] = json.dumps(CategorySerializer(categories, many=True).data)
-
+        
         # Generate QR code with token and device_id
         device_id = self.request.GET.get("device_id", "")
         token = secrets.token_urlsafe(12)
@@ -98,37 +89,20 @@ class PiStuffHomeView(TemplateView):
             f"{reverse('submit')}?token={token}&device_id={device_id}"
         )
 
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_H,
-            box_size=10,
-            border=4,
-        )
-        qr.add_data(submit_url)
-        qr.make(fit=True)
-
-        img = qr.make_image(
-            image_factory=StyledPilImage,
-            module_drawer=GappedSquareModuleDrawer(),
-            color_mask=SolidFillColorMask(
-                front_color=(255, 255, 255),
-                back_color=(26, 26, 26),
-            ),
-        ).convert("RGBA")
-
-        buf = BytesIO()
-        img.save(buf, format="PNG")
-        ctx["qr_code_b64"] = base64.b64encode(buf.getvalue()).decode()
-        
-        # API URLs for JavaScript
-        ctx["api_play_url"] = reverse("api_play")
-        ctx["latest_url"] = reverse("latest")
-        
+        ctx = {
+            "categories": categories,
+            "categories_json": json.dumps(CategorySerializer(categories, many=True).data),
+            "qr_code_b64": generate_qr_code(submit_url),
+            "api_play_url": reverse("api_play"),
+            "latest_url": reverse("latest"),
+            "regenerate_qr_url": reverse("regenerate_qr"),
+        }
         return ctx
 
 
 def submit_form(request):
     """Display the submit form page."""
+
     return render(request, "pi_stuff/submit.html", {
         "token": request.GET.get("token", ""),
         "device_id": request.GET.get("device_id", ""),
@@ -198,11 +172,40 @@ def latest(request):
     return JsonResponse(latest_play)
 
 
+@require_POST
+def regenerate_qr(request):
+    """Generate a new QR code with a fresh token."""
+    device_id = request.POST.get("device_id", "")
+    
+    if not device_id:
+        return JsonResponse(
+            {"error": "missing_device", "message": "No device ID provided"}, 
+            status=400
+        )
+    
+    # Generate new token
+    token = secrets.token_urlsafe(12)
+    cache.set(f"pi_token:{token}:{device_id}", True, timeout=TOKEN_TTL)
+    
+    # Build submit URL
+    submit_url = request.build_absolute_uri(
+        f"{reverse('submit')}?token={token}&device_id={device_id}"
+    )
+    
+    # Generate QR code
+    qr_code_b64 = generate_qr_code(submit_url)
+    
+    return JsonResponse({
+        "qr_code_b64": qr_code_b64,
+        "expires_in": TOKEN_TTL
+    })
+
+
 @require_http_methods(["GET"])
 def youtube_search(request):
-    template = 'pi_stuff/_search_results.html'
-
     """Server-side YouTube search API endpoint with caching."""
+    
+    template = 'pi_stuff/_search_results.html'
     query = request.GET.get('q', '').strip()
     
     # Handle empty or short queries (require at least 3 chars)
@@ -251,7 +254,7 @@ def youtube_search(request):
                 'error': error_msg
             })
         
-        # Transform results (no second API call needed)
+        # Transform results
         data = response.json()
         videos = [
             {

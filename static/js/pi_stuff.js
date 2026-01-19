@@ -239,7 +239,8 @@ const SubmitForm = (() => {
           showMessage(message, 'error');
         }
       } catch (err) {
-        showMessage('Network error. Please check your connection and try again.', 'error');
+        console.error('Submit error:', err);
+        showMessage('Network error. Please try again.', 'error');
       } finally {
         submitBtn.disabled = false;
       }
@@ -250,162 +251,163 @@ const SubmitForm = (() => {
 })();
 
 const PiStuff = (() => {
-  // Config
-  const POLL_INTERVAL_MS = 5000;
-  const QR_TTL_MS = 120000;
+  const POLL_INTERVAL_MS = 2500;
+  const $ = s => document.querySelector(s);
+  const $all = s => document.querySelectorAll(s);
 
-  // State
-  let player = null;
+  let player;
+  let deviceId;
   let playerReady = false;
-  let playlists = {};
   let currentPlaylist = null;
-  let currentCategoryKey = null;
   let pendingPlaylistLoad = null;
-
-  let skipTimer = null;
   let consecutiveSkips = 0;
   let lastVideoId = null;
-
+  let skipTimer = null;
   let pollIntervalId = null;
   let lastTsSeen = 0;
-  let qrHideTimer = null;
+
+  let playlists = {};
+  let currentCategoryKey = null;
   let qrVisible = false;
-  let successMessageTimer = null;
 
-  let deviceId = null;
+  const safe = (fn, fallback = null) => {
+    try { return fn(); } catch (_) { return fallback; }
+  };
 
-  // DOM cache
-  const $ = sel => document.querySelector(sel);
-  const $all = sel => Array.from(document.querySelectorAll(sel));
-  const getMenu = () => $('#menu');
-  const getPlaylistsContainer = () => $('#playlists');
-  const getQrContainer = () => $('#qr-container');
-  const getPlayerIframe = () => document.getElementById('player');
-  const getDisplayMessage = () => $('#display-message');
+  function showMessage(text, type = 'info', duration = 3000) {
+    const msgEl = $('#display-message');
+    if (!msgEl) return;
+    msgEl.textContent = text;
+    msgEl.className = 'display-message show ' + type;
+    setTimeout(() => msgEl.classList.remove('show'), duration);
+  }
 
-  const safe = fn => { try { return fn(); } catch (_) { return null; } };
+  function getMenu() {
+    return $('#menu');
+  }
 
-  function showMessage(message, type = 'success', duration = 3000) {
-    const messageEl = getDisplayMessage();
-    if (!messageEl) return;
-
-    // Clear any existing timer
-    clearTimeout(successMessageTimer);
-
-    // Hide UI elements and show message
-    const playlistsContainer = getPlaylistsContainer();
-    const qrContainer = getQrContainer();
-    const menu = getMenu();
+  function showQr() {
+    const container = $('#qr-container');
+    const playlists = $('#playlists');
     
-    if (playlistsContainer) playlistsContainer.hidden = true;
-    if (qrContainer) qrContainer.hidden = true;
-    if (menu) menu.hidden = true;
+    if (!container) return;
     
-    // Set message content and type
-    messageEl.textContent = message;
-    messageEl.className = 'display-message'; // Reset classes
-    messageEl.classList.add('show', type);
+    playlists.hidden = true;
+    container.hidden = false;
+    qrVisible = true;
+  }
 
-    // Hide message after duration and restore UI
-    successMessageTimer = setTimeout(() => {
-      messageEl.classList.remove('show');
+  function hideQr() {
+    const container = $('#qr-container');
+    const playlists = $('#playlists');
+    
+    if (!container) return;
+    
+    container.hidden = true;
+    playlists.hidden = false;
+    qrVisible = false;
+  }
+
+  async function regenerateQrCode() {
+    if (!deviceId) {
+      showMessage('Device ID not found', 'error');
+      return;
+    }
+
+    const button = document.querySelector('[data-action="regenerate-qr"]');
+    const qrImg = document.querySelector('.qr-img');
+    
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Regenerating...';
+    }
+
+    try {
+      const url = window.REGENERATE_QR_URL;
       
-      // Restore playlists view (unless QR was showing)
-      setTimeout(() => {
-        if (!qrVisible && playlistsContainer) {
-          playlistsContainer.hidden = false;
-        }
-      }, 300); // Wait for fade out animation
-    }, duration);
+      // Get CSRF token from cookie
+      const csrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+      
+      const formData = new URLSearchParams();
+      formData.append('device_id', deviceId);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrfToken
+        },
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to regenerate QR code');
+      }
+
+      const data = await response.json();
+      
+      if (qrImg && data.qr_code_b64) {
+        qrImg.src = `data:image/png;base64,${data.qr_code_b64}`;
+        showMessage('✓ QR code regenerated!', 'success');
+      }
+    } catch (error) {
+      console.error('QR regeneration error:', error);
+      showMessage('Failed to regenerate QR code', 'error');
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'Regenerate QR Code';
+      }
+    }
   }
 
   function playVideo(videoId) {
-    if (!videoId) return;
-    if (player && typeof player.loadVideoById === 'function') {
-      try {
-        player.loadVideoById({ videoId, startSeconds: 0 });
-        return;
-      } catch (_) {}
-    }
-    const iframe = getPlayerIframe();
-    if (iframe) iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+    if (!player) return;
+    player.loadVideoById(videoId);
+    player.playVideo();
   }
 
   function skipUnplayable() {
     consecutiveSkips++;
-    if (consecutiveSkips >= 12) {
-      player?.stopVideo();
+    if (consecutiveSkips > 5) {
+      showMessage('Too many unplayable videos. Check playlist.', 'error', 5000);
       return;
     }
-    clearTimeout(skipTimer);
-    skipTimer = setTimeout(() => safe(() => player.nextVideo()), 250);
+    player?.nextVideo();
   }
 
   function renderPlaylistsForCategory(categoryKey) {
-    const container = getPlaylistsContainer();
+    const container = $('#playlists');
     if (!container) return;
+
     const list = playlists[categoryKey] || [];
-    container.innerHTML = list
-      .map(p => `<button data-playlist="${p.id}">${escapeHtml(p.name)}</button>`)
-      .join('');
-    
-    // Re-apply selected state to the playlist button if it exists
-    if (currentPlaylist) {
-      const playlistBtn = document.querySelector(`[data-playlist="${currentPlaylist}"]`);
-      if (playlistBtn) {
-        playlistBtn.classList.add('selected');
-      }
+    if (!list.length) {
+      container.innerHTML = '<p class="no-playlists">No playlists in this category</p>';
+      return;
     }
+
+    const html = list.map(p => {
+      const selected = p.id === currentPlaylist ? ' selected' : '';
+      return `<button data-playlist="${p.id}" class="playlist-button${selected}">${p.name}</button>`;
+    }).join('');
+
+    container.innerHTML = html;
   }
 
   function setInitialActiveStates() {
-    // Mark the category button as selected
-    if (currentCategoryKey) {
-      const categoryBtn = document.querySelector(`[data-category="${currentCategoryKey}"]`);
-      if (categoryBtn) {
-        categoryBtn.classList.add('selected');
-      }
+    if (!currentCategoryKey || !currentPlaylist) return;
+
+    // Highlight the category button
+    const catBtn = document.querySelector(`[data-category="${currentCategoryKey}"]`);
+    if (catBtn) {
+      catBtn.classList.add('selected');
     }
 
-    // Render playlists for the selected category
-    if (currentCategoryKey) {
-      renderPlaylistsForCategory(currentCategoryKey);
-    }
-  }
-
-  function showQr() {
-    const playlistsContainer = getPlaylistsContainer();
-    const qrContainer = getQrContainer();
-    
-    if (playlistsContainer) playlistsContainer.hidden = true;
-    if (qrContainer) qrContainer.hidden = false;
-    
-    qrVisible = true;
-    
-    clearTimeout(qrHideTimer);
-    qrHideTimer = setTimeout(() => {
-      hideQr();
-    }, QR_TTL_MS);
-  }
-
-  function hideQr() {
-    const playlistsContainer = getPlaylistsContainer();
-    const qrContainer = getQrContainer();
-    
-    if (playlistsContainer) playlistsContainer.hidden = false;
-    if (qrContainer) qrContainer.hidden = true;
-    
-    qrVisible = false;
-    clearTimeout(qrHideTimer);
-  }
-
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"]/g, c => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;'
-    }[c]));
+    // Render and highlight the playlist
+    renderPlaylistsForCategory(currentCategoryKey);
   }
 
   function loadPlaylistsData() {
@@ -475,6 +477,7 @@ const PiStuff = (() => {
       }
 
       if (action === 'qr') return showQr();
+      if (action === 'regenerate-qr') return regenerateQrCode();
       if (action === 'reload') return location.reload();
       if (action === 'screen') {
         ev.stopPropagation();  // Prevent event from bubbling to body
