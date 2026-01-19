@@ -601,6 +601,8 @@ const PiStuff = (() => {
         playVideo(j.youtube_id);
         showMessage('✓ Video playing!', 'success');
         if (qrVisible) hideQr();
+        const menu = getMenu();
+        menu.hidden = true
       } catch (_) {}
     }, POLL_INTERVAL_MS);
   }
