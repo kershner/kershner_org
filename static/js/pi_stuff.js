@@ -421,6 +421,52 @@ const PiStuff = (() => {
     });
   }
 
+  function loadPlaylist(playlistId, playlistName) {
+    currentPlaylist = playlistId;
+    pendingPlaylistLoad = playlistId;
+    consecutiveSkips = 0;
+    lastVideoId = null;
+    clearTimeout(skipTimer);
+
+    player?.stopVideo();
+    player?.loadPlaylist({ listType: 'playlist', list: playlistId, index: 0 });
+    
+    return playlistName;
+  }
+
+  function playRandom() {
+    // Pick a random category
+    const cats = Object.keys(playlists);
+    if (cats.length === 0) return false;
+    
+    const catKey = cats[Math.floor(Math.random() * cats.length)];
+    const list = playlists[catKey];
+    if (!list?.length) return false;
+    
+    // Pick a random playlist from that category
+    const randomPlaylist = list[Math.floor(Math.random() * list.length)];
+    
+    // Update UI state
+    $all('[data-category]').forEach(b => b.classList.remove('selected'));
+    $all('[data-playlist]').forEach(b => b.classList.remove('selected'));
+    
+    // Highlight the selected category
+    const categoryBtn = document.querySelector(`[data-category="${catKey}"]`);
+    if (categoryBtn) categoryBtn.classList.add('selected');
+    
+    // Update current state
+    currentCategoryKey = catKey;
+    
+    // Render the category's playlists and highlight the selected one
+    renderPlaylistsForCategory(catKey);
+    setTimeout(() => {
+      const playlistBtn = document.querySelector(`[data-playlist="${randomPlaylist.id}"]`);
+      if (playlistBtn) playlistBtn.classList.add('selected');
+    }, 50);
+    
+    return loadPlaylist(randomPlaylist.id, randomPlaylist.name);
+  }
+
   function initMenu() {
     const menu = getMenu();
     if (!menu) return;
@@ -448,12 +494,6 @@ const PiStuff = (() => {
         $all('[data-playlist]').forEach(b => b.classList.remove('selected'));
         t.classList.add('selected');
 
-        currentPlaylist = playlist;
-        pendingPlaylistLoad = playlist;
-        consecutiveSkips = 0;
-        lastVideoId = null;
-        clearTimeout(skipTimer);
-
         // Find the playlist name for the message
         let playlistName = 'playlist';
         if (currentCategoryKey && playlists[currentCategoryKey]) {
@@ -463,22 +503,25 @@ const PiStuff = (() => {
           }
         }
 
-        player?.stopVideo();
-        player?.loadPlaylist({ listType: 'playlist', list: playlist, index: 0 });
+        loadPlaylist(playlist, playlistName);
         menu.hidden = true;
         hideQr();
-
-        // Show message after menu closes
-        setTimeout(() => {
-          showMessage(`Playing ${playlistName}`, 'success', 2000);
-        }, 100);
-
+        setTimeout(() => showMessage(`Playing ${playlistName}`, 'info', 2000), 100);
         return;
       }
 
       if (action === 'qr') return showQr();
       if (action === 'regenerate-qr') return regenerateQrCode();
       if (action === 'reload') return location.reload();
+      if (action === 'random') {
+        const playlistName = playRandom();
+        if (!playlistName) return;
+        
+        menu.hidden = true;
+        hideQr();
+        setTimeout(() => showMessage(`Playing ${playlistName}`, 'info', 2000), 100);
+        return;
+      }
       if (action === 'screen') {
         ev.stopPropagation();  // Prevent event from bubbling to body
         document.body.className = 'screen-off';
@@ -616,15 +659,10 @@ const PiStuff = (() => {
 
     // Select random playlist on first load
     if (!currentPlaylist) {
-      const cats = Object.keys(playlists);
-      if (cats.length) {
-        const catKey = cats[Math.floor(Math.random() * cats.length)];
-        const list = playlists[catKey];
-        if (list?.length) {
-          currentCategoryKey = catKey;
-          currentPlaylist = list[Math.floor(Math.random() * list.length)].id;
-          pendingPlaylistLoad = currentPlaylist;
-        }
+      const playlistName = playRandom();
+      if (playlistName) {
+        // Show message after a brief delay to ensure UI is ready
+        setTimeout(() => showMessage(`Playing ${playlistName}`, 'info', 3000), 500);
       }
     }
 

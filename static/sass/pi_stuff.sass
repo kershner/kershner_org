@@ -47,6 +47,29 @@ $spacing-md: 1rem
 $spacing-lg: 1.5rem
 
 // =============================================================================
+// GLOBAL SCROLLBAR STYLES
+// =============================================================================
+// Firefox
+*
+  scrollbar-width: thin
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent
+
+// WebKit (Chrome, Safari, Edge)
+::-webkit-scrollbar
+  width: 6px
+  height: 6px
+
+::-webkit-scrollbar-track
+  background: transparent
+
+::-webkit-scrollbar-thumb
+  background: rgba(255, 255, 255, 0.15)
+  border-radius: 4px
+
+  &:hover
+    background: rgba(255, 255, 255, 0.25)
+
+// =============================================================================
 // MIXINS
 // =============================================================================
 @mixin button-base
@@ -109,10 +132,12 @@ $spacing-lg: 1.5rem
   padding: $spacing-sm 0
   height: 100%
   width: 60rem
+  max-width: 100%
 
 .menu-header,
 .menu-footer
   flex: 0 0 auto
+  min-width: 0
 
 .menu-actions
   display: flex
@@ -125,14 +150,30 @@ $spacing-lg: 1.5rem
 
 .menu-categories
   display: flex
-  flex: 1 1 auto
+  justify-content: space-between
   gap: $spacing-sm
   padding: $spacing-sm 0
-  overflow-x: auto
+  min-width: 0
   
   button
+    flex: 0 0 auto
     padding: 0.75rem 1rem
     font-weight: bold
+
+  .random-btn
+    button
+      @include button-alt
+
+  .category-btns
+    display: flex
+    flex-wrap: nowrap
+    gap: $spacing-sm
+    flex: 1
+    min-width: 0
+    overflow-x: auto
+    
+    button
+      white-space: nowrap
 
 .menu-content
   flex: 1 1 auto
@@ -372,21 +413,6 @@ button
   border-radius: $border-radius
   overflow: hidden
   overflow-y: auto
-
-  // Custom scrollbar
-  &::-webkit-scrollbar
-    width: 6px
-
-  &::-webkit-scrollbar-track
-    background: rgba(255, 255, 255, 0.05)
-    border-radius: 0 $border-radius $border-radius 0
-
-  &::-webkit-scrollbar-thumb
-    background: rgba(255, 255, 255, 0.2)
-    border-radius: $border-radius
-
-    &:hover
-      background: rgba(255, 255, 255, 0.3)
 
 .search-result-item
   display: flex

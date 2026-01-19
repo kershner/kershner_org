@@ -14,11 +14,17 @@
         </div>
 
         <div class="menu-categories">
-          {% for category in categories %}
+          <div class="category-btns">  
+            {% for category in categories %}
             <button data-category="cat-{{ category.id }}" type="button">
               {{ category.name }}
             </button>
-          {% endfor %}
+            {% endfor %}
+          </div>
+
+          <div class="random-btn">
+            <button data-action="random" type="button">random</button>
+          </div>
         </div>
       </div>
 
