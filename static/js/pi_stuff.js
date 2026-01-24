@@ -393,6 +393,7 @@ const PiStuff = (() => {
     consecutiveSkips++;
     if (consecutiveSkips > 8) {
       showMessage('Too many unplayable videos. Check playlist.', 'error', 5000);
+      playRandom();
       return;
     }
     player?.nextVideo();
