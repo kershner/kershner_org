@@ -713,86 +713,89 @@ const PiStuff = (() => {
     // Set the initial active states after menu is initialized
     setInitialActiveStates();
 
-    // Add click handlers for video skip with overlay
+    // Add click handlers for video skip with overlays
     const playerContainer = document.getElementById('player-container');
     if (playerContainer) {
-      // Create overlay div
-      const overlay = document.createElement('div');
-      overlay.id = 'player-overlay';
-      playerContainer.appendChild(overlay);
+      // Create left and right overlay zones (not middle)
+      const leftOverlay = document.createElement('div');
+      leftOverlay.id = 'player-overlay-left';
+      playerContainer.appendChild(leftOverlay);
+
+      const rightOverlay = document.createElement('div');
+      rightOverlay.id = 'player-overlay-right';
+      playerContainer.appendChild(rightOverlay);
       
-      let lastClickTime = 0;
-      let lastClickZone = null;
-      let seconds = 20;
+      let lastLeftClickTime = 0;
+      let lastRightClickTime = 0;
       const DOUBLE_CLICK_DELAY = 300;
+      const seconds = 20;
       
-      overlay.addEventListener('click', (e) => {
+      // Left overlay - skip backward
+      leftOverlay.addEventListener('click', (e) => {
+        // Don't interfere with screen-off functionality
+        if (document.body.className === 'screen-off') return;
         if (!player) return;
         
         const now = Date.now();
-        const rect = overlay.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const width = rect.width;
+        const isDoubleClick = (now - lastLeftClickTime) < DOUBLE_CLICK_DELAY;
         
-        // Determine which zone was clicked
-        let currentZone = 'middle';
-        if (clickX < width / 3) {
-          currentZone = 'left';
-        } else if (clickX > (width * 2) / 3) {
-          currentZone = 'right';
-        }
-        
-        // Check if this is a double-click in the same zone
-        const isDoubleClick = (now - lastClickTime) < DOUBLE_CLICK_DELAY && currentZone === lastClickZone;
-        
-        if (isDoubleClick && currentZone !== 'middle') {
-          // Double-click detected - perform skip
-          if (currentZone === 'left') {
-            const currentTime = player.getCurrentTime();
-            player.seekTo(Math.max(0, currentTime - seconds), true);
-            showMessage(`⏪ -${seconds}s`, 'info', 1000);
-          } else if (currentZone === 'right') {
-            const currentTime = player.getCurrentTime();
-            const duration = player.getDuration();
-            player.seekTo(Math.min(duration, currentTime + seconds), true);
-            showMessage(`⏩ +${seconds}s`, 'info', 1000);
-          }
+        if (isDoubleClick) {
+          // Double-click - skip backward
+          const currentTime = player.getCurrentTime();
+          player.seekTo(Math.max(0, currentTime - seconds), true);
+          showMessage(`-${seconds}s`, 'info', 1000);
+          lastLeftClickTime = 0;
+        } else {
+          // First click - wait to see if double-click
+          lastLeftClickTime = now;
           
-          lastClickTime = 0;
-          lastClickZone = null;
-        } else if (currentZone === 'middle' || !isDoubleClick) {
-          // Only pause/play if: 
-          // - clicking middle, OR
-          // - first click (waiting to see if it's a double-click)
-          
-          // For side zones, wait to see if it's a double-click
-          if (currentZone !== 'middle') {
-            lastClickTime = now;
-            lastClickZone = currentZone;
-            
-            // Set timeout to pause/play if no second click comes
-            setTimeout(() => {
-              if (lastClickTime === now) {
-                // No double-click happened, toggle play/pause
-                const state = player.getPlayerState();
-                if (state === YT.PlayerState.PLAYING) {
-                  player.pauseVideo();
-                } else {
-                  player.playVideo();
-                }
-                lastClickTime = 0;
-                lastClickZone = null;
+          setTimeout(() => {
+            if (lastLeftClickTime === now) {
+              // No double-click - pause/play
+              const state = player.getPlayerState();
+              if (state === YT.PlayerState.PLAYING) {
+                player.pauseVideo();
+              } else {
+                player.playVideo();
               }
-            }, DOUBLE_CLICK_DELAY);
-          } else {
-            // Middle zone - immediate pause/play
-            const state = player.getPlayerState();
-            if (state === YT.PlayerState.PLAYING) {
-              player.pauseVideo();
-            } else {
-              player.playVideo();
+              lastLeftClickTime = 0;
             }
-          }
+          }, DOUBLE_CLICK_DELAY);
+        }
+      });
+      
+      // Right overlay - skip forward
+      rightOverlay.addEventListener('click', (e) => {
+        // Don't interfere with screen-off functionality
+        if (document.body.className === 'screen-off') return;
+        if (!player) return;
+        
+        const now = Date.now();
+        const isDoubleClick = (now - lastRightClickTime) < DOUBLE_CLICK_DELAY;
+        
+        if (isDoubleClick) {
+          // Double-click - skip forward
+          const currentTime = player.getCurrentTime();
+          const duration = player.getDuration();
+          player.seekTo(Math.min(duration, currentTime + seconds), true);
+          showMessage(`+${seconds}s`, 'info', 1000);
+          lastRightClickTime = 0;
+        } else {
+          // First click - wait to see if double-click
+          lastRightClickTime = now;
+          
+          setTimeout(() => {
+            if (lastRightClickTime === now) {
+              // No double-click - pause/play
+              const state = player.getPlayerState();
+              if (state === YT.PlayerState.PLAYING) {
+                player.pauseVideo();
+              } else {
+                player.playVideo();
+              }
+              lastRightClickTime = 0;
+            }
+          }, DOUBLE_CLICK_DELAY);
         }
       });
     }
