@@ -323,6 +323,10 @@ button
   align-items: center
   padding: 1rem
 
+.submit-container
+  width: 100%
+  max-width: 80vw
+  
 .submit-title
   font-size: 1.5rem
   margin-bottom: 1rem
@@ -405,14 +409,14 @@ button
 .search-results-title
   font-size: 0.875rem
   color: $text-color-dimmed
+  border-bottom: 1px solid $search-border
   margin-bottom: 0.75rem
   text-transform: uppercase
   letter-spacing: 0.05em
 
 .search-results
   background: $search-bg
-  border: 1px solid $search-border
-  border-radius: $border-radius
+  border-radius: 4px 4px 0 0
   overflow: hidden
   overflow-y: auto
 
@@ -433,13 +437,30 @@ button
   &.selected
     background: $search-item-selected
 
-.result-thumbnail
+.result-thumbnail-wrapper
+  position: relative
   width: 120px
   height: 68px
+  flex-shrink: 0
+
+.result-thumbnail
+  width: 100%
+  height: 100%
   object-fit: cover
   border-radius: $border-radius
-  flex-shrink: 0
   background: rgba(255, 255, 255, 0.05)
+
+.playlist-video-count
+  position: absolute
+  bottom: 4px
+  right: 4px
+  background: rgba(0, 0, 0, 0.85)
+  color: white
+  font-size: 10px
+  padding: 2px 6px
+  border-radius: 3px
+  font-weight: 600
+  backdrop-filter: blur(4px)
 
 .result-info
   flex: 1
@@ -504,3 +525,23 @@ button
   font-size: 1rem
   font-weight: bold
   white-space: nowrap
+
+// =============================================================================
+// SEARCH SECTION TITLES AND PLAYLIST BADGE
+// =============================================================================
+.search-section-title
+  font-size: 0.75rem
+  color: $text-color-dimmed
+  margin: 1rem 0 0.5rem 0.75rem
+  text-transform: uppercase
+  letter-spacing: 0.05em
+  font-weight: bold
+
+.playlist-badge
+  display: inline-block
+  font-size: 0.75rem
+  padding: 2px 6px
+  background: rgba(255, 255, 255, 0.1)
+  border-radius: 3px
+  margin-right: 4px
+  font-weight: normal

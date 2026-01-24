@@ -65,10 +65,10 @@ const YouTubeSearch = (() => {
   function renderResults(html, container, input) {
     selectedIndex = -1;
 
-    // Wrap results in a styled container with title
+    // Wrap results in a styled container
     const hasResults = !html.includes('search-error') && !html.includes('search-no-results');
     const wrappedHtml = hasResults 
-      ? `<div class="search-results-title">Search Results</div><div class="search-results">${html}</div>`
+      ? `<div class="search-results">${html}</div>`
       : `<div class="search-results">${html}</div>`;
     
     container.innerHTML = wrappedHtml;
@@ -87,8 +87,15 @@ const YouTubeSearch = (() => {
       item.dataset.index = index;
       
       item.addEventListener('click', () => {
-        const videoId = item.dataset.videoId;
-        input.value = `https://www.youtube.com/watch?v=${videoId}`;
+        const type = item.dataset.type;
+        
+        if (type === 'video') {
+          const videoId = item.dataset.videoId;
+          input.value = `https://www.youtube.com/watch?v=${videoId}`;
+        } else if (type === 'playlist') {
+          const playlistId = item.dataset.playlistId;
+          input.value = `https://www.youtube.com/playlist?list=${playlistId}`;
+        }
         
         // Trigger change event so form knows the value updated
         input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -111,8 +118,17 @@ const YouTubeSearch = (() => {
       updateSelection(items);
     } else if (e.key === 'Enter' && selectedIndex >= 0) {
       e.preventDefault();
-      const videoId = items[selectedIndex].dataset.videoId;
-      input.value = `https://www.youtube.com/watch?v=${videoId}`;
+      const item = items[selectedIndex];
+      const type = item.dataset.type;
+      
+      if (type === 'video') {
+        const videoId = item.dataset.videoId;
+        input.value = `https://www.youtube.com/watch?v=${videoId}`;
+      } else if (type === 'playlist') {
+        const playlistId = item.dataset.playlistId;
+        input.value = `https://www.youtube.com/playlist?list=${playlistId}`;
+      }
+      
       input.dispatchEvent(new Event('change', { bubbles: true }));
     } else if (e.key === 'Escape') {
       dropdown.classList.add('hidden');
@@ -483,8 +499,6 @@ const PiStuff = (() => {
       const playlist = t.dataset.playlist;
       const action = t.dataset.action || t.closest('[data-action]')?.dataset.action;
 
-      console.log('action: ', action);
-
       if (category && playlists[category]) {
         $all('[data-category]').forEach(b => b.classList.remove('selected'));
         t.classList.add('selected');
@@ -648,8 +662,16 @@ const PiStuff = (() => {
         const j = await r.json();
         if (!j?.ts || j.ts === lastTsSeen) return;
         lastTsSeen = j.ts;
-        playVideo(j.youtube_id);
-        showMessage('✓ Video playing!', 'success');
+        
+        // Handle both videos and playlists
+        if (j.type === 'playlist') {
+          loadPlaylist(j.youtube_id, 'Submitted playlist');
+          showMessage('✓ Playlist playing!', 'success');
+        } else {
+          playVideo(j.youtube_id);
+          showMessage('✓ Video playing!', 'success');
+        }
+        
         if (qrVisible) hideQr();
         const menu = getMenu();
         menu.hidden = true

@@ -1,4 +1,4 @@
-from apps.pi_stuff.consts import LATEST_PLAY_TTL, TOKEN_TTL, YOUTUBE_API_URL
+from apps.pi_stuff.consts import LATEST_PLAY_TTL, TOKEN_TTL, YOUTUBE_BASE_API_URL
 from django.views.decorators.http import require_POST, require_http_methods
 from apps.pi_stuff.utils import extract_youtube_id, get_or_create_qr_code
 from django.http import JsonResponse, HttpResponse
@@ -52,7 +52,7 @@ def submit_form(request):
 @require_POST
 @csrf_exempt
 def api_play(request):
-    """Handle video play requests with token validation."""
+    """Handle video/playlist play requests with token validation."""
     token = request.POST.get("token")
     device_id = request.POST.get("device_id")
     url = request.POST.get("url", "").strip()
@@ -79,17 +79,23 @@ def api_play(request):
         )
 
     # Validate YouTube URL
-    video_id = extract_youtube_id(url)
-    if not video_id:
+    result = extract_youtube_id(url)
+    if not result:
         return JsonResponse(
             {"error": "not_youtube", "message": "Please provide a valid YouTube URL"}, 
             status=400
         )
+    
+    content_type, content_id = result
 
     # Store the play request
     cache.set(
         f"pi_latest_play:{device_id}", 
-        {"youtube_id": video_id, "ts": time.time()}, 
+        {
+            "type": content_type,
+            "youtube_id": content_id, 
+            "ts": time.time()
+        }, 
         timeout=LATEST_PLAY_TTL
     )
     
@@ -136,15 +142,18 @@ def regenerate_qr(request):
 
 @require_http_methods(["GET"])
 def youtube_search(request):
-    """Server-side YouTube search API endpoint with caching."""
+    """Server-side YouTube search API endpoint with caching - supports videos and playlists."""
     
     template = 'pi_stuff/search_results.html'
     query = request.GET.get('q', '').strip()
+    youtube_search_url = f"{YOUTUBE_BASE_API_URL}/search"
+    youtube_playlists_url = f"{YOUTUBE_BASE_API_URL}/playlists"
     
     # Handle empty or short queries (require at least 3 chars)
     if not query or len(query) < 3:
         return render(request, template, {
             'videos': [],
+            'playlists': [],
             'error': None
         })
     
@@ -159,18 +168,19 @@ def youtube_search(request):
     if not youtube_api_key:
         return render(request, template, {
             'videos': [],
+            'playlists': [],
             'error': 'YouTube API key not configured'
         })
     
     try:
-        # Call YouTube Data API
-        response = requests.get(
-            YOUTUBE_API_URL,
+        # Call YouTube Data API for videos
+        video_response = requests.get(
+            youtube_search_url,
             params={
                 'part': 'snippet',
                 'q': query,
                 'type': 'video',
-                'maxResults': 5,
+                'maxResults': 10,
                 'key': youtube_api_key,
                 'videoEmbeddable': 'true',
                 'safeSearch': 'moderate'
@@ -178,17 +188,32 @@ def youtube_search(request):
             timeout=5
         )
         
+        # Call YouTube Data API for playlists
+        playlist_response = requests.get(
+            youtube_search_url,
+            params={
+                'part': 'snippet',
+                'q': query,
+                'type': 'playlist',
+                'maxResults': 5,
+                'key': youtube_api_key,
+                'safeSearch': 'moderate'
+            },
+            timeout=5
+        )
+        
         # Handle API errors
-        if not response.ok:
-            error_data = response.json()
+        if not video_response.ok:
+            error_data = video_response.json()
             error_msg = error_data.get('error', {}).get('message', 'Search failed')
             return render(request, template, {
                 'videos': [],
+                'playlists': [],
                 'error': error_msg
             })
         
-        # Transform results
-        data = response.json()
+        # Transform video results
+        video_data = video_response.json()
         videos = [
             {
                 'video_id': item['id']['videoId'],
@@ -196,12 +221,51 @@ def youtube_search(request):
                 'author': unescape(item['snippet']['channelTitle']),
                 'thumbnail': item['snippet']['thumbnails']['medium']['url'],
                 'published_at': item['snippet'].get('publishedAt', '')[:10],
+                'type': 'video'
             }
-            for item in data.get('items', [])
+            for item in video_data.get('items', [])
+        ]
+        
+        # Transform playlist results and get video counts
+        playlist_data = playlist_response.json() if playlist_response.ok else {'items': []}
+        playlist_ids = [item['id']['playlistId'] for item in playlist_data.get('items', [])]
+        
+        # Get playlist details including video counts
+        playlist_details = {}
+        if playlist_ids:
+            details_response = requests.get(
+                youtube_playlists_url,
+                params={
+                    'part': 'contentDetails',
+                    'id': ','.join(playlist_ids),
+                    'key': youtube_api_key
+                },
+                timeout=5
+            )
+            if details_response.ok:
+                details_data = details_response.json()
+                for item in details_data.get('items', []):
+                    playlist_details[item['id']] = item.get('contentDetails', {}).get('itemCount', 0)
+        
+        playlists = [
+            {
+                'playlist_id': item['id']['playlistId'],
+                'title': unescape(item['snippet']['title']),
+                'author': unescape(item['snippet']['channelTitle']),
+                'thumbnail': item['snippet']['thumbnails']['medium']['url'],
+                'published_at': item['snippet'].get('publishedAt', '')[:10],
+                'video_count': playlist_details.get(item['id']['playlistId'], 0),
+                'type': 'playlist'
+            }
+            for item in playlist_data.get('items', [])
         ]
 
         # Cache results for 5 minutes
-        result_data = {'videos': videos, 'error': None}
+        result_data = {
+            'videos': videos, 
+            'playlists': playlists,
+            'error': None
+        }
         cache.set(cache_key, result_data, timeout=300)
 
         return render(request, template, result_data)
@@ -209,10 +273,12 @@ def youtube_search(request):
     except requests.Timeout:
         return render(request, template, {
             'videos': [],
+            'playlists': [],
             'error': 'Search timed out. Please try again.'
         })
     except Exception as e:
         return render(request, template, {
             'videos': [],
+            'playlists': [],
             'error': f'Search failed: {str(e)}'
         })

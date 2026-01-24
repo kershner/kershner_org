@@ -41,17 +41,23 @@ def get_or_create_qr_code(request, device_id):
 
 
 def extract_youtube_id(url):
-    """Extract video ID from various YouTube URL formats."""
+    """Extract video or playlist ID from various YouTube URL formats."""
     try:
         u = urlparse(url)
         host = (u.netloc or "").lower()
+        qs = parse_qs(u.query)
+
+        # Check for playlist first
+        if 'list' in qs:
+            return ('playlist', qs['list'][0])
 
         if host.endswith("youtu.be"):
-            return u.path.lstrip("/") or None
+            video_id = u.path.lstrip("/") or None
+            return ('video', video_id) if video_id else None
 
         if "youtube.com" in host:
-            qs = parse_qs(u.query)
-            return qs.get("v", [None])[0]
+            video_id = qs.get("v", [None])[0]
+            return ('video', video_id) if video_id else None
 
         return None
     except Exception:

@@ -1,23 +1,63 @@
 {% if error %}
   <div class="search-error">{{ error }}</div>
-{% elif not videos %}
-  <div class="search-no-results">No videos found</div>
+{% elif not videos and not playlists %}
+  <div class="search-no-results">No videos or playlists found</div>
 {% else %}
-  {% for video in videos %}
-    <div class="search-result-item" data-video-id="{{ video.video_id }}">
-      <img class="result-thumbnail" 
-           src="{{ video.thumbnail }}" 
-           alt="{{ video.title }}" 
-           loading="lazy">
-      <div class="result-info">
-        <div class="result-title">{{ video.title }}</div>
-        <div class="result-meta">
-          <span class="result-author">{{ video.author }}</span>
-          {% if video.published_at %}
-            <span class="result-date">{{ video.published_at }}</span>
-          {% endif %}
+  {% if playlists %}
+    <div class="search-section-title">Playlists</div>
+    <div class="search-results">
+      {% for playlist in playlists %}
+        <div class="search-result-item" data-playlist-id="{{ playlist.playlist_id }}" data-type="playlist">
+          <div class="result-thumbnail-wrapper">
+            <img class="result-thumbnail" 
+                 src="{{ playlist.thumbnail }}" 
+                 alt="{{ playlist.title }}" 
+                 loading="lazy">
+            {% if playlist.video_count %}
+              <div class="playlist-video-count">{{ playlist.video_count }} videos</div>
+            {% endif %}
+          </div>
+          <div class="result-info">
+            <div class="result-title">
+              <span class="playlist-badge">📋 Playlist</span>
+              {{ playlist.title }}
+            </div>
+            <div class="result-meta">
+              <span class="result-author">{{ playlist.author }}</span>
+              {% if playlist.published_at %}
+                <span class="result-date">{{ playlist.published_at }}</span>
+              {% endif %}
+            </div>
+          </div>
         </div>
-      </div>
+      {% endfor %}
     </div>
-  {% endfor %}
+  {% endif %}
+  
+  {% if videos %}
+    {% if playlists %}
+      <div class="search-section-title">Videos</div>
+    {% endif %}
+    <div class="search-results">
+      {% for video in videos %}
+        <div class="search-result-item" data-video-id="{{ video.video_id }}" data-type="video">
+          <div class="result-thumbnail-wrapper">
+            <img class="result-thumbnail" 
+                 src="{{ video.thumbnail }}" 
+                 alt="{{ video.title }}" 
+                 loading="lazy">
+          </div>
+          <div class="result-info">
+            <div class="result-title">{{ video.title }}</div>
+            <div class="result-meta">
+              <span class="result-author">{{ video.author }}</span>
+              {% if video.published_at %}
+                <span class="result-date">{{ video.published_at }}</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
 {% endif %}
