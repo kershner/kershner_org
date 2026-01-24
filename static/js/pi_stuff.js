@@ -31,7 +31,6 @@ const DeviceManager = (() => {
 const YouTubeSearch = (() => {
   let cache = new Map();
   let selectedIndex = -1;
-  let results = [];
 
   // Server-side search endpoint - pulled from Django
   const SEARCH_ENDPOINT = window.YOUTUBE_SEARCH_URL;
@@ -315,11 +314,10 @@ const PiStuff = (() => {
     }
 
     const button = document.querySelector('[data-action="regenerate-qr"]');
-    const qrImg = document.querySelector('.qr-img');
+    const qrImg = button?.querySelector('img');
     
     if (button) {
       button.disabled = true;
-      button.textContent = 'Regenerating...';
     }
 
     try {
@@ -351,7 +349,12 @@ const PiStuff = (() => {
       
       if (qrImg && data.qr_code_b64) {
         qrImg.src = `data:image/png;base64,${data.qr_code_b64}`;
-        showMessage('✓ QR code regenerated!', 'success');
+        
+        // Show different message based on whether it was regenerated or cached
+        const message = data.regenerated 
+          ? '✓ QR code regenerated!' 
+          : '✓ QR code is still valid!';
+        showMessage(message, 'success');
       }
     } catch (error) {
       console.error('QR regeneration error:', error);
@@ -359,7 +362,6 @@ const PiStuff = (() => {
     } finally {
       if (button) {
         button.disabled = false;
-        button.textContent = 'Regenerate QR Code';
       }
     }
   }
@@ -372,7 +374,7 @@ const PiStuff = (() => {
 
   function skipUnplayable() {
     consecutiveSkips++;
-    if (consecutiveSkips > 5) {
+    if (consecutiveSkips > 8) {
       showMessage('Too many unplayable videos. Check playlist.', 'error', 5000);
       return;
     }
@@ -479,7 +481,9 @@ const PiStuff = (() => {
       const t = ev.target;
       const category = t.dataset.category;
       const playlist = t.dataset.playlist;
-      const action = t.dataset.action;
+      const action = t.dataset.action || t.closest('[data-action]')?.dataset.action;
+
+      console.log('action: ', action);
 
       if (category && playlists[category]) {
         $all('[data-category]').forEach(b => b.classList.remove('selected'));
@@ -511,7 +515,10 @@ const PiStuff = (() => {
       }
 
       if (action === 'qr') return showQr();
-      if (action === 'regenerate-qr') return regenerateQrCode();
+      if (action === 'regenerate-qr') {
+        ev.stopPropagation();
+        return regenerateQrCode();
+      }
       if (action === 'reload') return location.reload();
       if (action === 'random') {
         const playlistName = playRandom();

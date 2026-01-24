@@ -1,75 +1,19 @@
-import time
-import secrets
-import base64
-from io import BytesIO
-from urllib.parse import urlparse, parse_qs
-from html import unescape
-
-import qrcode
-from qrcode.image.styledpil import StyledPilImage
-from qrcode.image.styles.moduledrawers import GappedSquareModuleDrawer
-from qrcode.image.styles.colormasks import SolidFillColorMask
-import json
-import requests
-
-from django.views.generic import TemplateView
-from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render
+from apps.pi_stuff.consts import LATEST_PLAY_TTL, TOKEN_TTL, YOUTUBE_API_URL
 from django.views.decorators.http import require_POST, require_http_methods
+from apps.pi_stuff.utils import extract_youtube_id, get_or_create_qr_code
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.core.cache import cache
-from django.urls import reverse
-from django.conf import settings
-
-from .models import Category
+from django.views.generic import TemplateView
 from .serializers import CategorySerializer
-
-
-TOKEN_TTL = 60 * 20  # 20 minutes (1200 seconds)
-LATEST_PLAY_TTL = 60 * 60 * 24 * 7  # 7 days
-YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search'
-
-
-def extract_youtube_id(url):
-    """Extract video ID from various YouTube URL formats."""
-    try:
-        u = urlparse(url)
-        host = (u.netloc or "").lower()
-
-        if host.endswith("youtu.be"):
-            return u.path.lstrip("/") or None
-
-        if "youtube.com" in host:
-            qs = parse_qs(u.query)
-            return qs.get("v", [None])[0]
-
-        return None
-    except Exception:
-        return None
-    
-
-def generate_qr_code(data):
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(data)
-    qr.make(fit=True)
-
-    img = qr.make_image(
-        image_factory=StyledPilImage,
-        module_drawer=GappedSquareModuleDrawer(),
-        color_mask=SolidFillColorMask(
-            front_color=(255, 255, 255),
-            back_color=(26, 26, 26),
-        ),
-    ).convert("RGBA")
-
-    buf = BytesIO()
-    img.save(buf, format="PNG")
-    return base64.b64encode(buf.getvalue()).decode()
+from django.core.cache import cache
+from django.shortcuts import render
+from django.conf import settings
+from django.urls import reverse
+from .models import Category
+from html import unescape
+import requests
+import time
+import json
 
 
 class PiStuffHomeView(TemplateView):
@@ -79,20 +23,14 @@ class PiStuffHomeView(TemplateView):
         ctx = super().get_context_data(**kwargs)
 
         categories = Category.objects.prefetch_related("playlists").all()
-        
-        # Generate QR code with token and device_id
         device_id = self.request.GET.get("device_id", "")
-        token = secrets.token_urlsafe(12)
-        cache.set(f"pi_token:{token}:{device_id}", True, timeout=TOKEN_TTL)
-
-        submit_url = self.request.build_absolute_uri(
-            f"{reverse('submit')}?token={token}&device_id={device_id}"
-        )
+        
+        qr_code_b64 = get_or_create_qr_code(self.request, device_id)
 
         ctx = {
             "categories": categories,
             "categories_json": json.dumps(CategorySerializer(categories, many=True).data),
-            "qr_code_b64": generate_qr_code(submit_url),
+            "qr_code_b64": qr_code_b64,
             "api_play_url": reverse("api_play"),
             "latest_url": reverse("latest"),
             "regenerate_qr_url": reverse("regenerate_qr"),
@@ -183,21 +121,16 @@ def regenerate_qr(request):
             status=400
         )
     
-    # Generate new token
-    token = secrets.token_urlsafe(12)
-    cache.set(f"pi_token:{token}:{device_id}", True, timeout=TOKEN_TTL)
+    qr_cache_key = f"pi_qr:{device_id}"
+    cached_data = cache.get(qr_cache_key)
+    was_cached = cached_data is not None
     
-    # Build submit URL
-    submit_url = request.build_absolute_uri(
-        f"{reverse('submit')}?token={token}&device_id={device_id}"
-    )
-    
-    # Generate QR code
-    qr_code_b64 = generate_qr_code(submit_url)
+    qr_code_b64 = get_or_create_qr_code(request, device_id)
     
     return JsonResponse({
         "qr_code_b64": qr_code_b64,
-        "expires_in": TOKEN_TTL
+        "expires_in": cache.ttl(qr_cache_key) or TOKEN_TTL,
+        "regenerated": not was_cached
     })
 
 
@@ -205,7 +138,7 @@ def regenerate_qr(request):
 def youtube_search(request):
     """Server-side YouTube search API endpoint with caching."""
     
-    template = 'pi_stuff/_search_results.html'
+    template = 'pi_stuff/search_results.html'
     query = request.GET.get('q', '').strip()
     
     # Handle empty or short queries (require at least 3 chars)

@@ -33,9 +33,8 @@
         
         <div class="menu-qr" id="qr-container" hidden>
           <div class="qr-box">
-            <img class="qr-img" src="data:image/png;base64,{{ qr_code_b64 }}" alt="QR Code">
-            <button class="qr-regenerate-button" data-action="regenerate-qr" type="button">
-              Regenerate QR Code
+            <button class="qr-img" data-action="regenerate-qr" type="button">
+              <img src="data:image/png;base64,{{ qr_code_b64 }}" alt="Regenerate QR Code">
             </button>
           </div>
         </div>
