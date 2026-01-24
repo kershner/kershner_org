@@ -774,7 +774,7 @@ const PiStuff = (() => {
           if (leftIsDouble) {
             // Triple-click - previous video
             player.previousVideo();
-            showMessage('⏮ Previous', 'info', 1000);
+            showMessage('Previous', 'info', 1000);
             leftIsDouble = false;
             lastLeftClickTime = 0;
           } else {
@@ -816,7 +816,7 @@ const PiStuff = (() => {
           if (rightIsDouble) {
             // Triple-click - next video
             player.nextVideo();
-            showMessage('⏭ Next', 'info', 1000);
+            showMessage('Next', 'info', 1000);
             rightIsDouble = false;
             lastRightClickTime = 0;
           } else {
