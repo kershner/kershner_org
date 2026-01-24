@@ -280,6 +280,7 @@ const PiStuff = (() => {
   let skipTimer = null;
   let pollIntervalId = null;
   let lastTsSeen = 0;
+  let shuffleState = false;
 
   let playlists = {};
   let currentCategoryKey = null;
@@ -439,7 +440,7 @@ const PiStuff = (() => {
     });
   }
 
-  function loadPlaylist(playlistId, playlistName, shuffle = true) {
+  function loadPlaylist(playlistId, playlistName, shuffle = true, skipInitialNext = false) {
     currentPlaylist = playlistId;
     pendingPlaylistLoad = playlistId;
     consecutiveSkips = 0;
@@ -451,6 +452,7 @@ const PiStuff = (() => {
     
     // Store whether to shuffle for when playlist loads
     window.pendingShuffleState = shuffle;
+    window.skipInitialNext = skipInitialNext;
     
     return playlistName;
   }
@@ -485,7 +487,7 @@ const PiStuff = (() => {
       if (playlistBtn) playlistBtn.classList.add('selected');
     }, 50);
     
-    return loadPlaylist(randomPlaylist.id, randomPlaylist.name);
+    return loadPlaylist(randomPlaylist.id, randomPlaylist.name, true, true);
   }
 
   function initMenu() {
@@ -546,6 +548,13 @@ const PiStuff = (() => {
         setTimeout(() => showMessage(`Playing ${playlistName}`, 'info', 2000), 100);
         return;
       }
+      if (action === 'shuffle') {
+        shuffleState = !shuffleState;
+        const shuffleBtn = menu.querySelector('[data-action="shuffle"]');
+        shuffleBtn.classList.toggle('selected');
+        setTimeout(() => showMessage(`Shuffle ${shuffleState ? 'on' : 'off'}`, 'info', 2000), 100);
+        return;
+      }
       if (action === 'screen') {
         ev.stopPropagation();  // Prevent event from bubbling to body
         document.body.className = 'screen-off';
@@ -587,17 +596,10 @@ const PiStuff = (() => {
       },
       events: {
         onReady(e) {
-          // Required for reliable autoplay
           e.target.mute();
-          
-          // Force lowest practical quality immediately
           e.target.setPlaybackQuality('small');
-          
-          if (!playerReady) {
-            playerReady = true;
-            e.target.setShuffle(true);
-            e.target.nextVideo();
-          }
+          e.target.setShuffle(true);
+          e.target.nextVideo();
         },
         onError: skipUnplayable,
         onStateChange(e) {
@@ -606,27 +608,63 @@ const PiStuff = (() => {
             player.setPlaybackQuality('small');
             
             const vid = safe(() => player.getVideoData().video_id);
-            if (vid && vid !== lastVideoId) {
-              lastVideoId = vid;
-              consecutiveSkips = 0;
-            }
+            
+            // Handle pending playlist load FIRST (before anything else)
             if (pendingPlaylistLoad) {
               const loaded = safe(() => player.getPlaylistId());
               if (loaded === pendingPlaylistLoad) {
-                // Apply the pending shuffle state (default true for user-selected)
                 const shouldShuffle = window.pendingShuffleState !== false;
+                const skipNext = window.skipInitialNext || false;
+                
                 player.setShuffle(shouldShuffle);
                 
-                if (shouldShuffle) {
+                if (shouldShuffle && !skipNext) {
                   player.nextVideo();
-                } else {
-                  // For non-shuffled playlists, start from beginning
+                } else if (!shouldShuffle) {
                   player.playVideoAt(0);
                 }
+                // If skipNext is true and shouldShuffle is true, just let it play the current video
                 
                 pendingPlaylistLoad = null;
                 window.pendingShuffleState = undefined;
+                window.skipInitialNext = undefined;
               }
+              
+              // Update lastVideoId but don't trigger shuffle logic
+              if (vid && vid !== lastVideoId) {
+                lastVideoId = vid;
+                consecutiveSkips = 0;
+                
+                if (!playerReady) {
+                  playerReady = true;
+                }
+              }
+              return; // Exit early
+            }
+            
+            // Now check for video changes (when NOT loading a new playlist)
+            if (vid && vid !== lastVideoId) {
+              const wasFirstVideo = lastVideoId === null;
+              lastVideoId = vid;
+              consecutiveSkips = 0;
+              
+              // Mark player as ready after first video starts (post-shuffle)
+              if (!playerReady) {
+                playerReady = true;
+              }
+              
+              // If shuffle is enabled and player is ready (past initialization)
+              if (shuffleState && playerReady && !wasFirstVideo) {
+                playRandom();
+                return;
+              }
+            }
+          }
+          
+          // Handle end of playlist (when there's no next video)
+          if (e.data === YT.PlayerState.ENDED) {
+            if (shuffleState) {
+              playRandom();
             }
           }
           
