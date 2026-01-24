@@ -459,7 +459,6 @@ const PiStuff = (() => {
   }
 
   function playRandom() {
-    // Pick a random category
     const cats = Object.keys(playlists);
     if (cats.length === 0) return false;
     
@@ -467,26 +466,18 @@ const PiStuff = (() => {
     const list = playlists[catKey];
     if (!list?.length) return false;
     
-    // Pick a random playlist from that category
     const randomPlaylist = list[Math.floor(Math.random() * list.length)];
     
-    // Update UI state
     $all('[data-category]').forEach(b => b.classList.remove('selected'));
     $all('[data-playlist]').forEach(b => b.classList.remove('selected'));
     
-    // Highlight the selected category
     const categoryBtn = document.querySelector(`[data-category="${catKey}"]`);
     if (categoryBtn) categoryBtn.classList.add('selected');
     
-    // Update current state
     currentCategoryKey = catKey;
+    currentPlaylist = randomPlaylist.id;
     
-    // Render the category's playlists and highlight the selected one
     renderPlaylistsForCategory(catKey);
-    setTimeout(() => {
-      const playlistBtn = document.querySelector(`[data-playlist="${randomPlaylist.id}"]`);
-      if (playlistBtn) playlistBtn.classList.add('selected');
-    }, 50);
     
     return loadPlaylist(randomPlaylist.id, randomPlaylist.name, true, true);
   }
@@ -765,74 +756,92 @@ const PiStuff = (() => {
       playerContainer.appendChild(rightOverlay);
       
       let lastLeftClickTime = 0;
+      let leftIsDouble = false;
       let lastRightClickTime = 0;
+      let rightIsDouble = false;
       const DOUBLE_CLICK_DELAY = 300;
       const seconds = 20;
       
-      // Left overlay - skip backward
+      // Left overlay
       leftOverlay.addEventListener('click', (e) => {
-        // Don't interfere with screen-off functionality
         if (document.body.className === 'screen-off') return;
         if (!player) return;
         
         const now = Date.now();
-        const isDoubleClick = (now - lastLeftClickTime) < DOUBLE_CLICK_DELAY;
+        const timeSinceLastClick = now - lastLeftClickTime;
         
-        if (isDoubleClick) {
-          // Double-click - skip backward
-          const currentTime = player.getCurrentTime();
-          player.seekTo(Math.max(0, currentTime - seconds), true);
-          showMessage(`-${seconds}s`, 'info', 1000);
-          lastLeftClickTime = 0;
+        if (timeSinceLastClick < DOUBLE_CLICK_DELAY) {
+          if (leftIsDouble) {
+            // Triple-click - previous video
+            player.previousVideo();
+            showMessage('⏮ Previous', 'info', 1000);
+            leftIsDouble = false;
+            lastLeftClickTime = 0;
+          } else {
+            // Double-click - skip backward
+            const currentTime = player.getCurrentTime();
+            player.seekTo(Math.max(0, currentTime - seconds), true);
+            showMessage(`-${seconds}s`, 'info', 1000);
+            leftIsDouble = true;
+            lastLeftClickTime = now;
+          }
         } else {
           // First click - wait to see if double-click
+          leftIsDouble = false;
           lastLeftClickTime = now;
           
           setTimeout(() => {
-            if (lastLeftClickTime === now) {
-              // No double-click - pause/play
+            if (lastLeftClickTime === now && !leftIsDouble) {
+              // Single click - pause/play
               const state = player.getPlayerState();
               if (state === YT.PlayerState.PLAYING) {
                 player.pauseVideo();
               } else {
                 player.playVideo();
               }
-              lastLeftClickTime = 0;
             }
           }, DOUBLE_CLICK_DELAY);
         }
       });
       
-      // Right overlay - skip forward
+      // Right overlay
       rightOverlay.addEventListener('click', (e) => {
-        // Don't interfere with screen-off functionality
         if (document.body.className === 'screen-off') return;
         if (!player) return;
         
         const now = Date.now();
-        const isDoubleClick = (now - lastRightClickTime) < DOUBLE_CLICK_DELAY;
+        const timeSinceLastClick = now - lastRightClickTime;
         
-        if (isDoubleClick) {
-          // Double-click - skip forward
-          const currentTime = player.getCurrentTime();
-          const duration = player.getDuration();
-          player.seekTo(Math.min(duration, currentTime + seconds), true);
-          showMessage(`+${seconds}s`, 'info', 1000);
-          lastRightClickTime = 0;
+        if (timeSinceLastClick < DOUBLE_CLICK_DELAY) {
+          if (rightIsDouble) {
+            // Triple-click - next video
+            player.nextVideo();
+            showMessage('⏭ Next', 'info', 1000);
+            rightIsDouble = false;
+            lastRightClickTime = 0;
+          } else {
+            // Double-click - skip forward
+            const currentTime = player.getCurrentTime();
+            const duration = player.getDuration();
+            player.seekTo(Math.min(duration, currentTime + seconds), true);
+            showMessage(`+${seconds}s`, 'info', 1000);
+            rightIsDouble = true;
+            lastRightClickTime = now;
+          }
         } else {
           // First click - wait to see if double-click
+          rightIsDouble = false;
           lastRightClickTime = now;
           
           setTimeout(() => {
-            if (lastRightClickTime === now) {
-              // No double-click - pause/play
+            if (lastRightClickTime === now && !rightIsDouble) {
+              // Single click - pause/play
               const state = player.getPlayerState();
               if (state === YT.PlayerState.PLAYING) {
                 player.pauseVideo();
               } else {
                 player.playVideo();
               }
-              lastRightClickTime = 0;
             }
           }, DOUBLE_CLICK_DELAY);
         }
