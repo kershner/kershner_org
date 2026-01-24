@@ -712,6 +712,90 @@ const PiStuff = (() => {
     
     // Set the initial active states after menu is initialized
     setInitialActiveStates();
+
+    // Add click handlers for video skip with overlay
+    const playerContainer = document.getElementById('player-container');
+    if (playerContainer) {
+      // Create overlay div
+      const overlay = document.createElement('div');
+      overlay.id = 'player-overlay';
+      playerContainer.appendChild(overlay);
+      
+      let lastClickTime = 0;
+      let lastClickZone = null;
+      let seconds = 20;
+      const DOUBLE_CLICK_DELAY = 300;
+      
+      overlay.addEventListener('click', (e) => {
+        if (!player) return;
+        
+        const now = Date.now();
+        const rect = overlay.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const width = rect.width;
+        
+        // Determine which zone was clicked
+        let currentZone = 'middle';
+        if (clickX < width / 3) {
+          currentZone = 'left';
+        } else if (clickX > (width * 2) / 3) {
+          currentZone = 'right';
+        }
+        
+        // Check if this is a double-click in the same zone
+        const isDoubleClick = (now - lastClickTime) < DOUBLE_CLICK_DELAY && currentZone === lastClickZone;
+        
+        if (isDoubleClick && currentZone !== 'middle') {
+          // Double-click detected - perform skip
+          if (currentZone === 'left') {
+            const currentTime = player.getCurrentTime();
+            player.seekTo(Math.max(0, currentTime - seconds), true);
+            showMessage(`⏪ -${seconds}s`, 'info', 1000);
+          } else if (currentZone === 'right') {
+            const currentTime = player.getCurrentTime();
+            const duration = player.getDuration();
+            player.seekTo(Math.min(duration, currentTime + seconds), true);
+            showMessage(`⏩ +${seconds}s`, 'info', 1000);
+          }
+          
+          lastClickTime = 0;
+          lastClickZone = null;
+        } else if (currentZone === 'middle' || !isDoubleClick) {
+          // Only pause/play if: 
+          // - clicking middle, OR
+          // - first click (waiting to see if it's a double-click)
+          
+          // For side zones, wait to see if it's a double-click
+          if (currentZone !== 'middle') {
+            lastClickTime = now;
+            lastClickZone = currentZone;
+            
+            // Set timeout to pause/play if no second click comes
+            setTimeout(() => {
+              if (lastClickTime === now) {
+                // No double-click happened, toggle play/pause
+                const state = player.getPlayerState();
+                if (state === YT.PlayerState.PLAYING) {
+                  player.pauseVideo();
+                } else {
+                  player.playVideo();
+                }
+                lastClickTime = 0;
+                lastClickZone = null;
+              }
+            }, DOUBLE_CLICK_DELAY);
+          } else {
+            // Middle zone - immediate pause/play
+            const state = player.getPlayerState();
+            if (state === YT.PlayerState.PLAYING) {
+              player.pauseVideo();
+            } else {
+              player.playVideo();
+            }
+          }
+        }
+      });
+    }
     
     // Click anywhere when screen is off to turn it back on
     document.body.addEventListener('click', (e) => {
