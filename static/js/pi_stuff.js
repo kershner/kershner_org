@@ -439,7 +439,7 @@ const PiStuff = (() => {
     });
   }
 
-  function loadPlaylist(playlistId, playlistName) {
+  function loadPlaylist(playlistId, playlistName, shuffle = true) {
     currentPlaylist = playlistId;
     pendingPlaylistLoad = playlistId;
     consecutiveSkips = 0;
@@ -448,6 +448,9 @@ const PiStuff = (() => {
 
     player?.stopVideo();
     player?.loadPlaylist({ listType: 'playlist', list: playlistId, index: 0 });
+    
+    // Store whether to shuffle for when playlist loads
+    window.pendingShuffleState = shuffle;
     
     return playlistName;
   }
@@ -610,9 +613,19 @@ const PiStuff = (() => {
             if (pendingPlaylistLoad) {
               const loaded = safe(() => player.getPlaylistId());
               if (loaded === pendingPlaylistLoad) {
-                player.setShuffle(true);
-                player.nextVideo();
+                // Apply the pending shuffle state (default true for user-selected)
+                const shouldShuffle = window.pendingShuffleState !== false;
+                player.setShuffle(shouldShuffle);
+                
+                if (shouldShuffle) {
+                  player.nextVideo();
+                } else {
+                  // For non-shuffled playlists, start from beginning
+                  player.playVideoAt(0);
+                }
+                
                 pendingPlaylistLoad = null;
+                window.pendingShuffleState = undefined;
               }
             }
           }
@@ -665,7 +678,7 @@ const PiStuff = (() => {
         
         // Handle both videos and playlists
         if (j.type === 'playlist') {
-          loadPlaylist(j.youtube_id, 'Submitted playlist');
+          loadPlaylist(j.youtube_id, 'Submitted playlist', false);  // Don't shuffle submitted playlists
           showMessage('✓ Playlist playing!', 'success');
         } else {
           playVideo(j.youtube_id);
