@@ -1,269 +1,4 @@
-const DeviceManager = (() => {
-  function getOrCreateDeviceId() {
-    let deviceId = localStorage.getItem('pi_device_id');
-    if (!deviceId) {
-      // Generate a random device ID (using crypto for better randomness)
-      const array = new Uint8Array(16);
-      crypto.getRandomValues(array);
-      deviceId = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-      localStorage.setItem('pi_device_id', deviceId);
-    }
-    return deviceId;
-  }
-
-  function ensureDeviceIdInUrl() {
-    const deviceId = getOrCreateDeviceId();
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    if (!urlParams.has('device_id')) {
-      // Reload with device_id to get proper QR code
-      urlParams.set('device_id', deviceId);
-      window.location.search = urlParams.toString();
-      return false; // Signal that we're reloading
-    }
-    
-    return deviceId;
-  }
-
-  return { getOrCreateDeviceId, ensureDeviceIdInUrl };
-})();
-
-const YouTubeSearch = (() => {
-  let cache = new Map();
-  let selectedIndex = -1;
-
-  // Server-side search endpoint - pulled from Django
-  const SEARCH_ENDPOINT = window.YOUTUBE_SEARCH_URL;
-  
-  function isYouTubeUrl(str) {
-    return /^https?:\/\/(www\.)?(youtube\.com|youtu\.be)/.test(str);
-  }
-
-  async function searchVideos(query) {
-    if (cache.has(query)) {
-      return cache.get(query);
-    }
-
-    try {
-      const response = await fetch(`${SEARCH_ENDPOINT}?q=${encodeURIComponent(query)}`);
-      
-      if (!response.ok) {
-        console.error('Search failed:', response.status);
-        return '<div class="search-error">Search failed. Please try again.</div>';
-      }
-      
-      const html = await response.text();
-      cache.set(query, html);
-      return html;
-      
-    } catch (error) {
-      console.error('Search failed:', error);
-      return '<div class="search-error">Network error. Please try again.</div>';
-    }
-  }
-
-  function renderResults(html, container, input) {
-    selectedIndex = -1;
-
-    // Wrap results in a styled container
-    const hasResults = !html.includes('search-error') && !html.includes('search-no-results');
-    const wrappedHtml = hasResults 
-      ? `<div class="search-results">${html}</div>`
-      : `<div class="search-results">${html}</div>`;
-    
-    container.innerHTML = wrappedHtml;
-    container.classList.remove('hidden');
-
-    // Get all result items from the rendered HTML
-    const items = container.querySelectorAll('.search-result-item');
-    results = Array.from(items);
-
-    if (items.length === 0) {
-      return;
-    }
-
-    // Add click handlers and index for keyboard navigation
-    items.forEach((item, index) => {
-      item.dataset.index = index;
-      
-      item.addEventListener('click', () => {
-        const type = item.dataset.type;
-        
-        if (type === 'video') {
-          const videoId = item.dataset.videoId;
-          input.value = `https://www.youtube.com/watch?v=${videoId}`;
-        } else if (type === 'playlist') {
-          const playlistId = item.dataset.playlistId;
-          input.value = `https://www.youtube.com/playlist?list=${playlistId}`;
-        }
-        
-        // Trigger change event so form knows the value updated
-        input.dispatchEvent(new Event('change', { bubbles: true }));
-      });
-    });
-  }
-
-  function handleKeyNavigation(e, dropdown, input) {
-    const items = dropdown.querySelectorAll('.search-result-item');
-    
-    if (items.length === 0) return;
-    
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
-      updateSelection(items);
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      selectedIndex = Math.max(selectedIndex - 1, -1);
-      updateSelection(items);
-    } else if (e.key === 'Enter' && selectedIndex >= 0) {
-      e.preventDefault();
-      const item = items[selectedIndex];
-      const type = item.dataset.type;
-      
-      if (type === 'video') {
-        const videoId = item.dataset.videoId;
-        input.value = `https://www.youtube.com/watch?v=${videoId}`;
-      } else if (type === 'playlist') {
-        const playlistId = item.dataset.playlistId;
-        input.value = `https://www.youtube.com/playlist?list=${playlistId}`;
-      }
-      
-      input.dispatchEvent(new Event('change', { bubbles: true }));
-    } else if (e.key === 'Escape') {
-      dropdown.classList.add('hidden');
-      selectedIndex = -1;
-    }
-  }
-
-  function updateSelection(items) {
-    items.forEach((item, index) => {
-      if (index === selectedIndex) {
-        item.classList.add('selected');
-        item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      } else {
-        item.classList.remove('selected');
-      }
-    });
-  }
-
-  async function performSearch(inputElement, containerElement) {
-    const query = inputElement.value.trim();
-    
-    // If it's a URL, don't search
-    if (isYouTubeUrl(query)) {
-      return;
-    }
-
-    // Require at least 3 characters
-    if (query.length < 3) {
-      return;
-    }
-
-    containerElement.innerHTML = '<div class="search-results"><div class="search-loading">Searching YouTube...</div></div>';
-    containerElement.classList.remove('hidden');
-    
-    const html = await searchVideos(query);
-    renderResults(html, containerElement, inputElement);
-  }
-
-  function init(inputElement, resultsContainer, searchButton) {
-    // Search button click handler
-    searchButton.addEventListener('click', () => {
-      performSearch(inputElement, resultsContainer);
-    });
-
-    // Enter key in input field triggers search
-    inputElement.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !resultsContainer.classList.contains('hidden')) {
-        // If results are open, handle navigation
-        handleKeyNavigation(e, resultsContainer, inputElement);
-      } else if (e.key === 'Enter') {
-        // If results are closed, perform search
-        e.preventDefault();
-        performSearch(inputElement, resultsContainer);
-      } else if (!resultsContainer.classList.contains('hidden')) {
-        // Handle other navigation keys when results are open
-        handleKeyNavigation(e, resultsContainer, inputElement);
-      }
-    });
-  }
-
-  return { init };
-})();
-
-const SubmitForm = (() => {
-  function init() {
-    const form = document.getElementById('f');
-    if (!form) {
-      console.error('Submit form not found');
-      return;
-    }
-    
-    const submitBtn = form.querySelector('.submit-button');
-    const searchInput = document.getElementById('search-input');
-    const searchBtn = document.getElementById('search-button');
-    const resultsContainer = document.getElementById('search-results-container');
-
-    // Initialize YouTube search
-    if (searchInput && resultsContainer && searchBtn) {
-      YouTubeSearch.init(searchInput, resultsContainer, searchBtn);
-    }
-
-    function showMessage(text, type = 'success', duration = 3000) {
-      const messageEl = document.getElementById('display-message');
-      if (!messageEl) return;
-
-      // Set message content and type
-      messageEl.textContent = text;
-      messageEl.className = 'display-message'; // Reset classes
-      messageEl.classList.add('show', type);
-
-      // Hide message after duration
-      setTimeout(() => {
-        messageEl.classList.remove('show');
-      }, duration);
-    }
-
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      
-      submitBtn.disabled = true;
-      
-      try {
-        const data = new URLSearchParams(new FormData(e.target));
-        const r = await fetch(window.API_PLAY_URL, { method: 'POST', body: data });
-        const json = await r.json();
-        
-        if (r.ok) {
-          showMessage('✓ Video sent successfully!', 'success');
-          form.reset();
-          // Restore hidden fields after reset
-          form.querySelector('[name="token"]').value = window.SUBMIT_TOKEN || '';
-          form.querySelector('[name="device_id"]').value = window.SUBMIT_DEVICE_ID || '';
-        } else {
-          // Handle specific error types
-          const errorMessages = {
-            'invalid_or_expired': 'This QR code is invalid or expired. Please scan a new one.',
-            'not_youtube': 'Please provide a valid YouTube URL.',
-            'missing_token': 'Invalid request. Please scan the QR code again.',
-            'missing_device': 'Invalid request. Please scan the QR code again.'
-          };
-          
-          const message = errorMessages[json.error] || json.message || 'An error occurred. Please try again.';
-          showMessage(message, 'error');
-        }
-      } catch (err) {
-        console.error('Submit error:', err);
-        showMessage('Network error. Please try again.', 'error');
-      } finally {
-        submitBtn.disabled = false;
-      }
-    });
-  }
-
-  return { init };
-})();
+import { DeviceManager } from './deviceManager.js';
 
 const PiStuff = (() => {
   const POLL_INTERVAL_MS = 2500;
@@ -439,6 +174,15 @@ const PiStuff = (() => {
         name: p.name
       }));
     });
+
+    // Select random playlist on first load
+    if (!currentPlaylist) {
+      const playlistName = playRandom();
+      if (playlistName) {
+        // Show message after a brief delay to ensure UI is ready
+        setTimeout(() => showMessage(`Playing ${playlistName}`, 'info', 3000), 500);
+      }
+    }
   }
 
   function loadPlaylist(playlistId, playlistName, shuffle = true, skipInitialNext = false) {
@@ -555,6 +299,12 @@ const PiStuff = (() => {
       }
       if (action === 'close') menu.hidden = true;
     });
+
+    // Click anywhere when screen is off to turn it back on
+    screenToggle();
+
+    // Set the initial active states after menu is initialized
+    setInitialActiveStates();
   }
 
   function loadYouTubeApi() {
@@ -562,43 +312,31 @@ const PiStuff = (() => {
     const s = document.createElement('script');
     s.src = 'https://www.youtube.com/iframe_api';
     document.head.appendChild(s);
+    window.onYouTubeIframeAPIReady = createPlayer;
   }
 
   function createPlayer() {
     player = new YT.Player('player', {
-      // Slightly reduces tracking + sometimes behaves better on kiosks
-      host: 'https://www.youtube-nocookie.com',
       playerVars: {
         listType: 'playlist',
         list: currentPlaylist,
         autoplay: 1,
         playsinline: 1,
-        
-        // Performance / UI reductions
         controls: 1,
         fs: 0,
         disablekb: 1,
-        modestbranding: 1,
-        rel: 0,
         iv_load_policy: 3,     // annotations off
         cc_load_policy: 1,     // captions on
-        
-        // Strong hint to start low-res (biases H.264 likelihood)
-        vq: 'small',
       },
       events: {
         onReady(e) {
           e.target.mute();
-          e.target.setPlaybackQuality('small');
           e.target.setShuffle(true);
           e.target.nextVideo();
         },
         onError: skipUnplayable,
         onStateChange(e) {
           if (e.data === YT.PlayerState.PLAYING) {
-            // Re-assert low quality (YouTube likes to bump it)
-            player.setPlaybackQuality('small');
-            
             const vid = safe(() => player.getVideoData().video_id);
             
             // Handle pending playlist load FIRST (before anything else)
@@ -722,133 +460,69 @@ const PiStuff = (() => {
     }, POLL_INTERVAL_MS);
   }
 
-  function init() {
-    // Get device ID from DeviceManager
-    deviceId = DeviceManager.ensureDeviceIdInUrl();
-    if (!deviceId) return; // We're reloading with device_id
-    
-    loadPlaylistsData();
-
-    // Select random playlist on first load
-    if (!currentPlaylist) {
-      const playlistName = playRandom();
-      if (playlistName) {
-        // Show message after a brief delay to ensure UI is ready
-        setTimeout(() => showMessage(`Playing ${playlistName}`, 'info', 3000), 500);
-      }
-    }
-
-    initMenu();
-    
-    // Set the initial active states after menu is initialized
-    setInitialActiveStates();
-
-    // Add click handlers for video skip with overlays
+  function customVideoControls() {
     const playerContainer = document.getElementById('player-container');
-    if (playerContainer) {
-      // Create left and right overlay zones (not middle)
-      const leftOverlay = document.createElement('div');
-      leftOverlay.id = 'player-overlay-left';
-      playerContainer.appendChild(leftOverlay);
+    if (!playerContainer) return;
 
-      const rightOverlay = document.createElement('div');
-      rightOverlay.id = 'player-overlay-right';
-      playerContainer.appendChild(rightOverlay);
-      
-      let lastLeftClickTime = 0;
-      let leftIsDouble = false;
-      let lastRightClickTime = 0;
-      let rightIsDouble = false;
-      const DOUBLE_CLICK_DELAY = 300;
-      const seconds = 20;
-      
-      // Left overlay
-      leftOverlay.addEventListener('click', (e) => {
-        if (document.body.className === 'screen-off') return;
-        if (!player) return;
-        
+    const doubleClickDelay = 300;
+    const secondsToSkip = 20;
+
+    function createOverlay(side) {
+      const overlay = document.createElement('div');
+      overlay.id = `player-overlay-${side}`;
+      playerContainer.appendChild(overlay);
+
+      let lastClickTime = 0;
+      let isDouble = false;
+
+      overlay.addEventListener('click', () => {
+        if (document.body.className === 'screen-off' || !player) return;
+
         const now = Date.now();
-        const timeSinceLastClick = now - lastLeftClickTime;
-        
-        if (timeSinceLastClick < DOUBLE_CLICK_DELAY) {
-          if (leftIsDouble) {
-            // Triple-click - previous video
-            player.previousVideo();
-            showMessage('Previous', 'info', 1000);
-            leftIsDouble = false;
-            lastLeftClickTime = 0;
+        const timeSinceLastClick = now - lastClickTime;
+
+        if (timeSinceLastClick < doubleClickDelay) {
+          if (isDouble) {
+            // Triple-click - previous/next video
+            side === 'left' ? player.previousVideo() : player.nextVideo();
+            showMessage(side === 'left' ? 'Previous video' : 'Next video', 'info', 1000);
+            isDouble = false;
+            lastClickTime = 0;
           } else {
-            // Double-click - skip backward
+            // Double-click - skip backward/forward
             const currentTime = player.getCurrentTime();
-            player.seekTo(Math.max(0, currentTime - seconds), true);
-            showMessage(`-${seconds}s`, 'info', 1000);
-            leftIsDouble = true;
-            lastLeftClickTime = now;
+            if (side === 'left') {
+              player.seekTo(Math.max(0, currentTime - secondsToSkip), true);
+              showMessage(`-${secondsToSkip}s`, 'info', 1000);
+            } else {
+              const duration = player.getDuration();
+              player.seekTo(Math.min(duration, currentTime + secondsToSkip), true);
+              showMessage(`+${secondsToSkip}s`, 'info', 1000);
+            }
+            isDouble = true;
+            lastClickTime = now;
           }
         } else {
           // First click - wait to see if double-click
-          leftIsDouble = false;
-          lastLeftClickTime = now;
-          
+          isDouble = false;
+          lastClickTime = now;
+
           setTimeout(() => {
-            if (lastLeftClickTime === now && !leftIsDouble) {
+            if (lastClickTime === now && !isDouble) {
               // Single click - pause/play
               const state = player.getPlayerState();
-              if (state === YT.PlayerState.PLAYING) {
-                player.pauseVideo();
-              } else {
-                player.playVideo();
-              }
+              state === YT.PlayerState.PLAYING ? player.pauseVideo() : player.playVideo();
             }
-          }, DOUBLE_CLICK_DELAY);
-        }
-      });
-      
-      // Right overlay
-      rightOverlay.addEventListener('click', (e) => {
-        if (document.body.className === 'screen-off') return;
-        if (!player) return;
-        
-        const now = Date.now();
-        const timeSinceLastClick = now - lastRightClickTime;
-        
-        if (timeSinceLastClick < DOUBLE_CLICK_DELAY) {
-          if (rightIsDouble) {
-            // Triple-click - next video
-            player.nextVideo();
-            showMessage('Next', 'info', 1000);
-            rightIsDouble = false;
-            lastRightClickTime = 0;
-          } else {
-            // Double-click - skip forward
-            const currentTime = player.getCurrentTime();
-            const duration = player.getDuration();
-            player.seekTo(Math.min(duration, currentTime + seconds), true);
-            showMessage(`+${seconds}s`, 'info', 1000);
-            rightIsDouble = true;
-            lastRightClickTime = now;
-          }
-        } else {
-          // First click - wait to see if double-click
-          rightIsDouble = false;
-          lastRightClickTime = now;
-          
-          setTimeout(() => {
-            if (lastRightClickTime === now && !rightIsDouble) {
-              // Single click - pause/play
-              const state = player.getPlayerState();
-              if (state === YT.PlayerState.PLAYING) {
-                player.pauseVideo();
-              } else {
-                player.playVideo();
-              }
-            }
-          }, DOUBLE_CLICK_DELAY);
+          }, doubleClickDelay);
         }
       });
     }
-    
-    // Click anywhere when screen is off to turn it back on
+
+    createOverlay('left');
+    createOverlay('right');
+  }
+
+  function screenToggle() {
     document.body.addEventListener('click', (e) => {
       if (document.body.className === 'screen-off') {
         // Don't interfere with menu button
@@ -857,14 +531,25 @@ const PiStuff = (() => {
         }
       }
     });
+  }
+
+  function init() {
+    // Get device ID from DeviceManager
+    deviceId = DeviceManager.ensureDeviceIdInUrl();
+    if (!deviceId) return; // We're reloading with device_id
     
+    loadPlaylistsData();
+    initMenu();
+    customVideoControls();
     loadYouTubeApi();
-
-    primeLatestTs().finally(startLatestPoller);
-
-    window.onYouTubeIframeAPIReady = createPlayer;
-    if (window.YT?.Player) createPlayer();
+    primeLatestTs().finally(startLatestPoller);    
   }
 
   return { init };
 })();
+
+document.addEventListener('DOMContentLoaded', () => {
+  PiStuff.init();
+});
+
+export default PiStuff;

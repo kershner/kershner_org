@@ -1,4 +1,5 @@
 {% extends "pi_stuff/base.html" %}
+{% load kershner_tags %}
 
 {% block extra_meta %}
   <meta property="og:title" content="Send video to the Pi Display">
@@ -49,6 +50,6 @@
   window.YOUTUBE_SEARCH_URL = "{{ youtube_search_url }}";
 {% endblock %}
 
-{% block js_init %}
-  SubmitForm.init();
+{% block page_script %}
+  <script type="module" src="{% settings_value "BASE_S3_URL" %}/js/piStuff/submitForm.js"></script>
 {% endblock %}

@@ -18,12 +18,6 @@
     {% block window_vars %}{% endblock %}
   </script>
 
-  <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/pi_stuff.js"></script>
-  
-  <script type="text/javascript">
-    document.addEventListener('DOMContentLoaded', () => {
-      {% block js_init %}{% endblock %}
-    });
-  </script>
+  {% block page_script %}{% endblock %}
 </body>
 </html>

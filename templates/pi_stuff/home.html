@@ -1,4 +1,5 @@
 {% extends "pi_stuff/base.html" %}
+{% load kershner_tags %}
 
 {% block content %}
   {% csrf_token %}
@@ -61,6 +62,6 @@
   window.REGENERATE_QR_URL = "{{ regenerate_qr_url }}";
 {% endblock %}
 
-{% block js_init %}
-  PiStuff.init();
+{% block page_script %}
+  <script type="module" src="{% settings_value "BASE_S3_URL" %}/js/piStuff/piStuff.js"></script>
 {% endblock %}
