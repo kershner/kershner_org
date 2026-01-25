@@ -105,6 +105,9 @@ $gap: 0.5rem
   height: 100%
   position: relative
 
+.overlay-highlight
+  animation: hotspotReveal 5s ease-out 1.5s 1 forwards
+
 #player
   width: 100%
   height: 100%
@@ -117,7 +120,6 @@ $gap: 0.5rem
   height: 50%
   z-index: 10
   cursor: pointer
-  animation: hotspotReveal 2.5s ease-out 0.5s 1 forwards
 
 #player-overlay-left
   left: 0
@@ -137,7 +139,6 @@ $gap: 0.5rem
   background: transparent
   border: 0
   z-index: 11
-  animation: hotspotReveal 2.5s ease-out 0.3s 1 forwards
 
 .menu
   position: fixed
@@ -269,6 +270,7 @@ body.screen-off
   backdrop-filter: blur(10px)
   border: 0.0625em solid rgba($white, 0.3)
   color: $white
+  pointer-events: none
   opacity: 0
   transition: opacity 0.3s
 

@@ -262,18 +262,15 @@ const PiStuff = (() => {
       events: {
         onReady(e) {
           e.target.mute();
+          const overlays = ['#player-overlay-left', '#player-overlay-right', '.menu-button'];
+          document.querySelectorAll(overlays.join(',')).forEach(el => el.classList.add('overlay-highlight'));
         },
         onError: skipUnplayable,
         onStateChange(e) {
           const state = e.data;
           
           // Debug YouTube player state
-          // for (let key in YT.PlayerState) {
-          //   if (YT.PlayerState[key] === state) {
-          //     console.log('State:', key);
-          //     break;
-          //   }
-          // }
+          // for (let k in YT.PlayerState) if (YT.PlayerState[k] === state) { console.log('State:', k); break; }
           
           // PLAYING
           if (state === YT.PlayerState.PLAYING) {
