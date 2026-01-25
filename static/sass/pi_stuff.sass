@@ -248,41 +248,15 @@ body.screen-off
   border-radius: 0.75em
   font-size: 1.25rem
   font-weight: bold
-  text-align: center
+  background: rgba($white, 0.15)
+  backdrop-filter: blur(10px)
+  border: 0.0625em solid rgba($white, 0.3)
+  color: $white
   opacity: 0
-  pointer-events: none
   transition: opacity 0.3s
-  max-width: calc(100vw - 2rem)
-  word-wrap: break-word
 
   &.show
     opacity: 1
-    animation: fadeInScale 0.3s
-
-  &.success
-    background: linear-gradient(135deg, rgba($success, 0.95), rgba(darken($success, 10%), 0.95))
-    color: $white
-    box-shadow: 0 0.5em 1.5em rgba($success, 0.4)
-
-  &.error
-    background: linear-gradient(135deg, rgba($error, 0.95), rgba(darken($error, 10%), 0.95))
-    color: $white
-    box-shadow: 0 0.5em 1.5em rgba($error, 0.4)
-
-  &.info
-    background: linear-gradient(135deg, rgba($info, 0.95), rgba(darken($info, 10%), 0.95))
-    color: $white
-    box-shadow: 0 0.5em 1.5em rgba($info, 0.4)
-
-  &.warning
-    background: linear-gradient(135deg, rgba($warning, 0.95), rgba(darken($warning, 10%), 0.95))
-    color: $white
-    box-shadow: 0 0.5em 1.5em rgba($warning, 0.4)
-
-@media (max-width: 767px)
-  .display-message
-    padding: 1rem 1.5rem
-    max-width: calc(100vw - 1rem)
 
 // =============================================================================
 // BUTTONS
