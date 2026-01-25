@@ -14,9 +14,31 @@ const PiStuff = (() => {
   let currentCategoryKey = null;
   let qrVisible = false;
 
+  // Track progress + user-initiated advances (for shuffle-mode "random playlist on advance")
+  let userInitiatedAdvance = false;
+  let lastProgress = { t: 0, d: 0 };
+  let progressTimer = null;
+
+  // Prevent multiple random playlist loads during YouTube state churn
+  let switchingPlaylist = false;
+
   const safe = (fn, fallback = null) => {
     try { return fn(); } catch (_) { return fallback; }
   };
+
+  function startProgress() {
+    if (progressTimer) return;
+    progressTimer = setInterval(() => {
+      if (!player) return;
+      lastProgress.t = safe(() => player.getCurrentTime(), 0) || 0;
+      lastProgress.d = safe(() => player.getDuration(), 0) || 0;
+    }, 250);
+  }
+
+  function stopProgress() {
+    clearInterval(progressTimer);
+    progressTimer = null;
+  }
 
   function showMessage(text, type = 'info', duration = 3000) {
     const msgEl = $('#display-message');
@@ -30,7 +52,7 @@ const PiStuff = (() => {
     const container = $('#qr-container');
     const playlistsEl = $('#playlists');
     if (!container) return;
-    
+
     playlistsEl.hidden = show;
     container.hidden = !show;
     qrVisible = show;
@@ -46,13 +68,13 @@ const PiStuff = (() => {
     try {
       const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
       const formData = new URLSearchParams({ device_id: deviceId });
-      
+
       const response = await fetch(window.REGENERATE_QR_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken },
         body: formData
       });
-      
+
       if (!response.ok) throw new Error('Failed to regenerate QR code');
 
       const data = await response.json();
@@ -94,7 +116,7 @@ const PiStuff = (() => {
       return;
     }
 
-    container.innerHTML = list.map(p => 
+    container.innerHTML = list.map(p =>
       `<button data-playlist="${p.id}" class="playlist-button${p.id === currentPlaylist ? ' selected' : ''}">${p.name}</button>`
     ).join('');
   }
@@ -129,29 +151,36 @@ const PiStuff = (() => {
     lastVideoId = null;
     clearTimeout(skipTimer);
 
+    switchingPlaylist = true;
+    userInitiatedAdvance = false;
+    lastProgress = { t: 0, d: 0 };
+
     player?.stopVideo();
     player?.loadPlaylist({ listType: 'playlist', list: playlistId, index: 0 });
-    
     return playlistName;
   }
 
   function playRandom() {
     const cats = Object.keys(playlists);
     if (!cats.length) return false;
-    
+
     const catKey = cats[Math.floor(Math.random() * cats.length)];
     const list = playlists[catKey];
     if (!list?.length) return false;
-    
+
     const randomPlaylist = list[Math.floor(Math.random() * list.length)];
-    
+
     $all('[data-category]').forEach(b => b.classList.remove('selected'));
     $all('[data-playlist]').forEach(b => b.classList.remove('selected'));
     $(`[data-category="${catKey}"]`)?.classList.add('selected');
-    
+
     currentCategoryKey = catKey;
     currentPlaylist = randomPlaylist.id;
     renderPlaylistsForCategory(catKey);
+    
+    setTimeout(() => {
+      showMessage(`Playing ${randomPlaylist.name}...`, 'info', 2000);
+    }, 100);
     return loadPlaylist(randomPlaylist.id, randomPlaylist.name);
   }
 
@@ -238,14 +267,6 @@ const PiStuff = (() => {
     window.onYouTubeIframeAPIReady = createPlayer;
   }
 
-  function handleVideoEnd() {
-    if (shuffleState) {
-      playRandom(); // Load completely random playlist
-    } else {
-      player.nextVideo(); // Next video in current playlist
-    }
-  }
-
   function createPlayer() {
     player = new YT.Player('player', {
       playerVars: {
@@ -268,56 +289,67 @@ const PiStuff = (() => {
         onError: skipUnplayable,
         onStateChange(e) {
           const state = e.data;
-          
+
           // Debug YouTube player state
-          // for (let k in YT.PlayerState) if (YT.PlayerState[k] === state) { console.log('State:', k); break; }
-          
+          for (let k in YT.PlayerState) if (YT.PlayerState[k] === state) { console.log('State:', k); break; }
+
+          // Track progress while playing (needed to detect auto-advance without ENDED)
+          if (state === YT.PlayerState.PLAYING) startProgress();
+          else stopProgress();
+
           // PLAYING
           if (state === YT.PlayerState.PLAYING) {
             const vid = safe(() => player.getVideoData().video_id);
-            
-            // First video of newly loaded playlist - shuffle and jump to new index 0
+
+            // First video of newly loaded playlist - ALWAYS shuffle and jump to index 0
             if (pendingPlaylistLoad) {
               const loaded = safe(() => player.getPlaylistId());
               if (loaded === pendingPlaylistLoad) {
                 pendingPlaylistLoad = null;
-                
+                switchingPlaylist = false;
+
                 // Defer to avoid triggering state changes while inside this handler
                 setTimeout(() => {
-                  player.setShuffle(true);
-                  player.playVideoAt(0); // Play the video at index 0 (which is now shuffled)
+                  player.setShuffle(true); // ALWAYS shuffle every playlist
+                  player.playVideoAt(0);   // ALWAYS start at index 0
                 }, 0);
               }
               return;
             }
-            
-            // Detect video change
-            if (vid && vid !== lastVideoId) {
-              // If shuffle mode is on and this is a new video (not the first load)
-              if (shuffleState && lastVideoId !== null) {
-                handleVideoEnd();
+
+            // Detect video change (and only act on it when needed)
+            if (!switchingPlaylist && vid && vid !== lastVideoId) {
+              const { t, d } = lastProgress;
+              const nearEnd = d > 0 && (d - t) < 1.5; // threshold for "finished"
+
+              const isAdvance = userInitiatedAdvance || nearEnd;
+              userInitiatedAdvance = false;
+
+              // Shuffle ON: when a video ends OR user advances => random playlist
+              if (shuffleState && lastVideoId !== null && isAdvance) {
+                playRandom();
                 return;
               }
-              
+
               lastVideoId = vid;
               consecutiveSkips = 0;
             }
           }
-          
-          // ENDED: Video finished - go to next
+
+          // ENDED: End of playlist - ALWAYS random playlist
           else if (state === YT.PlayerState.ENDED) {
-            handleVideoEnd();
+            playRandom();
           }
-          
+
           // UNSTARTED: Detect unplayable videos (stuck for 4+ seconds)
           else if (state === YT.PlayerState.UNSTARTED) {
             clearTimeout(skipTimer);
             const startVid = safe(() => player.getVideoData().video_id);
-            
+
             skipTimer = setTimeout(() => {
               const nowState = safe(() => player.getPlayerState());
               const nowVid = safe(() => player.getVideoData().video_id);
-              
+
               if (nowState !== YT.PlayerState.PLAYING && nowVid === startVid) {
                 skipUnplayable();
               }
@@ -336,19 +368,19 @@ const PiStuff = (() => {
 
   async function startLatestPoller() {
     if (pollIntervalId) return;
-    
+
     try {
       const j = await fetchLatest();
       if (j?.ts) lastTsSeen = j.ts;
-    } catch (_) {}
-    
+    } catch (_) { }
+
     pollIntervalId = setInterval(async () => {
       try {
         const j = await fetchLatest();
         if (!j?.ts || j.ts === lastTsSeen) return;
-        
+
         lastTsSeen = j.ts;
-        
+
         if (j.type === 'playlist') {
           loadPlaylist(j.youtube_id, 'Submitted playlist', false);
           showMessage('✓ Playlist playing!', 'success');
@@ -356,10 +388,10 @@ const PiStuff = (() => {
           playVideo(j.youtube_id);
           showMessage('✓ Video playing!', 'success');
         }
-        
+
         if (qrVisible) toggleQr(false);
         $('#menu').hidden = true;
-      } catch (_) {}
+      } catch (_) { }
     }, POLL_INTERVAL_MS);
   }
 
@@ -390,7 +422,13 @@ const PiStuff = (() => {
             if (side === 'left') {
               player.previousVideo(); // Always go to previous in current playlist
             } else {
-              handleVideoEnd(); // Use same logic as when video ends
+              if (shuffleState) {
+                userInitiatedAdvance = false;
+                playRandom();
+              } else {
+                userInitiatedAdvance = true;
+                player.nextVideo();
+              }
             }
             showMessage(side === 'left' ? 'Previous video' : 'Next video', 'info', 1000);
             isDouble = false;
@@ -430,7 +468,7 @@ const PiStuff = (() => {
   function init() {
     deviceId = DeviceManager.ensureDeviceIdInUrl();
     if (!deviceId) return;
-    
+
     loadPlaylistsData();
     initMenu();
     customVideoControls();
