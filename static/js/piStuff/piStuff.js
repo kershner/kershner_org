@@ -123,7 +123,7 @@ const PiStuff = (() => {
     }
   }
 
-  function loadPlaylist(playlistId, playlistName, shuffle = true, skipInitialNext = false) {
+  function loadPlaylist(playlistId, playlistName) {
     currentPlaylist = playlistId;
     pendingPlaylistLoad = playlistId;
     consecutiveSkips = 0;
@@ -132,9 +132,6 @@ const PiStuff = (() => {
 
     player?.stopVideo();
     player?.loadPlaylist({ listType: 'playlist', list: playlistId, index: 0 });
-    
-    window.pendingShuffleState = shuffle;
-    window.skipInitialNext = skipInitialNext;
     
     return playlistName;
   }
@@ -156,8 +153,7 @@ const PiStuff = (() => {
     currentCategoryKey = catKey;
     currentPlaylist = randomPlaylist.id;
     renderPlaylistsForCategory(catKey);
-    
-    return loadPlaylist(randomPlaylist.id, randomPlaylist.name, true, true);
+    return loadPlaylist(randomPlaylist.id, randomPlaylist.name);
   }
 
   function initMenu() {
@@ -243,6 +239,14 @@ const PiStuff = (() => {
     window.onYouTubeIframeAPIReady = createPlayer;
   }
 
+  function handleVideoEnd() {
+    if (shuffleState) {
+      playRandom(); // Load completely random playlist
+    } else {
+      player.nextVideo(); // Next video in current playlist
+    }
+  }
+
   function createPlayer() {
     player = new YT.Player('player', {
       playerVars: {
@@ -259,62 +263,62 @@ const PiStuff = (() => {
       events: {
         onReady(e) {
           e.target.mute();
-          e.target.setShuffle(true);
-          e.target.nextVideo();
         },
         onError: skipUnplayable,
         onStateChange(e) {
-          if (e.data === YT.PlayerState.PLAYING) {
+          const state = e.data;
+          
+          // Debug YouTube player state
+          // for (let key in YT.PlayerState) {
+          //   if (YT.PlayerState[key] === state) {
+          //     console.log('State:', key);
+          //     break;
+          //   }
+          // }
+          
+          // PLAYING
+          if (state === YT.PlayerState.PLAYING) {
             const vid = safe(() => player.getVideoData().video_id);
             
+            // First video of newly loaded playlist - shuffle and jump to new index 0
             if (pendingPlaylistLoad) {
               const loaded = safe(() => player.getPlaylistId());
               if (loaded === pendingPlaylistLoad) {
-                const shouldShuffle = window.pendingShuffleState !== false;
-                const skipNext = window.skipInitialNext || false;
-                
-                player.setShuffle(shouldShuffle);
-                
-                if (shouldShuffle && !skipNext) {
-                  player.nextVideo();
-                } else if (!shouldShuffle) {
-                  player.playVideoAt(0);
-                }
-                
                 pendingPlaylistLoad = null;
-                window.pendingShuffleState = undefined;
-                window.skipInitialNext = undefined;
-              }
-              
-              if (vid && vid !== lastVideoId) {
-                lastVideoId = vid;
-                consecutiveSkips = 0;
-                playerReady = true;
+                
+                // Defer to avoid triggering state changes while inside this handler
+                setTimeout(() => {
+                  player.setShuffle(true);
+                  player.playVideoAt(0); // Play the video at index 0 (which is now shuffled)
+                }, 0);
               }
               return;
             }
             
+            // Reset skip counter when video successfully plays
             if (vid && vid !== lastVideoId) {
-              const wasFirstVideo = lastVideoId === null;
               lastVideoId = vid;
               consecutiveSkips = 0;
-              playerReady = true;
-              
-              if (shuffleState && playerReady && !wasFirstVideo) playRandom();
             }
           }
           
-          if (e.data === YT.PlayerState.ENDED && shuffleState) playRandom();
+          // ENDED: Video finished - go to next
+          else if (state === YT.PlayerState.ENDED) {
+            handleVideoEnd();
+          }
           
-          if (e.data === YT.PlayerState.UNSTARTED) {
+          // UNSTARTED: Detect unplayable videos (stuck for 4+ seconds)
+          else if (state === YT.PlayerState.UNSTARTED) {
             clearTimeout(skipTimer);
             const startVid = safe(() => player.getVideoData().video_id);
             
             skipTimer = setTimeout(() => {
-              const state = safe(() => player.getPlayerState());
+              const nowState = safe(() => player.getPlayerState());
               const nowVid = safe(() => player.getVideoData().video_id);
               
-              if (state !== YT.PlayerState.PLAYING && nowVid === startVid) skipUnplayable();
+              if (nowState !== YT.PlayerState.PLAYING && nowVid === startVid) {
+                skipUnplayable();
+              }
             }, 4000);
           }
         }
@@ -380,11 +384,17 @@ const PiStuff = (() => {
 
         if (timeSinceLastClick < doubleClickDelay) {
           if (isDouble) {
-            side === 'left' ? player.previousVideo() : player.nextVideo();
+            // Triple click: previous/next video
+            if (side === 'left') {
+              player.previousVideo(); // Always go to previous in current playlist
+            } else {
+              handleVideoEnd(); // Use same logic as when video ends
+            }
             showMessage(side === 'left' ? 'Previous video' : 'Next video', 'info', 1000);
             isDouble = false;
             lastClickTime = 0;
           } else {
+            // Double click: skip forward/back 20 seconds
             const currentTime = player.getCurrentTime();
             if (side === 'left') {
               player.seekTo(Math.max(0, currentTime - secondsToSkip), true);
@@ -397,6 +407,7 @@ const PiStuff = (() => {
             lastClickTime = now;
           }
         } else {
+          // First click: start timer for play/pause
           isDouble = false;
           lastClickTime = now;
 
