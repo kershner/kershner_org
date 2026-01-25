@@ -417,36 +417,36 @@ const PiStuff = (() => {
     });
   }
 
-  async function primeLatestTs() {
-    try {
-      if (!deviceId) return;
-      
-      const url = window.LATEST_URL || 'latest/';
-      const fullUrl = `${url}?device=${encodeURIComponent(deviceId)}`;
-      const r = await fetch(fullUrl);
-      if (r.status === 204) return;
-      const j = await r.json();
-      if (j?.ts) lastTsSeen = j.ts;
-    } catch (_) {}
+  async function fetchLatest() {
+    if (!deviceId) return null;
+    
+    const url = window.LATEST_URL || 'latest/';
+    const fullUrl = `${url}?device=${encodeURIComponent(deviceId)}`;
+    const r = await fetch(fullUrl);
+    
+    if (r.status === 204) return null;
+    return await r.json();
   }
 
-  function startLatestPoller() {
+  async function startLatestPoller() {
     if (pollIntervalId) return;
+    
+    // Prime the timestamp on first call
+    try {
+      const j = await fetchLatest();
+      if (j?.ts) lastTsSeen = j.ts;
+    } catch (_) {}
+    
+    // Start polling
     pollIntervalId = setInterval(async () => {
       try {
-        if (!deviceId) return;
-        
-        const url = window.LATEST_URL || 'latest/';
-        const fullUrl = `${url}?device=${encodeURIComponent(deviceId)}`;
-        const r = await fetch(fullUrl);
-        if (r.status === 204) return;
-        const j = await r.json();
+        const j = await fetchLatest();
         if (!j?.ts || j.ts === lastTsSeen) return;
+        
         lastTsSeen = j.ts;
         
-        // Handle both videos and playlists
         if (j.type === 'playlist') {
-          loadPlaylist(j.youtube_id, 'Submitted playlist', false);  // Don't shuffle submitted playlists
+          loadPlaylist(j.youtube_id, 'Submitted playlist', false);
           showMessage('✓ Playlist playing!', 'success');
         } else {
           playVideo(j.youtube_id);
@@ -454,8 +454,7 @@ const PiStuff = (() => {
         }
         
         if (qrVisible) hideQr();
-        const menu = getMenu();
-        menu.hidden = true
+        getMenu().hidden = true;
       } catch (_) {}
     }, POLL_INTERVAL_MS);
   }
@@ -542,7 +541,7 @@ const PiStuff = (() => {
     initMenu();
     customVideoControls();
     loadYouTubeApi();
-    primeLatestTs().finally(startLatestPoller);    
+    startLatestPoller();
   }
 
   return { init };

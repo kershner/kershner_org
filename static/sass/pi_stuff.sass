@@ -15,91 +15,67 @@ html, body
 // =============================================================================
 // VARIABLES
 // =============================================================================
-// Colors - Base
-$border-color: rgba(255, 255, 255, 0.3)
-$border-color-hover: rgba(255, 255, 255, 0.6)
-$background-color: rgba(255, 255, 255, 0.15)
-$background-color-hover: rgba(255, 255, 255, 0.2)
-$background-dark: rgba(0, 0, 0, 0.9)
-$text-color: white
-$text-color-inverted: black
-$text-color-dimmed: rgba(255, 255, 255, 0.5)
+$white: white
+$black: black
 
-// Colors - States
-$success-bg: rgba(76, 175, 80, 0.2)
-$success-border: rgba(76, 175, 80, 0.5)
-$success-text: #81c784
+$border: rgba($white, 0.3)
+$border-hover: rgba($white, 0.6)
+$bg: rgba($white, 0.15)
+$bg-hover: rgba($white, 0.2)
+$bg-dark: rgba($black, 0.9)
+$text: $white
+$text-dim: rgba($white, 0.5)
 
-$error-bg: rgba(244, 67, 54, 0.2)
-$error-border: rgba(244, 67, 54, 0.5)
-$error-text: #e57373
+$success: #4caf50
+$error: #f44336
+$info: #2196f3
+$warning: #ff9800
 
-// Colors - Search specific
-$search-bg: rgba(0, 0, 0, 0.95)
-$search-border: rgba(255, 255, 255, 0.2)
-$search-item-hover: rgba(255, 255, 255, 0.1)
-$search-item-selected: rgba(255, 255, 255, 0.15)
-
-// Spacing
-$border-radius: 4px
-$spacing-sm: 0.5rem
-$spacing-md: 1rem
-$spacing-lg: 1.5rem
+$radius: 0.25em
+$gap: 0.5rem
 
 // =============================================================================
-// GLOBAL SCROLLBAR STYLES
+// SCROLLBAR
 // =============================================================================
-// Firefox
 *
   scrollbar-width: thin
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent
+  scrollbar-color: rgba($white, 0.15) transparent
 
-// WebKit (Chrome, Safari, Edge)
 ::-webkit-scrollbar
-  width: 6px
-  height: 6px
-
-::-webkit-scrollbar-track
-  background: transparent
-
-::-webkit-scrollbar-thumb
-  background: rgba(255, 255, 255, 0.15)
-  border-radius: 4px
-
-  &:hover
-    background: rgba(255, 255, 255, 0.25)
+  width: 0.375em
+  height: 0.375em
+  
+  &-track
+    background: transparent
+  
+  &-thumb
+    background: rgba($white, 0.15)
+    border-radius: $radius
+    
+    &:hover
+      background: rgba($white, 0.25)
 
 // =============================================================================
 // MIXINS
 // =============================================================================
-@mixin button-base
+@mixin button
   padding: 1.5em
   font-size: 1em
-  background: $background-color
-  color: $text-color
-  border: 1px solid $border-color
-  border-radius: $border-radius
+  background: $bg
+  color: $text
+  border: 0.0625em solid $border
+  border-radius: $radius
   cursor: pointer
-
-@mixin button-alt
-  background: $background-dark
-
-@mixin active-scale
+  
   &:active
     transform: scale(0.95)
-
-@mixin flex-center
-  display: flex
-  justify-content: center
-  align-items: center
-
-@mixin text-truncate
-  overflow: hidden
-  text-overflow: ellipsis
-  white-space: nowrap
+  
+  &.selected
+    background: $text !important
+    color: $black !important
 
 // =============================================================================
-// HOME PAGE - PLAYER & MENU
+// PLAYER
 // =============================================================================
 #player-container
   width: 100%
@@ -109,15 +85,6 @@ $spacing-lg: 1.5rem
 #player
   width: 100%
   height: 100%
-
-#player-overlay
-  position: absolute
-  top: 25%
-  left: 0
-  width: 100%
-  height: 50%
-  z-index: 10
-  cursor: pointer
 
 #player-overlay-left,
 #player-overlay-right
@@ -134,6 +101,9 @@ $spacing-lg: 1.5rem
 #player-overlay-right
   right: 0
 
+// =============================================================================
+// MENU
+// =============================================================================
 .menu-button
   position: fixed
   top: 0
@@ -148,8 +118,10 @@ $spacing-lg: 1.5rem
   position: fixed
   z-index: 11
   inset: 0
-  @include flex-center
-  background: $background-dark
+  display: flex
+  justify-content: center
+  align-items: center
+  background: $bg-dark
 
   &[hidden]
     display: none
@@ -158,7 +130,7 @@ $spacing-lg: 1.5rem
   display: flex
   flex-direction: column
   justify-content: space-between
-  padding: $spacing-sm 0
+  padding: $gap 0
   height: 100%
   width: 60rem
   max-width: 100%
@@ -166,82 +138,71 @@ $spacing-lg: 1.5rem
 .menu-header,
 .menu-footer
   flex: 0 0 auto
-  min-width: 0
 
 .menu-actions
   display: flex
-  gap: $spacing-sm
+  gap: $gap
 
   button
-    @include button-alt
+    background: $bg-dark
     flex: 1
     font-weight: bold
 
 .menu-categories
   display: flex
   justify-content: space-between
-  gap: $spacing-sm
-  padding: $spacing-sm 0
-  min-width: 0
+  gap: $gap
+  padding: $gap 0
   
   button
-    flex: 0 0 auto
     padding: 0.75rem 1rem
     font-weight: bold
+    white-space: nowrap
 
-  .random-btn
-    button
-      @include button-alt
+  .random-btn button
+    background: $bg-dark
 
   .category-btns
     display: flex
-    flex-wrap: nowrap
-    gap: $spacing-sm
+    gap: $gap
     flex: 1
-    min-width: 0
     overflow-x: auto
-    
-    button
-      white-space: nowrap
 
 .menu-content
-  flex: 1 1 auto
+  flex: 1
   display: flex
-  position: relative
   overflow-y: auto
-  border-top: 2px solid $border-color
+  border-top: 0.125em solid $border
   min-height: 0
 
-.menu-playlists
-  display: flex
-  flex-wrap: wrap
-  align-items: flex-start
-  align-content: flex-start
-  gap: $spacing-sm
-  padding: $spacing-sm 0
-  overflow-y: auto
+.menu-playlists,
+.menu-qr
   flex: 1
 
   &[hidden]
     display: none
 
+.menu-playlists
+  display: flex
+  flex-wrap: wrap
+  align-content: flex-start
+  gap: $gap
+  padding: $gap 0
+  overflow-y: auto
+
 .menu-qr
-  width: 100%
-
-  &[hidden]
-    display: none
-
-.qr-box
-  @include flex-center
-  padding: $spacing-md
+  display: flex
+  justify-content: center
+  align-items: center
+  padding: 1rem
   flex-direction: column
-  gap: 0.5rem
+  width: 100%
 
 .qr-img
   padding: 0
   max-width: 40vh
-  border: 4px solid $border-color
-  border-radius: 8px
+  border: 0.25em solid $border
+  border-radius: 0.5em
   background: transparent
   
   img
@@ -250,11 +211,10 @@ $spacing-lg: 1.5rem
     height: auto
 
 .menu-footer
-  padding-top: $spacing-sm
+  padding-top: $gap
 
-// Screen off state
 body.screen-off
-  background: black
+  background: $black
   
   #player
     visibility: hidden
@@ -263,12 +223,12 @@ body.screen-off
     content: ''
     position: fixed
     inset: 0
-    background: black
+    background: $black
     z-index: 1
     pointer-events: none
 
 // =============================================================================
-// DISPLAY MESSAGE
+// MESSAGES
 // =============================================================================
 @keyframes fadeInScale
   from
@@ -285,69 +245,58 @@ body.screen-off
   transform: translate(-50%, -50%)
   z-index: 999
   padding: 1.5rem 2.5rem
-  border-radius: 12px
+  border-radius: 0.75em
   font-size: 1.25rem
   font-weight: bold
   text-align: center
   opacity: 0
   pointer-events: none
-  transition: opacity 0.3s ease-out
-  
-  // Responsive width constraints
+  transition: opacity 0.3s
   max-width: calc(100vw - 2rem)
-  width: auto
   word-wrap: break-word
-  overflow-wrap: break-word
 
   &.show
     opacity: 1
-    animation: fadeInScale 0.3s ease-out
+    animation: fadeInScale 0.3s
 
   &.success
-    background: linear-gradient(135deg, rgba(76, 175, 80, 0.95) 0%, rgba(56, 142, 60, 0.95) 100%)
-    color: white
-    box-shadow: 0 8px 24px rgba(76, 175, 80, 0.4), 0 0 0 2px rgba(139, 195, 74, 0.3)
+    background: linear-gradient(135deg, rgba($success, 0.95), rgba(darken($success, 10%), 0.95))
+    color: $white
+    box-shadow: 0 0.5em 1.5em rgba($success, 0.4)
 
   &.error
-    background: linear-gradient(135deg, rgba(244, 67, 54, 0.95) 0%, rgba(211, 47, 47, 0.95) 100%)
-    color: white
-    box-shadow: 0 8px 24px rgba(244, 67, 54, 0.4), 0 0 0 2px rgba(239, 83, 80, 0.3)
+    background: linear-gradient(135deg, rgba($error, 0.95), rgba(darken($error, 10%), 0.95))
+    color: $white
+    box-shadow: 0 0.5em 1.5em rgba($error, 0.4)
 
   &.info
-    background: linear-gradient(135deg, rgba(33, 150, 243, 0.95) 0%, rgba(25, 118, 210, 0.95) 100%)
-    color: white
-    box-shadow: 0 8px 24px rgba(33, 150, 243, 0.4), 0 0 0 2px rgba(66, 165, 245, 0.3)
+    background: linear-gradient(135deg, rgba($info, 0.95), rgba(darken($info, 10%), 0.95))
+    color: $white
+    box-shadow: 0 0.5em 1.5em rgba($info, 0.4)
 
   &.warning
-    background: linear-gradient(135deg, rgba(255, 152, 0, 0.95) 0%, rgba(245, 124, 0, 0.95) 100%)
-    color: white
-    box-shadow: 0 8px 24px rgba(255, 152, 0, 0.4), 0 0 0 2px rgba(255, 167, 38, 0.3)
+    background: linear-gradient(135deg, rgba($warning, 0.95), rgba(darken($warning, 10%), 0.95))
+    color: $white
+    box-shadow: 0 0.5em 1.5em rgba($warning, 0.4)
 
-// Mobile optimizations
 @media (max-width: 767px)
   .display-message
-    font-size: 1.25rem
     padding: 1rem 1.5rem
     max-width: calc(100vw - 1rem)
 
 // =============================================================================
-// SHARED BUTTON STYLES
+// BUTTONS
 // =============================================================================
 button
-  @include button-base
-  @include active-scale
-
-  &.selected
-    background: $text-color !important
-    color: $text-color-inverted !important
+  @include button
 
 // =============================================================================
 // SUBMIT PAGE
 // =============================================================================
 .submit-page
   overflow-y: auto
-  background: $background-dark
-  color: $text-color
+  background: $bg-dark
+  color: $text
   min-height: 100vh
   display: flex
   flex-direction: column
@@ -369,51 +318,46 @@ button
   flex-direction: column
   gap: 0.75rem
 
-.search-wrapper
-  position: relative
-  width: 100%
-
 .search-controls
   display: flex
   flex-wrap: wrap
-  gap: 0.5rem
+  gap: $gap
   width: 100%
 
 .submit-input
-  @include button-base
+  @include button
   flex: 1
   padding: 1rem
-  font-size: 16px  // Prevents iOS zoom on focus
+  font-size: 16px
 
   &::placeholder
-    color: $text-color-dimmed
+    color: $text-dim
 
   &:focus
     outline: none
-    border-color: $border-color-hover
-    background: $background-color-hover
+    border-color: $border-hover
+    background: $bg-hover
 
-  // Style the native clear button (X) for type="search"
   &::-webkit-search-cancel-button
     -webkit-appearance: none
-    appearance: none
-    height: 20px
-    width: 20px
+    height: 1.25em
+    width: 1.25em
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E")
-    background-size: 20px 20px
+    background-size: 1.25em
     cursor: pointer
     opacity: 0.7
 
     &:hover
       opacity: 1
 
-.submit-button
-  @include button-base
-  @include button-alt
-  @include active-scale
+.submit-button,
+.search-button
+  @include button
+  background: $bg-dark
   font-weight: bold
   padding: 1rem
   font-size: 1rem
+  white-space: nowrap
 
   &:disabled
     opacity: 0.5
@@ -421,83 +365,65 @@ button
     transform: none
 
 // =============================================================================
-// YOUTUBE SEARCH RESULTS
+// SEARCH RESULTS
 // =============================================================================
-@keyframes fadeIn
-  from
-    opacity: 0
-  to
-    opacity: 1
-
 .search-results-container
   margin-top: 1.5rem
   padding-bottom: 5rem
-  animation: fadeIn 0.3s ease-out
+  animation: fadeIn 0.3s
 
   &.hidden
     display: none
 
 .search-results-wrapper
-  background: $search-bg
+  background: $bg-dark
+  border: 0.0625em solid $border
   margin-bottom: 1rem
-  max-height: 50rem
-  overflow-y: auto
-  border: 1px solid $search-border
-
-.search-results-title
-  font-size: 0.875rem
-  color: $text-color-dimmed
-  border-bottom: 1px solid $search-border
-  margin-bottom: 0.75rem
-  text-transform: uppercase
-  letter-spacing: 0.05em
 
 .search-results
-  border-radius: 4px 4px 0 0
-  overflow: hidden
+  border-radius: $radius $radius 0 0
   overflow-y: auto
 
 .search-result-item
   display: flex
-  gap: 12px
-  padding: 12px
+  gap: 0.75em
+  padding: 0.75em
   cursor: pointer
-  transition: background-color 0.15s ease
-  border-bottom: 1px solid $search-border
+  transition: background-color 0.15s
+  border-bottom: 0.0625em solid rgba($white, 0.2)
 
   &:last-child
     border-bottom: none
 
   &:hover
-    background: $search-item-hover
+    background: rgba($white, 0.1)
 
   &.selected
-    background: $search-item-selected
+    background: rgba($white, 0.15)
 
 .result-thumbnail-wrapper
   position: relative
-  width: 120px
-  height: 68px
+  width: 7.5em
+  height: 4.25em
   flex-shrink: 0
 
 .result-thumbnail
   width: 100%
   height: 100%
   object-fit: cover
-  border-radius: $border-radius
-  background: rgba(255, 255, 255, 0.05)
+  border-radius: $radius
+  background: rgba($white, 0.05)
 
 .playlist-video-count
   position: absolute
-  bottom: 4px
-  right: 4px
-  background: rgba(0, 0, 0, 0.85)
-  color: white
-  font-size: 10px
-  padding: 2px 6px
-  border-radius: 3px
+  bottom: 0.25em
+  right: 0.25em
+  background: rgba($black, 0.85)
+  color: $white
+  font-size: 0.625em
+  padding: 0.125em 0.375em
+  border-radius: 0.1875em
   font-weight: 600
-  backdrop-filter: blur(4px)
 
 .result-info
   flex: 1
@@ -507,11 +433,11 @@ button
   min-width: 0
 
 .result-title
-  font-size: 14px
+  font-size: 0.875em
   font-weight: 500
-  color: $text-color
+  color: $text
   line-height: 1.4
-  margin-bottom: 4px
+  margin-bottom: 0.25em
   overflow: hidden
   text-overflow: ellipsis
   display: -webkit-box
@@ -520,55 +446,40 @@ button
 
 .result-meta
   display: flex
-  gap: 8px
-  align-items: center
-  font-size: 12px
-  color: $text-color-dimmed
+  gap: 0.5em
+  font-size: 0.75em
+  color: $text-dim
   flex-wrap: wrap
 
 .result-author
-  @include text-truncate
-  max-width: 150px
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+  max-width: 9.375em
 
 .result-duration
-  flex-shrink: 0
-  padding: 2px 5px
-  background: rgba(0, 0, 0, 0.6)
-  border-radius: 3px
-  font-size: 10px
+  padding: 0.125em 0.3125em
+  background: rgba($black, 0.6)
+  border-radius: 0.1875em
+  font-size: 0.625em
 
 .result-date
-  flex-shrink: 0
-  font-size: 10px
-  color: $text-color-dimmed
+  font-size: 0.625em
 
-// Search states
 .search-loading,
 .search-no-results,
 .search-error
-  padding: 16px
+  padding: 1em
   text-align: center
-  color: $text-color-dimmed
-  font-size: 13px
+  color: $text-dim
+  font-size: 0.8125em
 
 .search-error
-  color: $error-text
+  color: lighten($error, 20%)
 
-.search-button
-  @include button-base
-  @include button-alt
-  @include active-scale
-  padding: 1rem
-  font-size: 1rem
-  font-weight: bold
-  white-space: nowrap
-
-// =============================================================================
-// SEARCH SECTION TITLES AND PLAYLIST BADGE
-// =============================================================================
 .search-section-title
   font-size: 0.75rem
-  color: $text-color-dimmed
+  color: $text-dim
   margin: 1rem 0 0.5rem 0.75rem
   text-transform: uppercase
   letter-spacing: 0.05em
@@ -576,9 +487,9 @@ button
 
 .playlist-badge
   display: inline-block
-  font-size: 0.75rem
-  padding: 2px 6px
-  background: rgba(255, 255, 255, 0.1)
-  border-radius: 3px
-  margin-right: 4px
+  font-size: 0.75em
+  padding: 0.125em 0.375em
+  background: rgba($white, 0.1)
+  border-radius: 0.1875em
+  margin-right: 0.25em
   font-weight: normal
