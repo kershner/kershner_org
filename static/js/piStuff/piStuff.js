@@ -291,70 +291,57 @@ const PiStuff = (() => {
           const state = e.data;
 
           // Debug YouTube player state
-          for (let k in YT.PlayerState) if (YT.PlayerState[k] === state) { console.log('State:', k); break; }
+          // const stateName = Object.keys(YT.PlayerState).find(k => YT.PlayerState[k] === state);
+          // if (stateName) console.log('State:', stateName);
 
-          // Track progress while playing (needed to detect auto-advance without ENDED)
-          if (state === YT.PlayerState.PLAYING) startProgress();
-          else stopProgress();
+          // Track progress only while playing
+          state === YT.PlayerState.PLAYING ? startProgress() : stopProgress();
 
-          // PLAYING
-          if (state === YT.PlayerState.PLAYING) {
-            const vid = safe(() => player.getVideoData().video_id);
+          const vid = safe(() => player.getVideoData().video_id);
 
-            // First video of newly loaded playlist - ALWAYS shuffle and jump to index 0
-            if (pendingPlaylistLoad) {
-              const loaded = safe(() => player.getPlaylistId());
-              if (loaded === pendingPlaylistLoad) {
-                pendingPlaylistLoad = null;
-                switchingPlaylist = false;
+          // End of playlist: always random
+          if (state === YT.PlayerState.ENDED) return playRandom();
 
-                // Defer to avoid triggering state changes while inside this handler
-                setTimeout(() => {
-                  player.setShuffle(true); // ALWAYS shuffle every playlist
-                  player.playVideoAt(0);   // ALWAYS start at index 0
-                }, 0);
-              }
-              return;
-            }
-
-            // Detect video change (and only act on it when needed)
-            if (!switchingPlaylist && vid && vid !== lastVideoId) {
-              const { t, d } = lastProgress;
-              const nearEnd = d > 0 && (d - t) < 1.5; // threshold for "finished"
-
-              const isAdvance = userInitiatedAdvance || nearEnd;
-              userInitiatedAdvance = false;
-
-              // Shuffle ON: when a video ends OR user advances => random playlist
-              if (shuffleState && lastVideoId !== null && isAdvance) {
-                playRandom();
-                return;
-              }
-
-              lastVideoId = vid;
-              consecutiveSkips = 0;
-            }
-          }
-
-          // ENDED: End of playlist - ALWAYS random playlist
-          else if (state === YT.PlayerState.ENDED) {
-            playRandom();
-          }
-
-          // UNSTARTED: Detect unplayable videos (stuck for 4+ seconds)
-          else if (state === YT.PlayerState.UNSTARTED) {
+          // Detect unplayable videos
+          if (state === YT.PlayerState.UNSTARTED) {
             clearTimeout(skipTimer);
-            const startVid = safe(() => player.getVideoData().video_id);
+            const startVid = vid;
 
             skipTimer = setTimeout(() => {
               const nowState = safe(() => player.getPlayerState());
               const nowVid = safe(() => player.getVideoData().video_id);
-
-              if (nowState !== YT.PlayerState.PLAYING && nowVid === startVid) {
-                skipUnplayable();
-              }
+              if (nowState !== YT.PlayerState.PLAYING && nowVid === startVid) skipUnplayable();
             }, 4000);
+
+            return;
           }
+
+          // Ignore non-playing states beyond this point
+          if (state !== YT.PlayerState.PLAYING) return;
+
+          // First video after loading a playlist: shuffle + start at index 0
+          if (pendingPlaylistLoad) {
+            const loaded = safe(() => player.getPlaylistId());
+            if (loaded === pendingPlaylistLoad) {
+              pendingPlaylistLoad = null;
+              switchingPlaylist = false;
+              setTimeout(() => { player.setShuffle(true); player.playVideoAt(0); }, 0);
+            }
+            return;
+          }
+
+          // Detect real advances only (ignore internal state churn)
+          if (switchingPlaylist || !vid || vid === lastVideoId) return;
+
+          const { t, d } = lastProgress;
+          const isAdvance = userInitiatedAdvance || (d > 0 && (d - t) < 1.5);
+          userInitiatedAdvance = false;
+
+          // Shuffle ON: any advance loads a random playlist
+          if (shuffleState && lastVideoId !== null && isAdvance) return playRandom();
+
+          lastVideoId = vid;
+          consecutiveSkips = 0;
         }
       }
     });
