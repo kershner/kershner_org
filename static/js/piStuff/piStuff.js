@@ -6,7 +6,6 @@ const PiStuff = (() => {
   const $all = s => document.querySelectorAll(s);
 
   let player, deviceId, currentPlaylist, pendingPlaylistLoad, skipTimer, pollIntervalId;
-  let playerReady = false;
   let consecutiveSkips = 0;
   let lastVideoId = null;
   let lastTsSeen = 0;
@@ -295,8 +294,14 @@ const PiStuff = (() => {
               return;
             }
             
-            // Reset skip counter when video successfully plays
+            // Detect video change
             if (vid && vid !== lastVideoId) {
+              // If shuffle mode is on and this is a new video (not the first load)
+              if (shuffleState && lastVideoId !== null) {
+                handleVideoEnd();
+                return;
+              }
+              
               lastVideoId = vid;
               consecutiveSkips = 0;
             }
