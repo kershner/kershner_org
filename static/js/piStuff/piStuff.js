@@ -26,6 +26,35 @@ const PiStuff = (() => {
     try { return fn(); } catch (_) { return fallback; }
   };
 
+  function applyQueryParams() {
+    const p = new URLSearchParams(location.search);
+    const video = p.get('video') || p.get('v');
+    const playlist = p.get('playlist') || p.get('list');
+    const category = p.get('category') || p.get('cat');
+
+    if (p.get('shuffle') === 'true') shuffleState = true;
+
+    if (category && playlists[category]) {
+      currentCategoryKey = category;
+      $(`[data-category="${category}"]`)?.classList.add('selected');
+      renderPlaylistsForCategory(category);
+    }
+
+    if (playlist) {
+      let name = 'playlist';
+      for (const cat of Object.values(playlists)) {
+        const pl = cat.find(x => x.id === playlist);
+        if (pl) { name = pl.name; break; }
+      }
+      currentPlaylist = playlist;
+      loadPlaylist(playlist, name);
+    } else if (video) {
+      setTimeout(() => playVideo(video), 500);
+    }
+
+    if (shuffleState) $('#menu [data-action="shuffle"]')?.classList.add('selected');
+  }
+
   function startProgress() {
     if (progressTimer) return;
     progressTimer = setInterval(() => {
@@ -457,6 +486,7 @@ const PiStuff = (() => {
     if (!deviceId) return;
 
     loadPlaylistsData();
+    applyQueryParams();
     initMenu();
     customVideoControls();
     loadYouTubeApi();
