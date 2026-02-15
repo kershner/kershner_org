@@ -10,6 +10,7 @@ const PiStuff = (() => {
   let lastVideoId = null;
   let lastTsSeen = 0;
   let shuffleState = false;
+  let shuffleCategory = 'all';
   let playlists = {};
   let currentCategoryKey = null;
   let qrVisible = false;
@@ -161,7 +162,7 @@ const PiStuff = (() => {
     const cats = window.CATEGORIES_DATA || [];
     playlists = {};
     cats.forEach(cat => {
-      playlists[`cat-${cat.id}`] = (cat.playlists || []).map(p => ({
+      playlists[cat.name.toLowerCase()] = (cat.playlists || []).map(p => ({
         id: p.youtube_playlist_id,
         name: p.name
       }));
@@ -193,12 +194,22 @@ const PiStuff = (() => {
     const cats = Object.keys(playlists);
     if (!cats.length) return false;
 
-    const catKey = cats[Math.floor(Math.random() * cats.length)];
+    // Pick random category or use chosen category
+    const catKey = shuffleCategory === 'all' 
+      ? cats[Math.floor(Math.random() * cats.length)]
+      : shuffleCategory;
+
     const list = playlists[catKey];
     if (!list?.length) return false;
 
+    console.log('playRandom()');
+    console.log('shuffleCategory:', shuffleCategory);
+    console.log('playlists:', playlists);
+
+    // Pick random playlist from category
     const randomPlaylist = list[Math.floor(Math.random() * list.length)];
 
+    // Update UI selection states
     $all('[data-category]').forEach(b => b.classList.remove('selected'));
     $all('[data-playlist]').forEach(b => b.classList.remove('selected'));
     $(`[data-category="${catKey}"]`)?.classList.add('selected');
@@ -265,9 +276,28 @@ const PiStuff = (() => {
         return;
       }
       if (actualAction === 'shuffle') {
-        shuffleState = !shuffleState;
-        menu.querySelector('[data-action="shuffle"]').classList.toggle('selected');
-        setTimeout(() => showMessage(`Shuffle ${shuffleState ? 'on' : 'off'}`, 'info', 2000), 100);
+        const shuffleBtn = menu.querySelector('[data-action="shuffle"]');
+        
+        // Three states: off → on (all) → on (locked to category) → off
+        if (!shuffleState) {
+          // State 1: Turn shuffle ON (all categories)
+          shuffleState = true;
+          shuffleCategory = 'all';
+          shuffleBtn.classList.add('selected');
+          shuffleBtn.classList.remove('locked');
+          setTimeout(() => showMessage('Shuffle on', 'info', 2000), 100);
+        } else if (shuffleCategory === 'all' && currentCategoryKey) {
+          // State 2: Lock to current category
+          shuffleCategory = currentCategoryKey;
+          shuffleBtn.classList.add('locked');
+          setTimeout(() => showMessage(`Shuffle locked to ${currentCategoryKey}`, 'info', 2000), 100);
+        } else {
+          // State 3: Turn shuffle OFF
+          shuffleState = false;
+          shuffleCategory = 'all';
+          shuffleBtn.classList.remove('selected', 'locked');
+          setTimeout(() => showMessage('Shuffle off', 'info', 2000), 100);
+        }
         return;
       }
       if (actualAction === 'screen') {

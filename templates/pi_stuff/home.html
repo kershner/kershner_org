@@ -17,7 +17,7 @@
         <div class="menu-categories">
           <div class="category-btns">  
             {% for category in categories %}
-            <button data-category="cat-{{ category.id }}" type="button">
+            <button data-category="{{ category.name|lower }}" type="button">
               {{ category.name }}
             </button>
             {% endfor %}
