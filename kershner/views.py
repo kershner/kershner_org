@@ -48,5 +48,9 @@ def custom_error_view_404(request, exception=None):
     return render(request, 'error/404.html', status=404)
 
 
+def arm_wrestling_article(request):
+    return render(request, 'misc/arm_wrestling_article.html')
+
+
 def robots_txt(request):
     return render(request, "robots.txt", {}, content_type="text/plain")
