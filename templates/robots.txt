@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: /
-Allow: /arm-wrestling
-Allow: /arm-wrestling/
+Allow: /sheepdog-trials
+Allow: /sheepdog-trials/

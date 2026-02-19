@@ -48,8 +48,8 @@ def custom_error_view_404(request, exception=None):
     return render(request, 'error/404.html', status=404)
 
 
-def arm_wrestling_article(request):
-    return render(request, 'misc/arm_wrestling_article.html')
+def sheepdog_article(request):
+    return render(request, 'misc/sheepdog_article.html')
 
 
 def robots_txt(request):

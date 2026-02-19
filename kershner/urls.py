@@ -56,7 +56,7 @@ urlpatterns = [
     # Pi stuff
     path('pi/', include(pi_stuff_patterns)),
 
-    path('arm-wrestling/', kersh_views.arm_wrestling_article),
+    path('sheepdog-trials/', kersh_views.sheepdog_article),
 
     # API
     path('api/', include(api_patterns)),
