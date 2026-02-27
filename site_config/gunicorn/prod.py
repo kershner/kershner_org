@@ -19,9 +19,9 @@ graceful_timeout = 30
 # The socket to bind
 bind = "127.0.0.1:8000"
 
-# Logging already captured by Nginx
-accesslog = None
-errorlog = None
+# Write access and error info to /var/log
+accesslog = "/var/log/gunicorn/access.log"
+errorlog = "/var/log/gunicorn/error.log"
 
 # Redirect stdout/stderr to log file
 capture_output = True
