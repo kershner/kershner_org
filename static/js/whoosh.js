@@ -72,7 +72,8 @@ whoosh.uploadEditor = function() {
             keyInput.name = 's3_key';
             keyInput.value = key;
             uploadForm.appendChild(keyInput);
-
+            
+            sourceVideoInput.value = '';  // clear the file so it doesn't get posted
             uploadForm.submit();
         } catch (err) {
             console.error('Upload error:', err);
