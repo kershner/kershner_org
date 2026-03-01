@@ -11,7 +11,7 @@ import json
 
 @cache_page(60 * 60 * 24 * 30)  # 30 days
 def home(request):
-    projects = Project.objects.order_by('position').all()
+    projects = Project.objects.filter(hidden=False).order_by('position').all()
     projects_serializer = ProjectSerializer(projects, many=True)
     projects_html = [
         render_to_string('portfolio/project.html', context={'project': project})

@@ -36,6 +36,7 @@ class Project(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False)
+    hidden = models.BooleanField(default=False)
     title = models.CharField(max_length=255)
     blurb = models.TextField()
     extra_notes = models.TextField(blank=True)
