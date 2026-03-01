@@ -45,20 +45,54 @@ whoosh.uploadEditor = function() {
     const extraOptions = document.querySelector('.extra-options');
     const submitWrapper = document.querySelector('.submit-wrapper');
 
-    uploadForm.addEventListener('submit', function(e) {
+    let originalFile = null;
+
+    uploadForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
         removeClass(uploadProgressDiv, 'hidden');
         document.body.style.overflow = 'hidden';
+
+        try {
+            const { url, key } = await fetch('/whoosh/upload-url/').then(r => r.json());
+
+            const s3Response = await fetch(url, {
+                method: 'PUT',
+                body: originalFile,
+            });
+
+            if (!s3Response.ok) {
+                const errorText = await s3Response.text();
+                console.error('S3 error body:', errorText);
+                throw new Error('S3 upload failed: ' + s3Response.status);
+            }
+
+            const keyInput = document.createElement('input');
+            keyInput.type = 'hidden';
+            keyInput.name = 's3_key';
+            keyInput.value = key;
+            uploadForm.appendChild(keyInput);
+
+            uploadForm.submit();
+        } catch (err) {
+            console.error('Upload error:', err);
+            addClass(uploadProgressDiv, 'hidden');
+            document.body.style.overflow = '';
+            alert('Upload failed: ' + err.message);
+        }
     });
 
     sourceVideoInput.addEventListener('change', function(e) {
-        const fileSize = e.target.files[0].size;
+        originalFile = e.target.files[0];
+
+        const fileSize = originalFile.size;
         const fileSizeLimit = whoosh.uploadFileSizeLimit * 1024 * 1024;
         if (fileSize > fileSizeLimit) {
             alert(`File too large! ${whoosh.uploadFileSizeLimit} Mb limit.`);
             location.reload();
         }
 
-        const videoSrc = `${URL.createObjectURL(e.target.files[0])}`;
+        const videoSrc = `${URL.createObjectURL(originalFile)}`;
         uploadPreview.setAttribute('src', videoSrc);
         
         removeClass(uploadPreviewWrapper, 'hidden');

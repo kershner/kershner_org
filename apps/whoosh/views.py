@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import user_passes_test
 from apps.whoosh.forms import WhooshForm, DoppelgangerForm
+from apps.whoosh.whoosh_ffmpeg import WHOOSH_DURATION
 from django.template.response import TemplateResponse
 from apps.whoosh.serializers import WhooshSerializer
 from django.views.generic.base import ContextMixin
@@ -10,10 +11,13 @@ from apps.whoosh.models import Whoosh
 from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.contrib import messages
+from botocore.config import Config
 from django.utils import timezone
 from django.conf import settings
 from utility import util
+import boto3
 import datetime
+import uuid
 
 
 class WhooshContentMixin(ContextMixin):
@@ -23,6 +27,7 @@ class WhooshContentMixin(ContextMixin):
         ctx = super(WhooshContentMixin, self).get_context_data(**kwargs)
         ctx['recent_whooshes'] = self.get_recent_whooshes()
         ctx['saved_whooshes'] = self.get_saved_whooshes()
+        ctx['whoosh_duration'] = WHOOSH_DURATION
         return ctx
 
     def get_recent_whooshes(self):
@@ -49,7 +54,7 @@ class WhooshesRemainingMixin(ContextMixin):
         return ctx
 
 
-class BaseWhooshView(WhooshesRemainingMixin, WhooshContentMixin, View):
+class BaseWhooshView(WhooshContentMixin, View):
     not_found_template = 'whoosh/404.html'
     form = WhooshForm()
 
@@ -57,6 +62,25 @@ class BaseWhooshView(WhooshesRemainingMixin, WhooshContentMixin, View):
         ctx = super(BaseWhooshView, self).get_context_data(**kwargs)
         ctx['form'] = self.form
         return ctx
+
+
+def get_upload_url(request):
+    params = util.get_parameters()
+    s3 = boto3.client(
+        's3',
+        aws_access_key_id=params['aws_key'],
+        aws_secret_access_key=params['aws_secret'],
+        config=Config(signature_version='s3v4'),
+        region_name='us-east-2'
+    )
+
+    key = 'static/whoosh/expiring/uploads/{}.mp4'.format(uuid.uuid4().hex)
+    presigned_url = s3.generate_presigned_url(
+        'put_object',
+        Params={'Bucket': params['s3_bucket'], 'Key': key},
+        ExpiresIn=300
+    )
+    return JsonResponse({'url': presigned_url, 'key': key})
 
 
 class WhooshHomeView(BaseWhooshView):
@@ -67,13 +91,18 @@ class WhooshHomeView(BaseWhooshView):
         return TemplateResponse(request, self.template, self.get_context_data())
 
     def post(self, request):
-        self.form = WhooshForm(request.POST, request.FILES)
+        self.form = WhooshForm(request.POST)
+        s3_key = request.POST.get('s3_key')
+
+        if not s3_key:
+            self.form.add_error(None, 'No video was uploaded.')
+            return TemplateResponse(request, self.template, self.get_context_data())
 
         if self.form.is_valid():
             new_whoosh = self.form.save(commit=False)
             new_whoosh.ip = util.get_client_ip(request)
+            new_whoosh.source_video.name = s3_key.removeprefix('static/')
             new_whoosh.save()
-
             process_whoosh.delay(new_whoosh.id)
             return redirect('view-whoosh', whoosh_id=new_whoosh.uniq_id)
 

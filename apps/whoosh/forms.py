@@ -21,12 +21,12 @@ class WhooshForm(ModelForm):
         fields = ['source_video', 'whoosh_type', 'credit_text', 'mute_source', 'black_and_white', 'portrait',
                   'slow_motion', 'slow_zoom', 'reverse', 'start_time', 'user_agent', 'hidden']
 
-        widgets = {'source_video': FileInput(attrs={'accept': 'video/mp4,video/quicktime', 'required': 'required'})}
+        widgets = {'source_video': FileInput(attrs={'accept': 'video/mp4,video/quicktime'})}
 
     def clean_source_video(self):
         source_video = self.cleaned_data.get('source_video')
-
-        if not file_size_validation(source_video.size):
+        
+        if source_video and not file_size_validation(source_video.size):
             self.add_error('source_video', 'File too big! {}MB limit.'.format(settings.FILE_UPLOAD_LIMIT_MB))
 
         return source_video
@@ -57,7 +57,7 @@ class WhooshForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self.fields['source_video'].required = False
 
 
 class DoppelgangerForm(WhooshForm):
