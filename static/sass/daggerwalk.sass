@@ -969,9 +969,13 @@ $quests-text-color: darken(#333333, 10%)
     .quest-map-link
       display: none
 
-// Pulse latest log marker
-.log-marker.latest-log div
-  @include pulse-animation(3, 1.5s)
-.latest-log
-  .cluster-icon
-    transform: scale(1.5)
+.map-container .map-marker.latest-log 
+  width: 20px !important
+  height: 20px !important
+  z-index: 999 !important
+
+  div
+    background: none
+    background-image: url('/static/img/daggerwalk/Daggerwalk.ico')
+    background-size: cover
+    border: 1px solid var(--accent-color)
