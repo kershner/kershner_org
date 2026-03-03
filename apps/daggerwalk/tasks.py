@@ -462,17 +462,25 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
         except Exception:
             logger.warning("Labels button not found or failed to click.")
 
-        logger.info(f"Setting view to x={x}, y={y}, zoom={zoom_level}")
-        page.evaluate(f"""
-            (() => {{
-                const map = window.daggerwalkMap;
-                if (!map) return;
-                map.setView(L.latLng({y}, {x}), {zoom_level}, {{ animate: false }});
-                map.invalidateSize();
-                map.fire('zoomend');
-                map.fire('moveend');
-            }})();
-        """)
+        logger.info("Clicking latest log marker...")
+        try:
+            page.click(".latest-log", timeout=5000)
+            time.sleep(1)
+        except Exception:
+            logger.warning(".latest-log marker not found or failed to click.")
+
+
+        # logger.info(f"Setting view to x={x}, y={y}, zoom={zoom_level}")
+        # page.evaluate(f"""
+        #     (() => {{
+        #         const map = window.daggerwalkMap;
+        #         if (!map) return;
+        #         map.setView(L.latLng({y}, {x}), {zoom_level}, {{ animate: false }});
+        #         map.invalidateSize();
+        #         map.fire('zoomend');
+        #         map.fire('moveend');
+        #     }})();
+        # """)
 
         time.sleep(delay)
 
