@@ -369,8 +369,10 @@ const PiStuff = (() => {
             skipTimer = setTimeout(() => {
               const nowState = safe(() => player.getPlayerState());
               const nowVid = safe(() => player.getVideoData().video_id);
-              if (nowState !== YT.PlayerState.PLAYING && nowVid === startVid) skipUnplayable();
-            }, 4000);
+              // Don't skip if buffering — it's still trying to play
+              const okState = nowState === YT.PlayerState.PLAYING || nowState === YT.PlayerState.BUFFERING;
+              if (!okState && nowVid === startVid) skipUnplayable();
+            }, 10000);
 
             return;
           }
