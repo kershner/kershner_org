@@ -8,4 +8,5 @@ pi_stuff_patterns = [
     path('regenerate-qr/', views.regenerate_qr, name='regenerate_qr'),
     path('api/youtube-search/', views.youtube_search, name='youtube_search'),
     path('api/play/', views.api_play, name='api_play'),
+    path('categories.json', views.categories_json, name='pi_categories_json'),
 ]

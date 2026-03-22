@@ -16,6 +16,13 @@ import time
 import json
 
 
+def categories_json(request):
+    """Public read-only endpoint consumed by the Pi on startup."""
+    categories = Category.objects.prefetch_related('playlists').all()
+    data = CategorySerializer(categories, many=True).data
+    return JsonResponse(list(data), safe=False)
+
+
 class PiStuffHomeView(TemplateView):
     template_name = "pi_stuff/home.html"
 
