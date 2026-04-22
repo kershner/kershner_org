@@ -1,4 +1,5 @@
 User-agent: *
 Disallow: /
+Allow: /
 Allow: /sheepdog-trials
 Allow: /sheepdog-trials/
