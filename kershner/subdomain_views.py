@@ -3,7 +3,8 @@ from django.shortcuts import redirect
 
 
 def tyler_home(request):
-    return redirect('home')
+    redirect_url = 'https://kershner.org/'
+    return redirect(redirect_url)
 
 
 def tod_home(request):
