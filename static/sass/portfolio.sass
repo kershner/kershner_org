@@ -471,7 +471,7 @@ a
         display: none
     img
       width: 100%
-      max-width: 40rem
+      max-width: 35rem
       position: relative
       z-index: 1
       border-radius: .3em
@@ -490,6 +490,7 @@ a
     .right-content
       justify-content: center
       flex-wrap: wrap
+      margin-left: 5rem
 
       @media(min-width: $med-breakpoint)
         height: 80%
@@ -499,6 +500,9 @@ a
 
         img
           display: block
+
+      div.project-img-1
+        width: 100%
 
       div.project-img-2
         img
@@ -529,6 +533,7 @@ a
   .project-wrapper
     .right-content
       display: flex
+      flex-grow: 1
 
       div
         &.project-img-1
