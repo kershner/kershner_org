@@ -6,7 +6,7 @@ SECURE_SSL_REDIRECT = True
 ALLOWED_HOSTS = [
     'www.kershner.org',
     'kershner.org',
-    '*.kershner.org',
+    '.kershner.org',
 ]
 ALLOWED_HOSTS += EC2_IPS
 
