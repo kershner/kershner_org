@@ -3,17 +3,10 @@ from django.views.decorators.cache import cache_page
 from apps.project.models import Project, ProjectTag
 from django.template.loader import render_to_string
 from apps.song.serializers import SongSerializer
-from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from apps.song.models import Song
 from django.conf import settings
 import json
-
-
-def subdomain_home(request):
-    if request.subdomain == "tyler":
-        return HttpResponse("Tyler subdomain homepage")
-    raise Http404
 
 
 @cache_page(60 * 60 * 24 * 30)  # 30 days
