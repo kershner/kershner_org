@@ -12,13 +12,15 @@ def tod_home(request):
     return redirect(redirect_url)
 
 
-def another_home(request):
-    return HttpResponse("Another subdomain homepage")
+def nichelle_home(request):
+    redirect_url = 'https://github.com/seemecodema'
+    return redirect(redirect_url)
 
 
 SUBDOMAIN_VIEWS = {
     "tyler": tyler_home,
     "tod": tod_home,
+    "nichelle": nichelle_home,
 }
 
 
