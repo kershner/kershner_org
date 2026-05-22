@@ -107,13 +107,13 @@ const GRASS_WALL_VERTEX_SHADER = `
 
     pulseRing *= uClickPulse * pulseBreakup;
 
-    float breezeAngle =
+    float windAngle =
       sin(uTime * 0.13) * 1.4 +
       sin(uTime * 0.047 + 2.0) * 2.2;
 
-    vec2 breezeDirection = normalize(vec2(
-      cos(breezeAngle),
-      sin(breezeAngle) * 0.35
+    vec2 baseWindDirection = normalize(vec2(
+      cos(windAngle),
+      sin(windAngle) * 0.35
     ));
 
     float gust = 0.45 + 0.55 * pow(
@@ -146,9 +146,16 @@ const GRASS_WALL_VERTEX_SHADER = `
       aRandom.z * 6.28318
     );
 
-    float breezePackets = abs(gustA + gustB + gustC + gustD) * packetBreakup;
+    float signedBreezePackets = (gustA + gustB + gustC + gustD) * packetBreakup;
+    float breezePackets = abs(signedBreezePackets);
+    float breezeSign = signedBreezePackets < 0.0 ? -1.0 : 1.0;
 
-    vec2 gustVector = breezeDirection * breezePackets * uBreeze;
+    vec2 breezePacketDirection = normalize(vec2(
+      breezeSign,
+      sin(windAngle + aRandom.z * 1.7) * 0.16
+    ));
+
+    vec2 gustVector = breezePacketDirection * breezePackets * uBreeze;
 
     vec2 settleADelta = vec2((interactionPoint.x - uSettleA.x) * uAspect, interactionPoint.y - uSettleA.y);
     vec2 settleBDelta = vec2((interactionPoint.x - uSettleB.x) * uAspect, interactionPoint.y - uSettleB.y);
@@ -168,7 +175,7 @@ const GRASS_WALL_VERTEX_SHADER = `
       uSettleDirD * settleD;
 
     float settleForce = clamp(length(settleVector), 0.0, 1.0);
-    vec2 settleDirection = normalize(settleVector + breezeDirection * 0.0001);
+    vec2 settleDirection = normalize(settleVector + breezePacketDirection * 0.0001);
 
     float interactionOverride = max(
       pointerForce,
@@ -182,7 +189,7 @@ const GRASS_WALL_VERTEX_SHADER = `
       uWind * windPower * stiffness * (1.15 + settleForce * 1.35)
     );
     float wind = mix(baseWind, settledWind, settleForce) * (1.0 - interactionOverride * 0.86);
-    vec2 windDirection = normalize(mix(breezeDirection, settleDirection, activeOverride));
+    vec2 windDirection = normalize(mix(baseWindDirection, settleDirection, activeOverride));
     float bend = bladeY * bladeY;
     float bow = bend * (1.0 - bladeY * 0.18);
 
@@ -700,6 +707,7 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           lifetime,
           springTail,
           driftSpeed,
+          direction,
           wobbleAmount: randomBetween(0.035, 0.14),
           wobbleSpeed: randomBetween(0.0011, 0.0024),
           wobbleSeed: Math.random() * 100,
@@ -813,7 +821,7 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           gust.x,
           gust.y,
           gust.radius,
-          gust.strength * fade
+          gust.strength * fade * (gust.direction || 1)
         );
       }
 
@@ -823,6 +831,7 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           y: 9,
           radius: 0,
           strength: 0,
+          direction: 1,
           bornAt: time,
           lifetime: 1,
           springTail: 1,
@@ -844,6 +853,7 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           y: 9,
           radius: 0,
           strength: 0,
+          direction: 1,
           bornAt: time,
           lifetime: 1,
           springTail: 1,
@@ -876,7 +886,7 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           return;
         }
 
-        if (time >= nextDirectionChangeAt) {
+        if (time >= nextDirectionChangeAt && breezeGusts.length === 0) {
           breezeDirection = Math.random() < 0.5 ? -1 : 1;
           nextDirectionChangeAt = time + randomBetween(3800, 10500);
         }
@@ -890,7 +900,7 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           addSettleForce(
             gustPacket.x,
             gustPacket.y,
-            breezeDirection,
+            gustPacket.direction,
             0,
             gustPacket.radius * 1.12,
             config.settleStrength * 1.25,
@@ -909,7 +919,7 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           addSettleForce(
             gustPacket.x,
             gustPacket.y,
-            breezeDirection,
+            gustPacket.direction,
             0,
             gustPacket.radius * 1.12,
             config.settleStrength * 1.25,
@@ -928,7 +938,7 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           addSettleForce(
             gustPacket.x,
             gustPacket.y,
-            breezeDirection,
+            gustPacket.direction,
             0,
             gustPacket.radius * 1.12,
             config.settleStrength * 1.25,
@@ -940,7 +950,7 @@ const GRASS_WALL_FRAGMENT_SHADER = `
         breezeGusts = breezeGusts
           .map((gust) => ({
             ...gust,
-            x: gust.x + breezeDirection * deltaSeconds * gust.driftSpeed,
+            x: gust.x + gust.direction * deltaSeconds * gust.driftSpeed,
             y: gust.y + Math.sin(time * gust.wobbleSpeed + gust.wobbleSeed) * deltaSeconds * gust.wobbleAmount,
           }))
           .filter((gust) => {
