@@ -86,8 +86,11 @@
         {# JS #}
         <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
         <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/randomColor.min.js"></script>
-        <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/colorWave.js"></script>
         <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/portfolio.js"></script>
+        
+        <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+        <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/grassWall.js"></script>
+        
         {% block javascripts %}
             {% block extra_javascripts %}{% endblock %}
             <script type="text/javascript">
@@ -96,8 +99,6 @@
                 });
             </script>               
         {% endblock %}
-        
-        <script defer src="{% settings_value "BASE_S3_URL" %}/react-apps/colorDoodle/color_doodle_dist/colorDoodle.js"></script>
 
         {% include 'portfolio/includes/google_analytics_tag.html' %}
     </body>

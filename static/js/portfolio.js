@@ -16,7 +16,8 @@ let portfolio = {
     'clearFiltersBtn'       : document.querySelector('.clearFiltersBtn'),
     'currentColor'          : '',
     'debouceTimeout'        : undefined,
-    'currentFilterTerms'    : []
+    'currentFilterTerms'    : [],
+    'grassWall'             : null,
 };
 
 const mobileBreakpoint = 768;
@@ -25,9 +26,22 @@ const isMobile = window.innerWidth <= mobileBreakpoint;
 portfolio.init = function(baseS3Url) {
     const darkMode = document.body.classList.contains('dark-mode');
     const luminosity = darkMode ? 'bright' : 'dark';
-    portfolio.currentColor = randomColor({luminosity: luminosity});
+    portfolio.currentColor = randomColor({luminosity: 'all'});
+    
+    portfolio.grassWall = GrassWall.init({
+        showControls: true,
+        grassColor: portfolio.currentColor,
+        cursorColor: portfolio.currentColor,
+        colorTransitionSpeed: 1,
+    });
+    
     portfolio.rotateColors();
     portfolio.colorGridInit();
+    
+    requestAnimationFrame(() => {
+        document.documentElement.classList.add('dynamic-colors-loaded');
+        portfolio.grassWall.set("colorTransitionSpeed", 0.007);
+    });
 };
 
 portfolio.addProjectHtml = function () {
@@ -36,10 +50,6 @@ portfolio.addProjectHtml = function () {
     
     updateTechTagClasses();
     projectTagClickEvents();
-    
-    setTimeout(() => {
-        colorWave.init();
-    }, 200);
 }
 
 portfolio.projectFilter = function() {
@@ -150,12 +160,15 @@ portfolio.rotateColors = function() {
 
 portfolio.changeColors = function() {
     document.documentElement.style.setProperty('--dynamic-color', portfolio.currentColor);
-    colorWave.color = portfolio.currentColor;
-    colorWave.init();
     
+    if (portfolio.grassWall.get("rotateColors")) {
+        portfolio.grassWall.set("grassColor", portfolio.currentColor);
+        portfolio.grassWall.set("cursorColor", portfolio.currentColor);
+    }
+
     const darkMode = document.body.classList.contains('dark-mode');
     const luminosity = darkMode ? 'bright' : 'dark';
-    portfolio.currentColor = randomColor({luminosity: luminosity});
+    portfolio.currentColor = randomColor({luminosity: 'all'});
 };
 
 portfolio.colorGridInit = function() {

@@ -10,7 +10,13 @@ $lighter-black: lighten($black, 78%)
 
 $portfolio-text-shadow: 1px 0.5px 2px $light-black
 
-$default-animation-speed: 0.1s
+$default-animation-speed: 3s
+
+:root
+  --dynamic-color-transition: none
+
+html.dynamic-colors-loaded
+  --dynamic-color-transition: background-color #{$default-animation-speed}
 
 %tag-style
   margin-right: .25rem
@@ -31,7 +37,7 @@ $default-animation-speed: 0.1s
   right: 0
   background-color: var(--dynamic-color)
   border-radius: 0.3rem
-  transition: background-color $default-animation-speed
+  transition: var(--dynamic-color-transition)
 
 %dynamic-color-btn
   font-weight: bold
@@ -190,6 +196,14 @@ body
   font-family: $primary-font
   color: $light-black
   overflow-x: hidden
+
+  &::before
+    content: ""
+    position: fixed
+    inset: 0
+    background: rgba(0, 0, 0, 0.1)
+    z-index: 0
+    pointer-events: none
 
 .hidden
   display: none !important
@@ -638,7 +652,6 @@ a
 // Dark mode
 body.dark-mode
   color: $white
-  text-shadow: $portfolio-text-shadow
   background-color: $black
 
   .welcome h1 a
