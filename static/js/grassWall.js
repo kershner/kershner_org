@@ -12,14 +12,6 @@ const GRASS_WALL_VERTEX_SHADER = `
   uniform vec4 uBreezeGustB;
   uniform vec4 uBreezeGustC;
   uniform vec4 uBreezeGustD;
-  uniform vec4 uSettleA;
-  uniform vec4 uSettleB;
-  uniform vec4 uSettleC;
-  uniform vec4 uSettleD;
-  uniform vec2 uSettleDirA;
-  uniform vec2 uSettleDirB;
-  uniform vec2 uSettleDirC;
-  uniform vec2 uSettleDirD;
   uniform float uCursorRadius;
   uniform float uCursorStrength;
   uniform float uVerticalPush;
@@ -107,13 +99,13 @@ const GRASS_WALL_VERTEX_SHADER = `
 
     pulseRing *= uClickPulse * pulseBreakup;
 
-    float windAngle =
+    float breezeAngle =
       sin(uTime * 0.13) * 1.4 +
       sin(uTime * 0.047 + 2.0) * 2.2;
 
-    vec2 baseWindDirection = normalize(vec2(
-      cos(windAngle),
-      sin(windAngle) * 0.35
+    vec2 breezeDirection = normalize(vec2(
+      cos(breezeAngle),
+      sin(breezeAngle) * 0.35
     ));
 
     float gust = 0.45 + 0.55 * pow(
@@ -146,50 +138,9 @@ const GRASS_WALL_VERTEX_SHADER = `
       aRandom.z * 6.28318
     );
 
-    float signedBreezePackets = (gustA + gustB + gustC + gustD) * packetBreakup;
-    float breezePackets = abs(signedBreezePackets);
-    float breezeSign = signedBreezePackets < 0.0 ? -1.0 : 1.0;
-
-    vec2 breezePacketDirection = normalize(vec2(
-      breezeSign,
-      sin(windAngle + aRandom.z * 1.7) * 0.16
-    ));
-
-    vec2 gustVector = breezePacketDirection * breezePackets * uBreeze;
-
-    vec2 settleADelta = vec2((interactionPoint.x - uSettleA.x) * uAspect, interactionPoint.y - uSettleA.y);
-    vec2 settleBDelta = vec2((interactionPoint.x - uSettleB.x) * uAspect, interactionPoint.y - uSettleB.y);
-    vec2 settleCDelta = vec2((interactionPoint.x - uSettleC.x) * uAspect, interactionPoint.y - uSettleC.y);
-    vec2 settleDDelta = vec2((interactionPoint.x - uSettleD.x) * uAspect, interactionPoint.y - uSettleD.y);
-
-    float settleA = (1.0 - smoothstep(0.0, max(uSettleA.z, 0.001), length(settleADelta))) * uSettleA.w;
-    float settleB = (1.0 - smoothstep(0.0, max(uSettleB.z, 0.001), length(settleBDelta))) * uSettleB.w;
-    float settleC = (1.0 - smoothstep(0.0, max(uSettleC.z, 0.001), length(settleCDelta))) * uSettleC.w;
-    float settleD = (1.0 - smoothstep(0.0, max(uSettleD.z, 0.001), length(settleDDelta))) * uSettleD.w;
-
-    vec2 settleVector =
-      gustVector * 1.45 +
-      uSettleDirA * settleA +
-      uSettleDirB * settleB +
-      uSettleDirC * settleC +
-      uSettleDirD * settleD;
-
-    float settleForce = clamp(length(settleVector), 0.0, 1.0);
-    vec2 settleDirection = normalize(settleVector + breezePacketDirection * 0.0001);
-
-    float interactionOverride = max(
-      pointerForce,
-      max(wakeForce * velocityAmount, pulseRing)
-    );
-
-    float activeOverride = clamp(max(interactionOverride, settleForce), 0.0, 1.0);
-    float baseWind = uWind * windPower * stiffness * (gust + localWave * 0.28);
-    float settledWind = max(
-      baseWind,
-      uWind * windPower * stiffness * (1.15 + settleForce * 1.35)
-    );
-    float wind = mix(baseWind, settledWind, settleForce) * (1.0 - interactionOverride * 0.86);
-    vec2 windDirection = normalize(mix(baseWindDirection, settleDirection, activeOverride));
+    float breezePackets = (gustA + gustB + gustC + gustD) * packetBreakup;
+    float breezeBoost = max(0.18, 1.0 + uBreeze * breezePackets);
+    float wind = uWind * breezeBoost * windPower * stiffness * (gust + localWave * 0.28);
     float bend = bladeY * bladeY;
     float bow = bend * (1.0 - bladeY * 0.18);
 
@@ -201,8 +152,8 @@ const GRASS_WALL_VERTEX_SHADER = `
 
     pos.x += lean * bend;
     pos.x += curve + tipHook;
-    pos.x += windDirection.x * wind * bend;
-    pos.y += windDirection.y * wind * bend * 0.45;
+    pos.x += breezeDirection.x * wind * bend;
+    pos.y += breezeDirection.y * wind * bend * 0.45;
 
     pos.x += pointerPush.x * bend * uCursorStrength * pressure;
     pos.y += pointerPush.y * bend * uVerticalPush * pressure;
@@ -318,11 +269,6 @@ const GRASS_WALL_FRAGMENT_SHADER = `
         pulseRadius: 2,
         pulseDecay: 0.965,
         velocityStrength: 13.2,
-        settleStrength: 0.34,
-        settleRadius: 0.42,
-        settleLifetime: 1900,
-        settleDecay: 2.35,
-        settleSpawnDistance: 0.035,
 
         ...options,
       };
@@ -387,14 +333,6 @@ const GRASS_WALL_FRAGMENT_SHADER = `
         uBreezeGustB: { value: new THREE.Vector4(9, 9, 0, 0) },
         uBreezeGustC: { value: new THREE.Vector4(9, 9, 0, 0) },
         uBreezeGustD: { value: new THREE.Vector4(9, 9, 0, 0) },
-        uSettleA: { value: new THREE.Vector4(9, 9, 0, 0) },
-        uSettleB: { value: new THREE.Vector4(9, 9, 0, 0) },
-        uSettleC: { value: new THREE.Vector4(9, 9, 0, 0) },
-        uSettleD: { value: new THREE.Vector4(9, 9, 0, 0) },
-        uSettleDirA: { value: new THREE.Vector2(1, 0) },
-        uSettleDirB: { value: new THREE.Vector2(1, 0) },
-        uSettleDirC: { value: new THREE.Vector2(1, 0) },
-        uSettleDirD: { value: new THREE.Vector2(1, 0) },
         uCursorRadius: { value: config.cursorRadius },
         uCursorStrength: { value: config.cursorStrength },
         uVerticalPush: { value: config.verticalPush },
@@ -438,8 +376,6 @@ const GRASS_WALL_FRAGMENT_SHADER = `
       let breezeDirection = 1;
       let lastBreezeTime = 0;
       let breezeGusts = [];
-      let settleForces = [];
-      let lastSettlePointer = new THREE.Vector2(9, 9);
       let nextDirectionChangeAt = 0;
       const nextPointer = new THREE.Vector2();
       const fullscreenHiddenElements = new Map();
@@ -616,32 +552,10 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           uniforms.uPointerSmooth.value.copy(nextPointer);
           uniforms.uWakePointer.value.copy(nextPointer);
           uniforms.uPointerVelocity.value.set(0, 0);
-          lastSettlePointer.copy(nextPointer);
           return;
         }
 
         targetVelocity.subVectors(nextPointer, lastPointer);
-
-        const settleDistance = nextPointer.distanceTo(lastSettlePointer);
-        if (settleDistance >= config.settleSpawnDistance) {
-          const pushDirection = new THREE.Vector2()
-            .subVectors(lastSettlePointer, nextPointer)
-            .normalize();
-
-          addSettleForce(
-            nextPointer.x,
-            nextPointer.y,
-            pushDirection.x,
-            pushDirection.y,
-            config.settleRadius,
-            config.settleStrength * Math.min(1.35, 0.65 + targetVelocity.length() * config.velocityStrength * 0.12),
-            performance.now(),
-            config.settleLifetime
-          );
-
-          lastSettlePointer.copy(nextPointer);
-        }
-
         lastPointer.copy(nextPointer);
         uniforms.uPointer.value.copy(nextPointer);
       }
@@ -656,16 +570,6 @@ const GRASS_WALL_FRAGMENT_SHADER = `
         clickPulse = 1;
         setPointer(event.clientX, event.clientY);
         uniforms.uPulsePointer.value.copy(uniforms.uPointer.value);
-        addSettleForce(
-          uniforms.uPointer.value.x,
-          uniforms.uPointer.value.y,
-          0,
-          1,
-          config.settleRadius * 1.25,
-          config.settleStrength * 1.15,
-          performance.now(),
-          config.settleLifetime * 1.15
-        );
       }
 
       function onPointerUp(event) {
@@ -707,113 +611,19 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           lifetime,
           springTail,
           driftSpeed,
-          direction,
           wobbleAmount: randomBetween(0.035, 0.14),
           wobbleSpeed: randomBetween(0.0011, 0.0024),
           wobbleSeed: Math.random() * 100,
         };
       }
 
-      function smoothstep(edge0, edge1, x) {
-        const t = Math.min(Math.max((x - edge0) / (edge1 - edge0), 0), 1);
-        return t * t * (3 - 2 * t);
-      }
-
-      function addSettleForce(x, y, dirX, dirY, radius, strength, time, lifetime) {
-        const direction = new THREE.Vector2(dirX, dirY);
-
-        if (direction.lengthSq() < 0.0001) {
-          direction.set(breezeDirection, 0);
-        }
-
-        direction.normalize();
-
-        settleForces.unshift({
-          x,
-          y,
-          dirX: direction.x,
-          dirY: direction.y,
-          radius,
-          strength,
-          bornAt: time,
-          lifetime,
-        });
-
-        settleForces.length = Math.min(settleForces.length, 4);
-      }
-
-      function settleEnvelope(t) {
-        const clamped = Math.min(Math.max(t, 0), 1);
-        return Math.exp(-clamped * config.settleDecay) * (1 - smoothstep(0.82, 1.0, clamped));
-      }
-
-      function setSettleUniform(forceUniform, dirUniform, force, fade) {
-        forceUniform.value.set(
-          force.x,
-          force.y,
-          force.radius,
-          force.strength * fade
-        );
-        dirUniform.value.set(force.dirX, force.dirY);
-      }
-
-      function clearSettleUniforms(time) {
-        const empty = {
-          x: 9,
-          y: 9,
-          dirX: 1,
-          dirY: 0,
-          radius: 0,
-          strength: 0,
-          bornAt: time,
-          lifetime: 1,
-        };
-
-        [
-          [uniforms.uSettleA, uniforms.uSettleDirA],
-          [uniforms.uSettleB, uniforms.uSettleDirB],
-          [uniforms.uSettleC, uniforms.uSettleDirC],
-          [uniforms.uSettleD, uniforms.uSettleDirD],
-        ].forEach(([forceUniform, dirUniform]) => {
-          setSettleUniform(forceUniform, dirUniform, empty, 0);
-        });
-      }
-
-      function updateSettleUniforms(time) {
-        const empty = {
-          x: 9,
-          y: 9,
-          dirX: 1,
-          dirY: 0,
-          radius: 0,
-          strength: 0,
-          bornAt: time,
-          lifetime: 1,
-        };
-
-        settleForces = settleForces.filter((force) => {
-          return (time - force.bornAt) / force.lifetime < 1;
-        });
-
-        [
-          [uniforms.uSettleA, uniforms.uSettleDirA],
-          [uniforms.uSettleB, uniforms.uSettleDirB],
-          [uniforms.uSettleC, uniforms.uSettleDirC],
-          [uniforms.uSettleD, uniforms.uSettleDirD],
-        ].forEach(([forceUniform, dirUniform], index) => {
-          const force = settleForces[index] || empty;
-          const t = (time - force.bornAt) / force.lifetime;
-          setSettleUniform(forceUniform, dirUniform, force, settleEnvelope(t));
-        });
-      }
-
       function gustEnvelope(t, springTail) {
         if (t < 1) {
-          return Math.sin(t * Math.PI * 0.5);
+          return Math.sin(t * Math.PI);
         }
 
         const tail = Math.min((t - 1) / springTail, 1);
-        return Math.exp(-tail * 3.4) * (1 - smoothstep(0.72, 1.0, tail));
+        return -Math.sin(tail * Math.PI * 4.5) * Math.exp(-tail * 4.2) * 0.42;
       }
 
       function setGustUniform(uniform, gust, fade) {
@@ -821,7 +631,7 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           gust.x,
           gust.y,
           gust.radius,
-          gust.strength * fade * (gust.direction || 1)
+          gust.strength * fade
         );
       }
 
@@ -831,7 +641,6 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           y: 9,
           radius: 0,
           strength: 0,
-          direction: 1,
           bornAt: time,
           lifetime: 1,
           springTail: 1,
@@ -853,7 +662,6 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           y: 9,
           radius: 0,
           strength: 0,
-          direction: 1,
           bornAt: time,
           lifetime: 1,
           springTail: 1,
@@ -886,7 +694,7 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           return;
         }
 
-        if (time >= nextDirectionChangeAt && breezeGusts.length === 0) {
+        if (time >= nextDirectionChangeAt) {
           breezeDirection = Math.random() < 0.5 ? -1 : 1;
           nextDirectionChangeAt = time + randomBetween(3800, 10500);
         }
@@ -895,18 +703,7 @@ const GRASS_WALL_FRAGMENT_SHADER = `
         const spawnChance = config.breezeChance * deltaSeconds;
 
         if (breezeGusts.length < maxGusts && Math.random() < spawnChance) {
-          const gustPacket = randomGustPacket(breezeDirection, time);
-          breezeGusts.push(gustPacket);
-          addSettleForce(
-            gustPacket.x,
-            gustPacket.y,
-            gustPacket.direction,
-            0,
-            gustPacket.radius * 1.12,
-            config.settleStrength * 1.25,
-            time,
-            config.settleLifetime * 1.2
-          );
+          breezeGusts.push(randomGustPacket(breezeDirection, time));
         }
 
         if (
@@ -914,18 +711,7 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           breezeGusts.length < maxGusts &&
           Math.random() < spawnChance * 0.65
         ) {
-          const gustPacket = randomGustPacket(breezeDirection, time);
-          breezeGusts.push(gustPacket);
-          addSettleForce(
-            gustPacket.x,
-            gustPacket.y,
-            gustPacket.direction,
-            0,
-            gustPacket.radius * 1.12,
-            config.settleStrength * 1.25,
-            time,
-            config.settleLifetime * 1.2
-          );
+          breezeGusts.push(randomGustPacket(breezeDirection, time));
         }
 
         if (
@@ -933,24 +719,13 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           breezeGusts.length < maxGusts &&
           Math.random() < spawnChance * 0.35
         ) {
-          const gustPacket = randomGustPacket(breezeDirection, time);
-          breezeGusts.push(gustPacket);
-          addSettleForce(
-            gustPacket.x,
-            gustPacket.y,
-            gustPacket.direction,
-            0,
-            gustPacket.radius * 1.12,
-            config.settleStrength * 1.25,
-            time,
-            config.settleLifetime * 1.2
-          );
+          breezeGusts.push(randomGustPacket(breezeDirection, time));
         }
 
         breezeGusts = breezeGusts
           .map((gust) => ({
             ...gust,
-            x: gust.x + gust.direction * deltaSeconds * gust.driftSpeed,
+            x: gust.x + breezeDirection * deltaSeconds * gust.driftSpeed,
             y: gust.y + Math.sin(time * gust.wobbleSpeed + gust.wobbleSeed) * deltaSeconds * gust.wobbleAmount,
           }))
           .filter((gust) => {
@@ -967,7 +742,6 @@ const GRASS_WALL_FRAGMENT_SHADER = `
       function animate(time) {
         uniforms.uTime.value = time * 0.001;
         updateBreeze(time);
-        updateSettleUniforms(time);
         uniforms.uPointerSmooth.value.lerp(
           uniforms.uPointer.value,
           config.pointerSmoothing
