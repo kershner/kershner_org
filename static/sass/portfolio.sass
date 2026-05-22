@@ -11,6 +11,7 @@ $lighter-black: lighten($black, 78%)
 $portfolio-text-shadow: 1px 0.5px 2px $light-black
 
 $default-animation-speed: 3s
+$fast-animation-speed: 0.2s
 
 :root
   --dynamic-color-transition: none
@@ -47,7 +48,7 @@ html.dynamic-colors-loaded
   color: $light-black !important
   text-shadow: none !important
   box-shadow: none !important
-  transition: background-color $default-animation-speed, border-color $default-animation-speed !important
+  transition: background-color $fast-animation-speed, border-color $default-animation-speed !important
   z-index: 3
   &:hover
     color: $white !important
@@ -679,3 +680,11 @@ body.dark-mode
     .clearFiltersBtn
       background-color: lighten($black, 6) !important
       color: $lighter-black
+
+  .grass-wall-controls
+    @extend %dynamic-color-btn
+
+    &:hover
+      background-color: $black !important
+
+

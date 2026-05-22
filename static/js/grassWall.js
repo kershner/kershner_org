@@ -990,13 +990,14 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           overflow: "auto",
           background: "#202020",
           color: "#FFF",
-          padding: "0.5rem 1rem",
+          padding: "0.4rem 1rem",
           cursor: "pointer",
           borderRadius: "1rem",
           fontSize: "0.8rem"
         });
 
         panel.innerHTML = `<summary>Settings</summary>`;
+        panel.classList.add("grass-wall-controls");
 
         panel.addEventListener("pointerdown", (event) => event.stopPropagation());
         panel.addEventListener("pointermove", (event) => event.stopPropagation());
