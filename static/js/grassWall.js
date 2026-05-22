@@ -570,30 +570,10 @@ const GRASS_WALL_FRAGMENT_SHADER = `
         clickPulse = 1;
         setPointer(event.clientX, event.clientY);
         uniforms.uPulsePointer.value.copy(uniforms.uPointer.value);
-
-        if (document.documentElement.setPointerCapture) {
-          try {
-            document.documentElement.setPointerCapture(event.pointerId);
-          } catch (error) {
-            // Some browsers/elements may reject capture. Pointer tracking still works in viewport.
-          }
-        }
       }
 
       function onPointerUp(event) {
         pointerDown = false;
-
-        if (
-          activePointerId !== null &&
-          document.documentElement.releasePointerCapture
-        ) {
-          try {
-            document.documentElement.releasePointerCapture(activePointerId);
-          } catch (error) {
-            // Safe to ignore if capture was never acquired.
-          }
-        }
-
         activePointerId = null;
 
         if (event && typeof event.clientX === "number") {
