@@ -37,6 +37,7 @@ const GRASS_WALL_VERTEX_SHADER = `
   varying float vRandom;
   varying float vForce;
   varying vec3 vBladeTint;
+  varying vec2 vWorldPos;
 
   void main() {
     vec3 pos = position;
@@ -172,6 +173,7 @@ const GRASS_WALL_VERTEX_SHADER = `
     pos.x += wiggle * bladeY;
     pos.xy += aOffset;
 
+    vWorldPos = pos.xy;
     vUv = uv;
     vY = bladeY;
     vRandom = aRandom.w;
@@ -189,17 +191,57 @@ const GRASS_WALL_VERTEX_SHADER = `
 const GRASS_WALL_FRAGMENT_SHADER = `
   precision highp float;
 
+  uniform float uTime;
+  uniform float uAspect;
   uniform float uOpacity;
   uniform vec3 uGrassColor;
   uniform vec3 uCursorColor;
   uniform float uVariation;
   uniform float uEdgeSoftness;
+  uniform float uFireflies;
+  uniform float uFireflyCount;
+  uniform float uFireflyStrength;
+  uniform float uFireflySize;
+  uniform float uFireflySpeed;
+  uniform float uFireflyFlicker;
+  uniform float uFireflyDrift;
+  uniform float uFireflyReflection;
+  uniform float uFireflyReflectionRadius;
 
   varying vec2 vUv;
   varying float vY;
   varying float vRandom;
   varying float vForce;
   varying vec3 vBladeTint;
+  varying vec2 vWorldPos;
+
+  float rand(float seed) {
+    return fract(sin(seed * 91.3458) * 47453.5453);
+  }
+
+  vec2 fireflyPosition(float seed) {
+    float speed = uTime * uFireflySpeed;
+    float lane = rand(seed * 2.71);
+    float xBase = rand(seed * 5.31) * 2.6 - 1.3;
+    float yBase = rand(seed * 7.17) * 2.4 - 1.2;
+    float rise = mod(speed * mix(0.12, 0.42, lane) + rand(seed * 13.19), 2.4) - 1.2;
+
+    float x = xBase + sin(speed * mix(0.45, 1.15, rand(seed * 19.9)) + seed) * uFireflyDrift;
+    float y = mod(yBase + rise, 2.4) - 1.2;
+
+    return vec2(x, y);
+  }
+
+  float fireflyReflectionGlow(vec2 uv, vec2 center, float seed) {
+    vec2 delta = vec2((uv.x - center.x) * uAspect, uv.y - center.y);
+    float distanceToCenter = length(delta);
+    float radius = max(uFireflyReflectionRadius, 0.001);
+    float flicker = 0.62 + 0.38 * sin(uTime * uFireflyFlicker * mix(1.0, 2.7, rand(seed * 23.2)) + seed * 5.13);
+    float pulse = 0.78 + 0.22 * sin(uTime * uFireflyFlicker * 0.41 + seed * 17.3);
+    float glow = 1.0 - smoothstep(0.0, radius, distanceToCenter);
+
+    return glow * glow * flicker * pulse;
+  }
 
   void main() {
     float edge = abs(vUv.x - 0.5) * 2.0;
@@ -226,7 +268,108 @@ const GRASS_WALL_FRAGMENT_SHADER = `
     color = mix(color, color * coolBase, smoothstep(0.0, 0.38, 1.0 - vY) * (1.0 - vRandom) * 0.22 * uVariation);
     color += vForce * uCursorColor;
 
+    vec2 bladeUv = vWorldPos;
+    float reflectedGlow = 0.0;
+
+    for (int i = 0; i < 16; i++) {
+      float index = float(i);
+
+      if (index < uFireflyCount) {
+        float seed = index + 1.0;
+        reflectedGlow += fireflyReflectionGlow(bladeUv, fireflyPosition(seed), seed);
+      }
+    }
+
+    reflectedGlow = clamp(reflectedGlow * uFireflies * uFireflyStrength * uFireflyReflection, 0.0, 1.0);
+
+    vec3 hotCore = vec3(1.0, 0.92, 0.42);
+    vec3 safeCursorColor = max(uCursorColor, vec3(0.38));
+    vec3 glowColor = mix(hotCore, safeCursorColor, 0.45);
+    float bladeLightMask = softEdge * smoothstep(0.08, 0.82, vY);
+
+    color = mix(color, glowColor, reflectedGlow * bladeLightMask * 0.42);
+    color += glowColor * reflectedGlow * bladeLightMask * 0.82;
+
     gl_FragColor = vec4(color, alpha);
+  }
+`;
+
+const FIREFLY_VERTEX_SHADER = `
+  varying vec2 vUv;
+
+  void main() {
+    vUv = uv;
+    gl_Position = vec4(position.xy, 0.0, 1.0);
+  }
+`;
+
+const FIREFLY_FRAGMENT_SHADER = `
+  precision highp float;
+
+  uniform float uTime;
+  uniform float uAspect;
+  uniform vec3 uCursorColor;
+  uniform float uFireflies;
+  uniform float uFireflyCount;
+  uniform float uFireflyStrength;
+  uniform float uFireflySize;
+  uniform float uFireflySpeed;
+  uniform float uFireflyFlicker;
+  uniform float uFireflyDrift;
+
+  varying vec2 vUv;
+
+  float rand(float seed) {
+    return fract(sin(seed * 91.3458) * 47453.5453);
+  }
+
+  vec2 fireflyPosition(float seed) {
+    float speed = uTime * uFireflySpeed;
+    float lane = rand(seed * 2.71);
+    float xBase = rand(seed * 5.31) * 2.6 - 1.3;
+    float yBase = rand(seed * 7.17) * 2.4 - 1.2;
+    float rise = mod(speed * mix(0.12, 0.42, lane) + rand(seed * 13.19), 2.4) - 1.2;
+
+    float x = xBase + sin(speed * mix(0.45, 1.15, rand(seed * 19.9)) + seed) * uFireflyDrift;
+    float y = mod(yBase + rise, 2.4) - 1.2;
+
+    return vec2(x, y);
+  }
+
+  float fireflyGlow(vec2 uv, vec2 center, float seed) {
+    vec2 delta = vec2((uv.x - center.x) * uAspect, uv.y - center.y);
+    float distanceToCenter = length(delta);
+    float coreSize = max(uFireflySize, 0.001);
+    float haloSize = coreSize * 5.8;
+    float flicker = 0.62 + 0.38 * sin(uTime * uFireflyFlicker * mix(1.0, 2.7, rand(seed * 23.2)) + seed * 5.13);
+    float pulse = 0.78 + 0.22 * sin(uTime * uFireflyFlicker * 0.41 + seed * 17.3);
+    float core = 1.0 - smoothstep(0.0, coreSize, distanceToCenter);
+    float halo = 1.0 - smoothstep(0.0, haloSize, distanceToCenter);
+
+    return (core * 1.45 + halo * 0.62) * flicker * pulse;
+  }
+
+  void main() {
+    vec2 uv = vUv * 2.0 - 1.0;
+    float glow = 0.0;
+
+    for (int i = 0; i < 16; i++) {
+      float index = float(i);
+
+      if (index < uFireflyCount) {
+        float seed = index + 1.0;
+        glow += fireflyGlow(uv, fireflyPosition(seed), seed);
+      }
+    }
+
+    glow = clamp(glow * uFireflies * uFireflyStrength, 0.0, 1.0);
+
+    vec3 hotCore = vec3(1.0, 0.92, 0.42);
+    vec3 safeCursorColor = max(uCursorColor, vec3(0.38));
+    vec3 glowColor = mix(hotCore, safeCursorColor, 0.45);
+    vec3 color = glowColor * glow * 1.9;
+
+    gl_FragColor = vec4(color, glow);
   }
 `;
 
@@ -269,6 +412,15 @@ const GRASS_WALL_FRAGMENT_SHADER = `
         pulseRadius: 2,
         pulseDecay: 0.965,
         velocityStrength: 13.2,
+        fireflies: true,
+        fireflyCount: 6,
+        fireflyStrength: 0.98,
+        fireflySize: 0.015,
+        fireflySpeed: 0.12,
+        fireflyFlicker: 1.0,
+        fireflyDrift: 0.75,
+        fireflyReflection: 0.85,
+        fireflyReflectionRadius: 0.34,
 
         ...options,
       };
@@ -349,6 +501,16 @@ const GRASS_WALL_FRAGMENT_SHADER = `
 
         uGrassColor: { value: new THREE.Color(config.grassColor) },
         uCursorColor: { value: new THREE.Color(config.cursorColor) },
+
+        uFireflies: { value: config.fireflies ? 1 : 0 },
+        uFireflyCount: { value: config.fireflyCount },
+        uFireflyStrength: { value: config.fireflyStrength },
+        uFireflySize: { value: config.fireflySize },
+        uFireflySpeed: { value: config.fireflySpeed },
+        uFireflyFlicker: { value: config.fireflyFlicker },
+        uFireflyDrift: { value: config.fireflyDrift },
+        uFireflyReflection: { value: config.fireflyReflection },
+        uFireflyReflectionRadius: { value: config.fireflyReflectionRadius },
       };
 
       const targetGrassColor = new THREE.Color(config.grassColor);
@@ -361,7 +523,36 @@ const GRASS_WALL_FRAGMENT_SHADER = `
         side: THREE.DoubleSide,
         transparent: true,
         depthWrite: false,
+        depthTest: false,
       });
+
+      const fireflyUniforms = {
+        uTime: uniforms.uTime,
+        uAspect: uniforms.uAspect,
+        uCursorColor: uniforms.uCursorColor,
+        uFireflies: uniforms.uFireflies,
+        uFireflyCount: uniforms.uFireflyCount,
+        uFireflyStrength: uniforms.uFireflyStrength,
+        uFireflySize: uniforms.uFireflySize,
+        uFireflySpeed: uniforms.uFireflySpeed,
+        uFireflyFlicker: uniforms.uFireflyFlicker,
+        uFireflyDrift: uniforms.uFireflyDrift,
+      };
+
+      const fireflyGeometry = new THREE.PlaneGeometry(2, 2);
+      const fireflyMaterial = new THREE.ShaderMaterial({
+        uniforms: fireflyUniforms,
+        vertexShader: FIREFLY_VERTEX_SHADER,
+        fragmentShader: FIREFLY_FRAGMENT_SHADER,
+        transparent: true,
+        depthWrite: false,
+        depthTest: false,
+        blending: THREE.AdditiveBlending,
+      });
+
+      const fireflyPlane = new THREE.Mesh(fireflyGeometry, fireflyMaterial);
+      fireflyPlane.renderOrder = 10;
+      scene.add(fireflyPlane);
 
       let grass = null;
       let grassGeometry = null;
@@ -445,6 +636,11 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           return true;
         }
 
+        if (key === "fireflies") {
+          uniforms.uFireflies.value = value ? 1 : 0;
+          return true;
+        }
+
         if (key === "breezeChance" && value <= 0) {
           breezeGusts.length = 0;
         }
@@ -453,6 +649,11 @@ const GRASS_WALL_FRAGMENT_SHADER = `
 
         if (uniforms[uniformKey]) {
           uniforms[uniformKey].value = value;
+          return true;
+        }
+
+        if (fireflyUniforms[uniformKey]) {
+          fireflyUniforms[uniformKey].value = value;
           return true;
         }
 
@@ -527,6 +728,7 @@ const GRASS_WALL_FRAGMENT_SHADER = `
 
         grassGeometry = createGrassGeometry(bladeCount);
         grass = new THREE.Mesh(grassGeometry, material);
+        grass.renderOrder = 1;
         scene.add(grass);
       }
 
@@ -782,6 +984,17 @@ const GRASS_WALL_FRAGMENT_SHADER = `
 
         panel.innerHTML = `<summary>Settings</summary>`;
         panel.classList.add("grass-wall-controls");
+        const style = document.createElement("style");
+        style.textContent = `
+          .grass-wall-controls fieldset {
+            margin: 0.25rem 0;
+            border-radius: 0.25rem;
+          }
+          .grass-wall-controls p {
+            margin: 0.25rem 0;
+          }
+        `;
+        document.head.appendChild(style);
 
         panel.addEventListener("pointerdown", (event) => event.stopPropagation());
         panel.addEventListener("pointermove", (event) => event.stopPropagation());
@@ -922,6 +1135,18 @@ const GRASS_WALL_FRAGMENT_SHADER = `
           addColor("Cursor glow", "cursorColor", "Tint added near interaction."),
         ]);
 
+        addGroup("Fireflies", [
+          addCheckbox("Fireflies", "fireflies", "Toggle independent floating glow lights."),
+          addRange("Firefly count", "fireflyCount", 0, 16, 1, "How many glow lights are visible."),
+          addRange("Firefly strength", "fireflyStrength", 0, 2.5, 0.01, "Overall glow intensity."),
+          addRange("Firefly size", "fireflySize", 0.015, 0.22, 0.001, "Size of each glow light."),
+          addRange("Firefly speed", "fireflySpeed", 0, 2, 0.01, "How quickly the lights drift."),
+          addRange("Firefly flicker", "fireflyFlicker", 0, 8, 0.1, "How quickly the lights pulse."),
+          addRange("Firefly drift", "fireflyDrift", 0, 0.8, 0.01, "How much the lights wander sideways."),
+          addRange("Grass reflection", "fireflyReflection", 0, 2, 0.01, "How strongly fireflies tint nearby grass blades."),
+          addRange("Reflection radius", "fireflyReflectionRadius", 0.05, 0.8, 0.01, "How far the firefly glow spreads across grass."),
+        ]);
+
         document.body.appendChild(panel);
         return panel;
       }
@@ -974,6 +1199,8 @@ const GRASS_WALL_FRAGMENT_SHADER = `
 
           baseGeometry.dispose();
           if (grassGeometry) grassGeometry.dispose();
+          fireflyGeometry.dispose();
+          fireflyMaterial.dispose();
           material.dispose();
           renderer.dispose();
           canvas.remove();
