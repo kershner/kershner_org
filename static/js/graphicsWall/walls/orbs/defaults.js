@@ -1,0 +1,38 @@
+const isMobile = window.innerWidth < 768;
+
+export const orbsDefaults = {
+  global: {
+    opacity: 1,
+  },
+  wall: {
+    rotateColors: true,
+    backgroundColor: "#07080a",
+    backgroundLiftColor: "#1f1b16",
+    keyLightColor: "#fff9e8",
+    fillLightColor: "#b7c9df",
+    cursorLightColor: "#fff1c4",
+    chromeColor: "#eee6ca",
+    warmOrbColor: "#d24b24",
+    coolOrbColor: "#2870b8",
+    darkOrbColor: "#6a8540",
+    colorTransitionSpeed: 0.007,
+    orbCount: isMobile ? 5 : 8,
+    orbScale: 1.08,
+    driftSpeed: 0.26,
+    spread: 1.0,
+    chrome: 1.85,
+    textureStrength: 1.35,
+    collisionStrength: 1.0,
+    tapBounceAmount: 1.0,
+    throwPower: 1.0,
+    lightCount: 1,
+    lightIntensity: 0.7,
+    lightSpeed: 1.0,
+    lightSize: 0.42,
+    lightDepth: 5.8,
+    contrast: 1.42,
+    retroBanding: 0.06,
+    grain: 0.002,
+    vignette: 0.48,
+  },
+};

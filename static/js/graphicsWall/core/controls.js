@@ -39,6 +39,13 @@ export function createControls({ manager }) {
   panel.addEventListener("pointermove", (event) => event.stopPropagation());
   panel.addEventListener("pointerup", (event) => event.stopPropagation());
 
+  function shouldShowControl(control) {
+    const type = manager.getType();
+    if (Array.isArray(control.walls) && !control.walls.includes(type)) return false;
+    if (Array.isArray(control.hideForWalls) && control.hideForWalls.includes(type)) return false;
+    return true;
+  }
+
   function createInput(control) {
     const wrapper = document.createElement("p");
     const label = document.createElement("label");
@@ -132,13 +139,16 @@ export function createControls({ manager }) {
     panel.appendChild(createWallTypeSelect());
 
     manager.getControlSchema().forEach((group) => {
+      const visibleControls = group.controls.filter(shouldShowControl);
+      if (!visibleControls.length) return;
+
       const fieldset = document.createElement("fieldset");
       const legend = document.createElement("legend");
 
       legend.textContent = group.title;
       fieldset.appendChild(legend);
 
-      group.controls.forEach((control) => {
+      visibleControls.forEach((control) => {
         fieldset.appendChild(createInput(control));
       });
 

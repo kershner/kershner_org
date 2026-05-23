@@ -32,23 +32,17 @@ const GLOBAL_CONTROLS = [
   {
     title: "General",
     controls: [
-      { type: "checkbox", path: "global.fullscreen", label: "Fullscreen", help: "Hide page content behind the wall." },
-      { type: "range", path: "global.opacity", label: "Opacity", min: 0, max: 1, step: 0.01, help: "Overall transparency." },
+      { type: "checkbox", path: "global.fullscreen", label: "Fullscreen", help: "Expands the wall to fill the viewport." },
+      { type: "range", path: "global.opacity", label: "Opacity", min: 0, max: 1, step: 0.01, help: "Fades the whole wall without changing its settings." },
     ],
   },
   {
     title: "Interaction",
     controls: [
-      { type: "range", path: "interaction.cursorRadius", label: "Cursor radius", min: 0.05, max: 1.2, step: 0.01 },
-      { type: "range", path: "interaction.cursorStrength", label: "Cursor force", min: 0, max: 0.7, step: 0.01 },
-      { type: "range", path: "interaction.verticalPush", label: "Vertical push", min: 0, max: 0.2, step: 0.001 },
-      { type: "range", path: "interaction.pointerSmoothing", label: "Pointer smooth", min: 0.01, max: 0.3, step: 0.001 },
-      { type: "range", path: "interaction.touchBoost", label: "Touch boost", min: 0, max: 2, step: 0.01 },
-      { type: "range", path: "interaction.brushStrength", label: "Brush force", min: 0, max: 0.6, step: 0.01 },
-      { type: "range", path: "interaction.velocityStrength", label: "Velocity sensitivity", min: 1, max: 40, step: 0.1 },
-      { type: "range", path: "interaction.pulseStrength", label: "Click pulse", min: 0, max: 0.7, step: 0.01 },
-      { type: "range", path: "interaction.pulseRadius", label: "Pulse radius", min: 0.15, max: 2, step: 0.01 },
-      { type: "range", path: "interaction.pulseDecay", label: "Pulse decay", min: 0.85, max: 0.99, step: 0.001 },
+      { type: "range", path: "interaction.cursorRadius", label: "Cursor radius", min: 0.05, max: 1.2, step: 0.01, help: "Larger values affect elements farther from the cursor." },
+      { type: "range", path: "interaction.pulseStrength", label: "Click pulse", min: 0, max: 0.7, step: 0.01, help: "Controls click-generated ripples.", walls: ["grass", "water"] },
+      { type: "range", path: "interaction.pulseRadius", label: "Pulse radius", min: 0.15, max: 2, step: 0.01, help: "Controls the starting size of click pulses.", walls: ["grass", "water"] },
+      { type: "range", path: "interaction.pulseDecay", label: "Pulse decay", min: 0.85, max: 0.99, step: 0.001, help: "Higher values make click pulses linger.", walls: ["grass", "water"] },
     ],
   },
 ];
@@ -209,12 +203,17 @@ export class GraphicsWallManager {
     this.renderer.render(this.scene, this.camera);
   }
 
+  applyCanvasOpacity() {
+    if (!this.canvas) return;
+    this.canvas.style.opacity = String(Math.max(0, Math.min(1, Number(this.config.global.opacity ?? 1))));
+  }
+
   reveal() {
     this.canvas.style.opacity = "0";
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        this.canvas.style.opacity = "1";
+        this.applyCanvasOpacity();
 
         window.setTimeout(() => {
           this.canvas.style.willChange = "auto";
@@ -254,6 +253,10 @@ export class GraphicsWallManager {
 
     if (path === "global.fullscreen") {
       this.fullscreen?.set(Boolean(value));
+    }
+
+    if (path === "global.opacity") {
+      this.applyCanvasOpacity();
     }
 
     if (path === "global.zIndex") {

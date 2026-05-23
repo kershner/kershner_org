@@ -62,7 +62,7 @@ function loadThree(options = {}) {
 const wallTypes = {
   grass: () => import("./walls/grass/index.js").then((m) => m.createGrassWall),
   water: () => import("./walls/water/index.js").then((m) => m.createWaterWall),
-  // cyber: () => import("./walls/cyber/index.js").then((m) => m.createCyberWall),
+  orbs: () => import("./walls/orbs/index.js").then((m) => m.createOrbsWall),
 };
 
 const GraphicsWall = {

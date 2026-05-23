@@ -48,6 +48,7 @@ portfolio.startGraphicsWall = function(baseS3Url) {
                 cursorColor: portfolio.currentColor,
                 shallowColor: portfolio.currentColor,
                 reflectionColor: portfolio.currentColor,
+                backgroundColor: portfolio.currentColor,
                 fadeInDuration: 1000,
             });
 
@@ -201,6 +202,7 @@ portfolio.changeColors = function() {
         window.graphicsWall.set("wall.cursorColor", portfolio.currentColor);
         window.graphicsWall.set("wall.shallowColor", portfolio.currentColor);
         window.graphicsWall.set("wall.reflectionColor", portfolio.currentColor);
+        window.graphicsWall.set("wall.backgroundColor", portfolio.currentColor);
     }
 
     const darkMode = document.body.classList.contains('dark-mode');
