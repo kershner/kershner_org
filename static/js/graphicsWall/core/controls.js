@@ -26,6 +26,21 @@ const PANEL_CSS = `
   .graphics-wall-controls small { opacity: 0.75; display: block; }
   .graphics-wall-controls select,
   .graphics-wall-controls input { max-width: 100%; }
+  .graphics-wall-controls .wall-type-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .graphics-wall-controls .wall-type-row label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+  }
+  .graphics-wall-controls .wall-reset-button {
+    flex: 0 0 auto;
+  }
 `;
 
 function stopPointerEvent(event) {
@@ -70,7 +85,7 @@ export function createControls({ manager }) {
         const nextValue = Number(input.value);
         output.value = nextValue;
         output.textContent = nextValue;
-        manager.set(control.path, nextValue);
+        manager.set(control.path, nextValue, { syncQueryParams: true });
       });
 
       return [input, " ", output];
@@ -80,7 +95,7 @@ export function createControls({ manager }) {
       const input = document.createElement("input");
       input.type = "color";
       input.value = value;
-      input.addEventListener("input", () => manager.set(control.path, input.value));
+      input.addEventListener("input", () => manager.set(control.path, input.value, { syncQueryParams: true }));
       return [input];
     },
 
@@ -88,7 +103,7 @@ export function createControls({ manager }) {
       const input = document.createElement("input");
       input.type = "checkbox";
       input.checked = Boolean(value);
-      input.addEventListener("change", () => manager.set(control.path, input.checked));
+      input.addEventListener("change", () => manager.set(control.path, input.checked, { syncQueryParams: true }));
       return [input];
     },
   };
@@ -117,7 +132,9 @@ export function createControls({ manager }) {
     const wrapper = document.createElement("p");
     const label = document.createElement("label");
     const select = document.createElement("select");
+    const resetButton = document.createElement("button");
 
+    wrapper.className = "wall-type-row";
     label.textContent = "Wall type: ";
 
     manager.getWallTypes().forEach((type) => {
@@ -129,11 +146,19 @@ export function createControls({ manager }) {
     });
 
     select.addEventListener("change", () => {
-      manager.setType(select.value);
+      manager.setType(select.value, { syncQueryParams: true });
+    });
+
+    resetButton.type = "button";
+    resetButton.textContent = "Reset";
+    resetButton.className = "wall-reset-button";
+    resetButton.addEventListener("click", () => {
+      manager.reset({ syncQueryParams: true });
     });
 
     label.appendChild(select);
     wrapper.appendChild(label);
+    wrapper.appendChild(resetButton);
     return wrapper;
   }
 
@@ -161,6 +186,10 @@ export function createControls({ manager }) {
   }
 
   const offTypeChange = manager.on("typechange", render);
+  const offConfigChange = manager.on("configchange", ({ reset } = {}) => {
+    if (reset) render();
+  });
+
   render();
   document.body.appendChild(panel);
 
@@ -171,6 +200,7 @@ export function createControls({ manager }) {
 
     destroy() {
       offTypeChange();
+      offConfigChange();
       style.remove();
       panel.remove();
     },

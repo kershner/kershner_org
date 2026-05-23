@@ -1,4 +1,4 @@
-import { createUniformPathResolver, lerpColorUniforms, makeConfigUniforms, syncUniformValues } from "../../core/wallUtils.js";
+import { applyColorUniforms, createUniformPathResolver, makeConfigUniforms, syncUniformValues } from "../../core/wallUtils.js";
 import { grassControls } from "./controls.js";
 import { grassDefaults } from "./defaults.js";
 import { createGrassGeometry } from "./geometry.js";
@@ -297,7 +297,13 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
     update({ time, delta }) {
       syncInteractionUniforms();
       updateBreeze(time, delta || 0);
-      lerpColorUniforms(uniforms, { grassColor: targetGrassColor, cursorColor: targetCursorColor }, ["grassColor", "cursorColor"], config.wall.colorTransitionSpeed);
+      applyColorUniforms(
+        uniforms,
+        { grassColor: targetGrassColor, cursorColor: targetCursorColor },
+        ["grassColor", "cursorColor"],
+        config.wall.colorTransitionSpeed,
+        config.global.rotateColors !== false
+      );
     },
 
     destroy() {

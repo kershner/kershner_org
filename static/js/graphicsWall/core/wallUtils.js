@@ -23,10 +23,16 @@ export function makeColorTargets(THREE, source, keys) {
 }
 
 
-export function lerpColorUniforms(uniforms, targets, keys, speed, nameFor = uniformNameFor) {
+
+export function applyColorUniforms(uniforms, targets, keys, speed, shouldLerp = true, nameFor = uniformNameFor) {
   keys.forEach((key) => {
     const uniform = uniforms[nameFor(key)];
     const target = targets[key];
-    if (uniform && target) uniform.value.lerp(target, speed);
+    if (!uniform || !target) return;
+    if (shouldLerp) {
+      uniform.value.lerp(target, speed);
+    } else {
+      uniform.value.copy(target);
+    }
   });
 }

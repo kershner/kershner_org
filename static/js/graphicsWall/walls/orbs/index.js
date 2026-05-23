@@ -115,7 +115,6 @@ const colorKeys = [
 
 const configurableKeys = [
   ...colorKeys,
-  "rotateColors",
   "colorTransitionSpeed",
   "orbCount",
   "orbScale",
@@ -135,7 +134,7 @@ const configurableKeys = [
   "vignette",
 ];
 
-const uniformPaths = createUniformPathResolver(configurableKeys);
+const uniformPaths = createUniformPathResolver(configurableKeys, { rotateColors: "global.rotateColors" });
 
 export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms, config }) {
   const root = new THREE.Group();
@@ -779,7 +778,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     const cursorColor = colorTargets.cursorLightColor || colorTargets.keyLightColor;
     orbs.forEach((orb, index) => {
       const base = paletteColor(index);
-      if (config.wall.rotateColors) {
+      if (config.global.rotateColors !== false) {
         orb.material.color.lerp(base, config.wall.colorTransitionSpeed);
       }
 

@@ -197,7 +197,7 @@ portfolio.changeColors = function() {
     if (
         window.graphicsWall &&
         typeof window.graphicsWall.get === "function" &&
-        window.graphicsWall.get("wall.rotateColors")
+        window.graphicsWall.get("global.rotateColors")
     ) {
         window.graphicsWall.set("wall.grassColor", portfolio.currentColor);
         window.graphicsWall.set("wall.cursorColor", portfolio.currentColor);

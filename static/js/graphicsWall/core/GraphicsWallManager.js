@@ -1,6 +1,7 @@
 import { createControls } from "./controls.js";
 import { createFullscreenController } from "./fullscreen.js";
 import { createPointerState } from "./pointerState.js";
+import { clearGraphicsWallQueryParams, readGraphicsWallQueryParams, updateGraphicsWallQueryParam } from "./queryParams.js";
 import { createEventBus, getPath, mergeDeep, normalizeInitOptions, setPath } from "./utils.js";
 
 const DEFAULT_CONFIG = {
@@ -10,6 +11,7 @@ const DEFAULT_CONFIG = {
     fullscreen: false,
     opacity: 1,
     fadeInDuration: 600,
+    rotateColors: true,
   },
   interaction: {
     cursorRadius: 0.3,
@@ -27,6 +29,29 @@ const DEFAULT_CONFIG = {
   },
   wall: {},
 };
+
+
+const GLOBAL_PATHS = new Set(["fullscreen", "opacity", "zIndex", "showControls", "fadeInDuration", "rotateColors"]);
+const INTERACTION_PATHS = new Set([
+  "cursorRadius",
+  "cursorStrength",
+  "verticalPush",
+  "pointerSmoothing",
+  "touchBoost",
+  "brushStrength",
+  "wakeStrength",
+  "wakeLag",
+  "pulseStrength",
+  "pulseRadius",
+  "pulseDecay",
+  "velocityStrength",
+]);
+
+function resolveTopLevelPath(key) {
+  if (GLOBAL_PATHS.has(key)) return `global.${key}`;
+  if (INTERACTION_PATHS.has(key)) return `interaction.${key}`;
+  return null;
+}
 
 const GLOBAL_CONTROLS = [
   {
@@ -51,7 +76,10 @@ export class GraphicsWallManager {
   constructor({ THREE, wallTypes, ...options }) {
     this.THREE = THREE;
     this.wallTypes = wallTypes;
-    this.options = normalizeInitOptions(options);
+    this.syncQueryParams = options.syncQueryParams !== false;
+    this.baseOptions = normalizeInitOptions(options);
+    const queryOptions = this.syncQueryParams ? readGraphicsWallQueryParams() : {};
+    this.options = normalizeInitOptions(mergeDeep(options, queryOptions));
     this.events = createEventBus();
     this.activeWall = null;
     this.wallFactoryCache = {};
@@ -68,6 +96,7 @@ export class GraphicsWallManager {
 
     this.type = this.options.type;
     const wallFactory = await this.getWallFactory(this.type);
+    this.baseConfig = this.createConfig(this.type, this.baseOptions, wallFactory);
     this.config = this.createConfig(this.type, this.options, wallFactory);
     this.canvas = document.createElement("canvas");
 
@@ -240,15 +269,16 @@ export class GraphicsWallManager {
     this.animationFrame = requestAnimationFrame(this.animate);
   }
 
-  set(path, value) {
+  set(path, value, options = {}) {
     if (path === "type") {
-      return this.setType(value);
+      return this.setType(value, options);
     }
 
     if (!path.includes(".")) {
-      path = this.activeWall?.resolvePath?.(path) || `wall.${path}`;
+      path = resolveTopLevelPath(path) || this.activeWall?.resolvePath?.(path) || `wall.${path}`;
     }
 
+    const previousValue = getPath(this.config, path);
     setPath(this.config, path, value);
 
     if (path === "global.fullscreen") {
@@ -264,20 +294,43 @@ export class GraphicsWallManager {
     }
 
     this.activeWall?.set?.(path, value);
+
+    if (this.syncQueryParams && options.syncQueryParams === true && previousValue !== value) {
+      updateGraphicsWallQueryParam(path, value, {
+        remove: getPath(this.baseConfig, path) === value,
+      });
+    }
+
     this.events.emit("configchange", { path, value });
     return true;
   }
 
   get(path) {
     if (!path.includes(".")) {
-      const resolvedPath = this.activeWall?.resolvePath?.(path);
+      const resolvedPath = resolveTopLevelPath(path) || this.activeWall?.resolvePath?.(path);
       if (resolvedPath) return getPath(this.config, resolvedPath);
     }
 
     return getPath(this.config, path);
   }
 
-  async setType(type) {
+  async rebuildWall(type, options, wallFactory = null) {
+    const factory = wallFactory || await this.getWallFactory(type);
+
+    this.activeWall?.destroy();
+    this.type = type;
+    this.baseConfig = this.createConfig(type, { ...this.baseOptions, type }, factory);
+    this.config = this.createConfig(type, options, factory);
+    await this.createActiveWall(factory);
+  }
+
+  applyGlobalConfig() {
+    this.fullscreen?.set(Boolean(this.config.global.fullscreen));
+    this.applyCanvasOpacity();
+    this.canvas.style.zIndex = this.config.global.zIndex;
+  }
+
+  async setType(type, options = {}) {
     if (type === this.type) {
       return true;
     }
@@ -291,16 +344,42 @@ export class GraphicsWallManager {
       return false;
     }
 
-    this.activeWall?.destroy();
-    this.type = type;
-    this.config = this.createConfig(type, {
+    await this.rebuildWall(type, {
       type,
       global: this.config.global,
       interaction: this.config.interaction,
       wall: {},
     }, wallFactory);
-    await this.createActiveWall(wallFactory);
+
+    if (this.syncQueryParams && options.syncQueryParams === true) {
+      updateGraphicsWallQueryParam("type", type, {
+        remove: this.baseOptions.type === type,
+      });
+    }
+
     this.events.emit("typechange", { type });
+    return true;
+  }
+
+  async reset(options = {}) {
+    const type = this.baseOptions.type;
+
+    try {
+      await this.rebuildWall(type, this.baseOptions);
+    } catch (error) {
+      console.warn(error.message);
+      return false;
+    }
+
+    this.applyGlobalConfig();
+    this.renderInitialFrame();
+
+    if (this.syncQueryParams && options.syncQueryParams === true) {
+      clearGraphicsWallQueryParams();
+    }
+
+    this.events.emit("typechange", { type });
+    this.events.emit("configchange", { reset: true });
     return true;
   }
 
@@ -346,6 +425,7 @@ export class GraphicsWallManager {
       getType: this.getType.bind(this),
       getWallTypes: this.getWallTypes.bind(this),
       getConfig: this.getConfig.bind(this),
+      reset: this.reset.bind(this),
       destroy: this.destroy.bind(this),
       on: this.on.bind(this),
     };

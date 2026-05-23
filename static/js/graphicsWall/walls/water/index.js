@@ -1,4 +1,4 @@
-import { createUniformPathResolver, lerpColorUniforms, makeConfigUniforms, syncUniformValues } from "../../core/wallUtils.js";
+import { applyColorUniforms, createUniformPathResolver, makeConfigUniforms, syncUniformValues } from "../../core/wallUtils.js";
 import { waterControls } from "./controls.js";
 import { waterDefaults } from "./defaults.js";
 import {
@@ -229,7 +229,7 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
 
       renderer.setRenderTarget(previousRenderTarget);
 
-      lerpColorUniforms(renderUniforms, colorTargets, colorKeys, config.wall.colorTransitionSpeed);
+      applyColorUniforms(renderUniforms, colorTargets, colorKeys, config.wall.colorTransitionSpeed, config.global.rotateColors !== false);
     },
 
     destroy() {

@@ -74,7 +74,7 @@ export function normalizeInitOptions(options) {
     wall: {},
   };
 
-  const globalKeys = new Set(["zIndex", "showControls", "fullscreen", "opacity", "fadeInDuration"]);
+  const globalKeys = new Set(["zIndex", "showControls", "fullscreen", "opacity", "fadeInDuration", "rotateColors"]);
   const interactionKeys = new Set([
     "cursorRadius",
     "cursorStrength",
@@ -91,7 +91,7 @@ export function normalizeInitOptions(options) {
   ]);
 
   Object.entries(options).forEach(([key, value]) => {
-    if (key === "type") return;
+    if (["type", "syncQueryParams"].includes(key)) return;
 
     if (key === "global" || key === "interaction" || key === "wall") {
       normalized[key] = mergeDeep(normalized[key], value);

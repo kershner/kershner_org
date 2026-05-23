@@ -21,6 +21,7 @@ export const grassControls = [
     title: "Grass Color",
     controls: [
       { type: "range", path: "wall.colorTransitionSpeed", label: "Color speed", min: 0.01, max: 1, step: 0.01 , help: "Palette speed." },
+      { type: "checkbox", path: "global.rotateColors", label: "Rotate colors", help: "Allow this wall to follow portfolio color changes." },
       { type: "color", path: "wall.grassColor", label: "Grass color" , help: "Base tint." },
       { type: "color", path: "wall.cursorColor", label: "Cursor glow" , help: "Pointer color." },
     ],

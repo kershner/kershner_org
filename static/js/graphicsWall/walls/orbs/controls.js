@@ -21,8 +21,8 @@ export const orbsControls = [
   {
     title: "Colors",
     controls: [
-      { type: "checkbox", path: "wall.rotateColors", label: "Rotate colors", help: "Slowly cycles orb colors while preserving their character." },
       { type: "range", path: "wall.colorTransitionSpeed", label: "Color speed", min: 0.001, max: 0.025, step: 0.001, help: "Controls how quickly colors drift to the next palette." },
+      { type: "checkbox", path: "global.rotateColors", label: "Rotate colors", help: "Allow this wall to follow portfolio color changes." },
       { type: "color", path: "wall.backgroundColor", label: "Background", help: "The wall builds the full gradient from this color." },
     ],
   },

@@ -5,7 +5,6 @@ export const orbsDefaults = {
     opacity: 1,
   },
   wall: {
-    rotateColors: true,
     backgroundColor: "#07080a",
     keyLightColor: "#fff9e8",
     fillLightColor: "#b7c9df",
