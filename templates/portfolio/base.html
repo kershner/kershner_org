@@ -87,17 +87,18 @@
         <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
         <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/randomColor.min.js"></script>
         <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/portfolio.js"></script>
-        
         <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-        <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/grassWall.js"></script>
         
         {% block javascripts %}
             {% block extra_javascripts %}{% endblock %}
-            <script type="text/javascript">
+            
+            <script type="module">
+                import GraphicsWall from "{% settings_value "BASE_S3_URL" %}/js/graphicsWall/graphicsWall.js";
+
                 document.addEventListener('DOMContentLoaded', () => {
                     portfolio.init("{% settings_value 'BASE_S3_URL' %}");
                 });
-            </script>               
+            </script>
         {% endblock %}
 
         {% include 'portfolio/includes/google_analytics_tag.html' %}

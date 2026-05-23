@@ -1,0 +1,334 @@
+import { grassControls } from "./controls.js";
+import { grassDefaults } from "./defaults.js";
+import { createGrassGeometry } from "./geometry.js";
+import {
+  FIREFLY_FRAGMENT_SHADER,
+  FIREFLY_VERTEX_SHADER,
+  GRASS_WALL_FRAGMENT_SHADER,
+  GRASS_WALL_VERTEX_SHADER,
+} from "./shaders.js";
+
+const breezeSettings = {
+  minRadius: 0.22,
+  maxRadius: 0.78,
+  minStrength: 0.75,
+  maxStrength: 2.75,
+  minLifetime: 1500,
+  maxLifetime: 3200,
+  minDriftSpeed: 0.24,
+  maxDriftSpeed: 0.9,
+  minSpringTail: 1.15,
+  maxSpringTail: 2.35,
+};
+
+const uniformPaths = {
+  wind: "wall.wind",
+  breezeChance: "wall.breezeChance",
+  widthMultiplier: "wall.widthMultiplier",
+  tipWidth: "wall.tipWidth",
+  heightMultiplier: "wall.heightMultiplier",
+  variation: "wall.variation",
+  edgeSoftness: "wall.edgeSoftness",
+  fireflies: "wall.fireflies",
+  fireflyCount: "wall.fireflyCount",
+  fireflyStrength: "wall.fireflyStrength",
+  fireflySize: "wall.fireflySize",
+  fireflySpeed: "wall.fireflySpeed",
+  fireflyFlicker: "wall.fireflyFlicker",
+  fireflyDrift: "wall.fireflyDrift",
+  fireflyReflection: "wall.fireflyReflection",
+  fireflyReflectionRadius: "wall.fireflyReflectionRadius",
+  grassColor: "wall.grassColor",
+  cursorColor: "wall.cursorColor",
+  bladeCount: "wall.bladeCount",
+};
+
+function randomBetween(min, max) {
+  return min + Math.random() * (max - min);
+}
+
+function gustEnvelope(t, springTail) {
+  if (t < 1) {
+    return Math.sin(t * Math.PI);
+  }
+
+  const tail = Math.min((t - 1) / springTail, 1);
+  return -Math.sin(tail * Math.PI * 4.5) * Math.exp(-tail * 4.2) * 0.42;
+}
+
+export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
+  const baseGeometry = new THREE.PlaneGeometry(1, 1, 1, 8);
+  baseGeometry.translate(0, 0.5, 0);
+
+  const wallConfig = config.wall;
+  const interactionConfig = config.interaction;
+
+  const uniforms = {
+    ...sharedUniforms,
+    uWind: { value: wallConfig.wind },
+    uBreeze: { value: 0 },
+    uBreezeGustA: { value: new THREE.Vector4(9, 9, 0, 0) },
+    uBreezeGustB: { value: new THREE.Vector4(9, 9, 0, 0) },
+    uBreezeGustC: { value: new THREE.Vector4(9, 9, 0, 0) },
+    uBreezeGustD: { value: new THREE.Vector4(9, 9, 0, 0) },
+    uCursorRadius: { value: interactionConfig.cursorRadius },
+    uCursorStrength: { value: interactionConfig.cursorStrength },
+    uVerticalPush: { value: interactionConfig.verticalPush },
+    uWidthMultiplier: { value: wallConfig.widthMultiplier },
+    uTipWidth: { value: wallConfig.tipWidth },
+    uHeightMultiplier: { value: wallConfig.heightMultiplier },
+    uVariation: { value: wallConfig.variation },
+    uEdgeSoftness: { value: wallConfig.edgeSoftness },
+    uTouchBoost: { value: interactionConfig.touchBoost },
+    uBrushStrength: { value: interactionConfig.brushStrength },
+    uWakeStrength: { value: interactionConfig.wakeStrength },
+    uPulseStrength: { value: interactionConfig.pulseStrength },
+    uVelocityStrength: { value: interactionConfig.velocityStrength },
+    uPulseRadius: { value: interactionConfig.pulseRadius },
+    uGrassColor: { value: new THREE.Color(wallConfig.grassColor) },
+    uCursorColor: { value: new THREE.Color(wallConfig.cursorColor) },
+    uFireflies: { value: wallConfig.fireflies ? 1 : 0 },
+    uFireflyCount: { value: wallConfig.fireflyCount },
+    uFireflyStrength: { value: wallConfig.fireflyStrength },
+    uFireflySize: { value: wallConfig.fireflySize },
+    uFireflySpeed: { value: wallConfig.fireflySpeed },
+    uFireflyFlicker: { value: wallConfig.fireflyFlicker },
+    uFireflyDrift: { value: wallConfig.fireflyDrift },
+    uFireflyReflection: { value: wallConfig.fireflyReflection },
+    uFireflyReflectionRadius: { value: wallConfig.fireflyReflectionRadius },
+  };
+
+  const targetGrassColor = new THREE.Color(wallConfig.grassColor);
+  const targetCursorColor = new THREE.Color(wallConfig.cursorColor);
+
+  const material = new THREE.ShaderMaterial({
+    uniforms,
+    vertexShader: GRASS_WALL_VERTEX_SHADER,
+    fragmentShader: GRASS_WALL_FRAGMENT_SHADER,
+    side: THREE.DoubleSide,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+  });
+
+  const fireflyUniforms = {
+    uTime: uniforms.uTime,
+    uAspect: uniforms.uAspect,
+    uCursorColor: uniforms.uCursorColor,
+    uFireflies: uniforms.uFireflies,
+    uFireflyCount: uniforms.uFireflyCount,
+    uFireflyStrength: uniforms.uFireflyStrength,
+    uFireflySize: uniforms.uFireflySize,
+    uFireflySpeed: uniforms.uFireflySpeed,
+    uFireflyFlicker: uniforms.uFireflyFlicker,
+    uFireflyDrift: uniforms.uFireflyDrift,
+  };
+
+  const fireflyGeometry = new THREE.PlaneGeometry(2, 2);
+  const fireflyMaterial = new THREE.ShaderMaterial({
+    uniforms: fireflyUniforms,
+    vertexShader: FIREFLY_VERTEX_SHADER,
+    fragmentShader: FIREFLY_FRAGMENT_SHADER,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+    blending: THREE.AdditiveBlending,
+  });
+
+  const fireflyPlane = new THREE.Mesh(fireflyGeometry, fireflyMaterial);
+  fireflyPlane.renderOrder = 10;
+  scene.add(fireflyPlane);
+
+  let grass = null;
+  let grassGeometry = null;
+  let breezeDirection = 1;
+  let lastBreezeTime = 0;
+  let breezeGusts = [];
+  let nextDirectionChangeAt = 0;
+
+  function rebuildGrass(bladeCount) {
+    if (grass) {
+      scene.remove(grass);
+      grassGeometry.dispose();
+    }
+
+    grassGeometry = createGrassGeometry({ THREE, baseGeometry, bladeCount });
+    grass = new THREE.Mesh(grassGeometry, material);
+    grass.renderOrder = 1;
+    scene.add(grass);
+  }
+
+  function randomGustPacket(direction, time) {
+    const radius = randomBetween(breezeSettings.minRadius, breezeSettings.maxRadius);
+    const strength = randomBetween(breezeSettings.minStrength, breezeSettings.maxStrength);
+    const lifetime = randomBetween(breezeSettings.minLifetime, breezeSettings.maxLifetime);
+    const springTail = randomBetween(breezeSettings.minSpringTail, breezeSettings.maxSpringTail);
+    const driftSpeed = randomBetween(breezeSettings.minDriftSpeed, breezeSettings.maxDriftSpeed);
+
+    return {
+      x: -direction * randomBetween(1.1, 1.65),
+      y: randomBetween(-1.1, 1.1),
+      radius,
+      strength,
+      bornAt: time,
+      lifetime,
+      springTail,
+      driftSpeed,
+      wobbleAmount: randomBetween(0.035, 0.14),
+      wobbleSpeed: randomBetween(0.0011, 0.0024),
+      wobbleSeed: Math.random() * 100,
+    };
+  }
+
+  function setGustUniform(uniform, gust, fade) {
+    uniform.value.set(gust.x, gust.y, gust.radius, gust.strength * fade);
+  }
+
+  function clearBreezeUniforms(time) {
+    const empty = { x: 9, y: 9, radius: 0, strength: 0, bornAt: time, lifetime: 1, springTail: 1 };
+
+    [uniforms.uBreezeGustA, uniforms.uBreezeGustB, uniforms.uBreezeGustC, uniforms.uBreezeGustD].forEach((uniform) => {
+      setGustUniform(uniform, empty, 0);
+    });
+  }
+
+  function updateBreezeUniforms(time) {
+    const empty = { x: 9, y: 9, radius: 0, strength: 0, bornAt: time, lifetime: 1, springTail: 1 };
+
+    [uniforms.uBreezeGustA, uniforms.uBreezeGustB, uniforms.uBreezeGustC, uniforms.uBreezeGustD].forEach((uniform, index) => {
+      const gust = breezeGusts[index] || empty;
+      const t = (time - gust.bornAt) / gust.lifetime;
+      const fade = gustEnvelope(t, gust.springTail);
+      setGustUniform(uniform, gust, fade);
+    });
+  }
+
+  function updateBreeze(time, deltaSeconds) {
+    lastBreezeTime = time;
+
+    if (config.wall.breezeChance <= 0) {
+      breezeGusts.length = 0;
+      uniforms.uBreeze.value += (0 - uniforms.uBreeze.value) * 0.035;
+      clearBreezeUniforms(time);
+      return;
+    }
+
+    if (time >= nextDirectionChangeAt) {
+      breezeDirection = Math.random() < 0.5 ? -1 : 1;
+      nextDirectionChangeAt = time + randomBetween(3800, 10500);
+    }
+
+    const maxGusts = 4;
+    const spawnChance = config.wall.breezeChance * deltaSeconds;
+
+    if (breezeGusts.length < maxGusts && Math.random() < spawnChance) {
+      breezeGusts.push(randomGustPacket(breezeDirection, time));
+    }
+
+    if (config.wall.breezeChance > 0.65 && breezeGusts.length < maxGusts && Math.random() < spawnChance * 0.65) {
+      breezeGusts.push(randomGustPacket(breezeDirection, time));
+    }
+
+    if (config.wall.breezeChance > 0.9 && breezeGusts.length < maxGusts && Math.random() < spawnChance * 0.35) {
+      breezeGusts.push(randomGustPacket(breezeDirection, time));
+    }
+
+    breezeGusts = breezeGusts
+      .map((gust) => ({
+        ...gust,
+        x: gust.x + breezeDirection * deltaSeconds * gust.driftSpeed,
+        y: gust.y + Math.sin(time * gust.wobbleSpeed + gust.wobbleSeed) * deltaSeconds * gust.wobbleAmount,
+      }))
+      .filter((gust) => {
+        const age = (time - gust.bornAt) / gust.lifetime;
+        const alive = age < 1 + gust.springTail;
+        const onScreen = Math.abs(gust.x) < 1.85 + gust.radius;
+        return alive && onScreen;
+      });
+
+    uniforms.uBreeze.value += ((breezeGusts.length > 0 ? 1 : 0) - uniforms.uBreeze.value) * 0.035;
+    updateBreezeUniforms(time);
+  }
+
+  function syncInteractionUniforms() {
+    uniforms.uCursorRadius.value = config.interaction.cursorRadius;
+    uniforms.uCursorStrength.value = config.interaction.cursorStrength;
+    uniforms.uVerticalPush.value = config.interaction.verticalPush;
+    uniforms.uTouchBoost.value = config.interaction.touchBoost;
+    uniforms.uBrushStrength.value = config.interaction.brushStrength;
+    uniforms.uWakeStrength.value = config.interaction.wakeStrength;
+    uniforms.uPulseStrength.value = config.interaction.pulseStrength;
+    uniforms.uVelocityStrength.value = config.interaction.velocityStrength;
+    uniforms.uPulseRadius.value = config.interaction.pulseRadius;
+  }
+
+  function set(path, value) {
+    const key = path.startsWith("wall.") ? path.slice(5) : path;
+
+    if (key === "grassColor") {
+      targetGrassColor.set(value);
+      return true;
+    }
+
+    if (key === "cursorColor") {
+      targetCursorColor.set(value);
+      return true;
+    }
+
+    if (key === "bladeCount") {
+      rebuildGrass(value);
+      return true;
+    }
+
+    if (key === "fireflies") {
+      uniforms.uFireflies.value = value ? 1 : 0;
+      return true;
+    }
+
+    if (key === "breezeChance" && value <= 0) {
+      breezeGusts.length = 0;
+    }
+
+    const uniformKey = `u${key[0].toUpperCase()}${key.slice(1)}`;
+
+    if (uniforms[uniformKey]) {
+      uniforms[uniformKey].value = value;
+    }
+
+    return true;
+  }
+
+  rebuildGrass(wallConfig.bladeCount);
+
+  return {
+    controls: grassControls,
+
+    resolvePath(key) {
+      return uniformPaths[key] || null;
+    },
+
+    set,
+
+    update({ time, delta }) {
+      syncInteractionUniforms();
+      updateBreeze(time, delta || 0);
+      uniforms.uGrassColor.value.lerp(targetGrassColor, config.wall.colorTransitionSpeed);
+      uniforms.uCursorColor.value.lerp(targetCursorColor, config.wall.colorTransitionSpeed);
+    },
+
+    destroy() {
+      if (grass) {
+        scene.remove(grass);
+      }
+
+      scene.remove(fireflyPlane);
+      baseGeometry.dispose();
+      grassGeometry?.dispose();
+      fireflyGeometry.dispose();
+      fireflyMaterial.dispose();
+      material.dispose();
+    },
+  };
+}
+
+createGrassWall.defaults = grassDefaults;

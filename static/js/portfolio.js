@@ -17,7 +17,6 @@ let portfolio = {
     'currentColor'          : '',
     'debouceTimeout'        : undefined,
     'currentFilterTerms'    : [],
-    'grassWall'             : null,
 };
 
 const mobileBreakpoint = 768;
@@ -27,12 +26,12 @@ portfolio.init = function(baseS3Url) {
     const darkMode = document.body.classList.contains('dark-mode');
     const luminosity = darkMode ? 'bright' : 'dark';
     portfolio.currentColor = randomColor({luminosity: 'all'});
-    
-    portfolio.grassWall = GrassWall.init({
+
+    window.graphicsWall = GraphicsWall.init({
+        type: "grass",
         showControls: true,
         grassColor: portfolio.currentColor,
         cursorColor: portfolio.currentColor,
-        colorTransitionSpeed: 1,
     });
     
     portfolio.rotateColors();
@@ -40,7 +39,7 @@ portfolio.init = function(baseS3Url) {
     
     requestAnimationFrame(() => {
         document.documentElement.classList.add('dynamic-colors-loaded');
-        portfolio.grassWall.set("colorTransitionSpeed", 0.007);
+        window.graphicsWall.set("wall.colorTransitionSpeed", 0.007);
     });
 };
 
@@ -161,9 +160,9 @@ portfolio.rotateColors = function() {
 portfolio.changeColors = function() {
     document.documentElement.style.setProperty('--dynamic-color', portfolio.currentColor);
     
-    if (portfolio.grassWall.get("rotateColors")) {
-        portfolio.grassWall.set("grassColor", portfolio.currentColor);
-        portfolio.grassWall.set("cursorColor", portfolio.currentColor);
+    if (window.graphicsWall && window.graphicsWall.get("wall.rotateColors")) {
+        window.graphicsWall.set("wall.grassColor", portfolio.currentColor);
+        window.graphicsWall.set("wall.cursorColor", portfolio.currentColor);
     }
 
     const darkMode = document.body.classList.contains('dark-mode');
