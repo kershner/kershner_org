@@ -970,16 +970,17 @@ const FIREFLY_FRAGMENT_SHADER = `
         Object.assign(panel.style, {
           position: "fixed",
           right: "12px",
-          top: "6px",
+          top: "8px",
           zIndex: "99999",
           maxHeight: "80vh",
           overflow: "auto",
           background: "#202020",
           color: "#FFF",
-          padding: "0.4rem 1rem",
+          padding: "0.4em 1em",
           cursor: "pointer",
-          borderRadius: "1rem",
-          fontSize: "0.8rem"
+          borderRadius: "2em",
+          fontSize: "0.8rem",
+          lineHeight: "1rem",
         });
 
         panel.innerHTML = `<summary>Settings</summary>`;
