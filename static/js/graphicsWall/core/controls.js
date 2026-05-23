@@ -128,6 +128,7 @@ export function createControls({ manager }) {
 
   function render() {
     panel.innerHTML = "<summary>Settings</summary>";
+    panel.classList.add('dynamic-color-button');
     panel.appendChild(createWallTypeSelect());
 
     manager.getControlSchema().forEach((group) => {

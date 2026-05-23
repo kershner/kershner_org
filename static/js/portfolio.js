@@ -163,6 +163,8 @@ portfolio.changeColors = function() {
     if (window.graphicsWall && window.graphicsWall.get("wall.rotateColors")) {
         window.graphicsWall.set("wall.grassColor", portfolio.currentColor);
         window.graphicsWall.set("wall.cursorColor", portfolio.currentColor);
+        window.graphicsWall.set("wall.shallowColor", portfolio.currentColor);
+        window.graphicsWall.set("wall.reflectionColor", portfolio.currentColor);
     }
 
     const darkMode = document.body.classList.contains('dark-mode');
