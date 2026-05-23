@@ -7,7 +7,6 @@ export const orbsDefaults = {
   wall: {
     rotateColors: true,
     backgroundColor: "#07080a",
-    backgroundLiftColor: "#1f1b16",
     keyLightColor: "#fff9e8",
     fillLightColor: "#b7c9df",
     cursorLightColor: "#fff1c4",
@@ -27,8 +26,6 @@ export const orbsDefaults = {
     throwPower: 1.0,
     lightCount: 1,
     lightIntensity: 0.7,
-    lightSpeed: 1.0,
-    lightSize: 0.42,
     lightDepth: 5.8,
     contrast: 1.42,
     retroBanding: 0.06,

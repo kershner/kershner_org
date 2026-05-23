@@ -1,3 +1,4 @@
+import { createUniformPathResolver, lerpColorUniforms, makeConfigUniforms, syncUniformValues } from "../../core/wallUtils.js";
 import { waterControls } from "./controls.js";
 import { waterDefaults } from "./defaults.js";
 import {
@@ -7,52 +8,59 @@ import {
   WATER_WALL_VERTEX_SHADER,
 } from "./shaders.js";
 
-const uniformPaths = {
-  rotateColors: "wall.rotateColors",
+const simUniformKeys = [
+  "damping",
+  "propagation",
+  "viscosity",
+  "rippleStrength",
+  "hoverRippleStrength",
+  "wakeRippleStrength",
+  "randomRippleStrength",
+  "randomRippleFrequency",
+  "disturbanceStrength",
+  "disturbanceFrequency",
+  "naturalChaos",
+  "rippleVariety",
+  "tinyRippleStrength",
+];
+
+const renderUniformKeys = [
+  "pondMotion",
+  "pondScale",
+  "pondSpeed",
+  "windAngle",
+  "normalStrength",
+  "fineRippleStrength",
+  "fineRippleScale",
+  "microRippleStrength",
+  "microRippleScale",
+  "reflectionStrength",
+  "fresnelStrength",
+  "specularStrength",
+  "roughness",
+  "depthStrength",
+  "contrast",
+  "definition",
+  "ringHighlightStrength",
+  "refractionStrength",
+  "vignetteStrength",
+  "shorelineReflection",
+  "sunAngle",
+];
+
+const interactionUniformKeys = ["cursorRadius", "pulseStrength", "pulseRadius"];
+
+const colorKeys = ["shallowColor", "deepColor", "skyColor", "horizonColor", "bankColor", "sunColor"];
+
+const uniformPaths = createUniformPathResolver([
+  "colorTransitionSpeed",
+  "simulationSteps",
+  ...simUniformKeys,
+  ...renderUniformKeys,
+  ...colorKeys,
+], {
   waterColor: "wall.shallowColor",
-  shallowColor: "wall.shallowColor",
-  deepColor: "wall.deepColor",
-  skyColor: "wall.skyColor",
-  horizonColor: "wall.horizonColor",
-  bankColor: "wall.bankColor",
-  sunColor: "wall.sunColor",
-  colorTransitionSpeed: "wall.colorTransitionSpeed",
-  simulationSteps: "wall.simulationSteps",
-  damping: "wall.damping",
-  propagation: "wall.propagation",
-  viscosity: "wall.viscosity",
-  rippleStrength: "wall.rippleStrength",
-  hoverRippleStrength: "wall.hoverRippleStrength",
-  wakeRippleStrength: "wall.wakeRippleStrength",
-  pondMotion: "wall.pondMotion",
-  pondScale: "wall.pondScale",
-  pondSpeed: "wall.pondSpeed",
-  randomRippleStrength: "wall.randomRippleStrength",
-  randomRippleFrequency: "wall.randomRippleFrequency",
-  disturbanceStrength: "wall.disturbanceStrength",
-  disturbanceFrequency: "wall.disturbanceFrequency",
-  naturalChaos: "wall.naturalChaos",
-  rippleVariety: "wall.rippleVariety",
-  tinyRippleStrength: "wall.tinyRippleStrength",
-  windAngle: "wall.windAngle",
-  normalStrength: "wall.normalStrength",
-  fineRippleStrength: "wall.fineRippleStrength",
-  fineRippleScale: "wall.fineRippleScale",
-  microRippleStrength: "wall.microRippleStrength",
-  microRippleScale: "wall.microRippleScale",
-  reflectionStrength: "wall.reflectionStrength",
-  fresnelStrength: "wall.fresnelStrength",
-  specularStrength: "wall.specularStrength",
-  roughness: "wall.roughness",
-  depthStrength: "wall.depthStrength",
-  contrast: "wall.contrast",
-  definition: "wall.definition",
-  ringHighlightStrength: "wall.ringHighlightStrength",
-  refractionStrength: "wall.refractionStrength",
-  vignetteStrength: "wall.vignetteStrength",
-  shorelineReflection: "wall.shorelineReflection",
-  sunAngle: "wall.sunAngle",
-};
+});
 
 export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config }) {
   const wallConfig = config.wall;
@@ -81,26 +89,12 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
   const simUniforms = {
     uState: { value: readTarget.texture },
     uTexel: { value: texel },
+    ...makeConfigUniforms(wallConfig, simUniformKeys),
     uTime: sharedUniforms.uTime,
     uAspect: sharedUniforms.uAspect,
-    uDamping: { value: wallConfig.damping },
-    uPropagation: { value: wallConfig.propagation },
-    uViscosity: { value: wallConfig.viscosity },
-    uRippleStrength: { value: wallConfig.rippleStrength },
-    uHoverRippleStrength: { value: wallConfig.hoverRippleStrength },
-    uWakeRippleStrength: { value: wallConfig.wakeRippleStrength },
-    uRandomRippleStrength: { value: wallConfig.randomRippleStrength },
-    uRandomRippleFrequency: { value: wallConfig.randomRippleFrequency },
-    uDisturbanceStrength: { value: wallConfig.disturbanceStrength },
-    uDisturbanceFrequency: { value: wallConfig.disturbanceFrequency },
-    uNaturalChaos: { value: wallConfig.naturalChaos },
-    uRippleVariety: { value: wallConfig.rippleVariety },
-    uTinyRippleStrength: { value: wallConfig.tinyRippleStrength },
-    uCursorRadius: { value: interactionConfig.cursorRadius },
+    ...makeConfigUniforms(interactionConfig, interactionUniformKeys),
     uPointerDown: sharedUniforms.uPointerDown,
     uClickPulse: sharedUniforms.uClickPulse,
-    uPulseStrength: { value: interactionConfig.pulseStrength },
-    uPulseRadius: { value: interactionConfig.pulseRadius },
     uPointerSmooth: sharedUniforms.uPointerSmooth,
     uPointerVelocity: sharedUniforms.uPointerVelocity,
     uWakePointer: sharedUniforms.uWakePointer,
@@ -122,27 +116,7 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
     ...sharedUniforms,
     uWaterState: { value: readTarget.texture },
     uTexel: { value: texel },
-    uPondMotion: { value: wallConfig.pondMotion },
-    uPondScale: { value: wallConfig.pondScale },
-    uPondSpeed: { value: wallConfig.pondSpeed },
-    uWindAngle: { value: wallConfig.windAngle },
-    uNormalStrength: { value: wallConfig.normalStrength },
-    uFineRippleStrength: { value: wallConfig.fineRippleStrength },
-    uFineRippleScale: { value: wallConfig.fineRippleScale },
-    uMicroRippleStrength: { value: wallConfig.microRippleStrength },
-    uMicroRippleScale: { value: wallConfig.microRippleScale },
-    uReflectionStrength: { value: wallConfig.reflectionStrength },
-    uFresnelStrength: { value: wallConfig.fresnelStrength },
-    uSpecularStrength: { value: wallConfig.specularStrength },
-    uRoughness: { value: wallConfig.roughness },
-    uDepthStrength: { value: wallConfig.depthStrength },
-    uContrast: { value: wallConfig.contrast },
-    uDefinition: { value: wallConfig.definition },
-    uRingHighlightStrength: { value: wallConfig.ringHighlightStrength },
-    uRefractionStrength: { value: wallConfig.refractionStrength },
-    uVignetteStrength: { value: wallConfig.vignetteStrength },
-    uShorelineReflection: { value: wallConfig.shorelineReflection },
-    uSunAngle: { value: wallConfig.sunAngle },
+    ...makeConfigUniforms(wallConfig, renderUniformKeys),
     uShallowColor: { value: new THREE.Color(wallConfig.shallowColor || wallConfig.waterColor) },
     uDeepColor: { value: new THREE.Color(wallConfig.deepColor) },
     uSkyColor: { value: new THREE.Color(wallConfig.skyColor) },
@@ -196,9 +170,7 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
   }
 
   function syncInteractionUniforms() {
-    simUniforms.uCursorRadius.value = config.interaction.cursorRadius;
-    simUniforms.uPulseStrength.value = config.interaction.pulseStrength;
-    simUniforms.uPulseRadius.value = config.interaction.pulseRadius;
+    syncUniformValues(simUniforms, config.interaction, interactionUniformKeys);
   }
 
   function set(path, value) {
@@ -217,6 +189,8 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
     }
 
     const uniformKey = `u${key[0].toUpperCase()}${key.slice(1)}`;
+
+    if (key in config.wall) config.wall[key] = value;
 
     if (simUniforms[uniformKey]) {
       simUniforms[uniformKey].value = value;
@@ -255,12 +229,7 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
 
       renderer.setRenderTarget(previousRenderTarget);
 
-      renderUniforms.uShallowColor.value.lerp(colorTargets.shallowColor, config.wall.colorTransitionSpeed);
-      renderUniforms.uDeepColor.value.lerp(colorTargets.deepColor, config.wall.colorTransitionSpeed);
-      renderUniforms.uSkyColor.value.lerp(colorTargets.skyColor, config.wall.colorTransitionSpeed);
-      renderUniforms.uHorizonColor.value.lerp(colorTargets.horizonColor, config.wall.colorTransitionSpeed);
-      renderUniforms.uBankColor.value.lerp(colorTargets.bankColor, config.wall.colorTransitionSpeed);
-      renderUniforms.uSunColor.value.lerp(colorTargets.sunColor, config.wall.colorTransitionSpeed);
+      lerpColorUniforms(renderUniforms, colorTargets, colorKeys, config.wall.colorTransitionSpeed);
     },
 
     destroy() {

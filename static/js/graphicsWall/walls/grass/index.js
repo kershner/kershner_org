@@ -1,3 +1,4 @@
+import { createUniformPathResolver, lerpColorUniforms, makeConfigUniforms, syncUniformValues } from "../../core/wallUtils.js";
 import { grassControls } from "./controls.js";
 import { grassDefaults } from "./defaults.js";
 import { createGrassGeometry } from "./geometry.js";
@@ -21,27 +22,43 @@ const breezeSettings = {
   maxSpringTail: 2.35,
 };
 
-const uniformPaths = {
-  wind: "wall.wind",
-  breezeChance: "wall.breezeChance",
-  widthMultiplier: "wall.widthMultiplier",
-  tipWidth: "wall.tipWidth",
-  heightMultiplier: "wall.heightMultiplier",
-  variation: "wall.variation",
-  edgeSoftness: "wall.edgeSoftness",
-  fireflies: "wall.fireflies",
-  fireflyCount: "wall.fireflyCount",
-  fireflyStrength: "wall.fireflyStrength",
-  fireflySize: "wall.fireflySize",
-  fireflySpeed: "wall.fireflySpeed",
-  fireflyFlicker: "wall.fireflyFlicker",
-  fireflyDrift: "wall.fireflyDrift",
-  fireflyReflection: "wall.fireflyReflection",
-  fireflyReflectionRadius: "wall.fireflyReflectionRadius",
-  grassColor: "wall.grassColor",
-  cursorColor: "wall.cursorColor",
-  bladeCount: "wall.bladeCount",
-};
+const wallUniformKeys = [
+  "wind",
+  "widthMultiplier",
+  "tipWidth",
+  "heightMultiplier",
+  "variation",
+  "edgeSoftness",
+  "fireflies",
+  "fireflyCount",
+  "fireflyStrength",
+  "fireflySize",
+  "fireflySpeed",
+  "fireflyFlicker",
+  "fireflyDrift",
+  "fireflyReflection",
+  "fireflyReflectionRadius",
+];
+
+const interactionUniformKeys = [
+  "cursorRadius",
+  "cursorStrength",
+  "verticalPush",
+  "touchBoost",
+  "brushStrength",
+  "wakeStrength",
+  "pulseStrength",
+  "velocityStrength",
+  "pulseRadius",
+];
+
+const uniformPaths = createUniformPathResolver([
+  "breezeChance",
+  "grassColor",
+  "cursorColor",
+  "bladeCount",
+  ...wallUniformKeys,
+]);
 
 function randomBetween(min, max) {
   return min + Math.random() * (max - min);
@@ -65,37 +82,16 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
 
   const uniforms = {
     ...sharedUniforms,
-    uWind: { value: wallConfig.wind },
+    ...makeConfigUniforms(wallConfig, wallUniformKeys),
+    ...makeConfigUniforms(interactionConfig, interactionUniformKeys),
+    uFireflies: { value: wallConfig.fireflies ? 1 : 0 },
     uBreeze: { value: 0 },
     uBreezeGustA: { value: new THREE.Vector4(9, 9, 0, 0) },
     uBreezeGustB: { value: new THREE.Vector4(9, 9, 0, 0) },
     uBreezeGustC: { value: new THREE.Vector4(9, 9, 0, 0) },
     uBreezeGustD: { value: new THREE.Vector4(9, 9, 0, 0) },
-    uCursorRadius: { value: interactionConfig.cursorRadius },
-    uCursorStrength: { value: interactionConfig.cursorStrength },
-    uVerticalPush: { value: interactionConfig.verticalPush },
-    uWidthMultiplier: { value: wallConfig.widthMultiplier },
-    uTipWidth: { value: wallConfig.tipWidth },
-    uHeightMultiplier: { value: wallConfig.heightMultiplier },
-    uVariation: { value: wallConfig.variation },
-    uEdgeSoftness: { value: wallConfig.edgeSoftness },
-    uTouchBoost: { value: interactionConfig.touchBoost },
-    uBrushStrength: { value: interactionConfig.brushStrength },
-    uWakeStrength: { value: interactionConfig.wakeStrength },
-    uPulseStrength: { value: interactionConfig.pulseStrength },
-    uVelocityStrength: { value: interactionConfig.velocityStrength },
-    uPulseRadius: { value: interactionConfig.pulseRadius },
     uGrassColor: { value: new THREE.Color(wallConfig.grassColor) },
     uCursorColor: { value: new THREE.Color(wallConfig.cursorColor) },
-    uFireflies: { value: wallConfig.fireflies ? 1 : 0 },
-    uFireflyCount: { value: wallConfig.fireflyCount },
-    uFireflyStrength: { value: wallConfig.fireflyStrength },
-    uFireflySize: { value: wallConfig.fireflySize },
-    uFireflySpeed: { value: wallConfig.fireflySpeed },
-    uFireflyFlicker: { value: wallConfig.fireflyFlicker },
-    uFireflyDrift: { value: wallConfig.fireflyDrift },
-    uFireflyReflection: { value: wallConfig.fireflyReflection },
-    uFireflyReflectionRadius: { value: wallConfig.fireflyReflectionRadius },
   };
 
   const targetGrassColor = new THREE.Color(wallConfig.grassColor);
@@ -142,7 +138,6 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
   let grass = null;
   let grassGeometry = null;
   let breezeDirection = 1;
-  let lastBreezeTime = 0;
   let breezeGusts = [];
   let nextDirectionChangeAt = 0;
 
@@ -204,8 +199,6 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
   }
 
   function updateBreeze(time, deltaSeconds) {
-    lastBreezeTime = time;
-
     if (config.wall.breezeChance <= 0) {
       breezeGusts.length = 0;
       uniforms.uBreeze.value += (0 - uniforms.uBreeze.value) * 0.035;
@@ -251,15 +244,7 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
   }
 
   function syncInteractionUniforms() {
-    uniforms.uCursorRadius.value = config.interaction.cursorRadius;
-    uniforms.uCursorStrength.value = config.interaction.cursorStrength;
-    uniforms.uVerticalPush.value = config.interaction.verticalPush;
-    uniforms.uTouchBoost.value = config.interaction.touchBoost;
-    uniforms.uBrushStrength.value = config.interaction.brushStrength;
-    uniforms.uWakeStrength.value = config.interaction.wakeStrength;
-    uniforms.uPulseStrength.value = config.interaction.pulseStrength;
-    uniforms.uVelocityStrength.value = config.interaction.velocityStrength;
-    uniforms.uPulseRadius.value = config.interaction.pulseRadius;
+    syncUniformValues(uniforms, config.interaction, interactionUniformKeys);
   }
 
   function set(path, value) {
@@ -312,8 +297,7 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
     update({ time, delta }) {
       syncInteractionUniforms();
       updateBreeze(time, delta || 0);
-      uniforms.uGrassColor.value.lerp(targetGrassColor, config.wall.colorTransitionSpeed);
-      uniforms.uCursorColor.value.lerp(targetCursorColor, config.wall.colorTransitionSpeed);
+      lerpColorUniforms(uniforms, { grassColor: targetGrassColor, cursorColor: targetCursorColor }, ["grassColor", "cursorColor"], config.wall.colorTransitionSpeed);
     },
 
     destroy() {

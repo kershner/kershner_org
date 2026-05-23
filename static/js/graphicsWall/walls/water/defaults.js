@@ -11,7 +11,6 @@ export const waterDefaults = {
     wakeLag: 0.11,
   },
   wall: {
-    rotateColors: true,
     shallowColor: "#2d5758",
     waterColor: "#2d5758",
     deepColor: "#041014",

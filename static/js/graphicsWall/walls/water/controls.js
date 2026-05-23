@@ -59,7 +59,6 @@ export const waterControls = [
   {
     title: "Water Color",
     controls: [
-      { type: "checkbox", path: "wall.rotateColors", label: "Rotate colors" , help: "Cycle palette." },
       { type: "range", path: "wall.colorTransitionSpeed", label: "Color speed", min: 0.01, max: 1, step: 0.01 , help: "Palette speed." },
       { type: "color", path: "wall.shallowColor", label: "Water tint" , help: "Shallow color." },
       { type: "color", path: "wall.deepColor", label: "Deep water" , help: "Deep color." },
