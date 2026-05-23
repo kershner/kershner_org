@@ -22,21 +22,21 @@ let portfolio = {
 const mobileBreakpoint = 768;
 const isMobile = window.innerWidth <= mobileBreakpoint;
 
-portfolio.init = function(baseS3Url) {
+portfolio.init = async function(baseS3Url) {
     const darkMode = document.body.classList.contains('dark-mode');
     const luminosity = darkMode ? 'bright' : 'dark';
     portfolio.currentColor = randomColor({luminosity: 'all'});
 
-    window.graphicsWall = GraphicsWall.init({
+    window.graphicsWall = await GraphicsWall.init({
         type: "grass",
         showControls: true,
         grassColor: portfolio.currentColor,
         cursorColor: portfolio.currentColor,
     });
-    
+
     portfolio.rotateColors();
     portfolio.colorGridInit();
-    
+
     requestAnimationFrame(() => {
         document.documentElement.classList.add('dynamic-colors-loaded');
         window.graphicsWall.set("wall.colorTransitionSpeed", 0.007);

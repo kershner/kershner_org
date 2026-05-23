@@ -22,9 +22,6 @@
 
         {# Title #}
         {% if title %}<title>Tyler Kershner - {{ title }}</title>{% else %}<title>Tyler Kershner</title>{% endif %}
-
-        {# react color grid stuff #}
-        <link href="{% settings_value "BASE_S3_URL" %}/react-apps/colorDoodle/color_doodle_dist/colorDoodle.css" rel="stylesheet">
     </head>
 
     <body class="portfolio {% if request.GET.backgroundColor != "light" %}dark-mode{% endif %}">
@@ -32,9 +29,6 @@
         <div id="page-wrapper">
             {% block content %}{% endblock %}
         </div>
-
-        {# color grid react component #}
-        <div id="color-grid" class="portfolio-color-grid"></div>
 
     {# Footer #}
     {% block footer %}
@@ -87,7 +81,6 @@
         <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
         <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/randomColor.min.js"></script>
         <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/portfolio.js"></script>
-        <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
         
         {% block javascripts %}
             {% block extra_javascripts %}{% endblock %}
@@ -95,8 +88,8 @@
             <script type="module">
                 import GraphicsWall from "{% settings_value "BASE_S3_URL" %}/js/graphicsWall/graphicsWall.js";
 
-                document.addEventListener('DOMContentLoaded', () => {
-                    portfolio.init("{% settings_value 'BASE_S3_URL' %}");
+                document.addEventListener('DOMContentLoaded', async () => {
+                    await portfolio.init("{% settings_value 'BASE_S3_URL' %}");
                 });
             </script>
         {% endblock %}

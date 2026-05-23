@@ -59,19 +59,21 @@ export class GraphicsWallManager {
     this.options = normalizeInitOptions(options);
     this.events = createEventBus();
     this.activeWall = null;
+    this.wallFactoryCache = {};
     this.controls = null;
     this.animationFrame = null;
     this.lastTime = 0;
   }
 
-  init() {
+  async init() {
     if (!this.THREE) {
       console.error("GraphicsWall: THREE could not be loaded.");
       return null;
     }
 
     this.type = this.options.type;
-    this.config = this.createConfig(this.type, this.options);
+    const wallFactory = await this.getWallFactory(this.type);
+    this.config = this.createConfig(this.type, this.options, wallFactory);
     this.canvas = document.createElement("canvas");
 
     Object.assign(this.canvas.style, {
@@ -108,7 +110,7 @@ export class GraphicsWallManager {
       ...this.pointer.uniforms,
     };
 
-    this.createActiveWall();
+    await this.createActiveWall(wallFactory);
 
     if (this.config.global.showControls) {
       this.controls = createControls({ manager: this });
@@ -133,9 +135,28 @@ export class GraphicsWallManager {
     return this.createPublicApi();
   }
 
-  createConfig(type, options) {
-    const wallFactory = this.wallTypes[type];
+  async getWallFactory(type) {
+    if (this.wallFactoryCache[type]) {
+      return this.wallFactoryCache[type];
+    }
 
+    const loader = this.wallTypes[type];
+
+    if (!loader) {
+      throw new Error(`GraphicsWall: unknown wall type "${type}".`);
+    }
+
+    const wallFactory = await loader();
+
+    if (typeof wallFactory !== "function") {
+      throw new Error(`GraphicsWall: wall type "${type}" did not load a valid factory.`);
+    }
+
+    this.wallFactoryCache[type] = wallFactory;
+    return wallFactory;
+  }
+
+  createConfig(type, options, wallFactory) {
     if (!wallFactory) {
       throw new Error(`GraphicsWall: unknown wall type "${type}".`);
     }
@@ -150,10 +171,10 @@ export class GraphicsWallManager {
     );
   }
 
-  createActiveWall() {
-    const wallFactory = this.wallTypes[this.type];
+  async createActiveWall(wallFactory = null) {
+    const factory = wallFactory || await this.getWallFactory(this.type);
 
-    this.activeWall = wallFactory({
+    this.activeWall = factory({
       THREE: this.THREE,
       scene: this.scene,
       camera: this.camera,
@@ -222,15 +243,17 @@ export class GraphicsWallManager {
     return getPath(this.config, path);
   }
 
-  setType(type) {
+  async setType(type) {
     if (type === this.type) {
       return true;
     }
 
-    const wallFactory = this.wallTypes[type];
+    let wallFactory = null;
 
-    if (!wallFactory) {
-      console.warn(`GraphicsWall: unknown wall type "${type}".`);
+    try {
+      wallFactory = await this.getWallFactory(type);
+    } catch (error) {
+      console.warn(error.message);
       return false;
     }
 
@@ -241,8 +264,8 @@ export class GraphicsWallManager {
       global: this.config.global,
       interaction: this.config.interaction,
       wall: {},
-    });
-    this.createActiveWall();
+    }, wallFactory);
+    await this.createActiveWall(wallFactory);
     this.events.emit("typechange", { type });
     return true;
   }
