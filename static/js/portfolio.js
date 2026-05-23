@@ -41,7 +41,7 @@ portfolio.startGraphicsWall = function(baseS3Url) {
         try {
             const { default: GraphicsWall } = await import(`${baseS3Url}/js/graphicsWall/graphicsWall.js`);
 
-            window.graphicsWall = await GraphicsWall.init({
+            window.graphicsWall = await GraphicsWall.init(baseS3Url, {
                 type: isMobile ? "water" : "grass",
                 showControls: true,
                 grassColor: portfolio.currentColor,
