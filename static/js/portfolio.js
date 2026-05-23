@@ -141,7 +141,6 @@ portfolio.projectStyleToggles = function() {
         portfolio.projectsWrapper.classList.remove('grid', 'list');
         portfolio.projectsWrapper.classList.add(newValue);
         setQueryParam('style', newValue);
-        updateLinksWithQueryParams();
     }
 
     portfolio.styleToggles.forEach(radio => {

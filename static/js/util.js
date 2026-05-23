@@ -113,23 +113,61 @@ function getCookie(name) {
 
 function setQueryParam(key, value) {
     const currentURL = new URL(window.location.href);
-    currentURL.searchParams.set(key, value);
-    window.history.replaceState({}, '', currentURL.toString());
+
+    if (value === null || value === undefined || value === '') {
+        currentURL.searchParams.delete(key);
+    } else {
+        currentURL.searchParams.set(key, value);
+    }
+
+    window.history.replaceState(window.history.state, '', currentURL.toString());
 }
   
 function updateLinksWithQueryParams() {
     const currentUrl = window.location.href;
     const urlObject = new URL(currentUrl);
-    const queryParams = new URLSearchParams(urlObject.search);
+    const queryParams = urlObject.searchParams.toString();
 
-    // Update footer link hrefs
     document.querySelectorAll('.preserve-params').forEach((el) => {
         const anchorElement = el;
-        const href = anchorElement.href;
-        const urlObject = new URL(href);
-        const hrefWithOutQueryParams = urlObject.origin + urlObject.pathname;
-        anchorElement.href = `${hrefWithOutQueryParams}?${queryParams.toString()}`;
+        const linkUrl = new URL(anchorElement.href);
+        const hrefWithoutQueryParams = `${linkUrl.origin}${linkUrl.pathname}`;
+        const hash = linkUrl.hash || '';
+
+        anchorElement.href = queryParams
+            ? `${hrefWithoutQueryParams}?${queryParams}${hash}`
+            : `${hrefWithoutQueryParams}${hash}`;
     });
+}
+
+function syncPreserveParamsLinksOnUrlChange() {
+    if (!window.history || window.history.preserveParamsLinksSynced) return;
+
+    const dispatchUrlChange = () => {
+        window.dispatchEvent(new Event('urlchange'));
+    };
+
+    ['pushState', 'replaceState'].forEach((method) => {
+        const originalMethod = window.history[method];
+
+        window.history[method] = function() {
+            const result = originalMethod.apply(this, arguments);
+            dispatchUrlChange();
+            return result;
+        };
+    });
+
+    window.addEventListener('popstate', dispatchUrlChange);
+    window.addEventListener('urlchange', updateLinksWithQueryParams);
+    window.history.preserveParamsLinksSynced = true;
+}
+
+syncPreserveParamsLinksOnUrlChange();
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateLinksWithQueryParams);
+} else {
+    updateLinksWithQueryParams();
 }
 
 function areArraysEqual(arr1, arr2) {
