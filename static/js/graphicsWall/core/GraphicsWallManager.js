@@ -9,6 +9,7 @@ const DEFAULT_CONFIG = {
     showControls: true,
     fullscreen: false,
     opacity: 1,
+    fadeInDuration: 600,
   },
   interaction: {
     cursorRadius: 0.3,
@@ -83,6 +84,9 @@ export class GraphicsWallManager {
       height: "100%",
       pointerEvents: "none",
       zIndex: this.config.global.zIndex,
+      opacity: "0",
+      transition: `opacity ${this.config.global.fadeInDuration}ms ease`,
+      willChange: "opacity",
     });
 
     document.body.prepend(this.canvas);
@@ -92,7 +96,7 @@ export class GraphicsWallManager {
     this.renderer = new this.THREE.WebGLRenderer({
       canvas: this.canvas,
       alpha: true,
-      antialias: true,
+      antialias: false,
       powerPreference: "high-performance",
     });
 
@@ -130,6 +134,8 @@ export class GraphicsWallManager {
 
     window.addEventListener("resize", this.resize);
     this.resize();
+    this.renderInitialFrame();
+    this.reveal();
     this.animationFrame = requestAnimationFrame(this.animate);
 
     return this.createPublicApi();
@@ -190,6 +196,31 @@ export class GraphicsWallManager {
 
     this.renderer.setSize(width, height, false);
     this.sharedUniforms.uAspect.value = width / height;
+  }
+
+  renderInitialFrame() {
+    this.sharedUniforms.uTime.value = 0;
+    this.sharedUniforms.uOpacity.value = this.config.global.opacity;
+    this.activeWall?.update({
+      time: 0,
+      delta: 0,
+      config: this.config,
+    });
+    this.renderer.render(this.scene, this.camera);
+  }
+
+  reveal() {
+    this.canvas.style.opacity = "0";
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        this.canvas.style.opacity = "1";
+
+        window.setTimeout(() => {
+          this.canvas.style.willChange = "auto";
+        }, this.config.global.fadeInDuration);
+      });
+    });
   }
 
   animate(time) {

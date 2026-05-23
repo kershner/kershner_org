@@ -22,25 +22,57 @@ let portfolio = {
 const mobileBreakpoint = 768;
 const isMobile = window.innerWidth <= mobileBreakpoint;
 
-portfolio.init = async function(baseS3Url) {
+portfolio.init = function(baseS3Url) {
     const darkMode = document.body.classList.contains('dark-mode');
-    const luminosity = darkMode ? 'bright' : 'dark';
-    portfolio.currentColor = randomColor({luminosity: 'all'});
-
-    window.graphicsWall = await GraphicsWall.init({
-        type: "grass",
-        showControls: true,
-        grassColor: portfolio.currentColor,
-        cursorColor: portfolio.currentColor,
-    });
+    portfolio.currentColor = randomColor({luminosity: darkMode ? 'bright' : 'dark'});
 
     portfolio.rotateColors();
     portfolio.colorGridInit();
 
     requestAnimationFrame(() => {
         document.documentElement.classList.add('dynamic-colors-loaded');
-        window.graphicsWall.set("wall.colorTransitionSpeed", 0.007);
     });
+
+    portfolio.startGraphicsWall(baseS3Url);
+};
+
+portfolio.startGraphicsWall = function(baseS3Url) {
+    const start = async () => {
+        try {
+            const { default: GraphicsWall } = await import(`${baseS3Url}/js/graphicsWall/graphicsWall.js`);
+
+            window.graphicsWall = await GraphicsWall.init({
+                type: isMobile ? "water" : "grass",
+                showControls: true,
+                grassColor: portfolio.currentColor,
+                cursorColor: portfolio.currentColor,
+                shallowColor: portfolio.currentColor,
+                reflectionColor: portfolio.currentColor,
+                fadeInDuration: 1000,
+            });
+
+            window.graphicsWall.set("wall.colorTransitionSpeed", 0.007);
+            portfolio.changeColors();
+        } catch (error) {
+            console.warn("Graphics wall failed to load.", error);
+        }
+    };
+
+    const scheduleStart = () => {
+        requestAnimationFrame(() => {
+            if ("requestIdleCallback" in window) {
+                requestIdleCallback(start, { timeout: 2500 });
+            } else {
+                setTimeout(start, 1);
+            }
+        });
+    };
+
+    if (document.readyState === "complete") {
+        scheduleStart();
+    } else {
+        window.addEventListener("load", scheduleStart, { once: true });
+    }
 };
 
 portfolio.addProjectHtml = function () {
@@ -160,7 +192,11 @@ portfolio.rotateColors = function() {
 portfolio.changeColors = function() {
     document.documentElement.style.setProperty('--dynamic-color', portfolio.currentColor);
     
-    if (window.graphicsWall && window.graphicsWall.get("wall.rotateColors")) {
+    if (
+        window.graphicsWall &&
+        typeof window.graphicsWall.get === "function" &&
+        window.graphicsWall.get("wall.rotateColors")
+    ) {
         window.graphicsWall.set("wall.grassColor", portfolio.currentColor);
         window.graphicsWall.set("wall.cursorColor", portfolio.currentColor);
         window.graphicsWall.set("wall.shallowColor", portfolio.currentColor);

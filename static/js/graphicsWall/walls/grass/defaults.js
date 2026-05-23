@@ -5,7 +5,7 @@ export const grassDefaults = {
     opacity: isMobile ? 0.82 : 1,
   },
   wall: {
-    bladeCount: isMobile ? 4500 : 12000,
+    bladeCount: isMobile ? 4500 : 8000,
     rotateColors: true,
     grassColor: "#75c94a",
     cursorColor: "#3a2e27",

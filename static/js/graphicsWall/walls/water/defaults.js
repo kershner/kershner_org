@@ -21,8 +21,8 @@ export const waterDefaults = {
     sunColor: "#fff3c9",
     colorTransitionSpeed: 0.007,
 
-    simulationResolution: 768,
-    simulationSteps: 3,
+    simulationResolution: 512,
+    simulationSteps: 2,
     damping: 0.991,
     propagation: 0.14,
     viscosity: 0.018,

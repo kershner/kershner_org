@@ -85,11 +85,9 @@
         {% block javascripts %}
             {% block extra_javascripts %}{% endblock %}
             
-            <script type="module">
-                import GraphicsWall from "{% settings_value "BASE_S3_URL" %}/js/graphicsWall/graphicsWall.js";
-
-                document.addEventListener('DOMContentLoaded', async () => {
-                    await portfolio.init("{% settings_value 'BASE_S3_URL' %}");
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    portfolio.init("{% settings_value 'BASE_S3_URL' %}");
                 });
             </script>
         {% endblock %}
