@@ -41,8 +41,11 @@ portfolio.startGraphicsWall = function(baseS3Url) {
         try {
             const { default: GraphicsWall } = await import(`${baseS3Url}/js/graphicsWall/graphicsWall.js`);
 
+            const wallTypes = isMobile ? ["orbs", "water"] : ["grass", "orbs", "water"];
+            const type = wallTypes[Math.floor(Math.random() * wallTypes.length)];
+
             window.graphicsWall = await GraphicsWall.init(baseS3Url, {
-                type: isMobile ? "water" : "grass",
+                type,
                 showControls: true,
                 grassColor: portfolio.currentColor,
                 cursorColor: portfolio.currentColor,
