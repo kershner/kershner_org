@@ -899,8 +899,11 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
       const t = time * 0.001;
       const dt = Math.min(delta || 0.016, 0.033);
       const pointer = sharedUniforms.uPointerSmooth?.value || { x: 9, y: 9 };
+      const hasPointer = pointer.x < 8 && pointer.y < 8;
       const pointerX = pointer.x * aspect;
       const pointerY = pointer.y;
+      const lightX = hasPointer ? pointerX : 0;
+      const lightY = hasPointer ? pointerY : 0.18;
 
       backgroundMaterial.uniforms.uContrast.value = config.wall.contrast;
       backgroundMaterial.uniforms.uBanding.value = config.wall.retroBanding;
@@ -920,8 +923,8 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
         const item = driftLights[i];
         if (!item.visible) continue;
 
-        const targetX = pointerX;
-        const targetY = pointerY;
+        const targetX = lightX;
+        const targetY = lightY;
         const targetZ = config.wall.lightDepth;
         item.group.position.x += (targetX - item.group.position.x) * 0.58;
         item.group.position.y += (targetY - item.group.position.y) * 0.58;
@@ -967,7 +970,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
           const dy = orb.mesh.position.y - pointerY;
           const pointerDistSq = dx * dx + dy * dy;
           const pointerRadius = Math.max(config.interaction.cursorRadius, 0.001);
-          if (!orb.isHeld && pointer.x < 8 && pointerDistSq < pointerRadius * pointerRadius * 2.8) {
+          if (!orb.isHeld && hasPointer && pointerDistSq < pointerRadius * pointerRadius * 2.8) {
             const d = Math.sqrt(Math.max(pointerDistSq, 0.0001));
             const push = (1 - d / (pointerRadius * 1.68)) * config.interaction.cursorStrength;
             orb.vx += (dx / d) * push * dt * 3.2;
