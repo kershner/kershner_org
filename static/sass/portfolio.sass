@@ -15,6 +15,7 @@ $fast-animation-speed: 0.2s
 
 :root
   --dynamic-color-transition: none
+  --dynamic-color: #{lighten($black, 40%)}
 
 html.dynamic-colors-loaded
   --dynamic-color-transition: background-color #{$default-animation-speed}
@@ -75,7 +76,7 @@ html.dynamic-colors-loaded
   height: 3rem
   border-bottom: 0.15rem solid var(--dynamic-color)
   color: $light-black  
-  transition: border-color 0.25s
+  transition: border-color $default-animation-speed
   &.fixed
     background-color: $white
     position: fixed
@@ -97,14 +98,12 @@ html.dynamic-colors-loaded
       display: flex
       align-items: center
       margin-left: 0.5rem
-      
+      display: none
+      @media (min-width: $med-breakpoint)
+        display: flex
+     
       .sticky-nav-control
         position: relative
-
-        &.sticky-search
-          display: none
-          @media (min-width: $med-breakpoint)
-            display: unset
 
         input[type="radio"]
           display: none
@@ -192,6 +191,7 @@ html.dynamic-colors-loaded
               height: 100%
               width: 100%
               fill: var(--dynamic-color)
+              transition: fill $default-animation-speed
 
 body
   font-family: $primary-font

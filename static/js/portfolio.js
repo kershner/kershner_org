@@ -24,16 +24,16 @@ const isMobile = window.innerWidth <= mobileBreakpoint;
 
 portfolio.init = function(baseS3Url) {
     const darkMode = document.body.classList.contains('dark-mode');
-    portfolio.currentColor = randomColor({luminosity: darkMode ? 'bright' : 'dark'});
-
+    
     portfolio.rotateColors();
-    portfolio.colorGridInit();
-
+    
     requestAnimationFrame(() => {
         document.documentElement.classList.add('dynamic-colors-loaded');
     });
 
     portfolio.startGraphicsWall(baseS3Url);
+
+    portfolio.currentColor = randomColor({luminosity: darkMode ? 'bright' : 'dark'});
 };
 
 portfolio.startGraphicsWall = function(baseS3Url) {
@@ -213,22 +213,6 @@ portfolio.changeColors = function() {
     const luminosity = darkMode ? 'bright' : 'dark';
     portfolio.currentColor = randomColor({luminosity: 'all'});
 };
-
-portfolio.colorGridInit = function() {
-    const colorGrid = document.getElementById('color-grid');
-    if (!colorGrid) return;
-    colorGrid.setAttribute(
-        'data-default-state',
-        JSON.stringify({
-            cellSize: isMobile ? 40 : 80,
-            borderStyle: "hidden",
-            autoInt: 2000,
-            autoDur: 0.4,
-            autoOn: true,
-            menuOpen: false,
-        })
-    );
-}
 
 const projectsClickHandler = (e) => {
     e.preventDefault();
