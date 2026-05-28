@@ -1,5 +1,4 @@
 import { applyColorUniforms, createUniformPathResolver, makeConfigUniforms, syncUniformValues } from "../../core/wallUtils.js";
-import { waterControls } from "./controls.js";
 import { waterDefaults } from "./defaults.js";
 import {
   WATER_SIM_FRAGMENT_SHADER,
@@ -206,8 +205,6 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
   clearTargets();
 
   return {
-    controls: waterControls,
-
     resolvePath(key) {
       return uniformPaths[key] || null;
     },
@@ -246,3 +243,4 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
 }
 
 createWaterWall.defaults = waterDefaults;
+createWaterWall.loadControls = () => import("./controls.js").then((module) => module.waterControls);

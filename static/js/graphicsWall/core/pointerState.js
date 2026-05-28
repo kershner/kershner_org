@@ -1,4 +1,9 @@
-export function createPointerState({ THREE }) {
+export function createPointerState({ THREE, viewport = null, eventTarget = null } = {}) {
+  const getWidth = () => Math.max(viewport?.width || (typeof window !== "undefined" ? window.innerWidth : 1) || 1, 1);
+  const getHeight = () => Math.max(viewport?.height || (typeof window !== "undefined" ? window.innerHeight : 1) || 1, 1);
+  const target = eventTarget || (typeof document !== "undefined" ? document : null);
+  const windowTarget = typeof window !== "undefined" ? window : target;
+
   const uniforms = {
     uPointer: { value: new THREE.Vector2(9, 9) },
     uPointerSmooth: { value: new THREE.Vector2(9, 9) },
@@ -18,10 +23,16 @@ export function createPointerState({ THREE }) {
   const lastPointer = new THREE.Vector2(9, 9);
   const targetVelocity = new THREE.Vector2();
 
+  function setViewport(width, height) {
+    if (!viewport) return;
+    viewport.width = width;
+    viewport.height = height;
+  }
+
   function setPointer(x, y) {
     nextPointer.set(
-      (x / window.innerWidth) * 2 - 1,
-      -((y / window.innerHeight) * 2 - 1)
+      (x / getWidth()) * 2 - 1,
+      -((y / getHeight()) * 2 - 1)
     );
 
     if (!hasPointer) {
@@ -79,23 +90,39 @@ export function createPointerState({ THREE }) {
     uniforms.uPointerVelocity.value.set(0, 0);
   }
 
+  function handlePointerEvent(event) {
+    if (!event || !event.type) return;
+
+    if (event.type === "pointermove") {
+      onPointerMove(event);
+    } else if (event.type === "pointerdown") {
+      onPointerDown(event);
+    } else if (event.type === "pointerup" || event.type === "pointercancel") {
+      onPointerUp(event);
+    } else if (event.type === "pointerleave") {
+      onPointerLeave(event);
+    }
+  }
+
   return {
     uniforms,
+    setViewport,
+    handlePointerEvent,
 
     attach() {
-      document.addEventListener("pointermove", onPointerMove);
-      window.addEventListener("pointerdown", onPointerDown);
-      window.addEventListener("pointerup", onPointerUp);
-      window.addEventListener("pointercancel", onPointerUp);
-      window.addEventListener("pointerleave", onPointerLeave);
+      target?.addEventListener?.("pointermove", onPointerMove);
+      windowTarget?.addEventListener?.("pointerdown", onPointerDown);
+      windowTarget?.addEventListener?.("pointerup", onPointerUp);
+      windowTarget?.addEventListener?.("pointercancel", onPointerUp);
+      windowTarget?.addEventListener?.("pointerleave", onPointerLeave);
     },
 
     detach() {
-      document.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("pointercancel", onPointerUp);
-      window.removeEventListener("pointerleave", onPointerLeave);
+      target?.removeEventListener?.("pointermove", onPointerMove);
+      windowTarget?.removeEventListener?.("pointerdown", onPointerDown);
+      windowTarget?.removeEventListener?.("pointerup", onPointerUp);
+      windowTarget?.removeEventListener?.("pointercancel", onPointerUp);
+      windowTarget?.removeEventListener?.("pointerleave", onPointerLeave);
     },
 
     update(config) {

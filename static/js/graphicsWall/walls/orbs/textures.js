@@ -2,10 +2,19 @@ function rand(min, max) {
   return min + Math.random() * (max - min);
 }
 
-export function makeCanvasTexture(THREE, size, draw, options = {}) {
+function createTextureCanvas(width, height) {
+  if (typeof OffscreenCanvas !== "undefined") {
+    return new OffscreenCanvas(width, height);
+  }
+
   const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = width;
+  canvas.height = height;
+  return canvas;
+}
+
+export function makeCanvasTexture(THREE, size, draw, options = {}) {
+  const canvas = createTextureCanvas(size, size);
   const ctx = canvas.getContext("2d");
   draw(ctx, size, canvas);
 
@@ -22,9 +31,7 @@ export function makeCanvasTexture(THREE, size, draw, options = {}) {
 }
 
 export function makeEnvironmentTexture(THREE, palette) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 512;
-  canvas.height = 256;
+  const canvas = createTextureCanvas(512, 256);
   const ctx = canvas.getContext("2d");
 
   ctx.fillStyle = palette.backgroundColor;
@@ -40,7 +47,6 @@ export function makeEnvironmentTexture(THREE, palette) {
   texture.needsUpdate = true;
   return texture;
 }
-
 export function makeOrbPatternTexture(THREE, index, mode = "color") {
   return makeCanvasTexture(THREE, mode === "color" ? 320 : 192, (ctx, size) => {
     const style = index % 32;

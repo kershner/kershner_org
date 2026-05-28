@@ -1,5 +1,4 @@
 import { applyColorUniforms, createUniformPathResolver, makeConfigUniforms, syncUniformValues } from "../../core/wallUtils.js";
-import { grassControls } from "./controls.js";
 import { grassDefaults } from "./defaults.js";
 import { createGrassGeometry } from "./geometry.js";
 import {
@@ -286,8 +285,6 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
   rebuildGrass(wallConfig.bladeCount);
 
   return {
-    controls: grassControls,
-
     resolvePath(key) {
       return uniformPaths[key] || null;
     },
@@ -322,3 +319,4 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
 }
 
 createGrassWall.defaults = grassDefaults;
+createGrassWall.loadControls = () => import("./controls.js").then((module) => module.grassControls);

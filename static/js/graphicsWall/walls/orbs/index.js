@@ -1,5 +1,4 @@
 import { createUniformPathResolver, makeColorTargets } from "../../core/wallUtils.js";
-import { orbsControls } from "./controls.js";
 import { orbsDefaults } from "./defaults.js";
 import { makeEnvironmentTexture, makeOrbPatternTexture } from "./textures.js";
 
@@ -882,7 +881,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
   }
 
   return {
-    controls: orbsControls,
+    controls: [],
 
     resolvePath(keyName) {
       return uniformPaths[keyName] || null;
@@ -1062,3 +1061,4 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
 }
 
 createOrbsWall.defaults = orbsDefaults;
+createOrbsWall.loadControls = () => import("./controls.js").then((module) => module.orbsControls);
