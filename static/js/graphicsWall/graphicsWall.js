@@ -62,8 +62,19 @@ function loadThree(options = {}) {
   return threeLoadPromise;
 }
 
+function isIOSLike() {
+  const userAgent = navigator.userAgent || "";
+  const platform = navigator.platform || "";
+
+  return (
+    /iPad|iPhone|iPod/.test(userAgent) ||
+    (platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
+}
+
 function supportsOffscreenCanvas() {
   return Boolean(
+    !isIOSLike() &&
     window.Worker &&
     window.OffscreenCanvas &&
     HTMLCanvasElement.prototype.transferControlToOffscreen
