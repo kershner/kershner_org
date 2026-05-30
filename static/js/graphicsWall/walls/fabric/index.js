@@ -942,7 +942,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
     const cutScale = 0.7 + cutStrength * 0.7;
     const clickReliability = options.click ? 1.18 : 1;
     const half = Number(config.wall.cutLength || 0.28) * lengthBoost * pulseRadiusScale * (0.86 + cutStrength * 0.28) * 0.5 * clickReliability;
-    const width = Math.max(Number(config.wall.cutWidth || 0.043) * cutScale, options.click ? Math.min(state.restX, state.restY) * 1.65 : 0);
+    const width = Math.max(Number(config.wall.cutWidth || 0.043) * cutScale, options.click ? Math.min(state.restX, state.restY) * 2.75 : 0);
     const ax = pointer.x - Math.cos(angle) * half;
     const ay = pointer.y - Math.sin(angle) * half;
     const bx = pointer.x + Math.cos(angle) * half;
@@ -962,7 +962,9 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
       const mx = (a.x + b.x) * 0.5;
       const my = (a.y + b.y) * 0.5;
       const hit = distanceToSegment(mx, my, ax, ay, bx, by);
-      if (hit.distance < width) {
+      const da = distanceToSegment(a.x, a.y, ax, ay, bx, by).distance;
+      const db = distanceToSegment(b.x, b.y, ax, ay, bx, by).distance;
+      if (Math.min(hit.distance, da, db) < width) {
         c.active = false;
         c.broken = true;
         c.healProgress = 0;
@@ -1005,7 +1007,10 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
       const va = distanceToSegment(a.x, a.y, ax, ay, bx, by).distance;
       const vb = distanceToSegment(b.x, b.y, ax, ay, bx, by).distance;
       const vc = distanceToSegment(c.x, c.y, ax, ay, bx, by).distance;
-      if (hit.distance < width * 0.72 || Math.min(va, vb, vc) < width * 0.55) {
+      const vab = distanceToSegment((a.x + b.x) * 0.5, (a.y + b.y) * 0.5, ax, ay, bx, by).distance;
+      const vbc = distanceToSegment((b.x + c.x) * 0.5, (b.y + c.y) * 0.5, ax, ay, bx, by).distance;
+      const vca = distanceToSegment((c.x + a.x) * 0.5, (c.y + a.y) * 0.5, ax, ay, bx, by).distance;
+      if (hit.distance < width * 0.72 || Math.min(va, vb, vc, vab, vbc, vca) < width * 0.6) {
         tri.hidden = true;
         tri.cutId = cutId;
         tri.healProgress = 0;
@@ -1203,10 +1208,10 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
       }
       lastPulse = pulse;
 
-      const pointerDown = sharedUniforms.uPointerDown.value;
+      const pointerDown = Math.max(sharedUniforms.uPointerDownRaw?.value || 0, sharedUniforms.uPointerDown.value);
       const pointer = sharedUniforms.uPointer.value;
-      if (pointerDown > 0.15 && config.wall.tearEnabled !== false) {
-        if (lastPointerDown <= 0.15 || lastCutX === null) {
+      if (pointerDown > 0.01 && config.wall.tearEnabled !== false) {
+        if (lastPointerDown <= 0.01 || lastCutX === null) {
           cutAt(pointer, sharedUniforms.uPointerVelocity.value, time, { force: true });
           lastCutX = pointer.x;
           lastCutY = pointer.y;

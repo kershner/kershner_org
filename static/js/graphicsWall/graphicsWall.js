@@ -355,6 +355,7 @@ async function createWorkerProxy({ worker, canvas, options, wallType }) {
         clientX: event.clientX,
         clientY: event.clientY,
         pointerId: event.pointerId ?? 1,
+        pointerType: event.pointerType || "mouse",
         cancelable: event.cancelable,
       },
     });

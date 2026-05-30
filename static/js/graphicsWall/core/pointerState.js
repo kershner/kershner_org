@@ -10,6 +10,7 @@ export function createPointerState({ THREE, viewport = null, eventTarget = null 
     uPointerVelocity: { value: new THREE.Vector2() },
     uWakePointer: { value: new THREE.Vector2(9, 9) },
     uPointerDown: { value: 0 },
+    uPointerDownRaw: { value: 0 },
     uClickPulse: { value: 0 },
     uPulsePointer: { value: new THREE.Vector2(9, 9) },
     uPointerIsTouch: { value: 0 },
@@ -64,6 +65,7 @@ export function createPointerState({ THREE, viewport = null, eventTarget = null 
 
   function onPointerDown(event) {
     pointerDown = true;
+    uniforms.uPointerDownRaw.value = 1;
     activePointerId = event.pointerId;
     clickPulse = 1;
     clickId += 1;
@@ -78,6 +80,7 @@ export function createPointerState({ THREE, viewport = null, eventTarget = null 
     }
 
     pointerDown = false;
+    uniforms.uPointerDownRaw.value = 0;
     activePointerId = null;
 
     if (event && typeof event.clientX === "number") {
@@ -139,6 +142,7 @@ export function createPointerState({ THREE, viewport = null, eventTarget = null 
       uniforms.uPointerSmooth.value.lerp(uniforms.uPointer.value, config.pointerSmoothing);
       uniforms.uWakePointer.value.lerp(uniforms.uPointer.value, config.wakeLag);
       uniforms.uPointerVelocity.value.lerp(targetVelocity, 0.22);
+      uniforms.uPointerDownRaw.value = pointerDown ? 1 : 0;
       uniforms.uPointerDown.value += ((pointerDown ? 1 : 0) - uniforms.uPointerDown.value) * 0.18;
       uniforms.uPointerIsTouch.value += ((pointerIsTouch ? 1 : 0) - uniforms.uPointerIsTouch.value) * 0.25;
 
