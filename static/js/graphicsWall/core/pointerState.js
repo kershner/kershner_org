@@ -1,3 +1,115 @@
+
+function isInteractiveElement(element) {
+  return Boolean(element?.closest?.(
+    'input, textarea, select, button, a, [contenteditable="true"], [contenteditable=""], [role="button"], .graphics-wall-controls'
+  ));
+}
+
+function pointIntersectsTextNode(node, x, y) {
+  const range = document.createRange();
+  range.selectNodeContents(node);
+  const rects = range.getClientRects();
+
+  for (let i = 0; i < rects.length; i += 1) {
+    const rect = rects[i];
+    if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+      range.detach?.();
+      return true;
+    }
+  }
+
+  range.detach?.();
+  return false;
+}
+
+function canUseSelectionGuard() {
+  return Boolean(
+    typeof document !== "undefined" &&
+    document.body &&
+    document.body.style &&
+    typeof document.elementFromPoint === "function" &&
+    typeof document.createRange === "function" &&
+    typeof document.createTreeWalker === "function"
+  );
+}
+
+function pointHitsSelectableText(x, y) {
+  if (!canUseSelectionGuard()) return false;
+
+  let element = document.elementFromPoint(x, y);
+  if (!element || element === document.documentElement || element === document.body) return false;
+  if (isInteractiveElement(element)) return true;
+
+  let depth = 0;
+  while (element && element !== document.body && depth < 5) {
+    if (element.matches?.('p, span, a, li, label, h1, h2, h3, h4, h5, h6, pre, code, blockquote, td, th')) {
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+      let node = walker.nextNode();
+
+      while (node) {
+        if (node.nodeValue.trim() && pointIntersectsTextNode(node, x, y)) {
+          return true;
+        }
+        node = walker.nextNode();
+      }
+    }
+
+    element = element.parentElement;
+    depth += 1;
+  }
+
+  return false;
+}
+
+function createSelectionGuard() {
+  let tracking = false;
+  let active = false;
+  let startX = 0;
+  let startY = 0;
+  let originalUserSelect = "";
+  let originalWebkitUserSelect = "";
+
+  function begin(event) {
+    active = false;
+    tracking = false;
+
+    if (!canUseSelectionGuard() || pointHitsSelectableText(event.clientX, event.clientY)) {
+      return;
+    }
+
+    tracking = true;
+    startX = event.clientX;
+    startY = event.clientY;
+  }
+
+  function move(event) {
+    if (!tracking || active) return;
+
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+
+    if ((dx * dx + dy * dy) < 36) return;
+
+    active = true;
+    originalUserSelect = document.body.style.userSelect;
+    originalWebkitUserSelect = document.body.style.webkitUserSelect;
+    document.body.style.userSelect = "none";
+    document.body.style.webkitUserSelect = "none";
+  }
+
+  function disable() {
+    tracking = false;
+
+    if (!active || !canUseSelectionGuard()) return;
+
+    active = false;
+    document.body.style.userSelect = originalUserSelect;
+    document.body.style.webkitUserSelect = originalWebkitUserSelect;
+  }
+
+  return { enable: begin, move, disable };
+}
+
 export function createPointerState({ THREE, viewport = null, eventTarget = null } = {}) {
   const getWidth = () => Math.max(viewport?.width || (typeof window !== "undefined" ? window.innerWidth : 1) || 1, 1);
   const getHeight = () => Math.max(viewport?.height || (typeof window !== "undefined" ? window.innerHeight : 1) || 1, 1);
@@ -23,6 +135,7 @@ export function createPointerState({ THREE, viewport = null, eventTarget = null 
   let hasPointer = false;
   let pointerIsTouch = false;
   let clickId = 0;
+  const selectionGuard = createSelectionGuard();
 
   const nextPointer = new THREE.Vector2();
   const lastPointer = new THREE.Vector2(9, 9);
@@ -60,10 +173,12 @@ export function createPointerState({ THREE, viewport = null, eventTarget = null 
   }
 
   function onPointerMove(event) {
+    selectionGuard.move(event);
     setPointer(event.clientX, event.clientY, event);
   }
 
   function onPointerDown(event) {
+    selectionGuard.enable(event);
     pointerDown = true;
     uniforms.uPointerDownRaw.value = 1;
     activePointerId = event.pointerId;
@@ -86,9 +201,15 @@ export function createPointerState({ THREE, viewport = null, eventTarget = null 
     if (event && typeof event.clientX === "number") {
       setPointer(event.clientX, event.clientY, event);
     }
+
+    selectionGuard.disable();
   }
 
   function onPointerLeave() {
+    if (!pointerDown) {
+      selectionGuard.disable();
+    }
+
     if (pointerDown) {
       return;
     }
@@ -123,8 +244,8 @@ export function createPointerState({ THREE, viewport = null, eventTarget = null 
     handlePointerEvent,
 
     attach() {
-      target?.addEventListener?.("pointermove", onPointerMove);
-      windowTarget?.addEventListener?.("pointerdown", onPointerDown);
+      target?.addEventListener?.("pointermove", onPointerMove, { passive: false });
+      windowTarget?.addEventListener?.("pointerdown", onPointerDown, { passive: false });
       windowTarget?.addEventListener?.("pointerup", onPointerUp);
       windowTarget?.addEventListener?.("pointercancel", onPointerUp);
       windowTarget?.addEventListener?.("pointerleave", onPointerLeave);

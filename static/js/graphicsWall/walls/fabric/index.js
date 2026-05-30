@@ -155,9 +155,6 @@ function buildFabricState(THREE, wall) {
       return x === 0;
     }
 
-    if (pinStyle === "fourCorners") {
-      return (y === 0 || y === lastY) && (x === 0 || x === lastX);
-    }
 
     if (pinStyle === "randomTacks") {
       if (y === 0 && (x === 0 || x === lastX || nearColumn(x, centerX, 1))) return true;
@@ -181,14 +178,6 @@ function buildFabricState(THREE, wall) {
       return x === 0 || x === lastX || x % tabEvery === 0;
     }
 
-    if (pinStyle === "clothesline") {
-      const anchors = 7;
-      for (let i = 0; i < anchors; i += 1) {
-        const anchorX = Math.round((lastX * i) / (anchors - 1));
-        if (nearColumn(x, anchorX, 1)) return true;
-      }
-      return false;
-    }
 
     return true;
   }
@@ -1137,7 +1126,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
   }
 
   function syncColors() {
-    const speed = clamp(Number(config.global.colorTransitionSpeed ?? config.wall.colorTransitionSpeed ?? 0.08), 0, 1);
+    const speed = clamp(Number(config.global.colorTransitionSpeed ?? config.wall.colorTransitionSpeed ?? 0.007), 0, 1);
     for (const key of colorKeys) {
       currentColors[key].lerp(colorTargets[key], config.global.rotateColors === false ? 1 : speed);
     }
@@ -1146,8 +1135,9 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
   function set(path, value) {
     const key = path.startsWith("wall.") ? path.slice(5) : path;
 
-    if (path === "global.colorTransitionSpeed") {
+    if (path === "global.colorTransitionSpeed" || path === "wall.colorTransitionSpeed" || key === "colorTransitionSpeed") {
       config.global.colorTransitionSpeed = value;
+      config.wall.colorTransitionSpeed = value;
       return true;
     }
 

@@ -1,7 +1,7 @@
 export const fabricDefaults = {
   global: {
     opacity: 0.98,
-    colorTransitionSpeed: 0.08,
+    colorTransitionSpeed: 0.007,
   },
   interaction: {
     cursorRadius: 0.32,
@@ -15,10 +15,10 @@ export const fabricDefaults = {
     rows: 72,
     width: 2.28,
     height: 1.6,
-    gravity: 0.72,
+    gravity: 0.3,
     damping: 0.988,
     constraintIterations: 4,
-    stiffness: 0.96,
+    stiffness: 1,
     windStrength: 0.026,
     windSpeed: 0.8,
     foldStrength: 0.08,

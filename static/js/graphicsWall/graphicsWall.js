@@ -100,6 +100,105 @@ function createWallCanvas(options) {
   return canvas;
 }
 
+
+function isInteractiveElement(element) {
+  return Boolean(element?.closest?.(
+    'input, textarea, select, button, a, [contenteditable="true"], [contenteditable=""], [role="button"], .graphics-wall-controls'
+  ));
+}
+
+function pointIntersectsTextNode(node, x, y) {
+  const range = document.createRange();
+  range.selectNodeContents(node);
+  const rects = range.getClientRects();
+
+  for (let i = 0; i < rects.length; i += 1) {
+    const rect = rects[i];
+    if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+      range.detach?.();
+      return true;
+    }
+  }
+
+  range.detach?.();
+  return false;
+}
+
+function pointHitsSelectableText(x, y) {
+  let element = document.elementFromPoint(x, y);
+  if (!element || element === document.documentElement || element === document.body) return false;
+  if (isInteractiveElement(element)) return true;
+
+  let depth = 0;
+  while (element && element !== document.body && depth < 5) {
+    if (element.matches?.('p, span, a, li, label, h1, h2, h3, h4, h5, h6, pre, code, blockquote, td, th')) {
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+      let node = walker.nextNode();
+
+      while (node) {
+        if (node.nodeValue.trim() && pointIntersectsTextNode(node, x, y)) {
+          return true;
+        }
+        node = walker.nextNode();
+      }
+    }
+
+    element = element.parentElement;
+    depth += 1;
+  }
+
+  return false;
+}
+
+function createSelectionGuard() {
+  let tracking = false;
+  let active = false;
+  let startX = 0;
+  let startY = 0;
+  let originalUserSelect = "";
+  let originalWebkitUserSelect = "";
+
+  function begin(event) {
+    active = false;
+    tracking = false;
+
+    if (typeof document === "undefined" || pointHitsSelectableText(event.clientX, event.clientY)) {
+      return;
+    }
+
+    tracking = true;
+    startX = event.clientX;
+    startY = event.clientY;
+  }
+
+  function move(event) {
+    if (!tracking || active) return;
+
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+
+    if ((dx * dx + dy * dy) < 36) return;
+
+    active = true;
+    originalUserSelect = document.body.style.userSelect;
+    originalWebkitUserSelect = document.body.style.webkitUserSelect;
+    document.body.style.userSelect = "none";
+    document.body.style.webkitUserSelect = "none";
+  }
+
+  function disable() {
+    tracking = false;
+
+    if (!active || typeof document === "undefined") return;
+
+    active = false;
+    document.body.style.userSelect = originalUserSelect;
+    document.body.style.webkitUserSelect = originalWebkitUserSelect;
+  }
+
+  return { enable: begin, move, disable };
+}
+
 function revealCanvas(canvas, options) {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
@@ -194,11 +293,25 @@ async function createLocalConfig(type, options) {
   });
 }
 
+async function applyQueryOptions(options) {
+  if (options.syncQueryParams === false || typeof window === "undefined") {
+    return options;
+  }
+
+  const [{ mergeDeep }, queryParams] = await Promise.all([
+    import("./core/utils.js"),
+    import("./core/queryParams.js"),
+  ]);
+
+  return mergeDeep(options, queryParams.readGraphicsWallQueryParams());
+}
+
 async function createWorkerProxy({ worker, canvas, options, wallType }) {
-  const [{ createControls }, { createFullscreenController }, utils] = await Promise.all([
+  const [{ createControls }, { createFullscreenController }, utils, queryParams] = await Promise.all([
     import("./core/controls.js"),
     import("./core/fullscreen.js"),
     import("./core/utils.js"),
+    import("./core/queryParams.js"),
   ]);
   const { createEventBus, getPath, setPath } = utils;
 
@@ -207,6 +320,7 @@ async function createWorkerProxy({ worker, canvas, options, wallType }) {
   let type = wallType;
   let config = await createLocalConfig(type, options);
   let controls = null;
+  const selectionGuard = createSelectionGuard();
 
   const fullscreen = createFullscreenController({
     canvas,
@@ -225,13 +339,14 @@ async function createWorkerProxy({ worker, canvas, options, wallType }) {
   }
 
   const api = {
-    set(path, value) {
-      if (path === "type") return api.setType(value);
+    set(path, value, setOptions = {}) {
+      if (path === "type") return api.setType(value, setOptions);
 
       if (!path.includes(".")) {
         path = `wall.${path}`;
       }
 
+      const previousValue = getPath(config, path);
       setPath(config, path, value);
       post({ type: "set", path, value });
 
@@ -245,6 +360,10 @@ async function createWorkerProxy({ worker, canvas, options, wallType }) {
 
       if (path === "global.zIndex") {
         canvas.style.zIndex = value;
+      }
+
+      if (options.syncQueryParams !== false && setOptions.syncQueryParams === true && previousValue !== value) {
+        queryParams.updateGraphicsWallQueryParam(path, value);
       }
 
       events.emit("configchange", { path, value });
@@ -264,7 +383,7 @@ async function createWorkerProxy({ worker, canvas, options, wallType }) {
       return getPath(config, path);
     },
 
-    async setType(nextType) {
+    async setType(nextType, setOptions = {}) {
       if (nextType === type || !wallTypes[nextType]) return true;
 
       type = nextType;
@@ -276,6 +395,11 @@ async function createWorkerProxy({ worker, canvas, options, wallType }) {
         wall: {},
       });
       post({ type: "setType", wallType: type });
+
+      if (options.syncQueryParams !== false && setOptions.syncQueryParams === true) {
+        queryParams.updateGraphicsWallQueryParam("type", type);
+      }
+
       events.emit("typechange", { type });
       return true;
     },
@@ -292,19 +416,24 @@ async function createWorkerProxy({ worker, canvas, options, wallType }) {
       return JSON.parse(JSON.stringify(config));
     },
 
-    async reset() {
+    async reset(resetOptions = {}) {
       config = await createLocalConfig(options.type || type, options);
       type = options.type || type;
       post({ type: "reset" });
       fullscreen.set(Boolean(config.global.fullscreen));
       canvas.style.opacity = String(Math.max(0, Math.min(1, Number(config.global.opacity ?? 1))));
       canvas.style.zIndex = config.global.zIndex;
+      if (options.syncQueryParams !== false && resetOptions.syncQueryParams === true) {
+        queryParams.clearGraphicsWallQueryParams();
+      }
+
       events.emit("typechange", { type });
       events.emit("configchange", { reset: true });
       return true;
     },
 
     destroy() {
+      selectionGuard.disable();
       controls?.destroy();
       fullscreen.set(false);
       worker.terminate();
@@ -348,6 +477,14 @@ async function createWorkerProxy({ worker, canvas, options, wallType }) {
   }
 
   function sendPointerEvent(event) {
+    if (event.type === "pointerdown") {
+      selectionGuard.enable(event);
+    } else if (event.type === "pointermove") {
+      selectionGuard.move(event);
+    } else if (event.type === "pointerup" || event.type === "pointercancel" || event.type === "pointerleave") {
+      selectionGuard.disable();
+    }
+
     post({
       type: "pointer",
       event: {
@@ -362,7 +499,7 @@ async function createWorkerProxy({ worker, canvas, options, wallType }) {
   }
 
   window.addEventListener("resize", sendResize);
-  document.addEventListener("pointermove", sendPointerEvent, { passive: true });
+  document.addEventListener("pointermove", sendPointerEvent, { passive: false });
   window.addEventListener("pointerdown", sendPointerEvent, { passive: false });
   window.addEventListener("pointerup", sendPointerEvent, { passive: true });
   window.addEventListener("pointercancel", sendPointerEvent, { passive: true });
@@ -461,19 +598,20 @@ async function initWorker(options) {
 
 const GraphicsWall = {
   async init(baseS3UrlOrOptions = {}, maybeOptions = {}) {
-    const options = normalizeInitArgs(baseS3UrlOrOptions, maybeOptions);
-    const initialType = options.type || "grass";
-    const shouldUseWorker = options.useWorker !== false && initialType !== "fabric" && supportsOffscreenCanvas();
+    const rawOptions = normalizeInitArgs(baseS3UrlOrOptions, maybeOptions);
+    const startupOptions = await applyQueryOptions(rawOptions);
+    const initialType = startupOptions.type || "grass";
+    const shouldUseWorker = startupOptions.useWorker !== false && initialType !== "fabric" && supportsOffscreenCanvas();
 
     if (shouldUseWorker) {
       try {
-        return await initWorker(options);
+        return await initWorker(startupOptions);
       } catch (error) {
         console.warn("Graphics wall worker failed; falling back to main-thread rendering.", error);
       }
     }
 
-    return initMainThread(options);
+    return initMainThread(rawOptions);
   },
 };
 

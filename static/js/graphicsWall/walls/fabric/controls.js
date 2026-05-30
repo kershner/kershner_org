@@ -8,9 +8,7 @@ export const fabricControls = [
         { value: "tabs", label: "Hanging tabs" },
         { value: "corners", label: "Corners only" },
         { value: "center", label: "Center pinch" },
-        { value: "clothesline", label: "Clothesline" },
         { value: "side", label: "Side drape" },
-        { value: "fourCorners", label: "Four corners" },
         { value: "randomTacks", label: "Random tacks" },
       ], help: "Changes how the fabric is attached along the top edge." },
       { type: "range", path: "wall.gravity", label: "Weight", min: 0.15, max: 1.6, step: 0.01, help: "How heavily the fabric hangs." },
@@ -32,6 +30,7 @@ export const fabricControls = [
   {
     title: "Color",
     controls: [
+      { type: "checkbox", path: "global.rotateColors", label: "Rotate colors", help: "Allow this wall to follow portfolio color changes." },
       { type: "color", path: "wall.baseColor", label: "Fabric color", help: "Main fabric color." },
     ],
   },
