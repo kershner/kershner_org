@@ -31,7 +31,7 @@ export function makeCanvasTexture(THREE, size, draw, options = {}) {
 }
 
 export function makeEnvironmentTexture(THREE, palette) {
-  const canvas = createTextureCanvas(256, 128);
+  const canvas = createTextureCanvas(512, 256);
   const ctx = canvas.getContext("2d");
 
   ctx.fillStyle = palette.backgroundColor;
@@ -39,7 +39,7 @@ export function makeEnvironmentTexture(THREE, palette) {
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.mapping = THREE.EquirectangularReflectionMapping;
-  texture.anisotropy = 2;
+  texture.anisotropy = 4;
   texture.generateMipmaps = true;
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.magFilter = THREE.LinearFilter;
@@ -48,7 +48,7 @@ export function makeEnvironmentTexture(THREE, palette) {
   return texture;
 }
 export function makeOrbPatternTexture(THREE, index, mode = "color") {
-  return makeCanvasTexture(THREE, mode === "color" ? 192 : 96, (ctx, size) => {
+  return makeCanvasTexture(THREE, mode === "color" ? 320 : 192, (ctx, size) => {
     const style = index % 32;
     const isBump = mode === "bump";
     const isRoughness = mode === "roughness";

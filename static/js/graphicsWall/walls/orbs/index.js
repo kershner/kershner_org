@@ -2,9 +2,6 @@ import { createUniformPathResolver, makeColorTargets } from "../../core/wallUtil
 import { orbsDefaults } from "./defaults.js";
 import { makeEnvironmentTexture, makeOrbPatternTexture } from "./textures.js";
 
-const mobileBreakpoint = 768;
-const isMobile = window.innerWidth <= mobileBreakpoint;
-
 function rand(min, max) {
   return min + Math.random() * (max - min);
 }
@@ -223,13 +220,12 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     spot.castShadow = true;
     spot.target = spotTarget;
     if (spot.shadow) {
-      const shadowSize = isMobile ? 256 : 512;
-      spot.shadow.mapSize.width = shadowSize;
-      spot.shadow.mapSize.height = shadowSize;
+      spot.shadow.mapSize.width = 2048;
+      spot.shadow.mapSize.height = 2048;
       spot.shadow.bias = -0.00003;
       spot.shadow.normalBias = 0.028;
       spot.shadow.radius = 7.0;
-      if ("blurSamples" in spot.shadow) spot.shadow.blurSamples = isMobile ? 2 : 4;
+      if ("blurSamples" in spot.shadow) spot.shadow.blurSamples = 10;
       spot.shadow.camera.near = 0.05;
       spot.shadow.camera.far = 28.0;
       spot.shadow.camera.fov = 72;
@@ -247,11 +243,9 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
   createDriftLight();
 
   const colorTargets = makeColorTargets(THREE, config.wall, colorKeys);
-  const maxOrbs = isMobile ? 6 : 8;
-  const initialOrbBudget = Math.min(isMobile ? 1 : 2, Math.max(1, Math.round(config.wall.orbCount || 0)));
-  const baseSphereSegments = isMobile
-    ? { width: 28, height: 14 }
-    : { width: 40, height: 20 };
+  const maxOrbs = 12;
+  const initialOrbBudget = Math.min(4, Math.max(2, Math.round(config.wall.orbCount || 0)));
+  const baseSphereSegments = { width: 80, height: 40 };
   const textureCache = new Map();
   const orbGeometries = [];
   const orbs = [];
@@ -278,8 +272,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
   };
 
   function getOrbPatternTexture(index, mode) {
-    const styleCount = isMobile ? 8 : 12;
-    const style = ((index * 7 + (mode === "bump" ? 11 : mode === "roughness" ? 19 : 0)) % styleCount + styleCount) % styleCount;
+    const style = ((index * 7 + (mode === "bump" ? 11 : mode === "roughness" ? 19 : 0)) % 32 + 32) % 32;
     const key = `${mode}:${style}`;
     let texture = textureCache.get(key);
     if (!texture) {
@@ -405,8 +398,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
 
     const patternMap = getOrbPatternTexture(index, "color");
     const bumpMap = getOrbPatternTexture(index + 3, "bump");
-    // A separate roughness texture was visually subtle but expensive to generate/upload.
-    const roughnessMap = null;
+    const roughnessMap = getOrbPatternTexture(index + 7, "roughness");
 
     const material = new THREE.MeshPhysicalMaterial({
       color,
@@ -486,14 +478,14 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
       0.0, 0.016, 0.024, 0.036, 0.01, 0.052, 0.006, 0.03, 0.02,
       0.044, 0.012, 0.018, 0.058, 0.026, 0.04, 0.014, 0.048, 0.032,
     ];
-    const geometryBumpiness = bumpinessPresets[index % bumpinessPresets.length] * config.wall.textureStrength * (isMobile ? 0 : 0.45);
+    const geometryBumpiness = bumpinessPresets[index % bumpinessPresets.length] * config.wall.textureStrength;
     const geometry = makeSeamlessOrbGeometry(index, geometryBumpiness);
     orbGeometries.push(geometry);
 
     const material = makeOrbMaterial(index, geometryBumpiness);
     const mesh = new THREE.Mesh(geometry, material);
     mesh.castShadow = true;
-    mesh.receiveShadow = false;
+    mesh.receiveShadow = true;
     mesh.renderOrder = index + 1;
     root.add(mesh);
 
@@ -724,7 +716,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
 
   function applyCollisions() {
     const restitution = 0.92 * config.wall.collisionStrength;
-    const passes = orbs.length > 5 ? 1 : 2;
+    const passes = 4;
 
     for (let pass = 0; pass < passes; pass++) {
       for (let i = 0; i < orbs.length; i++) {
