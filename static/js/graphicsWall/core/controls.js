@@ -106,6 +106,20 @@ export function createControls({ manager }) {
       input.addEventListener("change", () => manager.set(control.path, input.checked, { syncQueryParams: true }));
       return [input];
     },
+
+    select(control, value) {
+      const select = document.createElement("select");
+      (control.options || []).forEach((option) => {
+        const item = typeof option === "string" ? { value: option, label: option } : option;
+        const optionEl = document.createElement("option");
+        optionEl.value = item.value;
+        optionEl.textContent = item.label || item.value;
+        optionEl.selected = item.value === value;
+        select.appendChild(optionEl);
+      });
+      select.addEventListener("change", () => manager.set(control.path, select.value, { syncQueryParams: true }));
+      return [select];
+    },
   };
 
   function shouldShowControl(control) {

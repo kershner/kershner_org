@@ -40,6 +40,7 @@ async function createManager(options) {
     grass: () => import(`${options.baseS3Url}/js/graphicsWall/walls/grass/index.js`).then((m) => m.createGrassWall),
     water: () => import(`${options.baseS3Url}/js/graphicsWall/walls/water/index.js`).then((m) => m.createWaterWall),
     orbs: () => import(`${options.baseS3Url}/js/graphicsWall/walls/orbs/index.js`).then((m) => m.createOrbsWall),
+    fabric: () => import(`${options.baseS3Url}/js/graphicsWall/walls/fabric/index.js`).then((m) => m.createFabricWall),
   };
 
   const wallManager = new GraphicsWallManager({

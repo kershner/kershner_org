@@ -123,9 +123,9 @@ const GLOBAL_CONTROLS = [
     title: "Interaction",
     controls: [
       { type: "range", path: "interaction.cursorRadius", label: "Cursor radius", min: 0.05, max: 1.2, step: 0.01, help: "Larger values affect elements farther from the cursor." },
-      { type: "range", path: "interaction.pulseStrength", label: "Click pulse", min: 0, max: 0.7, step: 0.01, help: "Controls click-generated ripples.", walls: ["grass", "water"] },
-      { type: "range", path: "interaction.pulseRadius", label: "Pulse radius", min: 0.15, max: 2, step: 0.01, help: "Controls the starting size of click pulses.", walls: ["grass", "water"] },
-      { type: "range", path: "interaction.pulseDecay", label: "Pulse decay", min: 0.85, max: 0.99, step: 0.001, help: "Higher values make click pulses linger.", walls: ["grass", "water"] },
+      { type: "range", path: "interaction.pulseStrength", label: "Click pulse", min: 0, max: 2, step: 0.01, help: "Controls click-generated ripples.", walls: ["grass", "water", "fabric"] },
+      { type: "range", path: "interaction.pulseRadius", label: "Pulse radius", min: 0.15, max: 3, step: 0.01, help: "Controls the starting size of click pulses.", walls: ["grass", "water", "fabric"] },
+      { type: "range", path: "interaction.pulseDecay", label: "Pulse decay", min: 0.85, max: 0.995, step: 0.001, help: "Higher values make click pulses linger.", walls: ["grass", "water", "fabric"] },
     ],
   },
 ];
@@ -140,7 +140,7 @@ const DEFAULT_CONFIG = {
     rotateColors: true,
   },
   interaction: {
-    cursorRadius: 0.3,
+    cursorRadius: 0.32,
     cursorStrength: 0.13,
     verticalPush: 0,
     pointerSmoothing: 0.3,
@@ -148,9 +148,9 @@ const DEFAULT_CONFIG = {
     brushStrength: 0.09,
     wakeStrength: 0.34,
     wakeLag: 0.132,
-    pulseStrength: 0.7,
-    pulseRadius: 2,
-    pulseDecay: 0.965,
+    pulseStrength: 1.18,
+    pulseRadius: 2.15,
+    pulseDecay: 0.988,
     velocityStrength: 13.2,
   },
   wall: {},
@@ -160,18 +160,21 @@ const wallTypes = {
   grass: () => import("./walls/grass/index.js").then((m) => m.createGrassWall),
   water: () => import("./walls/water/index.js").then((m) => m.createWaterWall),
   orbs: () => import("./walls/orbs/index.js").then((m) => m.createOrbsWall),
+  fabric: () => import("./walls/fabric/index.js").then((m) => m.createFabricWall),
 };
 
 const wallControls = {
   grass: () => import("./walls/grass/controls.js").then((m) => m.grassControls),
   water: () => import("./walls/water/controls.js").then((m) => m.waterControls),
   orbs: () => import("./walls/orbs/controls.js").then((m) => m.orbsControls),
+  fabric: () => import("./walls/fabric/controls.js").then((m) => m.fabricControls),
 };
 
 const wallDefaults = {
   grass: () => import("./walls/grass/defaults.js").then((m) => m.grassDefaults),
   water: () => import("./walls/water/defaults.js").then((m) => m.waterDefaults),
   orbs: () => import("./walls/orbs/defaults.js").then((m) => m.orbsDefaults),
+  fabric: () => import("./walls/fabric/defaults.js").then((m) => m.fabricDefaults),
 };
 
 async function getWallDefaults(type) {
@@ -458,8 +461,10 @@ async function initWorker(options) {
 const GraphicsWall = {
   async init(baseS3UrlOrOptions = {}, maybeOptions = {}) {
     const options = normalizeInitArgs(baseS3UrlOrOptions, maybeOptions);
+    const initialType = options.type || "grass";
+    const shouldUseWorker = options.useWorker !== false && initialType !== "fabric" && supportsOffscreenCanvas();
 
-    if (options.useWorker !== false && supportsOffscreenCanvas()) {
+    if (shouldUseWorker) {
       try {
         return await initWorker(options);
       } catch (error) {

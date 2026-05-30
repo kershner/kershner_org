@@ -74,7 +74,7 @@ export function normalizeInitOptions(options) {
     wall: {},
   };
 
-  const globalKeys = new Set(["zIndex", "showControls", "fullscreen", "opacity", "fadeInDuration", "rotateColors"]);
+  const globalKeys = new Set(["zIndex", "showControls", "fullscreen", "opacity", "fadeInDuration", "rotateColors", "colorTransitionSpeed"]);
   const interactionKeys = new Set([
     "cursorRadius",
     "cursorStrength",

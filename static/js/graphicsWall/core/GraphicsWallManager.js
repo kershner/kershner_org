@@ -9,9 +9,10 @@ const DEFAULT_CONFIG = {
     opacity: 1,
     fadeInDuration: 600,
     rotateColors: true,
+    colorTransitionSpeed: 0.007,
   },
   interaction: {
-    cursorRadius: 0.3,
+    cursorRadius: 0.32,
     cursorStrength: 0.13,
     verticalPush: 0,
     pointerSmoothing: 0.3,
@@ -19,16 +20,16 @@ const DEFAULT_CONFIG = {
     brushStrength: 0.09,
     wakeStrength: 0.34,
     wakeLag: 0.132,
-    pulseStrength: 0.7,
-    pulseRadius: 2,
-    pulseDecay: 0.965,
+    pulseStrength: 1.18,
+    pulseRadius: 2.15,
+    pulseDecay: 0.988,
     velocityStrength: 13.2,
   },
   wall: {},
 };
 
 
-const GLOBAL_PATHS = new Set(["fullscreen", "opacity", "zIndex", "showControls", "fadeInDuration", "rotateColors"]);
+const GLOBAL_PATHS = new Set(["fullscreen", "opacity", "zIndex", "showControls", "fadeInDuration", "rotateColors", "colorTransitionSpeed"]);
 const INTERACTION_PATHS = new Set([
   "cursorRadius",
   "cursorStrength",
@@ -62,9 +63,9 @@ const GLOBAL_CONTROLS = [
     title: "Interaction",
     controls: [
       { type: "range", path: "interaction.cursorRadius", label: "Cursor radius", min: 0.05, max: 1.2, step: 0.01, help: "Larger values affect elements farther from the cursor." },
-      { type: "range", path: "interaction.pulseStrength", label: "Click pulse", min: 0, max: 0.7, step: 0.01, help: "Controls click-generated ripples.", walls: ["grass", "water"] },
-      { type: "range", path: "interaction.pulseRadius", label: "Pulse radius", min: 0.15, max: 2, step: 0.01, help: "Controls the starting size of click pulses.", walls: ["grass", "water"] },
-      { type: "range", path: "interaction.pulseDecay", label: "Pulse decay", min: 0.85, max: 0.99, step: 0.001, help: "Higher values make click pulses linger.", walls: ["grass", "water"] },
+      { type: "range", path: "interaction.pulseStrength", label: "Click pulse", min: 0, max: 2, step: 0.01, help: "Controls click-generated ripples.", walls: ["grass", "water", "fabric"] },
+      { type: "range", path: "interaction.pulseRadius", label: "Pulse radius", min: 0.15, max: 3, step: 0.01, help: "Controls the starting size of click pulses.", walls: ["grass", "water", "fabric"] },
+      { type: "range", path: "interaction.pulseDecay", label: "Pulse decay", min: 0.85, max: 0.995, step: 0.001, help: "Higher values make click pulses linger.", walls: ["grass", "water", "fabric"] },
     ],
   },
 ];
@@ -181,6 +182,7 @@ export class GraphicsWallManager {
     }
     this.resize();
     this.renderInitialFrame();
+    this.warmupInitialFrames();
     this.reveal();
     this.animationFrame = requestAnimationFrame(this.animate);
 
@@ -267,6 +269,24 @@ export class GraphicsWallManager {
       config: this.config,
     });
     this.renderer.render(this.scene, this.camera);
+  }
+
+  warmupInitialFrames() {
+    const frames = Math.max(0, Math.min(12, Number(this.activeWall?.initialWarmupFrames || 0)));
+    if (!frames) return;
+
+    for (let i = 0; i < frames; i += 1) {
+      const elapsed = (i + 1) * (1000 / 60);
+      this.sharedUniforms.uTime.value = elapsed * 0.001;
+      this.sharedUniforms.uOpacity.value = this.config.global.opacity;
+      this.pointer.update(this.config.interaction);
+      this.activeWall?.update({
+        time: elapsed,
+        delta: 1 / 60,
+        config: this.config,
+      });
+      this.renderer.render(this.scene, this.camera);
+    }
   }
 
   applyCanvasOpacity() {

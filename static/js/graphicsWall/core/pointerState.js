@@ -12,12 +12,16 @@ export function createPointerState({ THREE, viewport = null, eventTarget = null 
     uPointerDown: { value: 0 },
     uClickPulse: { value: 0 },
     uPulsePointer: { value: new THREE.Vector2(9, 9) },
+    uPointerIsTouch: { value: 0 },
+    uClickId: { value: 0 },
   };
 
   let pointerDown = false;
   let activePointerId = null;
   let clickPulse = 0;
   let hasPointer = false;
+  let pointerIsTouch = false;
+  let clickId = 0;
 
   const nextPointer = new THREE.Vector2();
   const lastPointer = new THREE.Vector2(9, 9);
@@ -29,7 +33,10 @@ export function createPointerState({ THREE, viewport = null, eventTarget = null 
     viewport.height = height;
   }
 
-  function setPointer(x, y) {
+  function setPointer(x, y, event = null) {
+    if (event && typeof event.pointerType === "string") {
+      pointerIsTouch = event.pointerType === "touch" ? true : pointerIsTouch && event.pointerType !== "mouse";
+    }
     nextPointer.set(
       (x / getWidth()) * 2 - 1,
       -((y / getHeight()) * 2 - 1)
@@ -52,14 +59,16 @@ export function createPointerState({ THREE, viewport = null, eventTarget = null 
   }
 
   function onPointerMove(event) {
-    setPointer(event.clientX, event.clientY);
+    setPointer(event.clientX, event.clientY, event);
   }
 
   function onPointerDown(event) {
     pointerDown = true;
     activePointerId = event.pointerId;
     clickPulse = 1;
-    setPointer(event.clientX, event.clientY);
+    clickId += 1;
+    uniforms.uClickId.value = clickId;
+    setPointer(event.clientX, event.clientY, event);
     uniforms.uPulsePointer.value.copy(uniforms.uPointer.value);
   }
 
@@ -72,7 +81,7 @@ export function createPointerState({ THREE, viewport = null, eventTarget = null 
     activePointerId = null;
 
     if (event && typeof event.clientX === "number") {
-      setPointer(event.clientX, event.clientY);
+      setPointer(event.clientX, event.clientY, event);
     }
   }
 
@@ -82,6 +91,7 @@ export function createPointerState({ THREE, viewport = null, eventTarget = null 
     }
 
     hasPointer = false;
+    pointerIsTouch = false;
     targetVelocity.set(0, 0);
     lastPointer.set(9, 9);
     uniforms.uPointer.value.set(9, 9);
@@ -130,6 +140,7 @@ export function createPointerState({ THREE, viewport = null, eventTarget = null 
       uniforms.uWakePointer.value.lerp(uniforms.uPointer.value, config.wakeLag);
       uniforms.uPointerVelocity.value.lerp(targetVelocity, 0.22);
       uniforms.uPointerDown.value += ((pointerDown ? 1 : 0) - uniforms.uPointerDown.value) * 0.18;
+      uniforms.uPointerIsTouch.value += ((pointerIsTouch ? 1 : 0) - uniforms.uPointerIsTouch.value) * 0.25;
 
       targetVelocity.multiplyScalar(0.88);
       clickPulse *= config.pulseDecay;
