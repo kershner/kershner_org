@@ -16,8 +16,32 @@
         <link rel="manifest" href="{% settings_value "BASE_S3_URL" %}/img/favicon/site.webmanifest">
         <link rel="mask-icon" href="{% settings_value "BASE_S3_URL" %}/img/favicon/safari-pinned-tab.svg" color="#5bbad5">
 
-        {# CSS #}
-        <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/main.css">
+        {# Critical first-load CSS inlined here #}
+        <style>
+            :root {
+                --dynamic-color: #7c6a9c;
+            }
+
+            .portfolio-gradient-bg {
+                position: fixed;
+                inset: 0;
+                z-index: -2;
+                pointer-events: none;
+                background-color: var(--dynamic-color);
+                background-image: linear-gradient(180deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,.08) 34%, rgba(0,0,0,.18) 68%, rgba(0,0,0,.48) 100%);
+            }
+        </style>
+
+        {# CSS - preload and convert to a stylesheet once loaded #}
+        <link
+            rel="preload"
+            href="{% settings_value "BASE_S3_URL" %}/css/main.css"
+            as="style"
+            onload="this.onload=null;this.rel='stylesheet'"
+        >
+        <noscript>
+            <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/main.css">
+        </noscript>
         {% block extra_head %}{% endblock %}
 
         {# Title #}
