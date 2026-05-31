@@ -18,7 +18,7 @@ $fast-animation-speed: 0.2s
   --dynamic-color: #{lighten($black, 40%)}
 
 html.dynamic-colors-loaded
-  --dynamic-color-transition: background-color #{$default-animation-speed}
+  --dynamic-color-transition: background-color #{$default-animation-speed}, background #{$default-animation-speed}
 
 %tag-style
   margin-right: .25rem
@@ -66,6 +66,17 @@ html.dynamic-colors-loaded
   background: var(--dynamic-color) !important
   text-shadow: $portfolio-text-shadow !important
   color: $white !important
+
+.portfolio-gradient-bg
+  position: fixed
+  inset: 0
+  z-index: -2
+  pointer-events: none
+  background-color: var(--dynamic-color)
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.08) 34%, rgba(0, 0, 0, 0.18) 68%, rgba(0, 0, 0, 0.48) 100%)
+  transition: background-color #{$default-animation-speed}
+  transform: translateZ(0)
+  backface-visibility: hidden
 
 .sticky-nav
   position: relative

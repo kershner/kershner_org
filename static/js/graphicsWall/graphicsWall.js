@@ -57,6 +57,68 @@ function loadThree(options = {}) {
   return threeLoadPromise;
 }
 
+function shouldSkipGraphicsWall(options = {}) {
+  if (options.forceNoWebGL === true) return true;
+  if (options.forceGraphicsWall === true || options.forceWebGL === true) return false;
+  if (options.detectHardwareAcceleration === false) return false;
+
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("webgl2", { failIfMajorPerformanceCaveat: true }) ||
+    canvas.getContext("webgl", { failIfMajorPerformanceCaveat: true }) ||
+    canvas.getContext("experimental-webgl", { failIfMajorPerformanceCaveat: true });
+
+  if (!context) return true;
+
+  const debugInfo = context.getExtension("WEBGL_debug_renderer_info");
+  const renderer = debugInfo
+    ? context.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
+    : context.getParameter(context.RENDERER);
+
+  const rendererName = String(renderer || "").toLowerCase();
+  const isSoftwareRenderer = /swiftshader|llvmpipe|software|mesa offscreen|microsoft basic render|warp/.test(rendererName);
+  const loseContext = context.getExtension("WEBGL_lose_context");
+  loseContext?.loseContext?.();
+
+  return isSoftwareRenderer;
+}
+
+function createSkippedManager(reason = "unsupported-webgl") {
+  return {
+    set() {
+      return false;
+    },
+    get(path) {
+      if (path === "type") return null;
+      if (path === "global.rotateColors" || path === "rotateColors") return false;
+      return undefined;
+    },
+    setType() {
+      return false;
+    },
+    getType() {
+      return null;
+    },
+    getWallTypes() {
+      return [];
+    },
+    getConfig() {
+      return {
+        skipped: true,
+        reason,
+      };
+    },
+    reset() {
+      return false;
+    },
+    destroy() {},
+    on() {
+      return () => {};
+    },
+    skipped: true,
+    reason,
+  };
+}
+
 const wallTypes = {
   grass: () => import("./walls/grass/index.js").then((m) => m.createGrassWall),
   water: () => import("./walls/water/index.js").then((m) => m.createWaterWall),
@@ -65,6 +127,10 @@ const wallTypes = {
 };
 
 async function initMainThread(options) {
+  if (shouldSkipGraphicsWall(options)) {
+    return createSkippedManager("software-or-unsupported-webgl");
+  }
+
   const [{ GraphicsWallManager }, THREE] = await Promise.all([
     import("./core/GraphicsWallManager.js"),
     loadThree(options),
@@ -76,6 +142,10 @@ async function initMainThread(options) {
     baseUrl,
     assetBaseUrl,
     threeUrl,
+    forceGraphicsWall,
+    forceWebGL,
+    forceNoWebGL,
+    detectHardwareAcceleration,
     ...managerOptions
   } = options;
 

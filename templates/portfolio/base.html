@@ -25,6 +25,8 @@
     </head>
 
     <body class="portfolio {% if request.GET.backgroundColor != "light" %}dark-mode{% endif %}">
+        <div class="portfolio-gradient-bg" aria-hidden="true"></div>
+        
         {# Content#}
         <div id="page-wrapper">
             {% block content %}{% endblock %}
