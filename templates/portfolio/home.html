@@ -28,16 +28,19 @@
 
 {% block extra_javascripts %}
     <script type="text/javascript">
-        portfolio.projectsPerPage = {{ projects_per_page }};
-        portfolio.projectsHtml = {{ projects_html|safe }};
-        portfolio.scrollEvents();
-        portfolio.projectStyleToggles();
-        portfolio.projectFilter();
-        portfolio.searchSuggestions();
-        portfolio.stickyNav.querySelector('.sticky-nav-title').addEventListener('click', (e) => {
-            window.scrollTo(0, 0);
-        });
+        window.addEventListener('portfolioReady', () => {
+            portfolio.projectsPerPage = {{ projects_per_page }};
+            portfolio.projectsHtml = {{ projects_html|safe }};
+            portfolio.filteredProjects = portfolio.projectsHtml;
 
-        portfolio.filteredProjects = portfolio.projectsHtml;
+            portfolio.scrollEvents();
+            portfolio.projectStyleToggles();
+            portfolio.projectFilter();
+            portfolio.searchSuggestions();
+
+            portfolio.stickyNav.querySelector('.sticky-nav-title').addEventListener('click', () => {
+                window.scrollTo(0, 0);
+            });
+        });
     </script>
 {% endblock %}

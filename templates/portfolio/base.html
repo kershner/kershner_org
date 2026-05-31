@@ -28,7 +28,7 @@
         <div class="portfolio-gradient-bg" aria-hidden="true"></div>
         
         {# Content#}
-        <div id="page-wrapper">
+        <div id="page-wrapper" role="main">
             {% block content %}{% endblock %}
         </div>
 
@@ -80,18 +80,15 @@
         {% endblock %}
 
         {# JS #}
-        <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
+        <script>
+            window.PORTFOLIO_BASE_S3_URL = "{% settings_value 'BASE_S3_URL' %}";
+        </script>
+        <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
         <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/randomColor.min.js"></script>
-        <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/portfolio.js"></script>
+        <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/portfolio.js"></script>
         
         {% block javascripts %}
             {% block extra_javascripts %}{% endblock %}
-            
-            <script>
-                document.addEventListener('DOMContentLoaded', () => {
-                    portfolio.init("{% settings_value 'BASE_S3_URL' %}");
-                });
-            </script>
         {% endblock %}
 
         {% include 'portfolio/includes/google_analytics_tag.html' %}
