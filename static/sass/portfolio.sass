@@ -74,9 +74,13 @@ html.dynamic-colors-loaded
   pointer-events: none
   background-color: var(--dynamic-color)
   background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.08) 34%, rgba(0, 0, 0, 0.18) 68%, rgba(0, 0, 0, 0.48) 100%)
-  transition: background-color #{$default-animation-speed}
+  transition: none
   transform: translateZ(0)
   backface-visibility: hidden
+
+html.dynamic-colors-loaded
+  .portfolio-gradient-bg
+    transition: background-color #{$default-animation-speed}
 
 .sticky-nav
   position: relative

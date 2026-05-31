@@ -24,16 +24,18 @@ const isMobile = window.innerWidth <= mobileBreakpoint;
 
 portfolio.init = function(baseS3Url) {
     const darkMode = document.body.classList.contains('dark-mode');
-    
-    portfolio.rotateColors();
-    
+
+    portfolio.currentColor = randomColor({luminosity: darkMode ? 'bright' : 'dark'});
+    portfolio.changeColors(false);
+
     requestAnimationFrame(() => {
-        document.documentElement.classList.add('dynamic-colors-loaded');
+        requestAnimationFrame(() => {
+            document.documentElement.classList.add('dynamic-colors-loaded');
+            portfolio.rotateColors();
+        });
     });
 
     portfolio.startGraphicsWall(baseS3Url);
-
-    portfolio.currentColor = randomColor({luminosity: darkMode ? 'bright' : 'dark'});
 };
 
 portfolio.startGraphicsWall = function(baseS3Url) {
@@ -50,17 +52,19 @@ portfolio.startGraphicsWall = function(baseS3Url) {
             window.graphicsWall = await GraphicsWall.init(baseS3Url, {
                 type,
                 showControls: true,
+
+                fabricColor: portfolio.currentColor,
                 grassColor: portfolio.currentColor,
                 cursorColor: portfolio.currentColor,
                 shallowColor: portfolio.currentColor,
                 reflectionColor: portfolio.currentColor,
                 backgroundColor: portfolio.currentColor,
                 deepColor: portfolio.currentColor,
-                fadeInDuration: 1000,
+
+                fadeInDuration: 2000,
             });
 
             window.graphicsWall.set("wall.colorTransitionSpeed", 0.007);
-            portfolio.changeColors();
         } catch (error) {
             console.warn("Graphics wall failed to load.", error);
         }
@@ -190,15 +194,18 @@ portfolio.scrollEvents = function() {
 };
 
 portfolio.rotateColors = function() {
-    portfolio.changeColors();
     window.rotateColorsInterval = setInterval(() => {
         portfolio.changeColors();
     }, portfolio.colorChangeInterval);
 };
 
-portfolio.changeColors = function() {
+portfolio.changeColors = function(rotate = true) {
+    if (rotate) {
+        portfolio.currentColor = randomColor({luminosity: 'all'});
+    }
+
     document.documentElement.style.setProperty('--dynamic-color', portfolio.currentColor);
-    
+
     if (
         window.graphicsWall &&
         typeof window.graphicsWall.get === "function" &&
@@ -210,11 +217,8 @@ portfolio.changeColors = function() {
         window.graphicsWall.set("wall.reflectionColor", portfolio.currentColor);
         window.graphicsWall.set("wall.backgroundColor", portfolio.currentColor);
         window.graphicsWall.set("wall.deepColor", portfolio.currentColor);
+        window.graphicsWall.set("wall.fabricColor", portfolio.currentColor);
     }
-
-    const darkMode = document.body.classList.contains('dark-mode');
-    const luminosity = darkMode ? 'bright' : 'dark';
-    portfolio.currentColor = randomColor({luminosity: 'all'});
 };
 
 const projectsClickHandler = (e) => {
