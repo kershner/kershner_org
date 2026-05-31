@@ -84,8 +84,6 @@ export class GraphicsWallManager {
     this.controls = null;
     this.animationFrame = null;
     this.lastTime = 0;
-    this.workerMode = Boolean(options.workerMode);
-    this.externalCanvas = options.canvas || null;
     this.viewport = {
       width: options.width || (typeof window !== "undefined" ? window.innerWidth : 1),
       height: options.height || (typeof window !== "undefined" ? window.innerHeight : 1),
@@ -99,7 +97,7 @@ export class GraphicsWallManager {
       return null;
     }
 
-    if (this.syncQueryParams && !this.workerMode) {
+    if (this.syncQueryParams) {
       this.queryParams = await import("./queryParams.js");
       this.options = normalizeInitOptions(mergeDeep(this.baseOptions, this.queryParams.readGraphicsWallQueryParams()));
     }
@@ -108,23 +106,20 @@ export class GraphicsWallManager {
     const wallFactory = await this.getWallFactory(this.type);
     this.baseConfig = this.createConfig(this.type, this.baseOptions, wallFactory);
     this.config = this.createConfig(this.type, this.options, wallFactory);
-    this.canvas = this.externalCanvas || document.createElement("canvas");
+    this.canvas = document.createElement("canvas");
+    Object.assign(this.canvas.style, {
+      position: "fixed",
+      inset: "0",
+      width: "100%",
+      height: "100%",
+      pointerEvents: "none",
+      zIndex: this.config.global.zIndex,
+      opacity: "0",
+      transition: `opacity ${this.config.global.fadeInDuration}ms ease`,
+      willChange: "opacity",
+    });
 
-    if (!this.workerMode) {
-      Object.assign(this.canvas.style, {
-        position: "fixed",
-        inset: "0",
-        width: "100%",
-        height: "100%",
-        pointerEvents: "none",
-        zIndex: this.config.global.zIndex,
-        opacity: "0",
-        transition: `opacity ${this.config.global.fadeInDuration}ms ease`,
-        willChange: "opacity",
-      });
-
-      document.body.prepend(this.canvas);
-    }
+    document.body.prepend(this.canvas);
 
     const isMobile = this.viewport.width < 768;
 
@@ -140,9 +135,7 @@ export class GraphicsWallManager {
     this.scene = new this.THREE.Scene();
     this.camera = new this.THREE.OrthographicCamera(-1, 1, 1, -1, -10, 10);
     this.pointer = createPointerState({ THREE: this.THREE, viewport: this.viewport });
-    if (!this.workerMode) {
-      this.pointer.attach();
-    }
+    this.pointer.attach();
 
     this.sharedUniforms = {
       uTime: { value: 0 },
@@ -153,33 +146,29 @@ export class GraphicsWallManager {
 
     await this.createActiveWall(wallFactory);
 
-    if (!this.workerMode && this.activeWall && wallFactory.loadControls) {
+    if (this.activeWall && wallFactory.loadControls) {
       this.activeWall.controls = await wallFactory.loadControls();
     }
 
-    if (!this.workerMode && this.config.global.showControls) {
+    if (this.config.global.showControls) {
       const { createControls } = await import("./controls.js");
       this.controls = createControls({ manager: this });
     }
 
-    if (!this.workerMode) {
-      const { createFullscreenController } = await import("./fullscreen.js");
-      this.fullscreen = createFullscreenController({
-        canvas: this.canvas,
-        getControlsElement: () => this.controls?.getElement(),
-      });
+    const { createFullscreenController } = await import("./fullscreen.js");
+    this.fullscreen = createFullscreenController({
+      canvas: this.canvas,
+      getControlsElement: () => this.controls?.getElement(),
+    });
 
-      if (this.config.global.fullscreen) {
-        this.fullscreen.set(true);
-      }
+    if (this.config.global.fullscreen) {
+      this.fullscreen.set(true);
     }
 
     this.resize = this.resize.bind(this);
     this.animate = this.animate.bind(this);
 
-    if (!this.workerMode) {
-      window.addEventListener("resize", this.resize);
-    }
+    window.addEventListener("resize", this.resize);
     this.resize();
     this.renderInitialFrame();
     this.warmupInitialFrames();
@@ -239,8 +228,8 @@ export class GraphicsWallManager {
   }
 
   resize() {
-    const width = this.workerMode ? this.viewport.width : window.innerWidth;
-    const height = this.workerMode ? this.viewport.height : window.innerHeight;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
 
     this.renderer.setSize(width, height, false);
     this.sharedUniforms.uAspect.value = width / height;
@@ -290,13 +279,11 @@ export class GraphicsWallManager {
   }
 
   applyCanvasOpacity() {
-    if (!this.canvas || this.workerMode) return;
+    if (!this.canvas) return;
     this.canvas.style.opacity = String(Math.max(0, Math.min(1, Number(this.config.global.opacity ?? 1))));
   }
 
   reveal() {
-    if (this.workerMode) return;
-
     this.canvas.style.opacity = "0";
 
     requestAnimationFrame(() => {
@@ -348,7 +335,7 @@ export class GraphicsWallManager {
       this.applyCanvasOpacity();
     }
 
-    if (path === "global.zIndex" && !this.workerMode) {
+    if (path === "global.zIndex") {
       this.canvas.style.zIndex = value;
     }
 
@@ -381,7 +368,7 @@ export class GraphicsWallManager {
     this.baseConfig = this.createConfig(type, { ...this.baseOptions, type }, factory);
     this.config = this.createConfig(type, options, factory);
     await this.createActiveWall(factory);
-    if (!this.workerMode && this.activeWall && factory.loadControls) {
+    if (this.activeWall && factory.loadControls) {
       this.activeWall.controls = await factory.loadControls();
     }
   }
@@ -389,9 +376,7 @@ export class GraphicsWallManager {
   applyGlobalConfig() {
     this.fullscreen?.set(Boolean(this.config.global.fullscreen));
     this.applyCanvasOpacity();
-    if (!this.workerMode) {
-      this.canvas.style.zIndex = this.config.global.zIndex;
-    }
+    this.canvas.style.zIndex = this.config.global.zIndex;
   }
 
   async setType(type, options = {}) {
@@ -473,16 +458,12 @@ export class GraphicsWallManager {
   destroy() {
     this.fullscreen?.set(false);
     cancelAnimationFrame(this.animationFrame);
-    if (!this.workerMode) {
-      window.removeEventListener("resize", this.resize);
-    }
+    window.removeEventListener("resize", this.resize);
     this.pointer?.detach();
     this.controls?.destroy();
     this.activeWall?.destroy();
     this.renderer?.dispose();
-    if (!this.workerMode) {
-      this.canvas?.remove();
-    }
+    this.canvas?.remove();
   }
 
   createPublicApi() {
