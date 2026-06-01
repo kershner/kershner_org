@@ -552,7 +552,7 @@ export class GraphicsWallManager {
 
   async randomizeSettings(options = {}) {
     const types = this.getWallTypes();
-    const shouldChangeType = types.length > 1 && Math.random() < 0.25;
+    const shouldChangeType = false;
 
     if (shouldChangeType) {
       const nextTypes = types.filter((type) => type !== this.type);
