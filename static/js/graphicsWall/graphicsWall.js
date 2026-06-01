@@ -107,6 +107,15 @@ function createSkippedManager(reason = "unsupported-webgl") {
         reason,
       };
     },
+    getDeviceInfo() {
+      return { width: 0, height: 0, devicePixelRatio: 1, isMobile: false };
+    },
+    setCurrentColor() {
+      return false;
+    },
+    cycleRandomWall() {
+      return false;
+    },
     reset() {
       return false;
     },

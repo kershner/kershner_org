@@ -262,13 +262,27 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
   function set(path, value) {
     const key = path.startsWith("wall.") ? path.slice(5) : path;
 
+    if (path === "global.colorTransitionSpeed") {
+      config.global.colorTransitionSpeed = value;
+      return true;
+    }
+
+    if (path === "global.currentColor") {
+      targetGrassColor.set(value);
+      config.global.currentColor = value;
+      config.wall.grassColor = value;
+      return true;
+    }
+
     if (key === "grassColor") {
       targetGrassColor.set(value);
+      config.wall.grassColor = value;
       return true;
     }
 
     if (key === "cursorColor") {
       targetCursorColor.set(value);
+      config.wall.cursorColor = value;
       return true;
     }
 
@@ -311,7 +325,7 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
         uniforms,
         { grassColor: targetGrassColor, cursorColor: targetCursorColor },
         ["grassColor", "cursorColor"],
-        config.wall.colorTransitionSpeed,
+        config.global.colorTransitionSpeed,
         config.global.rotateColors !== false
       );
     },

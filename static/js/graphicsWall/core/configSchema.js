@@ -4,9 +4,12 @@ export const DEFAULT_CONFIG = {
     showControls: true,
     fullscreen: false,
     opacity: 1,
-    fadeInDuration: 600,
+    fadeInDuration: 4000,
     rotateColors: true,
+    currentColor: "#75c94a",
     colorTransitionSpeed: 0.007,
+    cycleWalls: false,
+    wallCycleInterval: 8000,
   },
   interaction: {
     cursorRadius: 0.32,
@@ -38,6 +41,16 @@ export const GLOBAL_CONTROLS = [
     controls: [
       { type: "checkbox", path: "global.fullscreen", label: "Fullscreen", help: "Expands the wall to fill the viewport." },
       { type: "range", path: "global.opacity", label: "Opacity", min: 0, max: 1, step: 0.01, help: "Fades the whole wall without changing its settings." },
+      { type: "checkbox", path: "global.cycleWalls", label: "Cycle walls", help: "Randomly rebuilds a wall after the selected interval." },
+      { type: "range", path: "global.wallCycleInterval", label: "Cycle interval", min: 1000, max: 60000, step: 500, help: "Milliseconds between random wall selections." },
+    ],
+  },
+  {
+    title: "Color",
+    controls: [
+      { type: "color", path: "global.currentColor", label: "Current color", help: "Shared color external code can update through the graphics wall API." },
+      { type: "range", path: "global.colorTransitionSpeed", label: "Color speed", min: 0.001, max: 1, step: 0.001, help: "How quickly wall colors move toward the current color." },
+      { type: "checkbox", path: "global.rotateColors", label: "Rotate colors", help: "Allows color changes to transition instead of snapping." },
     ],
   },
   {

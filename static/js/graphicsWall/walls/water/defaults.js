@@ -12,13 +12,11 @@ export const waterDefaults = {
   },
   wall: {
     shallowColor: "#2d5758",
-    waterColor: "#2d5758",
     deepColor: "#041014",
     skyColor: "#c7d8de",
     horizonColor: "#607d78",
     bankColor: "#102218",
     sunColor: "#fff3c9",
-    colorTransitionSpeed: 0.007,
 
     simulationResolution: 512,
     simulationSteps: 2,

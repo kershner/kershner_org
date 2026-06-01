@@ -21,7 +21,6 @@ const colorKeys = [
 
 const configurableKeys = [
   ...colorKeys,
-  "colorTransitionSpeed",
   "orbCount",
   "orbScale",
   "driftSpeed",
@@ -40,7 +39,7 @@ const configurableKeys = [
   "vignette",
 ];
 
-const uniformPaths = createUniformPathResolver(configurableKeys, { rotateColors: "global.rotateColors" });
+const uniformPaths = createUniformPathResolver(configurableKeys);
 
 // Creates the 3D orb wall and owns its scene resources.
 export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms, viewport = null, config }) {
@@ -717,7 +716,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     orbs.forEach((orb, index) => {
       const base = paletteColor(index);
       if (config.global.rotateColors !== false) {
-        orb.material.color.lerp(base, config.wall.colorTransitionSpeed);
+        orb.material.color.lerp(base, config.global.colorTransitionSpeed);
       }
 
       // Keep the mirror environment present, but let the actual cursor light dominate.
@@ -773,6 +772,19 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
   // Applies live config changes to orb physics, lighting, and materials.
   function set(path, value) {
     const keyName = path.startsWith("wall.") ? path.slice(5) : path;
+
+    if (path === "global.colorTransitionSpeed") {
+      config.global.colorTransitionSpeed = value;
+      return true;
+    }
+
+    if (path === "global.currentColor") {
+      colorTargets.backgroundColor.set(value);
+      config.global.currentColor = value;
+      config.wall.backgroundColor = value;
+      rebuildEnvironment();
+      return true;
+    }
 
     if (colorTargets[keyName]) {
       colorTargets[keyName].set(value);
@@ -849,7 +861,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
       backgroundMaterial.uniforms.uBanding.value = config.wall.retroBanding;
       backgroundMaterial.uniforms.uGrain.value = config.wall.grain;
       backgroundMaterial.uniforms.uVignette.value = config.wall.vignette;
-      backgroundMaterial.uniforms.uBottom.value.lerp(colorTargets.backgroundColor, config.wall.colorTransitionSpeed);
+      backgroundMaterial.uniforms.uBottom.value.lerp(colorTargets.backgroundColor, config.global.colorTransitionSpeed);
       const bgGradient = makeBackgroundGradientColors(THREE, backgroundMaterial.uniforms.uBottom.value);
       backgroundMaterial.uniforms.uTop.value.lerp(bgGradient.top, 0.08);
       backgroundMaterial.uniforms.uAccent.value.lerp(bgGradient.accent, 0.08);

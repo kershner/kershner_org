@@ -48,10 +48,7 @@ const uniformPaths = createUniformPathResolver([
   "frayStrength",
   "opacity",
   ...colorKeys,
-], {
-  silkColor: "wall.baseColor",
-  accentColor: "wall.baseColor",
-});
+]);
 
 // Creates one cloth point with current, previous, and original positions.
 function makePoint(x, y, z, pinned) {
@@ -276,15 +273,6 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
   const wallConfig = config.wall;
   const interactionConfig = config.interaction;
 
-  // Top-level init aliases like `fabricColor` land in `wall.fabricColor`,
-  // while the fabric renderer itself uses `wall.baseColor`. Resolve that
-  // before building any color targets so fabric cold-starts the same way it
-  // behaves after selecting/changing it through controls.
-  if (wallConfig.fabricColor && !wallConfig.baseColor) {
-    wallConfig.baseColor = wallConfig.fabricColor;
-  } else if (wallConfig.fabricColor) {
-    wallConfig.baseColor = wallConfig.fabricColor;
-  }
 
   const colorTargets = makeColorTargets(THREE, wallConfig, colorKeys);
   const currentColors = makeColorTargets(THREE, wallConfig, colorKeys);
@@ -1085,7 +1073,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
 
   // Animates current fabric colors toward their targets.
   function syncColors() {
-    const speed = clamp(Number(config.global.colorTransitionSpeed ?? config.wall.colorTransitionSpeed ?? 0.007), 0, 1);
+    const speed = clamp(Number(config.global.colorTransitionSpeed ?? 0.007), 0, 1);
     for (const key of colorKeys) {
       currentColors[key].lerp(colorTargets[key], config.global.rotateColors === false ? 1 : speed);
     }
@@ -1095,23 +1083,24 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
   function set(path, value) {
     const key = path.startsWith("wall.") ? path.slice(5) : path;
 
-    if (path === "global.colorTransitionSpeed" || path === "wall.colorTransitionSpeed" || key === "colorTransitionSpeed") {
+    if (path === "global.colorTransitionSpeed") {
       config.global.colorTransitionSpeed = value;
-      config.wall.colorTransitionSpeed = value;
       return true;
     }
 
-    if (key === "fabricColor" || key === "silkColor" || key === "baseColor") {
+    if (path === "global.currentColor") {
+      colorTargets.baseColor.set(value);
+      config.global.currentColor = value;
+      config.wall.baseColor = value;
+      return true;
+    }
+
+    if (key === "baseColor") {
       colorTargets.baseColor.set(value);
       config.wall.baseColor = value;
       return true;
     }
 
-    if (key === "highlightColor" || key === "cursorColor" || key === "frayColor" || key === "accentColor") {
-      colorTargets.baseColor.set(value);
-      config.wall.baseColor = value;
-      return true;
-    }
 
     if (colorTargets[key]) {
       colorTargets[key].set(value);

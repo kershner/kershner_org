@@ -4,9 +4,8 @@ export function uniformNameFor(key) {
 }
 
 // Builds shorthand-to-config-path mappings for wall options.
-export function createUniformPathResolver(keys, aliases = {}, prefix = "wall") {
-  const paths = Object.fromEntries(keys.map((key) => [key, `${prefix}.${key}`]));
-  return { ...paths, ...aliases };
+export function createUniformPathResolver(keys, prefix = "wall") {
+  return Object.fromEntries(keys.map((key) => [key, `${prefix}.${key}`]));
 }
 
 // Builds uniforms from config keys.

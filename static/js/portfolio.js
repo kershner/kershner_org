@@ -51,17 +51,10 @@ portfolio.startGraphicsWall = function(baseS3Url) {
 
             window.graphicsWall = await GraphicsWall.init(baseS3Url, {
                 type,
-                showControls: true,
-
-                fabricColor: portfolio.currentColor,
-                grassColor: portfolio.currentColor,
-                cursorColor: portfolio.currentColor,
-                shallowColor: portfolio.currentColor,
-                reflectionColor: portfolio.currentColor,
-                backgroundColor: portfolio.currentColor,
-                deepColor: portfolio.currentColor,
-
-                fadeInDuration: 2000,
+                global: {
+                    showControls: true,
+                    currentColor: portfolio.currentColor,
+                },
             });
 
             window.graphicsWall.set('wall.colorTransitionSpeed', 0.007);
@@ -216,16 +209,10 @@ portfolio.changeColors = function(rotate = true) {
 
     if (
         window.graphicsWall &&
-        typeof window.graphicsWall.get === 'function' &&
+        typeof window.graphicsWall.setCurrentColor === 'function' &&
         window.graphicsWall.get('global.rotateColors')
     ) {
-        window.graphicsWall.set('wall.fabricColor', portfolio.currentColor);
-        window.graphicsWall.set('wall.grassColor', portfolio.currentColor);
-        window.graphicsWall.set('wall.cursorColor', portfolio.currentColor);
-        window.graphicsWall.set('wall.shallowColor', portfolio.currentColor);
-        window.graphicsWall.set('wall.reflectionColor', portfolio.currentColor);
-        window.graphicsWall.set('wall.backgroundColor', portfolio.currentColor);
-        window.graphicsWall.set('wall.deepColor', portfolio.currentColor);
+        window.graphicsWall.setCurrentColor(portfolio.currentColor);
     }
 };
 

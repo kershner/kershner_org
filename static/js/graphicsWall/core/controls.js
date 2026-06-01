@@ -4,10 +4,11 @@ const PANEL_STYLE = {
   top: "8px",
   zIndex: "99999",
   maxHeight: "80vh",
+  maxWidth: "min(23rem, calc(100vw - 24px))",
   overflow: "auto",
   background: "#202020",
   color: "#FFF",
-  padding: "0.4em 1em",
+  padding: "0.45rem 0.9rem",
   cursor: "pointer",
   borderRadius: "2em",
   fontSize: "0.8rem",
@@ -16,21 +17,54 @@ const PANEL_STYLE = {
 };
 
 const PANEL_CSS = `
+  .graphics-wall-controls {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.22) transparent;
+  }
+  .graphics-wall-controls[open] {
+    padding: 0 0.9rem 0.9rem;
+    border-radius: 1rem;
+  }
+  .graphics-wall-controls::-webkit-scrollbar,
+  .graphics-wall-controls fieldset::-webkit-scrollbar { width: 0.35rem; }
+  .graphics-wall-controls::-webkit-scrollbar-thumb,
+  .graphics-wall-controls fieldset::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 1rem; }
+  .graphics-wall-controls::-webkit-scrollbar-track,
+  .graphics-wall-controls fieldset::-webkit-scrollbar-track { background: transparent; }
+  .graphics-wall-controls summary {
+    position: sticky;
+    top: -7px;
+    z-index: 2;
+    background: #202020;
+  }
+  .graphics-wall-controls[open] summary {
+    margin: 0 -0.9rem;
+    padding: 0.75rem 0.9rem 0.55rem;
+    border-radius: 1rem 1rem 0 0;
+  }
   .graphics-wall-controls fieldset {
-    margin: 0.35rem 0;
-    border-radius: 0.35rem;
+    max-height: 16rem;
+    overflow-y: auto;
+    margin: 0.5rem 0;
+    padding: 0.45rem 0.65rem 0.6rem;
+    border-radius: 0.5rem;
     border: 1px solid rgba(255, 255, 255, 0.25);
   }
-  .graphics-wall-controls p { margin: 0.35rem 0; }
+  .graphics-wall-controls p { margin: 0.45rem 0; }
   .graphics-wall-controls label { display: block; }
-  .graphics-wall-controls small { opacity: 0.75; display: block; }
+  .graphics-wall-controls small { opacity: 0.75; display: block; max-width: 100%; white-space: normal; }
   .graphics-wall-controls select,
   .graphics-wall-controls input { max-width: 100%; }
   .graphics-wall-controls .wall-type-row {
+    position: sticky;
+    top: 1.35rem;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
+    padding: 0.35rem 0;
+    background: #202020;
   }
   .graphics-wall-controls .wall-type-row label {
     display: flex;

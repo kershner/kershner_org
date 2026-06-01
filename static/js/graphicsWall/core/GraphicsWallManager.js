@@ -15,6 +15,7 @@ export class GraphicsWallManager {
     this.wallFactoryCache = {};
     this.controls = null;
     this.animationFrame = null;
+    this.wallCycleTimer = null;
     this.lastTime = 0;
     this.viewport = {
       width: options.width || (typeof window !== "undefined" ? window.innerWidth : 1),
@@ -107,6 +108,7 @@ export class GraphicsWallManager {
     this.renderInitialFrame();
     this.warmupInitialFrames();
     this.reveal();
+    this.updateWallCycleTimer();
     this.animationFrame = requestAnimationFrame(this.animate);
 
     return this.createPublicApi();
@@ -134,6 +136,38 @@ export class GraphicsWallManager {
     return wallFactory;
   }
 
+  // Returns current viewport/device flags used by responsive wall defaults.
+  getDeviceInfo() {
+    return {
+      width: this.viewport.width,
+      height: this.viewport.height,
+      devicePixelRatio: this.viewport.devicePixelRatio,
+      isMobile: this.viewport.width < 768,
+    };
+  }
+
+  // Returns the wall color keys controlled by the shared current color.
+  getPrimaryColorKeys(type = this.type) {
+    return {
+      grass: ["grassColor"],
+      water: ["shallowColor", "deepColor"],
+      fabric: ["baseColor"],
+      orbs: ["backgroundColor"],
+    }[type] || [];
+  }
+
+  // Applies the shared current color to the active wall's primary colors.
+  applyCurrentColorToConfig(type, config) {
+    const currentColor = config.global.currentColor;
+    if (!currentColor) return config;
+
+    this.getPrimaryColorKeys(type).forEach((key) => {
+      config.wall[key] = currentColor;
+    });
+
+    return config;
+  }
+
   // Merges core defaults, wall defaults, and user options into one config.
   createConfig(type, options, wallFactory) {
     if (!wallFactory) {
@@ -141,10 +175,10 @@ export class GraphicsWallManager {
     }
 
     const wallDefaults = typeof wallFactory.defaults === "function"
-      ? wallFactory.defaults(this.viewport)
+      ? wallFactory.defaults(this.getDeviceInfo())
       : wallFactory.defaults || {};
 
-    return mergeDeep(
+    const config = mergeDeep(
       mergeDeep(DEFAULT_CONFIG, wallDefaults),
       {
         global: options.global,
@@ -152,6 +186,8 @@ export class GraphicsWallManager {
         wall: options.wall,
       }
     );
+
+    return this.applyCurrentColorToConfig(type, config);
   }
 
   // Instantiates the current wall implementation.
@@ -167,6 +203,8 @@ export class GraphicsWallManager {
       viewport: this.viewport,
       config: this.config,
     });
+
+    this.syncActiveWallCurrentColor();
   }
 
   // Applies the viewport size to the renderer and active wall.
@@ -228,6 +266,30 @@ export class GraphicsWallManager {
     this.canvas.style.opacity = String(Math.max(0, Math.min(1, Number(this.config.global.opacity ?? 1))));
   }
 
+  // Waits for a small timed transition without blocking rendering.
+  wait(ms) {
+    return new Promise((resolve) => window.setTimeout(resolve, Math.max(0, ms || 0)));
+  }
+
+  // Fades the wall canvas to the target opacity.
+  async fadeCanvasTo(opacity, duration) {
+    if (!this.canvas) return;
+
+    this.canvas.style.willChange = "opacity";
+    this.canvas.style.transition = `opacity ${Math.max(0, duration || 0)}ms ease`;
+    this.canvas.style.opacity = String(Math.max(0, Math.min(1, opacity)));
+    await this.wait(duration);
+  }
+
+  // Reapplies the current global color to a freshly created wall.
+  syncActiveWallCurrentColor() {
+    const currentColor = this.config?.global?.currentColor;
+    if (!currentColor) return;
+
+    this.applyCurrentColorToConfig(this.type, this.config);
+    this.activeWall?.set?.("global.currentColor", currentColor);
+  }
+
   // Fades the canvas in after initial rendering.
   reveal() {
     this.canvas.style.opacity = "0";
@@ -287,7 +349,21 @@ export class GraphicsWallManager {
       this.canvas.style.zIndex = value;
     }
 
+    if (path === "global.cycleWalls" || path === "global.wallCycleInterval") {
+      this.updateWallCycleTimer();
+    }
+
+    if (path === "global.currentColor") {
+      this.applyCurrentColorToConfig(this.type, this.config);
+    }
+
     this.activeWall?.set?.(path, value);
+
+    if (path === "global.currentColor") {
+      this.getPrimaryColorKeys(this.type).forEach((key) => {
+        this.activeWall?.set?.(`wall.${key}`, value);
+      });
+    }
 
     if (this.syncQueryParams && options.syncQueryParams === true && previousValue !== value) {
       this.queryParams?.updateGraphicsWallQueryParam(path, value, {
@@ -328,11 +404,12 @@ export class GraphicsWallManager {
     this.fullscreen?.set(Boolean(this.config.global.fullscreen));
     this.applyCanvasOpacity();
     this.canvas.style.zIndex = this.config.global.zIndex;
+    this.updateWallCycleTimer();
   }
 
   // Switches to another wall type.
   async setType(type, options = {}) {
-    if (type === this.type) {
+    if (type === this.type && options.force !== true) {
       return true;
     }
 
@@ -345,12 +422,27 @@ export class GraphicsWallManager {
       return false;
     }
 
+    const shouldFade = options.fade !== false && Boolean(this.canvas);
+    const fadeInDuration = Math.max(0, Number(this.config.global.fadeInDuration) || 0);
+    const fadeOutDuration = Math.min(2000, Math.max(600, fadeInDuration * 0.5));
+
+    if (shouldFade) {
+      await this.fadeCanvasTo(0, fadeOutDuration);
+    }
+
     await this.rebuildWall(type, {
       type,
       global: this.config.global,
       interaction: this.config.interaction,
       wall: {},
     }, wallFactory);
+
+    this.renderInitialFrame();
+
+    if (shouldFade) {
+      await this.fadeCanvasTo(Math.max(0, Math.min(1, Number(this.config.global.opacity ?? 1))), fadeInDuration);
+      this.canvas.style.willChange = "auto";
+    }
 
     if (this.syncQueryParams && options.syncQueryParams === true) {
       this.queryParams?.updateGraphicsWallQueryParam("type", type, {
@@ -360,6 +452,33 @@ export class GraphicsWallManager {
 
     this.events.emit("typechange", { type });
     return true;
+  }
+
+  // Randomly selects one registered wall type and skips if it matches the current wall.
+  async cycleRandomWall() {
+    const types = this.getWallTypes();
+    if (!types.length) return false;
+
+    const nextType = types[Math.floor(Math.random() * types.length)];
+    if (nextType === this.type) return true;
+
+    return this.setType(nextType);
+  }
+
+  // Starts or stops automatic random wall cycling.
+  updateWallCycleTimer() {
+    if (this.wallCycleTimer) {
+      window.clearTimeout(this.wallCycleTimer);
+      this.wallCycleTimer = null;
+    }
+
+    if (!this.config?.global?.cycleWalls) return;
+
+    const interval = Math.max(1000, Number(this.config.global.wallCycleInterval) || 8000);
+    this.wallCycleTimer = window.setTimeout(async () => {
+      await this.cycleRandomWall();
+      this.updateWallCycleTimer();
+    }, interval);
   }
 
   // Restores the original type and config.
@@ -395,12 +514,24 @@ export class GraphicsWallManager {
     return Object.keys(this.wallTypes);
   }
 
-  // Combines shared controls with wall-specific controls.
+  // Combines shared and wall-specific color controls into one Color section.
   getControlSchema() {
-    return [
-      ...GLOBAL_CONTROLS,
-      ...(this.activeWall?.controls || []),
-    ];
+    const schema = GLOBAL_CONTROLS.map((group) => ({
+      ...group,
+      controls: [...group.controls],
+    }));
+    const colorGroup = schema.find((group) => group.title === "Color");
+
+    (this.activeWall?.controls || []).forEach((group) => {
+      if (group.title === "Color") {
+        colorGroup?.controls.push(...group.controls);
+        return;
+      }
+
+      schema.push(group);
+    });
+
+    return schema;
   }
 
   // Returns a safe copy of the current config.
@@ -417,6 +548,7 @@ export class GraphicsWallManager {
   destroy() {
     this.fullscreen?.set(false);
     cancelAnimationFrame(this.animationFrame);
+    if (this.wallCycleTimer) window.clearTimeout(this.wallCycleTimer);
     window.removeEventListener("resize", this.handleWindowResize);
     this.pointer?.detach();
     this.controls?.destroy();
@@ -434,6 +566,9 @@ export class GraphicsWallManager {
       getType: this.getType.bind(this),
       getWallTypes: this.getWallTypes.bind(this),
       getConfig: this.getConfig.bind(this),
+      getDeviceInfo: this.getDeviceInfo.bind(this),
+      setCurrentColor: (color) => this.set("global.currentColor", color),
+      cycleRandomWall: this.cycleRandomWall.bind(this),
       reset: this.reset.bind(this),
       destroy: this.destroy.bind(this),
       on: this.on.bind(this),

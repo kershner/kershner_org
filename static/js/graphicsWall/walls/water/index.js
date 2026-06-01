@@ -53,14 +53,11 @@ const interactionUniformKeys = ["cursorRadius", "pulseStrength", "pulseRadius"];
 const colorKeys = ["shallowColor", "deepColor", "skyColor", "horizonColor", "bankColor", "sunColor"];
 
 const uniformPaths = createUniformPathResolver([
-  "colorTransitionSpeed",
   "simulationSteps",
   ...simUniformKeys,
   ...renderUniformKeys,
   ...colorKeys,
-], {
-  waterColor: "wall.shallowColor",
-});
+]);
 
 // Creates the water simulation wall and owns its render targets.
 export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config }) {
@@ -119,7 +116,7 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
     uWaterState: { value: readTarget.texture },
     uTexel: { value: texel },
     ...makeConfigUniforms(wallConfig, renderUniformKeys),
-    uShallowColor: { value: new THREE.Color(wallConfig.shallowColor || wallConfig.waterColor) },
+    uShallowColor: { value: new THREE.Color(wallConfig.shallowColor) },
     uDeepColor: { value: new THREE.Color(wallConfig.deepColor) },
     uSkyColor: { value: new THREE.Color(wallConfig.skyColor) },
     uHorizonColor: { value: new THREE.Color(wallConfig.horizonColor) },
@@ -128,7 +125,7 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
   };
 
   const colorTargets = {
-    shallowColor: new THREE.Color(wallConfig.shallowColor || wallConfig.waterColor),
+    shallowColor: new THREE.Color(wallConfig.shallowColor),
     deepColor: new THREE.Color(wallConfig.deepColor),
     skyColor: new THREE.Color(wallConfig.skyColor),
     horizonColor: new THREE.Color(wallConfig.horizonColor),
@@ -182,10 +179,23 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
   function set(path, value) {
     const key = path.startsWith("wall.") ? path.slice(5) : path;
 
-    if (key === "waterColor" || key === "shallowColor") {
+    if (path === "global.colorTransitionSpeed") {
+      config.global.colorTransitionSpeed = value;
+      return true;
+    }
+
+    if (path === "global.currentColor") {
+      colorTargets.shallowColor.set(value);
+      colorTargets.deepColor.set(value);
+      config.global.currentColor = value;
+      config.wall.shallowColor = value;
+      config.wall.deepColor = value;
+      return true;
+    }
+
+    if (key === "shallowColor") {
       colorTargets.shallowColor.set(value);
       config.wall.shallowColor = value;
-      config.wall.waterColor = value;
       return true;
     }
 
@@ -233,7 +243,7 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
 
       renderer.setRenderTarget(previousRenderTarget);
 
-      applyColorUniforms(renderUniforms, colorTargets, colorKeys, config.wall.colorTransitionSpeed, config.global.rotateColors !== false);
+      applyColorUniforms(renderUniforms, colorTargets, colorKeys, config.global.colorTransitionSpeed, config.global.rotateColors !== false);
     },
 
     destroy() {

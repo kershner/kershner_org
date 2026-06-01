@@ -1,7 +1,6 @@
 export const fabricDefaults = {
   global: {
     opacity: 0.98,
-    colorTransitionSpeed: 0.007,
   },
   interaction: {
     cursorRadius: 0.32,

@@ -27,11 +27,4 @@ export const fabricControls = [
       { type: "range", path: "wall.healDelay", label: "Self heal time", min: 0, max: 8, step: 0.1, help: "Seconds before a cut starts healing." },
     ],
   },
-  {
-    title: "Color",
-    controls: [
-      { type: "checkbox", path: "global.rotateColors", label: "Rotate colors", help: "Allow this wall to follow portfolio color changes." },
-      { type: "color", path: "wall.baseColor", label: "Fabric color", help: "Main fabric color." },
-    ],
-  },
 ];
