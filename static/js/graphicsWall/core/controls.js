@@ -1,77 +1,73 @@
-const PANEL_STYLE = {
-  position: "fixed",
-  right: "12px",
-  top: "8px",
-  zIndex: "99999",
-  maxHeight: "80vh",
-  maxWidth: "min(23rem, calc(100vw - 24px))",
-  overflow: "auto",
-  background: "#202020",
-  color: "#FFF",
-  padding: "0.45rem 0.9rem",
-  cursor: "pointer",
-  borderRadius: "2em",
-  fontSize: "0.8rem",
-  lineHeight: "1rem",
-  fontFamily: "system-ui, sans-serif",
-};
-
 const PANEL_CSS = `
   .graphics-wall-controls {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.22) transparent;
+    position: fixed;
+    right: 12px;
+    top: 8px;
+    z-index: 99999;
+    max-height: 80vh;
+    max-width: min(23rem, calc(100vw - 24px));
+    overflow: auto;
+    color-scheme: dark;
+    background: #202020;
+    color: #fff;
+    padding: 0.45rem 0.9rem;
+    cursor: pointer;
+    border-radius: 2em;
+    font: 0.8rem/1rem system-ui, sans-serif;
   }
+
   .graphics-wall-controls[open] {
     padding: 0 0.9rem 0.9rem;
     border-radius: 1rem;
   }
-  .graphics-wall-controls::-webkit-scrollbar,
-  .graphics-wall-controls fieldset::-webkit-scrollbar { width: 0.35rem; }
-  .graphics-wall-controls::-webkit-scrollbar-thumb,
-  .graphics-wall-controls fieldset::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 1rem; }
-  .graphics-wall-controls::-webkit-scrollbar-track,
-  .graphics-wall-controls fieldset::-webkit-scrollbar-track { background: transparent; }
-  .graphics-wall-controls summary {
+
+  .graphics-wall-controls summary,
+  .graphics-wall-controls .wall-type-row {
     position: sticky;
-    top: -7px;
     z-index: 2;
     background: #202020;
   }
+
+  .graphics-wall-controls summary {
+    top: -7px;
+  }
+
   .graphics-wall-controls[open] summary {
     margin: 0 -0.9rem;
     padding: 0.75rem 0.9rem 0.55rem;
     border-radius: 1rem 1rem 0 0;
   }
+
   .graphics-wall-controls fieldset {
     max-height: 16rem;
     overflow-y: auto;
     margin: 0.5rem 0;
     padding: 0.45rem 0.65rem 0.6rem;
+    border: 1px solid rgba(255,255,255,0.25);
     border-radius: 0.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.25);
   }
+
   .graphics-wall-controls p { margin: 0.45rem 0; }
-  .graphics-wall-controls label { display: block; }
-  .graphics-wall-controls small { opacity: 0.75; display: block; max-width: 100%; white-space: normal; }
-  .graphics-wall-controls select,
-  .graphics-wall-controls input { max-width: 100%; }
+  .graphics-wall-controls :is(label, small) { display: block; }
+  .graphics-wall-controls small { opacity: 0.75; max-width: 100%; white-space: normal; }
+  .graphics-wall-controls :is(select, input) { max-width: 100%; }
+
   .graphics-wall-controls .wall-type-row {
-    position: sticky;
     top: 1.35rem;
-    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
     padding: 0.35rem 0;
-    background: #202020;
   }
+
   .graphics-wall-controls .wall-type-row label {
     display: flex;
     align-items: center;
     gap: 0.35rem;
     margin: 0;
   }
+
   .graphics-wall-controls .wall-reset-button {
     flex: 0 0 auto;
   }
@@ -106,7 +102,6 @@ export function createControls({ manager }) {
   const panel = document.createElement("details");
   panel.open = false;
   panel.classList.add("graphics-wall-controls");
-  Object.assign(panel.style, PANEL_STYLE);
 
   ensureControlsStyle();
 
