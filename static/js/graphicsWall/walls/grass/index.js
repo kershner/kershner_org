@@ -1,5 +1,6 @@
+import { createResourceTracker } from "../../core/resources.js";
 import { applyColorUniforms, createUniformPathResolver, makeConfigUniforms, syncUniformValues } from "../../core/wallUtils.js";
-import { grassDefaults } from "./defaults.js";
+import { createGrassDefaults } from "./defaults.js";
 import { createGrassGeometry } from "./geometry.js";
 import {
   FIREFLY_FRAGMENT_SHADER,
@@ -59,10 +60,12 @@ const uniformPaths = createUniformPathResolver([
   ...wallUniformKeys,
 ]);
 
+// Returns a random number inside a range.
 function randomBetween(min, max) {
   return min + Math.random() * (max - min);
 }
 
+// Shapes the rise and decay of one breeze gust.
 function gustEnvelope(t, springTail) {
   if (t < 1) {
     return Math.sin(t * Math.PI);
@@ -72,8 +75,10 @@ function gustEnvelope(t, springTail) {
   return -Math.sin(tail * Math.PI * 4.5) * Math.exp(-tail * 4.2) * 0.42;
 }
 
+// Creates the grass wall and owns its meshes and materials.
 export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
-  const baseGeometry = new THREE.PlaneGeometry(1, 1, 1, 8);
+  const resources = createResourceTracker();
+  const baseGeometry = resources.track(new THREE.PlaneGeometry(1, 1, 1, 8));
   baseGeometry.translate(0, 0.5, 0);
 
   const wallConfig = config.wall;
@@ -96,7 +101,7 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
   const targetGrassColor = new THREE.Color(wallConfig.grassColor);
   const targetCursorColor = new THREE.Color(wallConfig.cursorColor);
 
-  const material = new THREE.ShaderMaterial({
+  const material = resources.track(new THREE.ShaderMaterial({
     uniforms,
     vertexShader: GRASS_WALL_VERTEX_SHADER,
     fragmentShader: GRASS_WALL_FRAGMENT_SHADER,
@@ -104,7 +109,7 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
     transparent: true,
     depthWrite: false,
     depthTest: false,
-  });
+  }));
 
   const fireflyUniforms = {
     uTime: uniforms.uTime,
@@ -119,8 +124,8 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
     uFireflyDrift: uniforms.uFireflyDrift,
   };
 
-  const fireflyGeometry = new THREE.PlaneGeometry(2, 2);
-  const fireflyMaterial = new THREE.ShaderMaterial({
+  const fireflyGeometry = resources.track(new THREE.PlaneGeometry(2, 2));
+  const fireflyMaterial = resources.track(new THREE.ShaderMaterial({
     uniforms: fireflyUniforms,
     vertexShader: FIREFLY_VERTEX_SHADER,
     fragmentShader: FIREFLY_FRAGMENT_SHADER,
@@ -128,7 +133,7 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
     depthWrite: false,
     depthTest: false,
     blending: THREE.AdditiveBlending,
-  });
+  }));
 
   const fireflyPlane = new THREE.Mesh(fireflyGeometry, fireflyMaterial);
   fireflyPlane.renderOrder = 10;
@@ -140,6 +145,7 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
   let breezeGusts = [];
   let nextDirectionChangeAt = 0;
 
+  // Rebuilds instanced grass geometry when blade count changes.
   function rebuildGrass(bladeCount) {
     if (grass) {
       scene.remove(grass);
@@ -152,6 +158,7 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
     scene.add(grass);
   }
 
+  // Creates one breeze gust with randomized radius and lifetime.
   function randomGustPacket(direction, time) {
     const radius = randomBetween(breezeSettings.minRadius, breezeSettings.maxRadius);
     const strength = randomBetween(breezeSettings.minStrength, breezeSettings.maxStrength);
@@ -174,10 +181,12 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
     };
   }
 
+  // Copies one gust into a shader uniform.
   function setGustUniform(uniform, gust, fade) {
     uniform.value.set(gust.x, gust.y, gust.radius, gust.strength * fade);
   }
 
+  // Resets unused breeze uniforms to inactive values.
   function clearBreezeUniforms(time) {
     const empty = { x: 9, y: 9, radius: 0, strength: 0, bornAt: time, lifetime: 1, springTail: 1 };
 
@@ -186,6 +195,7 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
     });
   }
 
+  // Pushes active breeze gusts into shader uniforms.
   function updateBreezeUniforms(time) {
     const empty = { x: 9, y: 9, radius: 0, strength: 0, bornAt: time, lifetime: 1, springTail: 1 };
 
@@ -197,6 +207,7 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
     });
   }
 
+  // Ages existing gusts and occasionally starts new ones.
   function updateBreeze(time, deltaSeconds) {
     if (config.wall.breezeChance <= 0) {
       breezeGusts.length = 0;
@@ -242,10 +253,12 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
     updateBreezeUniforms(time);
   }
 
+  // Pushes shared pointer config into grass uniforms.
   function syncInteractionUniforms() {
     syncUniformValues(uniforms, config.interaction, interactionUniformKeys);
   }
 
+  // Applies live config changes to grass colors and uniforms.
   function set(path, value) {
     const key = path.startsWith("wall.") ? path.slice(5) : path;
 
@@ -309,14 +322,11 @@ export function createGrassWall({ THREE, scene, sharedUniforms, config }) {
       }
 
       scene.remove(fireflyPlane);
-      baseGeometry.dispose();
       grassGeometry?.dispose();
-      fireflyGeometry.dispose();
-      fireflyMaterial.dispose();
-      material.dispose();
+      resources.dispose();
     },
   };
 }
 
-createGrassWall.defaults = grassDefaults;
+createGrassWall.defaults = createGrassDefaults;
 createGrassWall.loadControls = () => import("./controls.js").then((module) => module.grassControls);

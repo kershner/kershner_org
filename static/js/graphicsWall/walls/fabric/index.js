@@ -1,5 +1,8 @@
+import { createResourceTracker } from "../../core/resources.js";
 import { createUniformPathResolver, makeColorTargets } from "../../core/wallUtils.js";
+import { addScaledColor, colorToCssRgb, colorToCssRgba, derivedHslColor, mixColor } from "./colors.js";
 import { fabricDefaults } from "./defaults.js";
+import { clamp, distanceToSegment, hash01, lerp, smoothstep } from "./math.js";
 
 const colorKeys = ["baseColor"];
 
@@ -50,72 +53,12 @@ const uniformPaths = createUniformPathResolver([
   accentColor: "wall.baseColor",
 });
 
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
-function lerp(a, b, t) {
-  return a + (b - a) * t;
-}
-
-function smoothstep(edge0, edge1, x) {
-  const t = clamp((x - edge0) / ((edge1 - edge0) || 1), 0, 1);
-  return t * t * (3 - 2 * t);
-}
-
-function distanceToSegment(px, py, ax, ay, bx, by) {
-  const vx = bx - ax;
-  const vy = by - ay;
-  const wx = px - ax;
-  const wy = py - ay;
-  const lenSq = vx * vx + vy * vy || 1;
-  const t = clamp((wx * vx + wy * vy) / lenSq, 0, 1);
-  const dx = px - (ax + vx * t);
-  const dy = py - (ay + vy * t);
-  return { distance: Math.sqrt(dx * dx + dy * dy), along: t };
-}
-
-function hash01(value) {
-  const n = Math.sin(value * 12.9898) * 43758.5453123;
-  return n - Math.floor(n);
-}
-
-function addScaledColor(out, color, scale) {
-  out.r = clamp(color.r * scale, 0, 1);
-  out.g = clamp(color.g * scale, 0, 1);
-  out.b = clamp(color.b * scale, 0, 1);
-  return out;
-}
-
+// Creates one cloth point with current, previous, and original positions.
 function makePoint(x, y, z, pinned) {
   return { x, y, z, px: x, py: y, pz: z, ox: x, oy: y, oz: z, pinned, fray: 0 };
 }
 
-function mixColor(out, a, b, t) {
-  out.r = lerp(a.r, b.r, t);
-  out.g = lerp(a.g, b.g, t);
-  out.b = lerp(a.b, b.b, t);
-  return out;
-}
-
-function derivedHslColor(THREE, source, lightness, saturationScale = 1, saturationAdd = 0) {
-  const hsl = { h: 0, s: 0, l: 0 };
-  source.getHSL(hsl);
-  return new THREE.Color().setHSL(
-    hsl.h,
-    clamp(hsl.s * saturationScale + saturationAdd, 0, 1),
-    clamp(lightness, 0, 1),
-  );
-}
-
-function colorToCssRgb(color) {
-  return `rgb(${Math.round(color.r * 255)},${Math.round(color.g * 255)},${Math.round(color.b * 255)})`;
-}
-
-function colorToCssRgba(color, alpha) {
-  return `rgba(${Math.round(color.r * 255)},${Math.round(color.g * 255)},${Math.round(color.b * 255)},${alpha})`;
-}
-
+// Builds the cloth points, constraints, geometry, and lookup maps.
 function buildFabricState(THREE, wall) {
   const columns = clamp(Math.round(wall.columns || 92), 24, 170);
   const rows = clamp(Math.round(wall.rows || 64), 18, 120);
@@ -327,7 +270,9 @@ function buildFabricState(THREE, wall) {
   };
 }
 
+// Creates the cloth simulation wall and owns its resources.
 export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
+  const resources = createResourceTracker();
   const wallConfig = config.wall;
   const interactionConfig = config.interaction;
 
@@ -349,6 +294,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
   let backgroundTexture = null;
   let backgroundTextureKey = "";
 
+  // Generates the reusable woven-cloth texture.
   function makeFabricTexture() {
     // Keep startup cheap: this tile is intentionally small and drawn with canvas
     // primitives instead of a 2048x2048 per-pixel ImageData loop.
@@ -435,6 +381,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
     return texture;
   }
 
+  // Rebuilds the cloth texture only when texture-driving settings change.
   function syncFabricTexture(force = false) {
     const key = `${Math.round(Number(config.wall.threadStrength || 0.28) * 1000)}:${Math.round(Number(config.wall.threadScale || 210))}`;
     if (!force && key === fabricTextureKey && fabricTexture) return;
@@ -448,6 +395,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
   }
 
 
+  // Generates the soft fabric backdrop texture.
   function makeBackgroundTexture(baseColor = currentColors.baseColor) {
     const width = 1024;
     const height = 1024;
@@ -506,6 +454,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
     return texture;
   }
 
+  // Rebuilds the backdrop texture when the derived color changes.
   function syncBackgroundTexture(force = false) {
     const hsl = { h: 0, s: 0, l: 0 };
     currentColors.baseColor.getHSL(hsl);
@@ -520,6 +469,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
     if (oldTexture) oldTexture.dispose();
   }
 
+  // Updates cheap vertex colors for the fabric backdrop.
   function syncBackgroundColor() {
     // Keep this cheap on cold start: do not regenerate canvas textures while
     // the fabric color is transitioning. The background is a dramatic vertex
@@ -557,6 +507,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
 
 
 
+  // Creates the backdrop plane geometry.
   function createBackgroundGeometry(wall) {
     const width = Number(wall.backgroundWidth || Math.max(Number(wall.width || 2.28) * 1.36, 3.0));
     const height = Number(wall.backgroundHeight || 2.62);
@@ -566,13 +517,13 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
   }
 
   let state = buildFabricState(THREE, wallConfig);
-  const backgroundMaterial = new THREE.MeshBasicMaterial({
+  const backgroundMaterial = resources.track(new THREE.MeshBasicMaterial({
     vertexColors: true,
     transparent: true,
     opacity: 0.96,
     depthWrite: false,
     depthTest: false,
-  });
+  }));
   const backgroundMesh = new THREE.Mesh(
     createBackgroundGeometry(wallConfig),
     backgroundMaterial,
@@ -581,14 +532,14 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
   backgroundMesh.renderOrder = 0;
   scene.add(backgroundMesh);
 
-  const material = new THREE.MeshBasicMaterial({
+  const material = resources.track(new THREE.MeshBasicMaterial({
     vertexColors: true,
     side: THREE.DoubleSide,
     transparent: true,
     opacity: wallConfig.opacity,
     depthWrite: false,
     depthTest: false,
-  });
+  }));
   syncBackgroundColor();
   syncFabricTexture(true);
   const mesh = new THREE.Mesh(state.geometry, material);
@@ -602,6 +553,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
   let lastCutX = null;
   let lastCutY = null;
 
+  // Rebuilds cloth and backdrop geometry after dimension changes.
   function rebuildGeometry() {
     const oldGeometry = state.geometry;
     state = buildFabricState(THREE, config.wall);
@@ -641,6 +593,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
     b.z -= oz * bw;
   }
 
+  // Advances cloth point positions using Verlet integration.
   function integrate(delta, time) {
     const dt = clamp(delta || 0.016, 0.001, 0.033);
     const gravity = Number(config.wall.gravity || 0.72) * dt * dt;
@@ -730,6 +683,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
     }
   }
 
+  // Enforces cloth distance constraints.
   function solveConstraints() {
     const iterations = clamp(Math.round(config.wall.constraintIterations || 6), 1, 14);
     const stiffness = clamp(Number(config.wall.stiffness || 0.92), 0.05, 1);
@@ -892,6 +846,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
     state.geometry.attributes.color.needsUpdate = true;
   }
 
+  // Finds constraints and triangles near a cut stroke.
   function collectCutCandidates(ax, ay, bx, by, radius) {
     const minX = Math.min(ax, bx) - radius;
     const maxX = Math.max(ax, bx) + radius;
@@ -916,6 +871,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
     return { constraints: candidateConstraints, triangles: candidateTriangles };
 }
 
+  // Applies a cut stroke to nearby cloth constraints.
   function cutAt(pointer, velocity, time, options = {}) {
     if (config.wall.tearEnabled === false) return false;
     const cooldown = options.force ? 0 : Number(config.wall.cutCooldown || 0.045);
@@ -1021,6 +977,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
     return false;
   }
 
+  // Gradually restores old cuts when self-heal is enabled.
   function healCuts(time) {
     if (config.wall.selfHeal === false || !state.cuts.length) return;
     const delay = Math.max(0, Number(config.wall.healDelay || 2.4));
@@ -1110,6 +1067,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
     state.cuts = state.cuts.filter((cut) => !cut.healed || time - cut.time < delay + duration + 0.5);
   }
 
+  // Restores triangles that are no longer attached to open cuts.
   function repairStaleHiddenTriangles() {
     if (config.wall.selfHeal === false) return;
     const hasOpenCut = state.cuts.some((cut) => !cut.healed);
@@ -1125,6 +1083,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
     }
   }
 
+  // Animates current fabric colors toward their targets.
   function syncColors() {
     const speed = clamp(Number(config.global.colorTransitionSpeed ?? config.wall.colorTransitionSpeed ?? 0.007), 0, 1);
     for (const key of colorKeys) {
@@ -1132,6 +1091,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
     }
   }
 
+  // Applies live config changes to cloth state and material settings.
   function set(path, value) {
     const key = path.startsWith("wall.") ? path.slice(5) : path;
 
@@ -1240,8 +1200,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
       backgroundMesh.geometry.dispose();
       if (fabricTexture) fabricTexture.dispose();
       if (backgroundTexture) backgroundTexture.dispose();
-      material.dispose();
-      backgroundMaterial.dispose();
+      resources.dispose();
     },
   };
 }

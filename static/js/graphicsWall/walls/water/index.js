@@ -1,3 +1,4 @@
+import { createResourceTracker } from "../../core/resources.js";
 import { applyColorUniforms, createUniformPathResolver, makeConfigUniforms, syncUniformValues } from "../../core/wallUtils.js";
 import { waterDefaults } from "./defaults.js";
 import {
@@ -61,7 +62,9 @@ const uniformPaths = createUniformPathResolver([
   waterColor: "wall.shallowColor",
 });
 
+// Creates the water simulation wall and owns its render targets.
 export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config }) {
+  const resources = createResourceTracker();
   const wallConfig = config.wall;
   const interactionConfig = config.interaction;
   const resolution = Math.max(128, Math.min(1024, Number(wallConfig.simulationResolution) || 512));
@@ -78,12 +81,12 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
     stencilBuffer: false,
   };
 
-  let readTarget = new THREE.WebGLRenderTarget(resolution, resolution, renderTargetOptions);
-  let writeTarget = new THREE.WebGLRenderTarget(resolution, resolution, renderTargetOptions);
+  let readTarget = resources.track(new THREE.WebGLRenderTarget(resolution, resolution, renderTargetOptions));
+  let writeTarget = resources.track(new THREE.WebGLRenderTarget(resolution, resolution, renderTargetOptions));
 
   const simScene = new THREE.Scene();
   const simCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, -1, 1);
-  const simGeometry = new THREE.PlaneGeometry(2, 2);
+  const simGeometry = resources.track(new THREE.PlaneGeometry(2, 2));
 
   const simUniforms = {
     uState: { value: readTarget.texture },
@@ -100,13 +103,13 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
     uPulsePointer: sharedUniforms.uPulsePointer,
   };
 
-  const simMaterial = new THREE.ShaderMaterial({
+  const simMaterial = resources.track(new THREE.ShaderMaterial({
     uniforms: simUniforms,
     vertexShader: WATER_SIM_VERTEX_SHADER,
     fragmentShader: WATER_SIM_FRAGMENT_SHADER,
     depthWrite: false,
     depthTest: false,
-  });
+  }));
 
   const simMesh = new THREE.Mesh(simGeometry, simMaterial);
   simScene.add(simMesh);
@@ -133,20 +136,21 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
     sunColor: new THREE.Color(wallConfig.sunColor),
   };
 
-  const geometry = new THREE.PlaneGeometry(2, 2);
-  const material = new THREE.ShaderMaterial({
+  const geometry = resources.track(new THREE.PlaneGeometry(2, 2));
+  const material = resources.track(new THREE.ShaderMaterial({
     uniforms: renderUniforms,
     vertexShader: WATER_WALL_VERTEX_SHADER,
     fragmentShader: WATER_WALL_FRAGMENT_SHADER,
     transparent: true,
     depthWrite: false,
     depthTest: false,
-  });
+  }));
 
   const mesh = new THREE.Mesh(geometry, material);
   mesh.renderOrder = 1;
   scene.add(mesh);
 
+  // Swaps ping-pong simulation buffers.
   function swapTargets() {
     const next = readTarget;
     readTarget = writeTarget;
@@ -155,6 +159,7 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
     renderUniforms.uWaterState.value = readTarget.texture;
   }
 
+  // Clears both simulation buffers before rendering starts.
   function clearTargets() {
     const previousClearColor = renderer.getClearColor(new THREE.Color());
     const previousClearAlpha = renderer.getClearAlpha();
@@ -168,10 +173,12 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
     renderer.setClearColor(previousClearColor, previousClearAlpha);
   }
 
+  // Pushes shared pointer settings into the simulation shader.
   function syncInteractionUniforms() {
     syncUniformValues(simUniforms, config.interaction, interactionUniformKeys);
   }
 
+  // Applies live config changes to water colors and uniforms.
   function set(path, value) {
     const key = path.startsWith("wall.") ? path.slice(5) : path;
 
@@ -232,12 +239,7 @@ export function createWaterWall({ THREE, scene, renderer, sharedUniforms, config
     destroy() {
       scene.remove(mesh);
       simScene.remove(simMesh);
-      geometry.dispose();
-      material.dispose();
-      simGeometry.dispose();
-      simMaterial.dispose();
-      readTarget.dispose();
-      writeTarget.dispose();
+      resources.dispose();
     },
   };
 }

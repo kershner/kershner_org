@@ -1,104 +1,11 @@
+import { captureRendererState } from "../../core/rendererState.js";
+import { createResourceTracker } from "../../core/resources.js";
 import { createUniformPathResolver, makeColorTargets } from "../../core/wallUtils.js";
-import { orbsDefaults } from "./defaults.js";
+import { makeBackgroundGradientColors, makeBackgroundMaterial } from "./background.js";
+import { createOrbsDefaults } from "./defaults.js";
+import { clamp, rand } from "./math.js";
 import { makeEnvironmentTexture, makeOrbPatternTexture } from "./textures.js";
 
-function rand(min, max) {
-  return min + Math.random() * (max - min);
-}
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
-function makeBackgroundGradientColors(THREE, baseColor) {
-  const base = baseColor.clone();
-  const hsl = {};
-  base.getHSL(hsl);
-
-  const top = new THREE.Color().setHSL(
-    (hsl.h + 0.055) % 1,
-    clamp(hsl.s * 0.72 + 0.16, 0.18, 0.78),
-    clamp(hsl.l + 0.15, 0.16, 0.46)
-  );
-
-  const accent = new THREE.Color().setHSL(
-    (hsl.h + 0.58) % 1,
-    clamp(hsl.s * 0.82 + 0.12, 0.2, 0.82),
-    clamp(hsl.l + 0.18, 0.18, 0.52)
-  );
-
-  const floor = base.clone().multiplyScalar(0.38);
-  return { top, accent, floor };
-}
-
-function makeBackgroundMaterial(THREE, colors) {
-  const bottom = new THREE.Color(colors.backgroundColor);
-  const gradient = makeBackgroundGradientColors(THREE, bottom);
-  return new THREE.ShaderMaterial({
-    uniforms: {
-      uTop: { value: gradient.top },
-      uAccent: { value: gradient.accent },
-      uFloor: { value: gradient.floor },
-      uBottom: { value: bottom },
-      uContrast: { value: colors.contrast },
-      uBanding: { value: colors.retroBanding },
-      uGrain: { value: colors.grain },
-      uVignette: { value: colors.vignette },
-      uAspect: { value: 1 },
-    },
-    vertexShader: `
-      varying vec2 vUv;
-      void main() {
-        vUv = uv;
-        gl_Position = vec4(position.xy, 0.0, 1.0);
-      }
-    `,
-    fragmentShader: `
-      precision highp float;
-      uniform vec3 uTop;
-      uniform vec3 uAccent;
-      uniform vec3 uFloor;
-      uniform vec3 uBottom;
-      uniform float uContrast;
-      uniform float uBanding;
-      uniform float uGrain;
-      uniform float uVignette;
-      uniform float uAspect;
-      varying vec2 vUv;
-
-      float hash(vec2 p) {
-        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
-      }
-
-      void main() {
-        vec2 p = (vUv - 0.5) * vec2(uAspect, 1.0);
-        float h = smoothstep(0.0, 1.0, vUv.y);
-        float diagonal = smoothstep(-0.55, 0.95, (vUv.x - 0.52) * 0.85 + (vUv.y - 0.2) * 0.72);
-        float upperGlow = exp(-dot(p - vec2(-0.34 * uAspect, 0.24), p - vec2(-0.34 * uAspect, 0.24)) * 2.15);
-        float lowerGlow = exp(-dot(p - vec2(0.42 * uAspect, -0.28), p - vec2(0.42 * uAspect, -0.28)) * 2.9);
-        float shelf = exp(-pow((vUv.y - 0.22) / 0.23, 2.0));
-
-        vec3 col = mix(uFloor, uBottom, smoothstep(0.03, 0.52, vUv.y));
-        col = mix(col, uTop, h * 0.64);
-        col = mix(col, uAccent, diagonal * 0.16 + lowerGlow * 0.11);
-        col += uTop * upperGlow * 0.16;
-        col += uAccent * lowerGlow * 0.09;
-        col += vec3(0.09, 0.085, 0.074) * shelf * 0.42;
-
-        col = (col - 0.5) * uContrast + 0.5;
-        float bands = max(10.0, mix(220.0, 18.0, clamp(uBanding, 0.0, 1.0)));
-        col = mix(col, floor(col * bands) / bands, clamp(uBanding * 1.35, 0.0, 0.75));
-        float grain = hash(floor(vUv * vec2(1100.0, 800.0)));
-        col += (grain - 0.5) * uGrain * 4.2;
-        float vig = smoothstep(1.42, 0.12, length(p));
-        col *= mix(1.0 - uVignette * 0.72, 1.0, vig);
-        gl_FragColor = vec4(max(col, vec3(0.0)), 1.0);
-      }
-    `,
-    depthWrite: false,
-    depthTest: false,
-  });
-}
 
 const colorKeys = [
   "backgroundColor",
@@ -135,7 +42,10 @@ const configurableKeys = [
 
 const uniformPaths = createUniformPathResolver(configurableKeys, { rotateColors: "global.rotateColors" });
 
-export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms, config }) {
+// Creates the 3D orb wall and owns its scene resources.
+export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms, viewport = null, config }) {
+  const resources = createResourceTracker();
+  const restoreRendererState = captureRendererState({ renderer, camera, scene });
   const root = new THREE.Group();
   root.name = "GraphicsWallOrbs";
   scene.add(root);
@@ -202,8 +112,9 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
   root.add(ambient, key, fill, rim);
 
   const driftLights = [];
-  let aspect = window.innerWidth / Math.max(window.innerHeight, 1);
+  let aspect = (viewport?.width || window.innerWidth) / Math.max(viewport?.height || window.innerHeight, 1);
 
+  // Creates the moving cursor-like light rig.
   function createDriftLight() {
     const color = new THREE.Color(config.wall.cursorLightColor);
     const group = new THREE.Group();
@@ -271,6 +182,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     velocityY: 0,
   };
 
+  // Returns a cached procedural texture for one orb.
   function getOrbPatternTexture(index, mode) {
     const style = ((index * 7 + (mode === "bump" ? 11 : mode === "roughness" ? 19 : 0)) % 32 + 32) % 32;
     const key = `${mode}:${style}`;
@@ -282,6 +194,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     return texture;
   }
 
+  // Chooses the rotating color slot for an orb.
   function paletteColor(index) {
     const colors = [
       config.wall.chromeColor,
@@ -304,6 +217,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     return new THREE.Color(colors[index % colors.length]);
   }
 
+  // Builds a deformed sphere without visible texture seams.
   function makeSeamlessOrbGeometry(index, bumpiness) {
     const geometry = new THREE.SphereGeometry(1, baseSphereSegments.width, baseSphereSegments.height);
     const position = geometry.attributes.position;
@@ -369,6 +283,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     return geometry;
   }
 
+  // Builds the physical material used by one orb.
   function makeOrbMaterial(index, bumpiness) {
     const base = paletteColor(index);
     const accent = paletteColor(index + 5);
@@ -444,6 +359,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     return material;
   }
 
+  // Computes the current viewport bounds for one orb.
   function visibleBoundsFor(orb) {
     return {
       left: -aspect * config.wall.spread - orb.radius * 0.3,
@@ -453,6 +369,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     };
   }
 
+  // Places an orb back into the scene with randomized motion.
   function resetOrb(orb, placeVisible = false) {
     const huge = Math.random() < 0.34;
     orb.baseRadius = huge ? rand(0.32, 0.66) : rand(0.15, 0.36);
@@ -473,6 +390,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     orb.phase = Math.random() * Math.PI * 2;
   }
 
+  // Creates one orb mesh and its physics state.
   function createOrb(index) {
     const bumpinessPresets = [
       0.0, 0.016, 0.024, 0.036, 0.01, 0.052, 0.006, 0.03, 0.02,
@@ -517,10 +435,12 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     return orb;
   }
 
+  // Clamps the configured orb count to the supported range.
   function desiredOrbCount() {
     return Math.max(0, Math.min(maxOrbs, Math.round(config.wall.orbCount)));
   }
 
+  // Creates visible startup orbs plus hidden reusable extras.
   function createOrbBatch(limit) {
     const target = desiredOrbCount();
     let made = 0;
@@ -530,6 +450,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     }
   }
 
+  // Applies the configured scale to every orb.
   function applyOrbScale() {
     orbs.forEach((orb) => {
       const previousRadius = Math.max(orb.radius || 0.001, 0.001);
@@ -542,6 +463,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
 
   createOrbBatch(initialOrbBudget);
 
+  // Converts pointer coordinates into world coordinates.
   function eventToWorld(event) {
     return {
       x: ((event.clientX / Math.max(window.innerWidth, 1)) * 2 - 1) * aspect,
@@ -549,6 +471,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     };
   }
 
+  // Finds the topmost orb under a world-space point.
   function findOrbAt(x, y) {
     let best = null;
     let bestScore = Infinity;
@@ -569,6 +492,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     return best;
   }
 
+  // Adds a small spin impulse for tap feedback.
   function slowOrbSpin(orb) {
     if (!orb) return;
     if (orb.spin.lengthSq() < 0.000001) {
@@ -577,11 +501,13 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     orb.spin.setLength(tapSpinSpeed);
   }
 
+  // Starts a short bounce animation after a tap.
   function triggerTapBounce(orb) {
     if (!orb) return;
     orb.tapBounce = 1.0;
   }
 
+  // Starts pointer dragging when an orb is hit.
   function beginOrbDrag(event) {
     const world = eventToWorld(event);
     const orb = findOrbAt(world.x, world.y);
@@ -610,6 +536,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     if (event.cancelable) event.preventDefault();
   }
 
+  // Moves the held orb and records throw velocity.
   function moveOrbDrag(event) {
     if (!interaction.isDown || interaction.pointerId !== event.pointerId || !interaction.orb) return;
 
@@ -645,6 +572,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     }
   }
 
+  // Releases a held orb and applies throw momentum.
   function endOrbDrag(event) {
     if (!interaction.isDown || interaction.pointerId !== event.pointerId) return;
 
@@ -675,7 +603,14 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
   window.addEventListener("pointermove", moveOrbDrag, { passive: false });
   window.addEventListener("pointerup", endOrbDrag, { passive: false });
   window.addEventListener("pointercancel", endOrbDrag, { passive: false });
+  resources.onCleanup(() => {
+    window.removeEventListener("pointerdown", beginOrbDrag);
+    window.removeEventListener("pointermove", moveOrbDrag);
+    window.removeEventListener("pointerup", endOrbDrag);
+    window.removeEventListener("pointercancel", endOrbDrag);
+  });
 
+  // Shows only the configured number of orbs.
   function syncOrbVisibility() {
     const count = desiredOrbCount();
     orbs.forEach((orb, index) => {
@@ -684,6 +619,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     });
   }
 
+  // Shows or hides optional moving lights.
   function syncLightVisibility() {
     const enabled = config.wall.lightIntensity > 0 && config.wall.lightCount !== 0;
     driftLights.forEach((item, index) => {
@@ -704,8 +640,9 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     });
   }
 
+  // Updates the orthographic camera for the current aspect ratio.
   function updateProjection() {
-    aspect = window.innerWidth / Math.max(window.innerHeight, 1);
+    aspect = (viewport?.width || window.innerWidth) / Math.max(viewport?.height || window.innerHeight, 1);
     camera.left = -aspect;
     camera.right = aspect;
     camera.top = 1;
@@ -714,6 +651,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     backgroundMaterial.uniforms.uAspect.value = aspect;
   }
 
+  // Separates overlapping orbs with simple impulse physics.
   function applyCollisions() {
     const restitution = 0.92 * config.wall.collisionStrength;
     const passes = 4;
@@ -772,6 +710,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     }
   }
 
+  // Refreshes orb materials when palette or lighting changes.
   function updateMaterials(force = false, time = 0, cursorLightPosition = null) {
     const chrome = config.wall.chrome;
     const cursorColor = colorTargets.cursorLightColor || colorTargets.keyLightColor;
@@ -811,6 +750,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     });
   }
 
+  // Rebuilds environment lighting from the current palette.
   function rebuildEnvironment() {
     const oldEnv = envTexture;
     const nextPalette = {};
@@ -830,6 +770,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
   updateProjection();
   updateMaterials(true);
 
+  // Applies live config changes to orb physics, lighting, and materials.
   function set(path, value) {
     const keyName = path.startsWith("wall.") ? path.slice(5) : path;
 
@@ -1038,11 +979,7 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     },
 
     destroy() {
-      window.removeEventListener("pointerdown", beginOrbDrag);
-      window.removeEventListener("pointermove", moveOrbDrag);
-      window.removeEventListener("pointerup", endOrbDrag);
-      window.removeEventListener("pointercancel", endOrbDrag);
-      scene.environment = null;
+      restoreRendererState();
       scene.remove(background);
       background.geometry.dispose();
       backgroundMaterial.dispose();
@@ -1056,9 +993,10 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
         if (item.spotTarget) root.remove(item.spotTarget);
       });
       orbs.forEach((orb) => orb.material.dispose());
+      resources.dispose();
     },
   };
 }
 
-createOrbsWall.defaults = orbsDefaults;
+createOrbsWall.defaults = createOrbsDefaults;
 createOrbsWall.loadControls = () => import("./controls.js").then((module) => module.orbsControls);

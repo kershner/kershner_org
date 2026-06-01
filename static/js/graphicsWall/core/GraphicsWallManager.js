@@ -1,74 +1,6 @@
+import { DEFAULT_CONFIG, GLOBAL_CONTROLS, resolveTopLevelPath } from "./configSchema.js";
 import { createPointerState } from "./pointerState.js";
 import { createEventBus, getPath, mergeDeep, normalizeInitOptions, setPath } from "./utils.js";
-
-const DEFAULT_CONFIG = {
-  global: {
-    zIndex: -1,
-    showControls: true,
-    fullscreen: false,
-    opacity: 1,
-    fadeInDuration: 600,
-    rotateColors: true,
-    colorTransitionSpeed: 0.007,
-  },
-  interaction: {
-    cursorRadius: 0.32,
-    cursorStrength: 0.13,
-    verticalPush: 0,
-    pointerSmoothing: 0.3,
-    touchBoost: 2,
-    brushStrength: 0.09,
-    wakeStrength: 0.34,
-    wakeLag: 0.132,
-    pulseStrength: 1.18,
-    pulseRadius: 2.15,
-    pulseDecay: 0.988,
-    velocityStrength: 13.2,
-  },
-  wall: {},
-};
-
-
-const GLOBAL_PATHS = new Set(["fullscreen", "opacity", "zIndex", "showControls", "fadeInDuration", "rotateColors", "colorTransitionSpeed"]);
-const INTERACTION_PATHS = new Set([
-  "cursorRadius",
-  "cursorStrength",
-  "verticalPush",
-  "pointerSmoothing",
-  "touchBoost",
-  "brushStrength",
-  "wakeStrength",
-  "wakeLag",
-  "pulseStrength",
-  "pulseRadius",
-  "pulseDecay",
-  "velocityStrength",
-]);
-
-function resolveTopLevelPath(key) {
-  if (GLOBAL_PATHS.has(key)) return `global.${key}`;
-  if (INTERACTION_PATHS.has(key)) return `interaction.${key}`;
-  return null;
-}
-
-const GLOBAL_CONTROLS = [
-  {
-    title: "General",
-    controls: [
-      { type: "checkbox", path: "global.fullscreen", label: "Fullscreen", help: "Expands the wall to fill the viewport." },
-      { type: "range", path: "global.opacity", label: "Opacity", min: 0, max: 1, step: 0.01, help: "Fades the whole wall without changing its settings." },
-    ],
-  },
-  {
-    title: "Interaction",
-    controls: [
-      { type: "range", path: "interaction.cursorRadius", label: "Cursor radius", min: 0.05, max: 1.2, step: 0.01, help: "Larger values affect elements farther from the cursor." },
-      { type: "range", path: "interaction.pulseStrength", label: "Click pulse", min: 0, max: 2, step: 0.01, help: "Controls click-generated ripples.", walls: ["grass", "water", "fabric"] },
-      { type: "range", path: "interaction.pulseRadius", label: "Pulse radius", min: 0.15, max: 3, step: 0.01, help: "Controls the starting size of click pulses.", walls: ["grass", "water", "fabric"] },
-      { type: "range", path: "interaction.pulseDecay", label: "Pulse decay", min: 0.85, max: 0.995, step: 0.001, help: "Higher values make click pulses linger.", walls: ["grass", "water", "fabric"] },
-    ],
-  },
-];
 
 export class GraphicsWallManager {
   constructor({ THREE, wallTypes, ...options }) {
@@ -91,6 +23,7 @@ export class GraphicsWallManager {
     };
   }
 
+  // Boots the renderer, active wall, controls, and animation loop.
   async init() {
     if (!this.THREE) {
       console.error("GraphicsWall: THREE could not be loaded.");
@@ -166,10 +99,11 @@ export class GraphicsWallManager {
     }
 
     this.resize = this.resize.bind(this);
+    this.handleWindowResize = () => this.resize(window.innerWidth, window.innerHeight);
     this.animate = this.animate.bind(this);
 
-    window.addEventListener("resize", this.resize);
-    this.resize();
+    window.addEventListener("resize", this.handleWindowResize);
+    this.resize(this.viewport.width, this.viewport.height);
     this.renderInitialFrame();
     this.warmupInitialFrames();
     this.reveal();
@@ -178,6 +112,7 @@ export class GraphicsWallManager {
     return this.createPublicApi();
   }
 
+  // Loads and caches a wall factory by type.
   async getWallFactory(type) {
     if (this.wallFactoryCache[type]) {
       return this.wallFactoryCache[type];
@@ -199,13 +134,18 @@ export class GraphicsWallManager {
     return wallFactory;
   }
 
+  // Merges core defaults, wall defaults, and user options into one config.
   createConfig(type, options, wallFactory) {
     if (!wallFactory) {
       throw new Error(`GraphicsWall: unknown wall type "${type}".`);
     }
 
+    const wallDefaults = typeof wallFactory.defaults === "function"
+      ? wallFactory.defaults(this.viewport)
+      : wallFactory.defaults || {};
+
     return mergeDeep(
-      mergeDeep(DEFAULT_CONFIG, wallFactory.defaults || {}),
+      mergeDeep(DEFAULT_CONFIG, wallDefaults),
       {
         global: options.global,
         interaction: options.interaction,
@@ -214,6 +154,7 @@ export class GraphicsWallManager {
     );
   }
 
+  // Instantiates the current wall implementation.
   async createActiveWall(wallFactory = null) {
     const factory = wallFactory || await this.getWallFactory(this.type);
 
@@ -223,32 +164,34 @@ export class GraphicsWallManager {
       camera: this.camera,
       renderer: this.renderer,
       sharedUniforms: this.sharedUniforms,
+      viewport: this.viewport,
       config: this.config,
     });
   }
 
-  resize() {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-
-    this.renderer.setSize(width, height, false);
-    this.sharedUniforms.uAspect.value = width / height;
-  }
-
-  setSize(width, height, devicePixelRatio = this.viewport.devicePixelRatio) {
+  // Applies the viewport size to the renderer and active wall.
+  resize(width = this.viewport.width, height = this.viewport.height) {
     this.viewport.width = Math.max(1, width || 1);
     this.viewport.height = Math.max(1, height || 1);
-    this.viewport.devicePixelRatio = devicePixelRatio || 1;
+    this.renderer.setSize(this.viewport.width, this.viewport.height, false);
+    this.sharedUniforms.uAspect.value = this.viewport.width / this.viewport.height;
     this.pointer?.setViewport?.(this.viewport.width, this.viewport.height);
-    this.renderer?.setPixelRatio(Math.min(this.viewport.devicePixelRatio, this.viewport.width < 768 ? 1 : 1.5));
-    this.resize();
     this.activeWall?.resize?.({ width: this.viewport.width, height: this.viewport.height });
   }
 
+  // Updates the managed viewport size for embedded/non-window usage.
+  setSize(width, height, devicePixelRatio = this.viewport.devicePixelRatio) {
+    this.viewport.devicePixelRatio = devicePixelRatio || 1;
+    this.renderer?.setPixelRatio(Math.min(this.viewport.devicePixelRatio, (width || this.viewport.width) < 768 ? 1 : 1.5));
+    this.resize(width, height);
+  }
+
+  // Allows external callers to feed pointer events manually.
   handlePointerEvent(event) {
     this.pointer?.handlePointerEvent?.(event);
   }
 
+  // Draws a first frame before the animation loop begins.
   renderInitialFrame() {
     this.sharedUniforms.uTime.value = 0;
     this.sharedUniforms.uOpacity.value = this.config.global.opacity;
@@ -260,6 +203,7 @@ export class GraphicsWallManager {
     this.renderer.render(this.scene, this.camera);
   }
 
+  // Advances simulations a few frames before reveal to reduce cold-start artifacts.
   warmupInitialFrames() {
     const frames = Math.max(0, Math.min(12, Number(this.activeWall?.initialWarmupFrames || 0)));
     if (!frames) return;
@@ -278,11 +222,13 @@ export class GraphicsWallManager {
     }
   }
 
+  // Applies global opacity to the canvas element.
   applyCanvasOpacity() {
     if (!this.canvas) return;
     this.canvas.style.opacity = String(Math.max(0, Math.min(1, Number(this.config.global.opacity ?? 1))));
   }
 
+  // Fades the canvas in after initial rendering.
   reveal() {
     this.canvas.style.opacity = "0";
 
@@ -297,6 +243,7 @@ export class GraphicsWallManager {
     });
   }
 
+  // Runs one animation frame and schedules the next.
   animate(time) {
     const delta = this.lastTime ? Math.min((time - this.lastTime) * 0.001, 0.1) : 0;
     this.lastTime = time;
@@ -315,6 +262,7 @@ export class GraphicsWallManager {
     this.animationFrame = requestAnimationFrame(this.animate);
   }
 
+  // Updates one config value and forwards it to the active wall.
   set(path, value, options = {}) {
     if (path === "type") {
       return this.setType(value, options);
@@ -351,6 +299,7 @@ export class GraphicsWallManager {
     return true;
   }
 
+  // Reads one config value using shorthand or full paths.
   get(path) {
     if (!path.includes(".")) {
       const resolvedPath = resolveTopLevelPath(path) || this.activeWall?.resolvePath?.(path);
@@ -360,6 +309,7 @@ export class GraphicsWallManager {
     return getPath(this.config, path);
   }
 
+  // Replaces the active wall while preserving shared renderer state.
   async rebuildWall(type, options, wallFactory = null) {
     const factory = wallFactory || await this.getWallFactory(type);
 
@@ -373,12 +323,14 @@ export class GraphicsWallManager {
     }
   }
 
+  // Re-applies global DOM-level settings after reset/rebuild.
   applyGlobalConfig() {
     this.fullscreen?.set(Boolean(this.config.global.fullscreen));
     this.applyCanvasOpacity();
     this.canvas.style.zIndex = this.config.global.zIndex;
   }
 
+  // Switches to another wall type.
   async setType(type, options = {}) {
     if (type === this.type) {
       return true;
@@ -410,6 +362,7 @@ export class GraphicsWallManager {
     return true;
   }
 
+  // Restores the original type and config.
   async reset(options = {}) {
     const type = this.baseOptions.type;
 
@@ -432,14 +385,17 @@ export class GraphicsWallManager {
     return true;
   }
 
+  // Returns the active wall type.
   getType() {
     return this.type;
   }
 
+  // Returns every registered wall type.
   getWallTypes() {
     return Object.keys(this.wallTypes);
   }
 
+  // Combines shared controls with wall-specific controls.
   getControlSchema() {
     return [
       ...GLOBAL_CONTROLS,
@@ -447,18 +403,21 @@ export class GraphicsWallManager {
     ];
   }
 
+  // Returns a safe copy of the current config.
   getConfig() {
     return JSON.parse(JSON.stringify(this.config));
   }
 
+  // Subscribes to manager events.
   on(eventName, callback) {
     return this.events.on(eventName, callback);
   }
 
+  // Tears down rendering, controls, pointer handlers, and the active wall.
   destroy() {
     this.fullscreen?.set(false);
     cancelAnimationFrame(this.animationFrame);
-    window.removeEventListener("resize", this.resize);
+    window.removeEventListener("resize", this.handleWindowResize);
     this.pointer?.detach();
     this.controls?.destroy();
     this.activeWall?.destroy();
@@ -466,6 +425,7 @@ export class GraphicsWallManager {
     this.canvas?.remove();
   }
 
+  // Exposes the supported public manager API.
   createPublicApi() {
     return {
       set: this.set.bind(this),

@@ -43,10 +43,12 @@ const PANEL_CSS = `
   }
 `;
 
+// Stops control-panel pointer events from reaching the wall.
 function stopPointerEvent(event) {
   event.stopPropagation();
 }
 
+// Adds optional helper copy below an input.
 function addHelpText(wrapper, helpText) {
   if (!helpText) return;
   const help = document.createElement("small");
@@ -54,15 +56,25 @@ function addHelpText(wrapper, helpText) {
   wrapper.appendChild(help);
 }
 
+function ensureControlsStyle() {
+  const existingStyle = document.getElementById("graphics-wall-controls-style");
+  if (existingStyle) return existingStyle;
+
+  const style = document.createElement("style");
+  style.id = "graphics-wall-controls-style";
+  style.textContent = PANEL_CSS;
+  document.head.appendChild(style);
+  return style;
+}
+
+// Builds the floating settings panel for the active wall.
 export function createControls({ manager }) {
   const panel = document.createElement("details");
   panel.open = false;
   panel.classList.add("graphics-wall-controls");
   Object.assign(panel.style, PANEL_STYLE);
 
-  const style = document.createElement("style");
-  style.textContent = PANEL_CSS;
-  document.head.appendChild(style);
+  ensureControlsStyle();
 
   panel.addEventListener("pointerdown", stopPointerEvent);
   panel.addEventListener("pointermove", stopPointerEvent);
@@ -215,7 +227,6 @@ export function createControls({ manager }) {
     destroy() {
       offTypeChange();
       offConfigChange();
-      style.remove();
       panel.remove();
     },
   };

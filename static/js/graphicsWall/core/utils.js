@@ -1,7 +1,11 @@
+import { resolveTopLevelPath } from "./configSchema.js";
+
+// Checks whether a value is a plain mergeable object.
 export function isPlainObject(value) {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+// Recursively merges config objects without mutating the target.
 export function mergeDeep(target, source) {
   const output = { ...target };
 
@@ -20,6 +24,7 @@ export function mergeDeep(target, source) {
   return output;
 }
 
+// Reads a dotted path from an object.
 export function getPath(object, path) {
   if (!path) return object;
 
@@ -29,6 +34,7 @@ export function getPath(object, path) {
   }, object);
 }
 
+// Writes a dotted path into an object.
 export function setPath(object, path, value) {
   const keys = path.split(".");
   const lastKey = keys.pop();
@@ -44,6 +50,7 @@ export function setPath(object, path, value) {
   parent[lastKey] = value;
 }
 
+// Creates a tiny pub/sub event bus.
 export function createEventBus() {
   const listeners = new Map();
 
@@ -66,7 +73,9 @@ export function createEventBus() {
   };
 }
 
-export function normalizeInitOptions(options) {
+
+// Normalizes public init options into global, interaction, and wall buckets.
+export function normalizeInitOptions(options = {}) {
   const normalized = {
     type: options.type || "grass",
     global: {},
@@ -74,23 +83,7 @@ export function normalizeInitOptions(options) {
     wall: {},
   };
 
-  const globalKeys = new Set(["zIndex", "showControls", "fullscreen", "opacity", "fadeInDuration", "rotateColors", "colorTransitionSpeed"]);
-  const interactionKeys = new Set([
-    "cursorRadius",
-    "cursorStrength",
-    "verticalPush",
-    "pointerSmoothing",
-    "touchBoost",
-    "brushStrength",
-    "wakeStrength",
-    "wakeLag",
-    "pulseStrength",
-    "pulseRadius",
-    "pulseDecay",
-    "velocityStrength",
-  ]);
-
-  Object.entries(options).forEach(([key, value]) => {
+  Object.entries(options || {}).forEach(([key, value]) => {
     if (["type", "syncQueryParams"].includes(key)) return;
 
     if (key === "global" || key === "interaction" || key === "wall") {
@@ -98,12 +91,14 @@ export function normalizeInitOptions(options) {
       return;
     }
 
-    if (globalKeys.has(key)) {
+    const resolvedPath = resolveTopLevelPath(key);
+
+    if (resolvedPath?.startsWith("global.")) {
       normalized.global[key] = value;
       return;
     }
 
-    if (interactionKeys.has(key)) {
+    if (resolvedPath?.startsWith("interaction.")) {
       normalized.interaction[key] = value;
       return;
     }
