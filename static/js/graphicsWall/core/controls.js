@@ -71,6 +71,10 @@ const PANEL_CSS = `
   .graphics-wall-controls .wall-reset-button {
     flex: 0 0 auto;
   }
+
+  .graphics-wall-controls .randomize-row {
+    margin-top: 0;
+  }
 `;
 
 // Stops control-panel pointer events from reaching the wall.
@@ -183,6 +187,28 @@ export function createControls({ manager }) {
     return wrapper;
   }
 
+  function createRandomButton() {
+    const wrapper = document.createElement("p");
+    const button = document.createElement("button");
+
+    wrapper.className = "randomize-row";
+    button.type = "button";
+    button.textContent = "Random";
+
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+
+      try {
+        await manager.randomizeSettings({ syncQueryParams: true });
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    wrapper.appendChild(button);
+    return wrapper;
+  }
+
   function createWallTypeSelect() {
     const wrapper = document.createElement("p");
     const label = document.createElement("label");
@@ -231,6 +257,10 @@ export function createControls({ manager }) {
       legend.textContent = group.title;
       fieldset.appendChild(legend);
 
+      if (group.title === "General") {
+        fieldset.appendChild(createRandomButton());
+      }
+
       visibleControls.forEach((control) => {
         const input = createInput(control);
         if (input) fieldset.appendChild(input);
@@ -241,8 +271,8 @@ export function createControls({ manager }) {
   }
 
   const offTypeChange = manager.on("typechange", render);
-  const offConfigChange = manager.on("configchange", ({ reset } = {}) => {
-    if (reset) render();
+  const offConfigChange = manager.on("configchange", ({ randomize, reset } = {}) => {
+    if (randomize || reset) render();
   });
 
   render();

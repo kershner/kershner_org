@@ -1,7 +1,66 @@
 import { DEFAULT_CONFIG, GLOBAL_CONTROLS, resolveTopLevelPath } from "./configSchema.js";
 import { createViewport, getDeviceInfo, getRendererPixelRatio } from "./device.js";
 import { createPointerState } from "./pointerState.js";
-import { clamp, createEventBus, getPath, mergeDeep, normalizeInitOptions, setPath } from "./utils.js";
+import { clamp, createEventBus, getPath, mergeDeep, normalizeInitOptions, rand, setPath } from "./utils.js";
+
+
+function getRandomArrayItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+function shuffle(items) {
+  const output = [...items];
+
+  for (let index = output.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [output[index], output[swapIndex]] = [output[swapIndex], output[index]];
+  }
+
+  return output;
+}
+
+function getStepDecimals(step) {
+  const text = String(step || 1);
+  return text.includes(".") ? text.split(".")[1].length : 0;
+}
+
+function randomRangeValue(control) {
+  const min = Number(control.min ?? 0);
+  const max = Number(control.max ?? 1);
+  const step = Number(control.step || 0);
+
+  if (!step) {
+    return rand(min, max);
+  }
+
+  const steps = Math.max(0, Math.round((max - min) / step));
+  const value = min + Math.floor(Math.random() * (steps + 1)) * step;
+  return Number(value.toFixed(getStepDecimals(step)));
+}
+
+function randomColorValue() {
+  return `#${Math.floor(Math.random() * 0x1000000).toString(16).padStart(6, "0")}`;
+}
+
+function randomControlValue(control) {
+  if (control.type === "range") return randomRangeValue(control);
+  if (control.type === "color") return randomColorValue();
+  if (control.type === "checkbox") return Math.random() >= 0.5;
+
+  if (control.type === "select") {
+    const options = control.options || [];
+    const option = getRandomArrayItem(options);
+    return typeof option === "string" ? option : option?.value;
+  }
+
+  return undefined;
+}
+
+function isControlVisibleForType(control, type) {
+  if (Array.isArray(control.walls) && !control.walls.includes(type)) return false;
+  if (Array.isArray(control.hideForWalls) && control.hideForWalls.includes(type)) return false;
+  return true;
+}
 
 const PRIMARY_COLOR_KEYS = {
   grass: ["grassColor"],
@@ -475,6 +534,57 @@ export class GraphicsWallManager {
     }, interval);
   }
 
+  getRandomizableControls(type = this.type) {
+    const seenPaths = new Set();
+
+    return this.getControlSchema()
+      .filter((group) => group.randomize !== false)
+      .flatMap((group) => group.controls)
+      .filter((control) => control.randomize !== false)
+      .filter((control) => control.path && isControlVisibleForType(control, type))
+      .filter((control) => ["range", "color", "checkbox", "select"].includes(control.type))
+      .filter((control) => {
+        if (seenPaths.has(control.path)) return false;
+        seenPaths.add(control.path);
+        return true;
+      });
+  }
+
+  async randomizeSettings(options = {}) {
+    const types = this.getWallTypes();
+    const shouldChangeType = types.length > 1 && Math.random() < 0.25;
+
+    if (shouldChangeType) {
+      const nextTypes = types.filter((type) => type !== this.type);
+      await this.setType(getRandomArrayItem(nextTypes), {
+        fade: options.fade,
+        syncQueryParams: options.syncQueryParams,
+      });
+
+      if (this.syncQueryParams && options.syncQueryParams === true) {
+        this.queryParams?.clearGraphicsWallQueryParamsByPrefix?.("wall.");
+      }
+    }
+
+    const controls = this.getRandomizableControls(this.type);
+    if (!controls.length) return false;
+
+    const randomizeAll = Math.random() < 0.45;
+    const handfulSize = Math.min(controls.length, Math.max(3, Math.floor(rand(3, 9))));
+    const selectedControls = randomizeAll ? controls : shuffle(controls).slice(0, handfulSize);
+
+    selectedControls.forEach((control) => {
+      const value = randomControlValue(control);
+      if (value !== undefined) {
+        this.set(control.path, value, { syncQueryParams: options.syncQueryParams });
+      }
+    });
+
+    this.renderInitialFrame();
+    this.events.emit("configchange", { randomize: true });
+    return true;
+  }
+
   // Restores the original type and config.
   async reset(options = {}) {
     const type = this.baseOptions.type;
@@ -563,6 +673,7 @@ export class GraphicsWallManager {
       getDeviceInfo: this.getDeviceInfo.bind(this),
       setCurrentColor: (color) => this.set("global.currentColor", color),
       cycleRandomWall: this.cycleRandomWall.bind(this),
+      randomizeSettings: this.randomizeSettings.bind(this),
       reset: this.reset.bind(this),
       destroy: this.destroy.bind(this),
       on: this.on.bind(this),

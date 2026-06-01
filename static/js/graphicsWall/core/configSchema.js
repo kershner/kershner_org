@@ -38,6 +38,7 @@ const INTERACTION_PATHS = new Set(INTERACTION_CONFIG_KEYS);
 export const GLOBAL_CONTROLS = [
   {
     title: "General",
+    randomize: false,
     controls: [
       { type: "checkbox", path: "global.fullscreen", label: "Fullscreen", help: "Expands the wall to fill the viewport." },
       { type: "range", path: "global.opacity", label: "Opacity", min: 0, max: 1, step: 0.01, help: "Fades the whole wall without changing its settings." },

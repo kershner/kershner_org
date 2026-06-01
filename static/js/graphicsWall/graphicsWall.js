@@ -116,6 +116,9 @@ function createSkippedManager(reason = "unsupported-webgl") {
     cycleRandomWall() {
       return false;
     },
+    randomizeSettings() {
+      return false;
+    },
     reset() {
       return false;
     },

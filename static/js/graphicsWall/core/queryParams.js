@@ -83,3 +83,20 @@ export function clearGraphicsWallQueryParams() {
 
   window.history.replaceState(window.history.state, "", url);
 }
+
+
+// Removes recognized graphics wall options under one config prefix.
+export function clearGraphicsWallQueryParamsByPrefix(prefix) {
+  if (!canUseBrowserUrl()) return;
+
+  const url = new URL(window.location.href);
+
+  Array.from(url.searchParams.keys()).forEach((key) => {
+    const path = normalizeQueryPath(key);
+    if (path?.startsWith(prefix)) {
+      url.searchParams.delete(key);
+    }
+  });
+
+  window.history.replaceState(window.history.state, "", url);
+}
