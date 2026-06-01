@@ -490,6 +490,14 @@ export class GraphicsWallManager {
       wall: {},
     }, wallFactory);
 
+    if (options.randomizeSettings === true) {
+      await this.randomizeSettings({
+        renderInitialFrame: false,
+        emitConfigChange: false,
+        syncQueryParams: false,
+      });
+    }
+
     this.renderInitialFrame();
 
     if (shouldFade) {
@@ -515,7 +523,9 @@ export class GraphicsWallManager {
     const nextType = types[Math.floor(Math.random() * types.length)];
     if (nextType === this.type) return true;
 
-    return this.setType(nextType);
+    return this.setType(nextType, {
+      randomizeSettings: Boolean(this.config?.global?.randomizeSettingsOnCycle),
+    });
   }
 
   // Starts or stops automatic random wall cycling.
@@ -580,8 +590,13 @@ export class GraphicsWallManager {
       }
     });
 
-    this.renderInitialFrame();
-    this.events.emit("configchange", { randomize: true });
+    if (options.renderInitialFrame !== false) {
+      this.renderInitialFrame();
+    }
+
+    if (options.emitConfigChange !== false) {
+      this.events.emit("configchange", { randomize: true });
+    }
     return true;
   }
 

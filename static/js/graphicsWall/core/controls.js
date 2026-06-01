@@ -68,12 +68,10 @@ const PANEL_CSS = `
     margin: 0;
   }
 
-  .graphics-wall-controls .wall-reset-button {
+  .graphics-wall-controls .wall-actions {
+    display: flex;
+    gap: 0.35rem;
     flex: 0 0 auto;
-  }
-
-  .graphics-wall-controls .randomize-row {
-    margin-top: 0;
   }
 `;
 
@@ -188,12 +186,11 @@ export function createControls({ manager }) {
   }
 
   function createRandomButton() {
-    const wrapper = document.createElement("p");
     const button = document.createElement("button");
 
-    wrapper.className = "randomize-row";
     button.type = "button";
     button.textContent = "Random";
+    button.title = "Randomize wall settings.";
 
     button.addEventListener("click", async () => {
       button.disabled = true;
@@ -205,14 +202,15 @@ export function createControls({ manager }) {
       }
     });
 
-    wrapper.appendChild(button);
-    return wrapper;
+    return button;
   }
 
   function createWallTypeSelect() {
     const wrapper = document.createElement("p");
     const label = document.createElement("label");
     const select = document.createElement("select");
+    const actions = document.createElement("span");
+    const randomButton = createRandomButton();
     const resetButton = document.createElement("button");
 
     wrapper.className = "wall-type-row";
@@ -233,13 +231,17 @@ export function createControls({ manager }) {
     resetButton.type = "button";
     resetButton.textContent = "Reset";
     resetButton.className = "wall-reset-button";
+    resetButton.title = "Restore default settings.";
     resetButton.addEventListener("click", () => {
       manager.reset({ syncQueryParams: true });
     });
 
+    actions.className = "wall-actions";
+    actions.append(randomButton, resetButton);
+
     label.appendChild(select);
     wrapper.appendChild(label);
-    wrapper.appendChild(resetButton);
+    wrapper.appendChild(actions);
     return wrapper;
   }
 
@@ -256,10 +258,6 @@ export function createControls({ manager }) {
 
       legend.textContent = group.title;
       fieldset.appendChild(legend);
-
-      if (group.title === "General") {
-        fieldset.appendChild(createRandomButton());
-      }
 
       visibleControls.forEach((control) => {
         const input = createInput(control);
