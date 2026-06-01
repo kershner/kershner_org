@@ -1,9 +1,8 @@
 import { captureRendererState } from "../../core/rendererState.js";
 import { createResourceTracker } from "../../core/resources.js";
 import { createUniformPathResolver, makeColorTargets } from "../../core/wallUtils.js";
-import { makeBackgroundGradientColors, makeBackgroundMaterial } from "./background.js";
 import { createOrbsDefaults } from "./defaults.js";
-import { clamp, rand } from "./math.js";
+import { clamp, rand } from "../../core/utils.js";
 import { makeEnvironmentTexture, makeOrbPatternTexture } from "./textures.js";
 
 
@@ -33,10 +32,6 @@ const configurableKeys = [
   "lightCount",
   "lightIntensity",
   "lightDepth",
-  "contrast",
-  "retroBanding",
-  "grain",
-  "vignette",
 ];
 
 const uniformPaths = createUniformPathResolver(configurableKeys);
@@ -76,22 +71,11 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
   let envTexture = makeEnvironmentTexture(THREE, palette);
   scene.environment = envTexture;
 
-  const backgroundMaterial = makeBackgroundMaterial(THREE, {
-    ...palette,
-    contrast: config.wall.contrast,
-    retroBanding: config.wall.retroBanding,
-    grain: config.wall.grain,
-    vignette: config.wall.vignette,
-  });
-
-  const background = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), backgroundMaterial);
-  background.renderOrder = -1000;
-  scene.add(background);
-
-  const shadowBackdropMaterial = new THREE.MeshStandardMaterial({
-    color: new THREE.Color(config.wall.backgroundColor).multiplyScalar(0.32),
-    metalness: 0.0,
-    roughness: 0.92,
+  const shadowBackdropMaterial = new THREE.ShadowMaterial({
+    color: 0x000000,
+    opacity: 0.28,
+    transparent: true,
+    depthWrite: false,
   });
   const shadowBackdrop = new THREE.Mesh(new THREE.PlaneGeometry(16, 10), shadowBackdropMaterial);
   shadowBackdrop.position.set(0, 0, -1.95);
@@ -647,7 +631,6 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     camera.top = 1;
     camera.bottom = -1;
     camera.updateProjectionMatrix();
-    backgroundMaterial.uniforms.uAspect.value = aspect;
   }
 
   // Separates overlapping orbs with simple impulse physics.
@@ -754,7 +737,6 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
     const oldEnv = envTexture;
     const nextPalette = {};
     colorKeys.forEach((key) => { nextPalette[key] = config.wall[key]; });
-    const bgGradient = makeBackgroundGradientColors(THREE, new THREE.Color(config.wall.backgroundColor));
     envTexture = makeEnvironmentTexture(THREE, nextPalette);
     scene.environment = envTexture;
     orbs.forEach((orb) => {
@@ -856,17 +838,6 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
       const pointerY = pointer.y;
       const lightX = hasPointer ? pointerX : 0;
       const lightY = hasPointer ? pointerY : 0.18;
-
-      backgroundMaterial.uniforms.uContrast.value = config.wall.contrast;
-      backgroundMaterial.uniforms.uBanding.value = config.wall.retroBanding;
-      backgroundMaterial.uniforms.uGrain.value = config.wall.grain;
-      backgroundMaterial.uniforms.uVignette.value = config.wall.vignette;
-      backgroundMaterial.uniforms.uBottom.value.lerp(colorTargets.backgroundColor, config.global.colorTransitionSpeed);
-      const bgGradient = makeBackgroundGradientColors(THREE, backgroundMaterial.uniforms.uBottom.value);
-      backgroundMaterial.uniforms.uTop.value.lerp(bgGradient.top, 0.08);
-      backgroundMaterial.uniforms.uAccent.value.lerp(bgGradient.accent, 0.08);
-      backgroundMaterial.uniforms.uFloor.value.lerp(bgGradient.floor, 0.08);
-      shadowBackdropMaterial.color.copy(bgGradient.floor).multiplyScalar(0.74);
 
       key.color.lerp(colorTargets.keyLightColor, 0.04);
       fill.color.lerp(colorTargets.fillLightColor, 0.04);
@@ -992,9 +963,6 @@ export function createOrbsWall({ THREE, scene, camera, renderer, sharedUniforms,
 
     destroy() {
       restoreRendererState();
-      scene.remove(background);
-      background.geometry.dispose();
-      backgroundMaterial.dispose();
       shadowBackdrop.geometry.dispose();
       shadowBackdropMaterial.dispose();
       scene.remove(root);

@@ -1,9 +1,5 @@
-import { isMobileWidth } from "../../core/device.js";
-
 // Builds orb defaults without touching browser globals at module load time.
-export function createOrbsDefaults({ width = 1024 } = {}) {
-  const isMobile = isMobileWidth(width);
-
+export function createOrbsDefaults({ isMobile = false } = {}) {
   return {
     global: {
       opacity: 1,
@@ -29,10 +25,6 @@ export function createOrbsDefaults({ width = 1024 } = {}) {
       lightCount: 1,
       lightIntensity: 0.7,
       lightDepth: 5.8,
-      contrast: 1.42,
-      retroBanding: 0.06,
-      grain: 0.002,
-      vignette: 0.48,
     },
   };
 }

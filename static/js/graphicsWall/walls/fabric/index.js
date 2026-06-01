@@ -1,8 +1,8 @@
 import { createResourceTracker } from "../../core/resources.js";
 import { createUniformPathResolver, makeColorTargets } from "../../core/wallUtils.js";
-import { addScaledColor, colorToCssRgb, colorToCssRgba, derivedHslColor, mixColor } from "./colors.js";
-import { fabricDefaults } from "./defaults.js";
-import { clamp, distanceToSegment, hash01, lerp, smoothstep } from "./math.js";
+import { derivedHslColor, mixColor } from "./colors.js";
+import { createFabricDefaults } from "./defaults.js";
+import { clamp, distanceToSegment, hash01, smoothstep } from "../../core/utils.js";
 
 const colorKeys = ["baseColor"];
 
@@ -279,8 +279,6 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
   const tempColor = new THREE.Color();
   let fabricTexture = null;
   let fabricTextureKey = "";
-  let backgroundTexture = null;
-  let backgroundTextureKey = "";
 
   // Generates the reusable woven-cloth texture.
   function makeFabricTexture() {
@@ -383,143 +381,7 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
   }
 
 
-  // Generates the soft fabric backdrop texture.
-  function makeBackgroundTexture(baseColor = currentColors.baseColor) {
-    const width = 1024;
-    const height = 1024;
-    const canvas = typeof OffscreenCanvas !== "undefined"
-      ? new OffscreenCanvas(width, height)
-      : document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    const hsl = { h: 0, s: 0, l: 0 };
-    baseColor.getHSL(hsl);
-
-    const shadow = derivedHslColor(THREE, baseColor, Math.max(0.012, hsl.l * 0.10), 1.05, 0.06);
-    const low = derivedHslColor(THREE, baseColor, clamp(hsl.l * 0.24 + 0.015, 0.035, 0.18), 1.04, 0.04);
-    const mid = derivedHslColor(THREE, baseColor, clamp(hsl.l * 0.58 + 0.035, 0.11, 0.42), 0.9, 0.02);
-    const high = derivedHslColor(THREE, baseColor, clamp(hsl.l * 1.12 + 0.14, 0.32, 0.78), 0.62, -0.04);
-
-    const sweep = ctx.createLinearGradient(0, 0, width, height);
-    sweep.addColorStop(0, colorToCssRgb(high));
-    sweep.addColorStop(0.22, colorToCssRgb(mid));
-    sweep.addColorStop(0.58, colorToCssRgb(low));
-    sweep.addColorStop(1, colorToCssRgb(shadow));
-    ctx.fillStyle = sweep;
-    ctx.fillRect(0, 0, width, height);
-
-    const glow = ctx.createRadialGradient(width * 0.25, height * 0.18, 0, width * 0.28, height * 0.18, width * 0.82);
-    glow.addColorStop(0, colorToCssRgba(high, 0.62));
-    glow.addColorStop(0.42, colorToCssRgba(mid, 0.20));
-    glow.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, width, height);
-
-    const lowerShade = ctx.createRadialGradient(width * 0.72, height * 0.92, 0, width * 0.72, height * 0.92, width * 0.76);
-    lowerShade.addColorStop(0, colorToCssRgba(shadow, 0.58));
-    lowerShade.addColorStop(0.48, colorToCssRgba(low, 0.26));
-    lowerShade.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = lowerShade;
-    ctx.fillRect(0, 0, width, height);
-
-    ctx.globalCompositeOperation = "multiply";
-    const vignette = ctx.createRadialGradient(width * 0.46, height * 0.32, width * 0.22, width * 0.5, height * 0.5, width * 0.86);
-    vignette.addColorStop(0, "rgba(255,255,255,1)");
-    vignette.addColorStop(0.66, "rgba(165,165,165,1)");
-    vignette.addColorStop(1, "rgba(30,30,36,1)");
-    ctx.fillStyle = vignette;
-    ctx.fillRect(0, 0, width, height);
-    ctx.globalCompositeOperation = "source-over";
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.ClampToEdgeWrapping;
-    texture.wrapT = THREE.ClampToEdgeWrapping;
-    texture.generateMipmaps = false;
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    texture.needsUpdate = true;
-    return texture;
-  }
-
-  // Rebuilds the backdrop texture when the derived color changes.
-  function syncBackgroundTexture(force = false) {
-    const hsl = { h: 0, s: 0, l: 0 };
-    currentColors.baseColor.getHSL(hsl);
-    const key = `${Math.round(hsl.h * 360)}:${Math.round(hsl.s * 100)}:${Math.round(hsl.l * 100)}`;
-    if (!force && key === backgroundTextureKey && backgroundTexture) return;
-    const nextTexture = makeBackgroundTexture(currentColors.baseColor);
-    const oldTexture = backgroundTexture;
-    backgroundTexture = nextTexture;
-    backgroundTextureKey = key;
-    backgroundMaterial.map = backgroundTexture;
-    backgroundMaterial.needsUpdate = true;
-    if (oldTexture) oldTexture.dispose();
-  }
-
-  // Updates cheap vertex colors for the fabric backdrop.
-  function syncBackgroundColor() {
-    // Keep this cheap on cold start: do not regenerate canvas textures while
-    // the fabric color is transitioning. The background is a dramatic vertex
-    // gradient derived from the current fabric color and updates by changing
-    // four vertex colors only.
-    const geometry = backgroundMesh.geometry;
-    const colorAttr = geometry.attributes.color;
-    if (!colorAttr) return;
-
-    const baseColor = currentColors.baseColor;
-    const hsl = { h: 0, s: 0, l: 0 };
-    baseColor.getHSL(hsl);
-
-    const high = derivedHslColor(THREE, baseColor, clamp(hsl.l * 1.18 + 0.14, 0.34, 0.82), 0.62, -0.04);
-    const mid = derivedHslColor(THREE, baseColor, clamp(hsl.l * 0.62 + 0.035, 0.12, 0.46), 0.9, 0.02);
-    const low = derivedHslColor(THREE, baseColor, clamp(hsl.l * 0.24 + 0.012, 0.035, 0.18), 1.05, 0.04);
-    const shadow = derivedHslColor(THREE, baseColor, Math.max(0.012, hsl.l * 0.08), 1.08, 0.06);
-
-    const positions = geometry.attributes.position.array;
-    for (let i = 0; i < colorAttr.count; i += 1) {
-      const x = positions[i * 3];
-      const y = positions[i * 3 + 1];
-      const diagonal = clamp((x * -0.55 + y * 0.75 + 1.25) * 0.42, 0, 1);
-      const vertical = clamp((y + 1.1) * 0.46, 0, 1);
-      const c = tempColor;
-      mixColor(c, shadow, low, vertical);
-      mixColor(c, c, mid, diagonal * 0.72);
-      mixColor(c, c, high, clamp(diagonal * vertical * 1.35, 0, 0.88));
-      colorAttr.setXYZ(i, c.r, c.g, c.b);
-    }
-
-    colorAttr.needsUpdate = true;
-    backgroundMaterial.color.set(0xffffff);
-  }
-
-
-
-  // Creates the backdrop plane geometry.
-  function createBackgroundGeometry(wall) {
-    const width = Number(wall.backgroundWidth || Math.max(Number(wall.width || 2.28) * 1.36, 3.0));
-    const height = Number(wall.backgroundHeight || 2.62);
-    const geometry = new THREE.PlaneGeometry(width, height, 1, 1);
-    geometry.setAttribute("color", new THREE.BufferAttribute(new Float32Array(geometry.attributes.position.count * 3), 3));
-    return geometry;
-  }
-
   let state = buildFabricState(THREE, wallConfig);
-  const backgroundMaterial = resources.track(new THREE.MeshBasicMaterial({
-    vertexColors: true,
-    transparent: true,
-    opacity: 0.96,
-    depthWrite: false,
-    depthTest: false,
-  }));
-  const backgroundMesh = new THREE.Mesh(
-    createBackgroundGeometry(wallConfig),
-    backgroundMaterial,
-  );
-  backgroundMesh.position.set(0, -0.08, -0.34);
-  backgroundMesh.renderOrder = 0;
-  scene.add(backgroundMesh);
-
   const material = resources.track(new THREE.MeshBasicMaterial({
     vertexColors: true,
     side: THREE.DoubleSide,
@@ -528,7 +390,6 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
     depthWrite: false,
     depthTest: false,
   }));
-  syncBackgroundColor();
   syncFabricTexture(true);
   const mesh = new THREE.Mesh(state.geometry, material);
   mesh.renderOrder = 1;
@@ -548,10 +409,6 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
     mesh.geometry = state.geometry;
     oldGeometry.dispose();
 
-    const oldBackgroundGeometry = backgroundMesh.geometry;
-    backgroundMesh.geometry = createBackgroundGeometry(config.wall);
-    oldBackgroundGeometry.dispose();
-    syncBackgroundColor();
   }
 
   function applyConstraint(c, stiffness) {
@@ -1128,7 +985,6 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
     update({ delta = 0.016 } = {}) {
       const time = sharedUniforms.uTime.value;
       syncColors();
-      syncBackgroundColor();
       material.opacity = Number(config.wall.opacity ?? 0.98);
 
       const pulse = sharedUniforms.uClickPulse.value;
@@ -1184,15 +1040,12 @@ export function createFabricWall({ THREE, scene, sharedUniforms, config }) {
 
     destroy() {
       scene.remove(mesh);
-      scene.remove(backgroundMesh);
       state.geometry.dispose();
-      backgroundMesh.geometry.dispose();
       if (fabricTexture) fabricTexture.dispose();
-      if (backgroundTexture) backgroundTexture.dispose();
       resources.dispose();
     },
   };
 }
 
-createFabricWall.defaults = fabricDefaults;
+createFabricWall.defaults = createFabricDefaults;
 createFabricWall.loadControls = () => import("./controls.js").then((module) => module.fabricControls);

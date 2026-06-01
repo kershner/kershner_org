@@ -1,9 +1,5 @@
-import { isMobileWidth } from "../../core/device.js";
-
 // Builds grass defaults without touching browser globals at module load time.
-export function createGrassDefaults({ width = 1024 } = {}) {
-  const isMobile = isMobileWidth(width);
-
+export function createGrassDefaults({ isMobile = false } = {}) {
   return {
     global: {
       opacity: isMobile ? 0.82 : 1,

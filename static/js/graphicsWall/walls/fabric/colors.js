@@ -1,12 +1,5 @@
-import { clamp, lerp } from "./math.js";
+import { clamp, lerp } from "../../core/utils.js";
 
-// Scales a color into an existing output color.
-export function addScaledColor(out, color, scale) {
-  out.r = clamp(color.r * scale, 0, 1);
-  out.g = clamp(color.g * scale, 0, 1);
-  out.b = clamp(color.b * scale, 0, 1);
-  return out;
-}
 
 // Mixes two colors into an existing output color.
 export function mixColor(out, a, b, t) {
@@ -27,12 +20,3 @@ export function derivedHslColor(THREE, source, lightness, saturationScale = 1, s
   );
 }
 
-// Formats a THREE color as CSS rgb().
-export function colorToCssRgb(color) {
-  return `rgb(${Math.round(color.r * 255)},${Math.round(color.g * 255)},${Math.round(color.b * 255)})`;
-}
-
-// Formats a THREE color as CSS rgba().
-export function colorToCssRgba(color, alpha) {
-  return `rgba(${Math.round(color.r * 255)},${Math.round(color.g * 255)},${Math.round(color.b * 255)},${alpha})`;
-}
