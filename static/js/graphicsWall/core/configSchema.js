@@ -50,7 +50,7 @@ export const GLOBAL_CONTROLS = [
     title: "Color",
     controls: [
       { type: "color", path: "global.currentColor", label: "Current color", help: "Shared color external code can update through the graphics wall API." },
-      { type: "range", path: "global.colorTransitionSpeed", label: "Color speed", min: 0.001, max: 1, step: 0.001, help: "How quickly wall colors move toward the current color." },
+      { type: "range", path: "global.colorTransitionSpeed", label: "Color speed", min: 0.001, max: 1, step: 0.001, help: "How quickly wall colors move toward the current color.", randomize: false },
       { type: "checkbox", path: "global.rotateColors", label: "Rotate colors", help: "Allows color changes to transition instead of snapping." },
     ],
   },
