@@ -1,6 +1,8 @@
+import { isMobileWidth } from "../../core/device.js";
+
 // Builds grass defaults without touching browser globals at module load time.
 export function createGrassDefaults({ width = 1024 } = {}) {
-  const isMobile = width < 768;
+  const isMobile = isMobileWidth(width);
 
   return {
     global: {
@@ -10,7 +12,7 @@ export function createGrassDefaults({ width = 1024 } = {}) {
       bladeCount: isMobile ? 4500 : 8000,
       grassColor: "#75c94a",
       cursorColor: "#3a2e27",
-        wind: 0.078,
+      wind: 0.078,
       breezeChance: 1,
       widthMultiplier: isMobile ? 0.72 : 0.75,
       tipWidth: isMobile ? 0.52 : 0.38,

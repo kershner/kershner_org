@@ -110,9 +110,9 @@ export function createControls({ manager }) {
 
   ensureControlsStyle();
 
-  panel.addEventListener("pointerdown", stopPointerEvent);
-  panel.addEventListener("pointermove", stopPointerEvent);
-  panel.addEventListener("pointerup", stopPointerEvent);
+  ["pointerdown", "pointermove", "pointerup"].forEach((eventName) => {
+    panel.addEventListener(eventName, stopPointerEvent);
+  });
 
   const inputRenderers = {
     range(control, value) {

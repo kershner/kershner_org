@@ -1,5 +1,11 @@
 import { resolveTopLevelPath } from "./configSchema.js";
 
+
+// Keeps numeric config values inside a safe range.
+export function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, Number(value)));
+}
+
 // Checks whether a value is a plain mergeable object.
 export function isPlainObject(value) {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -72,7 +78,6 @@ export function createEventBus() {
     },
   };
 }
-
 
 // Normalizes public init options into global, interaction, and wall buckets.
 export function normalizeInitOptions(options = {}) {

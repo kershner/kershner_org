@@ -59,7 +59,6 @@ export const waterControls = [
   {
     title: "Color",
     controls: [
-      { type: "color", path: "wall.deepColor", label: "Deep water" , help: "Deep color." },
       { type: "color", path: "wall.skyColor", label: "Sky reflection" , help: "Sky color." },
       { type: "color", path: "wall.horizonColor", label: "Horizon reflection" , help: "Horizon color." },
       { type: "color", path: "wall.bankColor", label: "Bank reflection" , help: "Shore mirror." },

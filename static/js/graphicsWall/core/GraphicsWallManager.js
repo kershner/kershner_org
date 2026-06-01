@@ -1,6 +1,14 @@
 import { DEFAULT_CONFIG, GLOBAL_CONTROLS, resolveTopLevelPath } from "./configSchema.js";
+import { createViewport, getDeviceInfo, getRendererPixelRatio } from "./device.js";
 import { createPointerState } from "./pointerState.js";
-import { createEventBus, getPath, mergeDeep, normalizeInitOptions, setPath } from "./utils.js";
+import { clamp, createEventBus, getPath, mergeDeep, normalizeInitOptions, setPath } from "./utils.js";
+
+const PRIMARY_COLOR_KEYS = {
+  grass: ["grassColor"],
+  water: ["shallowColor", "deepColor"],
+  fabric: ["baseColor"],
+  orbs: ["backgroundColor"],
+};
 
 export class GraphicsWallManager {
   constructor({ THREE, wallTypes, ...options }) {
@@ -17,11 +25,7 @@ export class GraphicsWallManager {
     this.animationFrame = null;
     this.wallCycleTimer = null;
     this.lastTime = 0;
-    this.viewport = {
-      width: options.width || (typeof window !== "undefined" ? window.innerWidth : 1),
-      height: options.height || (typeof window !== "undefined" ? window.innerHeight : 1),
-      devicePixelRatio: options.devicePixelRatio || (typeof window !== "undefined" ? window.devicePixelRatio : 1) || 1,
-    };
+    this.viewport = createViewport(options);
   }
 
   // Boots the renderer, active wall, controls, and animation loop.
@@ -55,8 +59,6 @@ export class GraphicsWallManager {
 
     document.body.prepend(this.canvas);
 
-    const isMobile = this.viewport.width < 768;
-
     this.renderer = new this.THREE.WebGLRenderer({
       canvas: this.canvas,
       alpha: true,
@@ -64,7 +66,7 @@ export class GraphicsWallManager {
       powerPreference: "high-performance",
     });
 
-    this.renderer.setPixelRatio(Math.min(this.viewport.devicePixelRatio || 1, isMobile ? 1 : 1.5));
+    this.renderer.setPixelRatio(getRendererPixelRatio(this.viewport));
 
     this.scene = new this.THREE.Scene();
     this.camera = new this.THREE.OrthographicCamera(-1, 1, 1, -1, -10, 10);
@@ -79,10 +81,7 @@ export class GraphicsWallManager {
     };
 
     await this.createActiveWall(wallFactory);
-
-    if (this.activeWall && wallFactory.loadControls) {
-      this.activeWall.controls = await wallFactory.loadControls();
-    }
+    await this.loadActiveWallControls(wallFactory);
 
     if (this.config.global.showControls) {
       const { createControls } = await import("./controls.js");
@@ -138,22 +137,12 @@ export class GraphicsWallManager {
 
   // Returns current viewport/device flags used by responsive wall defaults.
   getDeviceInfo() {
-    return {
-      width: this.viewport.width,
-      height: this.viewport.height,
-      devicePixelRatio: this.viewport.devicePixelRatio,
-      isMobile: this.viewport.width < 768,
-    };
+    return getDeviceInfo(this.viewport);
   }
 
   // Returns the wall color keys controlled by the shared current color.
   getPrimaryColorKeys(type = this.type) {
-    return {
-      grass: ["grassColor"],
-      water: ["shallowColor", "deepColor"],
-      fabric: ["baseColor"],
-      orbs: ["backgroundColor"],
-    }[type] || [];
+    return PRIMARY_COLOR_KEYS[type] || [];
   }
 
   // Applies the shared current color to the active wall's primary colors.
@@ -207,6 +196,13 @@ export class GraphicsWallManager {
     this.syncActiveWallCurrentColor();
   }
 
+  // Loads optional controls for the current wall.
+  async loadActiveWallControls(wallFactory) {
+    if (this.activeWall && wallFactory?.loadControls) {
+      this.activeWall.controls = await wallFactory.loadControls();
+    }
+  }
+
   // Applies the viewport size to the renderer and active wall.
   resize(width = this.viewport.width, height = this.viewport.height) {
     this.viewport.width = Math.max(1, width || 1);
@@ -220,7 +216,7 @@ export class GraphicsWallManager {
   // Updates the managed viewport size for embedded/non-window usage.
   setSize(width, height, devicePixelRatio = this.viewport.devicePixelRatio) {
     this.viewport.devicePixelRatio = devicePixelRatio || 1;
-    this.renderer?.setPixelRatio(Math.min(this.viewport.devicePixelRatio, (width || this.viewport.width) < 768 ? 1 : 1.5));
+    this.renderer?.setPixelRatio(getRendererPixelRatio({ ...this.viewport, width: width || this.viewport.width }));
     this.resize(width, height);
   }
 
@@ -263,7 +259,7 @@ export class GraphicsWallManager {
   // Applies global opacity to the canvas element.
   applyCanvasOpacity() {
     if (!this.canvas) return;
-    this.canvas.style.opacity = String(Math.max(0, Math.min(1, Number(this.config.global.opacity ?? 1))));
+    this.canvas.style.opacity = String(clamp(Number(this.config.global.opacity ?? 1), 0, 1));
   }
 
   // Waits for a small timed transition without blocking rendering.
@@ -277,7 +273,7 @@ export class GraphicsWallManager {
 
     this.canvas.style.willChange = "opacity";
     this.canvas.style.transition = `opacity ${Math.max(0, duration || 0)}ms ease`;
-    this.canvas.style.opacity = String(Math.max(0, Math.min(1, opacity)));
+    this.canvas.style.opacity = String(clamp(opacity, 0, 1));
     await this.wait(duration);
   }
 
@@ -394,9 +390,7 @@ export class GraphicsWallManager {
     this.baseConfig = this.createConfig(type, { ...this.baseOptions, type }, factory);
     this.config = this.createConfig(type, options, factory);
     await this.createActiveWall(factory);
-    if (this.activeWall && factory.loadControls) {
-      this.activeWall.controls = await factory.loadControls();
-    }
+    await this.loadActiveWallControls(factory);
   }
 
   // Re-applies global DOM-level settings after reset/rebuild.
@@ -440,7 +434,7 @@ export class GraphicsWallManager {
     this.renderInitialFrame();
 
     if (shouldFade) {
-      await this.fadeCanvasTo(Math.max(0, Math.min(1, Number(this.config.global.opacity ?? 1))), fadeInDuration);
+      await this.fadeCanvasTo(clamp(Number(this.config.global.opacity ?? 1), 0, 1), fadeInDuration);
       this.canvas.style.willChange = "auto";
     }
 
