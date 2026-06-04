@@ -1,4 +1,6 @@
 from apps.daggerwalk.serializers import  POISerializer, QuestSerializer, TwitchUserProfileSerializer
+from django.template.loader import render_to_string
+from rest_framework.renderers import JSONRenderer
 from apps.daggerwalk.models import POI, ChatCommandLog, DaggerwalkLog, ProvinceShape, Quest, Region, TwitchUserProfile
 from apps.daggerwalk.utils import calculate_daggerwalk_stats, get_latest_log_data
 from django.db.models import Sum, Count, IntegerField, Max, Max
@@ -27,6 +29,7 @@ logger = logging.getLogger(__name__)
 BASE_URL = 'https://kershner.org'
 API_BASE_URL = f'{BASE_URL}/api/daggerwalk'
 TWITCH_CLIP_URL = 'https://api.twitch.tv/helix/clips'
+DAGGERWALK_HOME_HTML_CACHE_KEY = 'daggerwalk_home_html'
 
 
 def get_valid_access_token():
@@ -722,3 +725,17 @@ def update_all_daggerwalk_caches():
             "coordinates": shape.coordinates,
         })
     cache.set("daggerwalk_map_shape_data", shape_data, timeout=None)
+
+    # 8. Rendered home page HTML
+    quest_data = QuestSerializer(current_quest).data if current_quest else None
+    html = render_to_string('daggerwalk/index.html', {
+        "current_quest": current_quest,
+        "previous_quests": previous_quests,
+        "current_quest_json": JSONRenderer().render(quest_data).decode("utf-8"),
+        "leaderboard": leaderboard_data,
+        "logs_json": combined,
+        "poi_json": poi_json,
+        "quest_json": quest_json,
+        "shape_data": shape_data,
+    })
+    cache.set(DAGGERWALK_HOME_HTML_CACHE_KEY, html, timeout=None)

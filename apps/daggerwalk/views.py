@@ -20,6 +20,7 @@ from django.shortcuts import redirect
 from django.contrib import messages
 from django.core.cache import cache
 from django.shortcuts import render
+from django.http import HttpResponse
 from urllib.parse import urlencode
 from rest_framework import status
 from django.utils import timezone
@@ -41,6 +42,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+DAGGERWALK_HOME_HTML_CACHE_KEY = 'daggerwalk_home_html'
+
+
 # @method_decorator(cache_page(60 * 60 * 24 * 30), name="dispatch")  # 30 days
 class DaggerwalkHomeView(APIView):
     """Home view for the Daggerwalk app"""
@@ -48,6 +52,11 @@ class DaggerwalkHomeView(APIView):
     template_path = 'daggerwalk/index.html'
 
     def get(self, request):
+        html = cache.get(DAGGERWALK_HOME_HTML_CACHE_KEY)
+        if html is not None:
+            return HttpResponse(html)
+
+        logger.warning('Daggerwalk home HTML cache miss')
         quest = cache.get("daggerwalk_current_quest")
         previous_quests = cache.get("daggerwalk_previous_quests") or []
         quest_data = QuestSerializer(quest).data if quest else None
@@ -59,7 +68,7 @@ class DaggerwalkHomeView(APIView):
             "logs_json": cache.get("daggerwalk_map_logs") or [],
             "poi_json": cache.get("daggerwalk_map_pois") or [],
             "quest_json": cache.get("daggerwalk_map_quest") or [],
-            "shape_data": cache.get("daggerwalk_map_shape_data" or []),
+            "shape_data": cache.get("daggerwalk_map_shape_data") or [],
         })
     
 
