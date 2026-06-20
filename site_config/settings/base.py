@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'apps.ai_quiz',
     'apps.color_doodle',
     'apps.daggerwalk',
+    'apps.roll20_stats',
     'apps.pi_stuff',
     'storages',
     'django_filters',
