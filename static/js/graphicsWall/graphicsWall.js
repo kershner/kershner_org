@@ -98,12 +98,7 @@ const BOOTSTRAP_CONTROLS_CSS = `
     justify-content: flex-end;
     gap: 0.55rem;
     box-sizing: border-box;
-    width: 3.6rem;
-    min-width: 3.6rem;
-    height: 3.6rem;
-    min-height: 3.6rem;
     margin: 0;
-    padding: 0.7rem;
     border: 0 !important;
     outline: 0;
     background: transparent !important;
