@@ -96,6 +96,7 @@ const BOOTSTRAP_CONTROLS_CSS = `
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    gap: 0.55rem;
     box-sizing: border-box;
     width: 3.6rem;
     min-width: 3.6rem;
@@ -134,8 +135,8 @@ const BOOTSTRAP_CONTROLS_CSS = `
   }
 
   .graphics-wall-bootstrap-title {
-    display: block;
-    margin: 0.05rem 0 0.72rem;
+    display: none;
+    margin: 0;
     color: #cfcfcf;
     font-size: 1.18rem;
     font-style: italic;
@@ -147,6 +148,10 @@ const BOOTSTRAP_CONTROLS_CSS = `
     text-underline-offset: 0.18em;
     text-decoration-thickness: 0.08em;
     text-shadow: 0 0 0.9rem rgba(255,255,255,0.24);
+  }
+
+  .graphics-wall-bootstrap-controls[open] .graphics-wall-bootstrap-title {
+    display: inline-block;
   }
 
   .graphics-wall-bootstrap-title:hover,
@@ -184,13 +189,23 @@ function createBootstrapControls({ getEnabled, setEnabled, titleUrl, settingsIco
   const wrapper = document.createElement("p");
 
   panel.className = "graphics-wall-bootstrap-controls";
-  panel.innerHTML = `<summary title="Settings" aria-label="Settings">${settingsIcon}</summary>`;
+
+  const summary = document.createElement("summary");
+  const icon = document.createElement("span");
+
+  summary.title = "Settings";
+  summary.setAttribute("aria-label", "Settings");
+
   title.className = "graphics-wall-bootstrap-title";
   title.href = titleUrl;
   title.target = "_blank";
   title.rel = "noopener noreferrer";
   title.textContent = "graphicsWall.js";
-  panel.appendChild(title);
+
+  icon.textContent = settingsIcon;
+
+  summary.append(title, icon);
+  panel.appendChild(summary);
 
   [
     { value: "true", label: "Enabled" },

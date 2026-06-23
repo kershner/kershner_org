@@ -31,13 +31,9 @@ const PANEL_CSS = `
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    gap: 0.55rem;
     box-sizing: border-box;
-    width: 3.6rem;
-    min-width: 3.6rem;
-    height: 3.6rem;
-    min-height: 3.6rem;
     margin: 0;
-    padding: 0.7rem;
     border: 0 !important;
     outline: 0;
     background: transparent !important;
@@ -69,8 +65,8 @@ const PANEL_CSS = `
   }
 
   .graphics-wall-controls .graphics-wall-title {
-    display: block;
-    margin: 0.05rem 0 0.72rem;
+    display: none;
+    margin: 0;
     color: #cfcfcf;
     font-size: 1.18rem;
     font-style: italic;
@@ -82,6 +78,10 @@ const PANEL_CSS = `
     text-underline-offset: 0.18em;
     text-decoration-thickness: 0.08em;
     text-shadow: 0 0 0.9rem rgba(255,255,255,0.24);
+  }
+
+  .graphics-wall-controls[open] .graphics-wall-title {
+    display: inline-block;
   }
 
   .graphics-wall-controls .graphics-wall-title:hover,
@@ -318,8 +318,15 @@ export function createControls({ manager, titleUrl, settingsIcon = "☰" }) {
   }
 
   function render() {
-    panel.innerHTML = `<summary title="Settings" aria-label="Settings">${settingsIcon}</summary>`;
-    panel.appendChild(createPanelTitle());
+    const summary = document.createElement("summary");
+    const icon = document.createElement("span");
+
+    summary.title = "Settings";
+    summary.setAttribute("aria-label", "Settings");
+    icon.textContent = settingsIcon;
+    summary.append(createPanelTitle(), icon);
+
+    panel.replaceChildren(summary);
     panel.appendChild(createWallTypeSelect());
 
     manager.getControlSchema().forEach((group) => {
