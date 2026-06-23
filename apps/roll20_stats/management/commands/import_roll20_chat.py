@@ -2,12 +2,8 @@ import os
 
 from django.core.management.base import BaseCommand, CommandError
 
-try:
-    from apps.roll20_stats.models import GameSession, Roll20Message
-    from apps.roll20_stats.utils import parse_roll20_messages, update_session_stats
-except ImportError:
-    from roll20_stats.models import GameSession, Roll20Message
-    from roll20_stats.utils import parse_roll20_messages, update_session_stats
+from roll20_stats.models import GameSession, Roll20Message
+from roll20_stats.utils import parse_roll20_messages, update_session_stats
 
 
 class Command(BaseCommand):

@@ -5,10 +5,8 @@ from datetime import date, datetime
 from bs4 import BeautifulSoup
 from django.utils import timezone
 
-try:
-    from apps.roll20_stats.models import Roll20Message, SessionCharacterStats
-except ImportError:
-    from roll20_stats.models import Roll20Message, SessionCharacterStats
+from roll20_stats.models import Roll20Message, SessionCharacterStats
+    
 
 TIMESTAMP_FORMAT = '%B %d, %Y %I:%M%p'
 

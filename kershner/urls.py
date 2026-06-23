@@ -5,6 +5,7 @@ from apps.color_doodle.urls import doodle_patterns
 from apps.steamtime.urls import steamtime_patterns
 from apps.pi_stuff.urls import pi_stuff_patterns
 from apps.project import views as project_views
+from apps.roll20_stats.urls import dnd_patterns
 from apps.ai_quiz.urls import ai_quiz_patterns
 from apps.whoosh.urls import whoosh_patterns
 import apps.philomania.views as phil_views
@@ -55,6 +56,9 @@ urlpatterns = [
 
     # Pi stuff
     path('pi/', include(pi_stuff_patterns)),
+
+    # D&D stuff
+    path('dnd/', include(dnd_patterns)),
 
     path('sheepdog-trials/', kersh_views.sheepdog_article),
 
