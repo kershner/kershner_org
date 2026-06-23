@@ -1,5 +1,6 @@
 export const DEFAULT_CONFIG = {
   global: {
+    enabled: false,
     zIndex: -1,
     showControls: true,
     fullscreen: false,
@@ -41,6 +42,7 @@ export const GLOBAL_CONTROLS = [
     title: "General",
     randomize: false,
     controls: [
+      { type: "select", path: "global.enabled", label: "Status", options: [{ value: true, label: "Enabled" }, { value: false, label: "Disabled" }], help: "Turns the graphics wall on or off.", randomize: false },
       { type: "checkbox", path: "global.fullscreen", label: "Fullscreen", help: "Expands the wall to fill the viewport." },
       { type: "range", path: "global.opacity", label: "Opacity", min: 0, max: 1, step: 0.01, help: "Fades the whole wall without changing its settings." },
       { type: "checkbox", path: "global.cycleWalls", label: "Cycle walls", help: "Randomly rebuilds a wall after the selected interval." },

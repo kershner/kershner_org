@@ -1,41 +1,92 @@
 const PANEL_CSS = `
   .graphics-wall-controls {
     position: fixed;
-    right: 12px;
     top: 8px;
+    right: 12px;
     z-index: 99999;
-    max-height: 80vh;
     max-width: min(23rem, calc(100vw - 24px));
-    overflow: auto;
-    color-scheme: dark;
-    background: #202020;
+    max-height: 80vh;
+    overflow: visible;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
     color: #fff;
-    padding: 0.45rem 0.9rem;
+    color-scheme: dark;
     cursor: pointer;
-    border-radius: 2em;
     font: 0.8rem/1rem system-ui, sans-serif;
   }
 
   .graphics-wall-controls[open] {
+    overflow: auto;
     padding: 0 0.9rem 0.9rem;
     border-radius: 1rem;
-  }
-
-  .graphics-wall-controls summary,
-  .graphics-wall-controls .wall-type-row {
-    position: sticky;
-    z-index: 2;
     background: #202020;
   }
 
   .graphics-wall-controls summary {
+    position: sticky;
     top: -7px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    box-sizing: border-box;
+    width: 3.6rem;
+    min-width: 3.6rem;
+    height: 3.6rem;
+    min-height: 3.6rem;
+    margin: 0;
+    padding: 0.7rem;
+    border: 0 !important;
+    outline: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+    list-style: none;
+    font-size: 2rem;
+    line-height: 1;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.34);
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .graphics-wall-controls summary::-webkit-details-marker,
+  .graphics-wall-controls summary::before,
+  .graphics-wall-controls summary::after {
+    display: none !important;
+    content: none !important;
   }
 
   .graphics-wall-controls[open] summary {
+    width: auto;
+    height: auto;
+    min-width: 2.65rem;
+    min-height: 2.65rem;
     margin: 0 -0.9rem;
-    padding: 0.75rem 0.9rem 0.55rem;
+    padding: 0.7rem 0.9rem 0.45rem;
     border-radius: 1rem 1rem 0 0;
+    background: #202020 !important;
+  }
+
+  .graphics-wall-controls .graphics-wall-title {
+    display: block;
+    margin: 0.05rem 0 0.72rem;
+    color: #cfcfcf;
+    font-size: 1.18rem;
+    font-style: italic;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.1;
+    text-align: right;
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+    text-decoration-thickness: 0.08em;
+    text-shadow: 0 0 0.9rem rgba(255,255,255,0.24);
+  }
+
+  .graphics-wall-controls .graphics-wall-title:hover,
+  .graphics-wall-controls .graphics-wall-title:focus-visible {
+    color: #fff;
   }
 
   .graphics-wall-controls fieldset {
@@ -53,12 +104,15 @@ const PANEL_CSS = `
   .graphics-wall-controls :is(select, input) { max-width: 100%; }
 
   .graphics-wall-controls .wall-type-row {
+    position: sticky;
     top: 1.35rem;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
     padding: 0.35rem 0;
+    background: #202020;
   }
 
   .graphics-wall-controls .wall-type-row label {
@@ -70,8 +124,8 @@ const PANEL_CSS = `
 
   .graphics-wall-controls .wall-actions {
     display: flex;
-    gap: 0.35rem;
     flex: 0 0 auto;
+    gap: 0.35rem;
   }
 `;
 
@@ -100,7 +154,7 @@ function ensureControlsStyle() {
 }
 
 // Builds the floating settings panel for the active wall.
-export function createControls({ manager }) {
+export function createControls({ manager, titleUrl, settingsIcon = "☰" }) {
   const panel = document.createElement("details");
   panel.open = false;
   panel.classList.add("graphics-wall-controls");
@@ -152,15 +206,23 @@ export function createControls({ manager }) {
 
     select(control, value) {
       const select = document.createElement("select");
-      (control.options || []).forEach((option) => {
-        const item = typeof option === "string" ? { value: option, label: option } : option;
+      const options = (control.options || []).map((option) => (
+        typeof option === "string" ? { value: option, label: option } : option
+      ));
+
+      options.forEach((item, index) => {
         const optionEl = document.createElement("option");
-        optionEl.value = item.value;
-        optionEl.textContent = item.label || item.value;
+        optionEl.value = String(index);
+        optionEl.textContent = item.label || String(item.value);
         optionEl.selected = item.value === value;
         select.appendChild(optionEl);
       });
-      select.addEventListener("change", () => manager.set(control.path, select.value, { syncQueryParams: true }));
+
+      select.addEventListener("change", () => {
+        const selectedOption = options[Number(select.value)];
+        if (selectedOption) manager.set(control.path, selectedOption.value, { syncQueryParams: true });
+      });
+
       return [select];
     },
   };
@@ -245,8 +307,19 @@ export function createControls({ manager }) {
     return wrapper;
   }
 
+  function createPanelTitle() {
+    const title = document.createElement("a");
+    title.className = "graphics-wall-title";
+    title.href = titleUrl;
+    title.target = "_blank";
+    title.rel = "noopener noreferrer";
+    title.textContent = "graphicsWall.js";
+    return title;
+  }
+
   function render() {
-    panel.innerHTML = "<summary>Settings</summary>";
+    panel.innerHTML = `<summary title="Settings" aria-label="Settings">${settingsIcon}</summary>`;
+    panel.appendChild(createPanelTitle());
     panel.appendChild(createWallTypeSelect());
 
     manager.getControlSchema().forEach((group) => {

@@ -74,7 +74,11 @@ export class GraphicsWallManager {
     this.THREE = THREE;
     this.wallTypes = wallTypes;
     this.syncQueryParams = options.syncQueryParams !== false;
-    this.baseOptions = normalizeInitOptions(options);
+    const { onDisabled, titleUrl, settingsIcon, ...initOptions } = options;
+    this.onDisabled = typeof onDisabled === "function" ? onDisabled : null;
+    this.titleUrl = titleUrl;
+    this.settingsIcon = settingsIcon;
+    this.baseOptions = normalizeInitOptions(initOptions);
     this.options = this.baseOptions;
     this.queryParams = null;
     this.events = createEventBus();
@@ -144,7 +148,7 @@ export class GraphicsWallManager {
 
     if (this.config.global.showControls) {
       const { createControls } = await import("./controls.js");
-      this.controls = createControls({ manager: this });
+      this.controls = createControls({ manager: this, titleUrl: this.titleUrl, settingsIcon: this.settingsIcon });
     }
 
     const { createFullscreenController } = await import("./fullscreen.js");
@@ -287,7 +291,11 @@ export class GraphicsWallManager {
   // Draws a first frame before the animation loop begins.
   renderInitialFrame() {
     this.sharedUniforms.uTime.value = 0;
-    this.sharedUniforms.uOpacity.value = this.config.global.opacity;
+    this.sharedUniforms.uOpacity.value = this.isEnabled() ? this.config.global.opacity : 0;
+    if (!this.isEnabled()) {
+      this.renderer.render(this.scene, this.camera);
+      return;
+    }
     this.activeWall?.update({
       time: 0,
       delta: 0,
@@ -304,7 +312,8 @@ export class GraphicsWallManager {
     for (let i = 0; i < frames; i += 1) {
       const elapsed = (i + 1) * (1000 / 60);
       this.sharedUniforms.uTime.value = elapsed * 0.001;
-      this.sharedUniforms.uOpacity.value = this.config.global.opacity;
+      this.sharedUniforms.uOpacity.value = this.isEnabled() ? this.config.global.opacity : 0;
+      if (!this.isEnabled()) return;
       this.pointer.update(this.config.interaction);
       this.activeWall?.update({
         time: elapsed,
@@ -315,10 +324,16 @@ export class GraphicsWallManager {
     }
   }
 
+  // Returns whether the wall should be visible and active.
+  isEnabled() {
+    return Boolean(this.config?.global?.enabled);
+  }
+
   // Applies global opacity to the canvas element.
   applyCanvasOpacity() {
     if (!this.canvas) return;
-    this.canvas.style.opacity = String(clamp(Number(this.config.global.opacity ?? 1), 0, 1));
+    const opacity = this.isEnabled() ? Number(this.config.global.opacity ?? 1) : 0;
+    this.canvas.style.opacity = String(clamp(opacity, 0, 1));
   }
 
   // Waits for a small timed transition without blocking rendering.
@@ -366,16 +381,20 @@ export class GraphicsWallManager {
     this.lastTime = time;
 
     this.sharedUniforms.uTime.value = time * 0.001;
-    this.sharedUniforms.uOpacity.value = this.config.global.opacity;
-    this.pointer.update(this.config.interaction);
+    this.sharedUniforms.uOpacity.value = this.isEnabled() ? this.config.global.opacity : 0;
 
-    this.activeWall?.update({
-      time,
-      delta,
-      config: this.config,
-    });
+    if (this.isEnabled()) {
+      this.pointer.update(this.config.interaction);
 
-    this.renderer.render(this.scene, this.camera);
+      this.activeWall?.update({
+        time,
+        delta,
+        config: this.config,
+      });
+
+      this.renderer.render(this.scene, this.camera);
+    }
+
     this.animationFrame = requestAnimationFrame(this.animate);
   }
 
@@ -391,6 +410,24 @@ export class GraphicsWallManager {
 
     const previousValue = getPath(this.config, path);
     setPath(this.config, path, value);
+
+    if (path === "global.enabled") {
+      if (!value && this.syncQueryParams && options.syncQueryParams === true && previousValue !== value) {
+        this.queryParams?.updateGraphicsWallQueryParam(path, value, {
+          remove: getPath(this.baseConfig, path) === value,
+        });
+      }
+
+      if (!value) {
+        this.events.emit("configchange", { path, value });
+        this.onDisabled?.();
+        return true;
+      }
+
+      this.applyCanvasOpacity();
+      this.updateWallCycleTimer();
+      this.renderInitialFrame();
+    }
 
     if (path === "global.fullscreen") {
       this.fullscreen?.set(Boolean(value));
@@ -535,7 +572,7 @@ export class GraphicsWallManager {
       this.wallCycleTimer = null;
     }
 
-    if (!this.config?.global?.cycleWalls) return;
+    if (!this.config?.global?.enabled || !this.config?.global?.cycleWalls) return;
 
     const interval = Math.max(1000, Number(this.config.global.wallCycleInterval) || 8000);
     this.wallCycleTimer = window.setTimeout(async () => {
