@@ -6,6 +6,10 @@ from django import forms
 
 
 class AdminAdvancedFiltersMixin:
+    """
+    Provides a modal-based advanced filter UI for Django admin changelists.
+    - Use before admin.ModelAdmin in the admin class inheritance list.
+    """
     advanced_filters_title = "Advanced Filters"
     advanced_filters_js = ("js/adminAdvancedFilters.js",)
     advanced_filters_css = ("css/admin-advanced-filters.css",)
