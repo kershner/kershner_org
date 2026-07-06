@@ -13,6 +13,7 @@
   overflow: auto;
   background: var(--body-bg);
   color: var(--body-fg);
+  border: 1px solid var(--hairline-color);
 }
 
 .af-grid {
@@ -82,13 +83,6 @@
 
 .af-empty {
   padding: .5rem;
-}
-
-.af-help,
-.af-indicator {
-  margin: 0 0 .75rem;
-  padding: .5rem;
-  border: 1px solid var(--hairline-color);
 }
 
 .af-help {

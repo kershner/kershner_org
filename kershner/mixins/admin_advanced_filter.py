@@ -5,14 +5,14 @@ from django.urls import path
 from django import forms
 
 
-class AdminAdvancedFiltersMixin:
+class AdminAdvancedFilterMixin:
     """
     Provides a modal-based advanced filter UI for Django admin changelists.
     - Use before admin.ModelAdmin in the admin class inheritance list.
     """
-    advanced_filters_title = "Advanced Filters"
-    advanced_filters_js = ("js/adminAdvancedFilters.js",)
-    advanced_filters_css = ("css/admin-advanced-filters.css",)
+    advanced_filter_title = "Advanced Filter"
+    advanced_filter_js = ("js/adminAdvancedFilter.js",)
+    advanced_filter_css = ("css/admin-advanced-filter.css",)
     
     text_field_types = (
         models.CharField,
@@ -40,13 +40,13 @@ class AdminAdvancedFiltersMixin:
                 "admin/js/vendor/select2/select2.full.js",
                 "admin/js/jquery.init.js",
                 "admin/js/autocomplete.js",
-                *self.advanced_filters_js,
+                *self.advanced_filter_js,
             ),
             css={
                 "screen": (
                     "admin/css/vendor/select2/select2.css",
                     "admin/css/autocomplete.css",
-                    *self.advanced_filters_css,
+                    *self.advanced_filter_css,
                 ),
             },
         )
@@ -57,31 +57,31 @@ class AdminAdvancedFiltersMixin:
 
         return [
             path(
-                "advanced-filters/",
-                self.admin_site.admin_view(self.advanced_filters_view),
-                name=f"{opts.app_label}_{opts.model_name}_advanced_filters",
+                "advanced-filter/",
+                self.admin_site.admin_view(self.advanced_filter_view),
+                name=f"{opts.app_label}_{opts.model_name}_advanced_filter",
             ),
             *super().get_urls(),
         ]
 
-    def advanced_filters_view(self, request):
+    def advanced_filter_view(self, request):
         # GET returns field config.
         if request.method == "GET":
-            return JsonResponse(self.get_advanced_filters_config(request))
+            return JsonResponse(self.get_advanced_filter_config(request))
 
         return JsonResponse({"error": "Unsupported method."}, status=405)
 
-    def get_advanced_filters_config(self, request):
+    def get_advanced_filter_config(self, request):
         # Returns field metadata and server-rendered widgets for the modal.
         form = self.get_form(request)()
         fields = []
 
-        for field_name in self.get_advanced_filters_field_names(request):
+        for field_name in self.get_advanced_filter_field_names(request):
             model_field = self.get_model_field(field_name)
             if model_field is None:
                 continue
 
-            form_field = self.get_advanced_filters_form_field(request, form, field_name, model_field)
+            form_field = self.get_advanced_filter_form_field(request, form, field_name, model_field)
             if form_field is None:
                 continue
 
@@ -92,13 +92,13 @@ class AdminAdvancedFiltersMixin:
                     "name": field_name,
                     "label": str(form_field.label or model_field.verbose_name or field_name),
                     "html": bound_field.as_widget(attrs={"id": f"id_{field_name}"}),
-                    "lookups": self.get_advanced_filters_lookups(model_field),
-                    "input_type": self.get_advanced_filters_input_type(model_field),
+                    "lookups": self.get_advanced_filter_lookups(model_field),
+                    "input_type": self.get_advanced_filter_input_type(model_field),
                 }
             )
 
         return {
-            "title": self.advanced_filters_title,
+            "title": self.advanced_filter_title,
             "fields": fields,
         }
 
@@ -120,11 +120,11 @@ class AdminAdvancedFiltersMixin:
                 continue
 
             lookup_name = "__".join(parts[index:]) or "exact"
-            return lookup_name in self.get_advanced_filters_lookups(model_field)
+            return lookup_name in self.get_advanced_filter_lookups(model_field)
 
         return False
 
-    def get_advanced_filters_field_names(self, request):
+    def get_advanced_filter_field_names(self, request):
         # Uses ModelAdmin field order, flattening row/group tuples.
         return list(self.flatten_fields(self.get_fields(request)))
 
@@ -143,11 +143,11 @@ class AdminAdvancedFiltersMixin:
         except FieldDoesNotExist:
             return None
 
-    def get_advanced_filters_form_field(self, request, form, field_name, model_field):
+    def get_advanced_filter_form_field(self, request, form, field_name, model_field):
         # Prefer the ModelAdmin form field; fall back to normal admin widget creation.
         return form.fields.get(field_name) or self.formfield_for_dbfield(model_field, request=request)
 
-    def get_advanced_filters_input_type(self, model_field):
+    def get_advanced_filter_input_type(self, model_field):
         # Hints JS to convert date/time widgets to native browser inputs.
         if isinstance(model_field, models.DateTimeField):
             return "datetime-local"
@@ -160,7 +160,7 @@ class AdminAdvancedFiltersMixin:
 
         return ""
 
-    def get_advanced_filters_lookups(self, model_field):
+    def get_advanced_filter_lookups(self, model_field):
         # Returns conservative lookup choices by field type.
         if isinstance(model_field, models.BooleanField):
             return ["exact", *self.null_lookup(model_field)]

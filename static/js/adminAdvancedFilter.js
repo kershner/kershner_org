@@ -1,6 +1,6 @@
-window.adminAdvancedFilters = {
+window.adminAdvancedFilter = {
   MODAL_ID: "af-modal",
-  ENDPOINT_PATH: "advanced-filters/",
+  ENDPOINT_PATH: "advanced-filter/",
   HELP_TEXT: "Select one or more fields to build an advanced filter.",
   config: null,
 
@@ -16,7 +16,7 @@ window.adminAdvancedFilters = {
   addButton() {
     if (document.getElementById("af-open")) return;
 
-    const openButton = this.button("Advanced Filters", "button", () => this.openModal());
+    const openButton = this.button("Advanced Filter", "button", () => this.openModal());
     const target = document.getElementById("changelist-filter") || document.querySelector(".object-tools");
 
     openButton.id = "af-open";
@@ -26,7 +26,7 @@ window.adminAdvancedFilters = {
     }
   },
 
-  // Adds Django-style clear action link when advanced filters are active.
+  // Adds Django-style clear action link when advanced filter are active.
   async addClearFiltersButton() {
     const target = document.getElementById("changelist-filter");
 
@@ -86,7 +86,7 @@ window.adminAdvancedFilters = {
   modal(config, search, list, selected, help, indicator, error, submitButton) {
     const node = this.el("div", { id: this.MODAL_ID, className: "af-backdrop" }, [
       this.el("div", { className: "af-box" }, [
-        this.el("h2", { textContent: config.title || "Advanced Filters" }),
+        this.el("h2", { textContent: config.title || "Advanced Filter" }),
         this.el("div", { className: "af-grid" }, [
           this.el("div", {}, [search, list]),
           this.el("div", {}, [indicator, selected, help, error]),
@@ -218,7 +218,7 @@ window.adminAdvancedFilters = {
     });
   },
 
-  // Detects whether advanced filters are currently applied.
+  // Detects whether advanced filter are currently applied.
   hasAdvancedFilters(config) {
     const params = new URL(window.location.href).searchParams;
 
@@ -408,5 +408,5 @@ window.adminAdvancedFilters = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  window.adminAdvancedFilters.init();
+  window.adminAdvancedFilter.init();
 });
