@@ -4,7 +4,6 @@
   const MODAL_ID = "af-modal";
   const ENDPOINT_PATH = "advanced-filters/";
   const HELP_TEXT = "Select one or more fields to build an advanced filter.";
-
   document.addEventListener("DOMContentLoaded", init);
 
   // Adds the changelist button once the page is ready.
@@ -30,15 +29,18 @@
   }
 
   // Adds Django-style clear action when advanced filters are active.
-  function addClearFiltersButton() {
+  async function addClearFiltersButton() {
     const target = document.getElementById("changelist-filter");
 
-    if (!target || document.getElementById("changelist-filter-clear") || !hasAdvancedFilters()) return;
+    if (!target || document.getElementById("changelist-filter-clear")) return;
+
+    const config = await getJson(endpoint());
+    if (!hasAdvancedFilters(config)) return;
 
     const heading = target.querySelector("h2");
     const clear = el("h3", { id: "changelist-filter-clear" }, [
       el("a", {
-        href: clearFiltersUrl(),
+        href: window.location.pathname,
         textContent: "✖ Clear all filters",
       }),
     ]);
@@ -66,7 +68,7 @@
     });
     const indicator = el("p", { className: "af-indicator", hidden: true });
     const error = el("div", { className: "af-error", hidden: true });
-    const submitButton = button("Submit", "button default", () => submit(selected, error));
+    const submitButton = button("Submit", "button default", () => submit(config, selected, error));
 
     closeModal();
 
@@ -163,8 +165,8 @@
     renderFields(config, list, selected, help, indicator, submitButton, query);
   }
 
-  // Sends filters to the endpoint and redirects to the ID-filtered changelist.
-  async function submit(selected, error) {
+  // Redirects to the changelist with the selected filters applied as query params.
+  function submit(config, selected, error) {
     hideError(error);
 
     if (!selected.querySelector(".af-row")) {
@@ -172,65 +174,88 @@
       return;
     }
 
-    const response = await fetch(endpoint(), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": csrfToken(),
-        "X-Requested-With": "XMLHttpRequest",
-      },
-      body: JSON.stringify({ filters: filtersFrom(selected) }),
-    });
-    const data = await response.json();
+    const filters = filtersFrom(selected);
 
-    if (!response.ok) {
-      showError(error, Array.isArray(data.error) ? data.error.join(" ") : data.error || "Filter failed.");
+    if (filters.some((filter) => filter.lookup !== "isnull" && !filter.value)) {
+      showError(error, "Enter a value for each selected field.");
       return;
     }
 
-    if (!data.ids.length) {
-      showError(error, "No matching results.");
-      return;
-    }
-
-    redirectWithIds(data.pk_field, data.ids);
+    redirectWithFilters(config, filters);
   }
 
-  // Converts selected rows into the POST payload.
+  // Converts selected rows into changelist filter params.
   function filtersFrom(selected) {
-    return Array.from(selected.querySelectorAll(".af-row")).map((row) => ({
-      field: row.dataset.field,
-      lookup: row.querySelector(".af-lookup").value,
-      values: valuesFrom(row),
-    }));
+    return Array.from(selected.querySelectorAll(".af-row")).map((row) => {
+      const lookup = row.querySelector(".af-lookup").value;
+
+      return {
+        field: row.dataset.field,
+        lookup,
+        value: filterValueFrom(row, lookup),
+      };
+    });
   }
 
   // Redirects while preserving existing changelist params.
-  function redirectWithIds(pkField, ids) {
+  function redirectWithFilters(config, filters) {
     const url = new URL(window.location.href);
-    const parts = [];
 
     url.searchParams.delete("p");
-    url.searchParams.delete(`${pkField}__in`);
+    removeAdvancedFilterParams(url, config);
 
-    url.searchParams.forEach((value, key) => {
-      parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+    filters.forEach((filter) => {
+      url.searchParams.set(`${filter.field}__${filter.lookup}`, filter.value);
     });
 
-    parts.push(`${encodeURIComponent(pkField)}__in=${ids.join(",")}`);
-    window.location.href = `${url.pathname}?${parts.join("&")}`;
+    window.location.href = `${url.pathname}?${url.searchParams.toString()}`;
+  }
+
+  // Removes previous advanced filter params before applying new ones.
+  function removeAdvancedFilterParams(url, config) {
+    config.fields.forEach((field) => {
+      field.lookups.forEach((lookup) => {
+        url.searchParams.delete(`${field.name}__${lookup}`);
+      });
+    });
   }
 
   // Detects whether advanced filters are currently applied.
-  function hasAdvancedFilters() {
-    return Array.from(new URL(window.location.href).searchParams.keys()).some((key) =>
-      key.endsWith("__in")
+  function hasAdvancedFilters(config) {
+    const params = new URL(window.location.href).searchParams;
+
+    return config.fields.some((field) =>
+      field.lookups.some((lookup) => params.has(`${field.name}__${lookup}`))
     );
   }
 
-  // Returns the changelist URL with all querystring filters removed.
-  function clearFiltersUrl() {
-    return window.location.pathname;
+  // Reads the direct changelist value from one selected row.
+  function filterValueFrom(row, lookup) {
+    if (lookup === "isnull") return "True";
+
+    return serializedValue(row.dataset.field, valuesFrom(row));
+  }
+
+  // Converts widget values into a single changelist query value.
+  function serializedValue(fieldName, values) {
+    if (values[fieldName]) {
+      return values[fieldName].join(",");
+    }
+
+    const parts = Object.entries(values)
+      .filter(([key]) => key.startsWith(`${fieldName}_`))
+      .sort(([left], [right]) => left.localeCompare(right))
+      .flatMap(([, value]) => value)
+      .filter(Boolean);
+
+    if (parts.length) {
+      return parts.join(" ");
+    }
+
+    return Object.values(values)
+      .flat()
+      .filter(Boolean)
+      .join(",");
   }
 
   // Reads form control values from one selected row.
@@ -300,14 +325,6 @@
 
     if (!response.ok) throw new Error("Request failed.");
     return response.json();
-  }
-
-  // Reads Django's CSRF cookie.
-  function csrfToken() {
-    return document.cookie
-      .split("; ")
-      .find((item) => item.startsWith("csrftoken="))
-      ?.split("=")[1] || "";
   }
 
   // Removes the modal.
