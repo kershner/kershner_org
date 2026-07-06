@@ -14,6 +14,7 @@
   background: var(--body-bg);
   color: var(--body-fg);
   border: 1px solid var(--hairline-color);
+  border-radius: 4px;
 }
 
 .af-grid {
