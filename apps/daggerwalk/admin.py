@@ -1,4 +1,5 @@
 from apps.daggerwalk.models import DaggerwalkLog, Quest, Region, RegionMapPart, POI, ProvinceShape, ChatCommandLog, TwitchUserProfile
+from kershner.mixins.admin_advanced_filters import AdminAdvancedFiltersMixin
 from apps.daggerwalk.tasks import post_to_bluesky
 from django.forms.models import BaseInlineFormSet
 from django.http import HttpResponseRedirect
@@ -8,6 +9,7 @@ from urllib.parse import urlencode
 from django.contrib import admin
 from django.urls import reverse
 from django.urls import path
+
 
 
 class ReadOnlyInline(admin.TabularInline):
@@ -219,7 +221,7 @@ class RegionMapPartAdmin(admin.ModelAdmin):
 
 
 @admin.register(POI)
-class POIAdmin(admin.ModelAdmin):
+class POIAdmin(AdminAdvancedFiltersMixin, admin.ModelAdmin):
     list_display = ('name', 'region', 'type', 'discovered', 'map_coordinates', 'view_on_map_link')
     list_filter = ('region', 'type', 'discovered')
     search_fields = ('name', 'region__name', 'type')
@@ -268,7 +270,7 @@ class ProvinceShapeAdmin(admin.ModelAdmin):
 
 
 @admin.register(ChatCommandLog)
-class ChatCommandLogAdmin(admin.ModelAdmin):
+class ChatCommandLogAdmin(AdminAdvancedFiltersMixin, admin.ModelAdmin):
     list_display = ('timestamp', 'user', 'profile', 'command', 'args_short', 'created_at')
     list_filter = ('profile', 'user', 'command', 'created_at')
     search_fields = (
@@ -294,7 +296,7 @@ class ChatCommandLogAdmin(admin.ModelAdmin):
         return [f.name for f in self.model._meta.fields]
 
 @admin.register(Quest)
-class QuestAdmin(admin.ModelAdmin):
+class QuestAdmin(AdminAdvancedFiltersMixin, admin.ModelAdmin):
     list_display = ('quest_name', 'status', 'quest_giver_img_thumb', 'description', 'xp', 'view_on_map_link', 'created_at')
     list_filter = ('status', 'poi__region', 'created_at')
     search_fields = ('description', 'poi__name', 'poi__region__name')

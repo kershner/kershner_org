@@ -1,0 +1,130 @@
+.af-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: #0006;
+}
+
+.af-box {
+  width: min(1000px, 96vw);
+  max-height: 92vh;
+  margin: 4vh auto;
+  padding: 1rem;
+  overflow: auto;
+  background: var(--body-bg);
+  color: var(--body-fg);
+}
+
+.af-grid {
+  display: grid;
+  grid-template-columns: 16rem 1fr;
+  gap: 1rem;
+}
+
+.af-list {
+  height: 22rem;
+  overflow: auto;
+  border: 1px solid var(--border-color);
+}
+
+.af-row {
+  display: grid;
+  padding: 0.5rem 0;
+  grid-template-columns: 8rem 9rem minmax(16rem, 1fr) auto;
+  gap: .5rem;
+  align-items: flex-start;
+  margin-bottom: .5rem;
+  border-bottom: 1px solid var(--hairline-color);
+}
+
+.af-field {
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  padding: .5rem;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--hairline-color);
+  color: inherit;
+}
+
+.af-actions {
+  display: flex;
+  justify-content: end;
+  gap: .5rem;
+  margin-top: 1rem;
+}
+
+.af-error {
+  color: var(--error-fg);
+  margin-top: .5rem;
+}
+
+.af-button-wrap {
+  padding: 0.5rem;
+}
+
+.af-remove {
+  background: var(--delete-button-bg);
+  color: var(--button-fg);
+}
+
+.af-remove:hover {
+  background: var(--delete-button-hover-bg);
+}
+
+.af-search {
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: .5rem;
+}
+
+.af-empty {
+  padding: .5rem;
+}
+
+.af-help,
+.af-indicator {
+  margin: 0 0 .75rem;
+  padding: .5rem;
+  border: 1px solid var(--hairline-color);
+}
+
+.af-help {
+  color: var(--body-quiet-color);
+}
+
+.af-indicator {
+  font-weight: 600;
+}
+
+.af-field-selected {
+  font-weight: 600;
+  background: var(--selected-bg);
+}
+
+.af-actions button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.select2-container,
+.select2-dropdown {
+  z-index: 10003;
+}
+
+@media (max-width: 700px) {
+  .af-grid,
+  .af-row {
+    display: block;
+  }
+
+  .af-row > * {
+    margin-bottom: .5rem;
+  }
+
+  .af-list {
+    height: 12rem;
+  }
+}
