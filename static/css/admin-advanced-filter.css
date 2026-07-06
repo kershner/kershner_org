@@ -26,6 +26,7 @@
   height: 22rem;
   overflow: auto;
   border: 1px solid var(--border-color);
+  border-radius: 4px;
 }
 
 .af-row {
@@ -124,6 +125,5 @@
 
   .af-list {
     height: 12rem;
-    border-radius: 4px;
   }
 }
