@@ -66,6 +66,10 @@
   padding: 0.5rem;
 }
 
+.af-button-wrap button {
+  width: 100%;
+}
+
 .af-remove {
   background: var(--delete-button-bg);
   color: var(--button-fg);
@@ -120,5 +124,6 @@
 
   .af-list {
     height: 12rem;
+    border-radius: 4px;
   }
 }
