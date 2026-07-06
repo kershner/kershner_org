@@ -1,5 +1,6 @@
-from django.contrib import admin
+from kershner.mixins.admin_advanced_filter import AdminAdvancedFilterMixin
 from .models import Category, Playlist
+from django.contrib import admin
 
 
 class PlaylistInline(admin.TabularInline):
@@ -11,7 +12,7 @@ class PlaylistInline(admin.TabularInline):
 
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
     list_display = ['name']
     ordering = ['name']
     search_fields = ['name']
@@ -19,7 +20,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Playlist)
-class PlaylistAdmin(admin.ModelAdmin):
+class PlaylistAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
     list_display = ['name', 'category', 'youtube_playlist_id']
     list_filter = ['category']
     search_fields = ['name', 'youtube_playlist_id']

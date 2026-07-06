@@ -1,7 +1,8 @@
+from kershner.mixins.admin_advanced_filter import AdminAdvancedFilterMixin
 from apps.project.models import Project, ProjectTechnology, ProjectTag
 from django.template.loader import render_to_string
 from django.contrib import admin
-from django import forms
+
 
 
 class ProjectTagInline(admin.TabularInline):
@@ -21,12 +22,12 @@ class ProjectTechnologyInline(admin.TabularInline):
 
 
 @admin.register(ProjectTag)
-class ProjectTagAdmin(admin.ModelAdmin):
+class ProjectTagAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
      search_fields = ['name']
 
 
 @admin.register(Project)
-class ProjectAdmin(admin.ModelAdmin):
+class ProjectAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
     list_display = ('title', 'id', 'created_at', 'position', 'change_position')
     list_filter = ('created_at',)
     search_fields = ['name', 'id']

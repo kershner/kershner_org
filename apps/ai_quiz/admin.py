@@ -1,7 +1,9 @@
+from kershner.mixins.admin_advanced_filter import AdminAdvancedFilterMixin
 from apps.ai_quiz.models import AiQuiz, AiQuizQuestion, AiQuizAnswer
 from django.utils.safestring import mark_safe
 from django.contrib import admin
 from django.urls import reverse
+
 
 
 class AiQuizQuestionInline(admin.TabularInline):
@@ -44,7 +46,7 @@ class AiQuizAnswerInline(admin.TabularInline):
     readonly_fields = ('answer_text', 'source_link')
 
 
-class GenericQuizAdminMixin(admin.ModelAdmin):
+class GenericQuizAdminMixin(AdminAdvancedFilterMixin, admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 

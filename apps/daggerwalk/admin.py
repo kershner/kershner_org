@@ -49,7 +49,7 @@ class ChatCommandLogInline(ReadOnlyInline):
 
 
 @admin.register(DaggerwalkLog)
-class DaggerwalkLogAdmin(admin.ModelAdmin):
+class DaggerwalkLogAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
     change_list_template = "admin/daggerwalk/daggerwalklog_changelist.html"
     inlines = [ChatCommandLogInline]
     list_display = ('created_at', 'view_on_map_link', 'coordinates', 'region', 'location', 'formatted_date', 'weather',)
@@ -185,7 +185,7 @@ class ProvinceShapeInline(ReadOnlyInline):
 
 
 @admin.register(Region)
-class RegionAdmin(admin.ModelAdmin):
+class RegionAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
     list_display = ('name', 'province', 'climate')
     list_filter = ('province', 'climate', 'multi_part')
     search_fields = ('name',)
@@ -208,7 +208,7 @@ class RegionAdmin(admin.ModelAdmin):
 
 
 @admin.register(RegionMapPart)
-class RegionMapPartAdmin(admin.ModelAdmin):
+class RegionMapPartAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
     list_display = ('region', 'fmap_image', 'offset_x', 'offset_y')
     search_fields = ('region__name', 'fmap_image')
     list_filter = ('region',)
@@ -249,7 +249,7 @@ class POIAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
 
 
 @admin.register(ProvinceShape)
-class ProvinceShapeAdmin(admin.ModelAdmin):
+class ProvinceShapeAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
     list_display = ('region', 'num_coordinates', 'view_shape_data')
     search_fields = ('region__name',)
 
@@ -350,7 +350,7 @@ class QuestAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
     view_on_map_link.short_description = 'View on map'
 
 @admin.register(TwitchUserProfile)
-class TwitchUserProfileAdmin(admin.ModelAdmin):
+class TwitchUserProfileAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
     list_display = ('twitch_username', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('twitch_username',)

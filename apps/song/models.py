@@ -1,8 +1,7 @@
+from kershner.mixins.admin_advanced_filter import AdminAdvancedFilterMixin
 from django.contrib import admin
-from django.conf import settings
 from django.db import models
 from utility import util
-import time
 
 
 def song_upload(instance, filename):
@@ -56,7 +55,7 @@ class Song(models.Model):
 
 # Admin config for this model
 @admin.register(Song)
-class SongAdmin(admin.ModelAdmin):
+class SongAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
     list_display = ('title', 'id', 'created_at', 'position', 'duration')
     list_display_links = ('title', 'id', 'created_at', 'position', 'duration')
     list_filter = ('type', 'created_at', 'year')

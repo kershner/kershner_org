@@ -1,8 +1,10 @@
+from kershner.mixins.admin_advanced_filter import AdminAdvancedFilterMixin
 from django.contrib.admin import SimpleListFilter
 from django.utils.html import format_html
 from apps.whoosh.models import Whoosh
 from django.contrib import admin
 from django.urls import reverse
+
 
 
 class DoppelgangerFilter(SimpleListFilter):
@@ -25,7 +27,7 @@ class DoppelgangerFilter(SimpleListFilter):
 
 
 @admin.register(Whoosh)
-class WhooshAdmin(admin.ModelAdmin):
+class WhooshAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
     change_form_template = 'admin/whoosh/change_form.html'
     save_on_top = True
     list_display = ['id', 'created', 'thumbnail_preview', 'credit_text', 'processed']
