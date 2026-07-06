@@ -144,6 +144,15 @@ class AdminAdvancedFilterMixin:
             return None
 
     def get_advanced_filter_form_field(self, request, form, field_name, model_field):
+        # Prefer explicit true/false choices for booleans because unchecked checkboxes submit no value.
+        if isinstance(model_field, models.BooleanField):
+            return forms.TypedChoiceField(
+                label=model_field.verbose_name,
+                choices=(("True", "True"), ("False", "False")),
+                coerce=lambda value: value == "True",
+                required=False,
+            )
+
         # Prefer the ModelAdmin form field; fall back to normal admin widget creation.
         return form.fields.get(field_name) or self.formfield_for_dbfield(model_field, request=request)
 
