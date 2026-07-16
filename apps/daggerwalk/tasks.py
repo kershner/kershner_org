@@ -105,7 +105,7 @@ def create_and_wait_for_clip():
     logger.info(f"Clip created with ID: {clip_id}")
     
     logger.info("Waiting for clip URL to become available")
-    for attempt in range(10):
+    for attempt in range(20):
         r = requests.get(TWITCH_CLIP_URL, headers=headers, params={'id': clip_id})
         data = r.json().get('data')
         if data and data[0].get('url'):
@@ -113,7 +113,7 @@ def create_and_wait_for_clip():
             return clip_id, data[0]
         time.sleep(3)
 
-    logger.error("Clip URL never became available after 30 seconds")
+    logger.error("Clip URL never became available after 60 seconds")
     raise Exception("Clip URL never became available")
 
 
