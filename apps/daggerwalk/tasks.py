@@ -378,7 +378,7 @@ def post_to_bluesky():
     
     # Initialize Bluesky client
     client = Client()
-    client.request._client.timeout = httpx.Timeout(30.0)
+    client.request._client.timeout = httpx.Timeout(60.0)
     try:
         client.login(settings.DAGGERWALK_BLUESKY_HANDLE, settings.DAGGERWALK_BLUESKY_APP_PASSWORD)
         logger.info(f"Logged in as: {settings.DAGGERWALK_BLUESKY_HANDLE}")
