@@ -136,29 +136,35 @@ def download_twitch_clip(clip_url):
         
         # Use the official Get Clips Download API endpoint
         # Requires editor:manage:clips or channel:manage:clips scope
-        logger.info(f"Fetching clip download URL for ID: {clip_id}")
-        r = requests.get(
-            'https://api.twitch.tv/helix/clips/downloads',
-            headers=headers,
-            params={
-                'broadcaster_id': broadcaster_id,
-                'editor_id': broadcaster_id,  # Using broadcaster as editor since it's the same account
-                'clip_id': clip_id
-            }
-        )
+        download_url = None
+        for attempt in range(20):
+            logger.info(f"Fetching clip download URL for ID: {clip_id} (attempt {attempt + 1}/20)")
+            r = requests.get(
+                'https://api.twitch.tv/helix/clips/downloads',
+                headers=headers,
+                params={
+                    'broadcaster_id': broadcaster_id,
+                    'editor_id': broadcaster_id,  # Using broadcaster as editor since it's the same account
+                    'clip_id': clip_id
+                }
+            )
+            
+            if r.status_code != 200:
+                logger.error(f"Failed to fetch clip download URL: {r.status_code} - {r.text}")
+                raise Exception(f"Failed to fetch clip download URL: {r.status_code}")
+            
+            clip_data = r.json().get('data', [])
+            if clip_data:
+                download_url = clip_data[0].get('landscape_download_url')
+            
+            if download_url:
+                break
+            
+            logger.info("Clip download URL not ready yet; retrying...")
+            time.sleep(3)
         
-        if r.status_code != 200:
-            logger.error(f"Failed to fetch clip download URL: {r.status_code} - {r.text}")
-            raise Exception(f"Failed to fetch clip download URL: {r.status_code}")
-        
-        clip_data = r.json().get('data', [])
-        if not clip_data:
-            raise Exception("No clip download data returned from Twitch API")
-        
-        # Get the landscape download URL
-        download_url = clip_data[0].get('landscape_download_url')
         if not download_url:
-            raise Exception("No download URL available for clip")
+            raise Exception("No download URL available for clip after 60 seconds")
         
         logger.info(f"Downloading video from: {download_url}")
         
@@ -203,7 +209,7 @@ def upload_video_as_blob(client: Client, video_path: str):
         raise Exception("Video file too large for Bluesky (>50MB)")
 
     try:
-        blob = client.com.atproto.repo.upload_blob(BytesIO(video_data))
+        blob = client.com.atproto.repo.upload_blob(BytesIO(video_data), headers={"Content-Type": "video/mp4"})
         logger.info("Video uploaded successfully")
         return blob.blob
     except Exception as e:
@@ -322,8 +328,8 @@ def post_video_to_bluesky(caption, video_blob, client: Client):
             end = start + len(hashtag)
             facets.append({
                 "index": {
-                    "byteStart": start,
-                    "byteEnd": end
+                    "byteStart": len(text[:start].encode()),
+                    "byteEnd": len(text[:end].encode())
                 },
                 "features": [{
                     "$type": "app.bsky.richtext.facet#tag",
