@@ -748,6 +748,7 @@ a {
 
 #leaderboard :is(th, td):first-child {
   width: 5%;
+  white-space: nowrap;
 }
 #leaderboard :is(th, td):nth-child(2),
 #leaderboard :is(th, td):nth-child(3) {
@@ -1034,42 +1035,36 @@ blockquote cite {
   font-size: 1.3rem;
   font-family: Georgia, serif;
 }
-.active-quests-composite .quest-info {
-  display: contents;
-}
-.active-quests-composite .quest-giver {
-  width: 5rem;
-  height: 5rem;
-}
-.active-quests-composite .quest-giver img {
-  height: 100%;
-  object-fit: cover;
-}
-.active-quests-composite .quests-wrapper {
-  height: 100%;
-  margin-top: 0;
-}
-.active-quests-composite .quest-card {
-  display: grid;
-  grid-template-rows: 6rem 6rem minmax(10rem, 1fr) auto;
-  height: 100%;
-}
-.active-quests-composite .quest-desc-wrapper {
-  display: contents;
-}
-.active-quests-composite .quest-desc {
-  align-self: start;
-}
-.active-quests-composite .quest-meta {
-  width: 100%;
-  justify-content: space-between;
-}
-@media (max-width: 900px) {
-  .active-quests-composite .quest-card {
-    grid-template-rows: auto auto auto auto;
+@media (min-width: 901px) {
+  .active-quests-composite .quest-info,
+  .active-quests-composite .quest-desc-wrapper {
+    display: contents;
   }
   .active-quests-composite .quest-giver {
-    margin: 1rem 0;
+    width: auto;
+  }
+  .active-quests-composite .quest-giver img {
+    display: block;
+  }
+  .active-quests-composite .quests-wrapper {
+    margin-top: 0;
+    padding-block: 4.5rem 3.5rem;
+  }
+  .active-quests-composite .quest-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 9rem auto minmax(10rem, 1fr) auto;
+    height: 100%;
+  }
+  .active-quests-composite .quest-name {
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+  .active-quests-composite .quest-meta {
+    justify-content: space-between;
+  }
+  .active-quests-composite .quest-xp {
+    white-space: nowrap;
   }
 }
 
