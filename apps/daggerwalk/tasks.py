@@ -2,6 +2,7 @@ from apps.daggerwalk.serializers import  POISerializer, QuestSerializer, TwitchU
 from django.template.loader import render_to_string
 from rest_framework.renderers import JSONRenderer
 from apps.daggerwalk.models import POI, ChatCommandLog, DaggerwalkLog, ProvinceShape, Quest, Region, TwitchUserProfile
+from apps.daggerwalk.quest_gen import ensure_active_quests
 from apps.daggerwalk.utils import calculate_daggerwalk_stats, get_latest_log_data
 from django.db.models import Sum, Count, IntegerField, Max, Max
 from django.db.models.functions import Coalesce
@@ -561,7 +562,7 @@ def capture_daggerwalk_bluesky_screenshots(output_dir=None, base_url=BASE_URL):
         page.locator("#map").wait_for(state="visible", timeout=30000)
 
         logger.info("Taking quest screenshot...")
-        quest_element = page.locator(".quests-wrapper").first
+        quest_element = page.locator(".active-quests-composite")
         quest_element.wait_for(state="visible", timeout=30000)
         quest_element.screenshot(path=screenshots['quest'])
         logger.info(f"Screenshot saved: {screenshots['quest']}")
@@ -595,7 +596,12 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
                 if label == "world":
                     alt = f"Daggerfall world map with markers showing the Walker's travels for the past day.  The Walker is currently in the {region} region."
                 elif label == "quest":
-                    alt = f"An image of the Walker's current quest featuring art assets from the original Daggerfall game."
+                    active_quests = ensure_active_quests()
+                    quest_details = "; ".join(
+                        f"Quest {quest.slot}: {quest.quest_name}, worth {quest.xp} XP"
+                        for quest in active_quests
+                    )
+                    alt = f"A composite image of the Walker's three active quests. {quest_details}."
 
                 uploaded.append({
                     "image": blob.blob,
@@ -708,13 +714,9 @@ def update_all_daggerwalk_caches():
             logger.error(f"Stats calculation failed for {keyword}: {e}")
 
     # 4. Current and previous quests
-    current_quest = (
-        Quest.objects
-        .filter(status="in_progress")
-        .select_related("poi", "poi__region")
-        .order_by("-created_at")
-        .first()
-    )
+    active_quests = ensure_active_quests()
+    current_quest = active_quests[0] if active_quests else None
+    cache.set("daggerwalk_active_quests", active_quests, timeout=None)
     cache.set("daggerwalk_current_quest", current_quest, timeout=None)
 
     previous_quests = (
@@ -774,7 +776,7 @@ def update_all_daggerwalk_caches():
     poi_json = POISerializer(pois_qs, many=True).data
     cache.set("daggerwalk_map_pois", poi_json, timeout=None)
     
-    quest_qs = Quest.objects.filter(status="in_progress").select_related("poi", "poi__region")
+    quest_qs = Quest.objects.filter(status="in_progress").select_related("poi", "poi__region").order_by("slot")
     quest_json = QuestSerializer(quest_qs, many=True).data
     cache.set("daggerwalk_map_quest", quest_json, timeout=None)
 
@@ -788,11 +790,12 @@ def update_all_daggerwalk_caches():
     cache.set("daggerwalk_map_shape_data", shape_data, timeout=None)
 
     # 8. Rendered home page HTML
-    quest_data = QuestSerializer(current_quest).data if current_quest else None
+    quest_data = QuestSerializer(active_quests, many=True).data
     html = render_to_string('daggerwalk/index.html', {
+        "active_quests": active_quests,
         "current_quest": current_quest,
         "previous_quests": previous_quests,
-        "current_quest_json": JSONRenderer().render(quest_data).decode("utf-8"),
+        "active_quests_json": JSONRenderer().render(quest_data).decode("utf-8"),
         "leaderboard": leaderboard_data,
         "logs_json": combined,
         "poi_json": poi_json,

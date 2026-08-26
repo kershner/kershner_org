@@ -1,7 +1,7 @@
 from .models import POI, DaggerwalkLog, Quest, Region, ChatCommandLog, TwitchUserProfile
 from django.contrib.admin.views.decorators import staff_member_required
 from rest_framework.decorators import api_view, permission_classes
-from apps.daggerwalk.quest_gen import complete_and_rotate_quest
+from apps.daggerwalk.quest_gen import complete_and_rotate_quest, ensure_active_quests
 from apps.daggerwalk.tasks import update_all_daggerwalk_caches
 from django.views.decorators.cache import cache_control
 from django.utils.decorators import method_decorator
@@ -57,13 +57,17 @@ class DaggerwalkHomeView(APIView):
             return HttpResponse(html)
 
         logger.warning('Daggerwalk home HTML cache miss')
-        quest = cache.get("daggerwalk_current_quest")
+        active_quests = cache.get("daggerwalk_active_quests") or []
+        quest = active_quests[0] if active_quests else cache.get("daggerwalk_current_quest")
+        if not active_quests and quest:
+            active_quests = [quest]
         previous_quests = cache.get("daggerwalk_previous_quests") or []
-        quest_data = QuestSerializer(quest).data if quest else None
+        quest_data = QuestSerializer(active_quests, many=True).data
         return render(request, self.template_path, {
+            "active_quests": active_quests,
             "current_quest": quest,
             "previous_quests": previous_quests,
-            "current_quest_json": JSONRenderer().render(quest_data).decode("utf-8"),
+            "active_quests_json": JSONRenderer().render(quest_data).decode("utf-8"),
             "leaderboard": cache.get("daggerwalk_leaderboard") or [],
             "logs_json": cache.get("daggerwalk_map_logs") or [],
             "poi_json": cache.get("daggerwalk_map_pois") or [],
@@ -174,41 +178,26 @@ def create_daggerwalk_log(request):
             ChatCommandLog.objects.bulk_create(chat_logs_to_create)
 
         # Quest flow
-        quest_completed = False
-        completed_quest_payload = None
+        active_quests = ensure_active_quests()
+        completed_quests = []
 
-        active_quest = (
-            Quest.objects
-            .filter(status="in_progress", poi__isnull=False)
-            .select_related("poi", "poi__region")
-            .order_by("-created_at")
-            .first()
-        )
-
-        # Complete if the log's resolved POI matches the active quest's POI
-        if active_quest and log_entry.poi_id and active_quest.poi_id == log_entry.poi_id:
-            completed_meta, active_quest = complete_and_rotate_quest(
-                active_quest,
-                completed_at=log_entry.created_at,
-                completion_request_log_id=log_entry.id,
-            )
-            quest_completed = True
-
-            # Resolve completed quest by id from meta and serialize it
-            completed_id = (completed_meta or {}).get("id")
-            if completed_id:
-                completed_quest_obj = (
-                    Quest.objects
-                    .select_related("poi", "poi__region")
-                    .filter(pk=completed_id)
-                    .first()
+        for active_quest in active_quests:
+            if log_entry.poi_id and active_quest.poi_id == log_entry.poi_id:
+                complete_and_rotate_quest(
+                    active_quest,
+                    completed_at=log_entry.created_at,
+                    completion_request_log_id=log_entry.id,
                 )
-                if completed_quest_obj:
-                    completed_quest_payload = QuestSerializer(completed_quest_obj).data
+                completed_quests.append(active_quest)
+
+        active_quests = ensure_active_quests()
 
         # Serialize responses
         log_payload = DaggerwalkLogSerializer(log_entry).data
-        current_quest_payload = QuestSerializer(active_quest).data if active_quest else None
+        active_quest_payloads = QuestSerializer(active_quests, many=True).data
+        completed_quest_payloads = QuestSerializer(completed_quests, many=True).data
+        current_quest_payload = active_quest_payloads[0] if active_quest_payloads else None
+        completed_quest_payload = completed_quest_payloads[0] if completed_quest_payloads else None
 
         update_all_daggerwalk_caches.delay()
 
@@ -217,9 +206,11 @@ def create_daggerwalk_log(request):
             "message": "Log entry created",
             "id": log_entry.id,
             "log": log_payload,                          # serialized DaggerwalkLog (nested region_fk, poi)
-            "quest_completed": quest_completed,          # bool
+            "quest_completed": bool(completed_quests),   # legacy bool
             "completed_quest": completed_quest_payload,  # serialized Quest or null
             "current_quest": current_quest_payload,      # serialized Quest or null
+            "completed_quests": completed_quest_payloads,
+            "active_quests": active_quest_payloads,
         }, status=status.HTTP_201_CREATED)
 
     except KeyError as e:

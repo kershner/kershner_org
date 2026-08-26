@@ -1,12 +1,12 @@
 {% load humanize %}
 
-<article class="quest-card" aria-labelledby="quest-title">
+<article class="quest-card" aria-labelledby="quest-title-{{ quest.id }}">
     <div class="quest-title-wrapper">
-        <h1 id="quest-title" class="quest-name">{{ quest.quest_name }}</h1>
+        <h1 id="quest-title-{{ quest.id }}" class="quest-name">{% if quest.status == "in_progress" %}Quest {{ quest.slot }}: {% endif %}{{ quest.quest_name }}</h1>
         <a
             title="View {{ quest.poi.name }} on the map"
             class="quest-map-link"
-            href="{% url 'quest' %}"
+            href="{% url 'daggerwalk' %}?map_focus_x={{ quest.poi.map_pixel_x }}&amp;map_focus_y={{ quest.poi.map_pixel_y }}"
         >Map</a>
     </div>
 

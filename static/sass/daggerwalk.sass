@@ -810,6 +810,14 @@ blockquote
 
 $quests-text-color: darken(#333333, 10%)
 
+.active-quests-composite
+  display: grid
+  grid-template-columns: repeat(3, minmax(0, 1fr))
+  gap: 0.75rem
+
+  @media (max-width: 900px)
+    grid-template-columns: 1fr
+
 .quests-wrapper
   display: block
   position: relative
@@ -900,6 +908,12 @@ $quests-text-color: darken(#333333, 10%)
       font-weight: bold
       font-size: 1.3rem
       font-family: $secondary-font-family
+
+.active-quests-composite .quest-info
+  flex-direction: column
+
+.active-quests-composite .quest-giver
+  width: 5rem
 
 .faq
   padding: 0.5rem 0

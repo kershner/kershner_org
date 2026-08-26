@@ -96,7 +96,8 @@
             .then(r => r.json())
             .then(d => {
                 window.REGION_DATA = d.region_data || [];
-                window.CURRENT_QUEST = {{ current_quest_json|safe }};
+                window.ACTIVE_QUESTS = {{ active_quests_json|safe }};
+                window.CURRENT_QUEST = window.ACTIVE_QUESTS[0] || null;
 
                 window.daggerwalkData = {
                     regionData: d.region_data || d.map_data?.regionData || [],

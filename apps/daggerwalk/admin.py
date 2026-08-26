@@ -297,7 +297,7 @@ class ChatCommandLogAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
 
 @admin.register(Quest)
 class QuestAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
-    list_display = ('quest_name', 'status', 'quest_giver_img_thumb', 'description', 'xp', 'view_on_map_link', 'created_at')
+    list_display = ('quest_name', 'slot', 'status', 'quest_giver_img_thumb', 'description', 'xp', 'view_on_map_link', 'created_at')
     list_filter = ('status', 'poi__region', 'created_at')
     search_fields = ('description', 'poi__name', 'poi__region__name')
     readonly_fields = ('id', 'created_at', 'view_on_map_link', 'completed_at', 'quest_name', 'quest_giver_img_thumb')
@@ -308,6 +308,7 @@ class QuestAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
             'fields': (
                 'id',
                 'quest_name',
+                'slot',
                 'status',
                 'xp',
                 'completed_at',

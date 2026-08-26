@@ -325,11 +325,30 @@ class Quest(models.Model):
         help_text="1–502"
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available', db_index=True)
+    slot = models.PositiveSmallIntegerField(
+        choices=((1, '1'), (2, '2'), (3, '3')),
+        null=True,
+        blank=True,
+    )
     xp = models.PositiveIntegerField(default=0)
     poi = models.ForeignKey('POI', on_delete=models.SET_NULL, null=True, blank=True, related_name='quests')
 
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=('slot',),
+                condition=models.Q(status='in_progress'),
+                name='unique_active_quest_slot',
+            ),
+            models.UniqueConstraint(
+                fields=('poi',),
+                condition=models.Q(status='in_progress'),
+                name='unique_active_quest_poi',
+            ),
+        ]
 
     @property
     def quest_name(self):
@@ -371,15 +390,17 @@ class Quest(models.Model):
             return
 
         with transaction.atomic():
-            # Last quest's region (if any)
-            last_q = (
-                Quest.objects.exclude(poi__isnull=True)
-                .select_related('poi__region')
-                .order_by('-created_at')
-                .only('poi__region')  # light fetch
-                .first()
+            active_quests = Quest.objects.filter(
+                status='in_progress',
+                poi__isnull=False,
             )
-            last_region_id = last_q.poi.region_id if last_q and last_q.poi_id else None
+            active_poi_ids = active_quests.values_list('poi_id', flat=True)
+            active_region_ids = active_quests.values_list('poi__region_id', flat=True)
+            eligible_qs = (
+                POI.objects
+                .exclude(id__in=active_poi_ids)
+                .exclude(region_id__in=active_region_ids)
+            )
 
             # Unused first
             used_ids = (
@@ -387,21 +408,8 @@ class Quest(models.Model):
                 .values_list('poi_id', flat=True)
                 .distinct()
             )
-            unused_qs = POI.objects.exclude(id__in=list(used_ids))
-
-            selected = None
-
-            def pick_with_region_preference(qs, exclude_region_id):
-                if exclude_region_id:
-                    preferred = qs.exclude(region_id=exclude_region_id)
-                    return self._pick_random_from_qs(preferred) or self._pick_random_from_qs(qs)
-                return self._pick_random_from_qs(qs)
-
-            if unused_qs.exists():
-                selected = pick_with_region_preference(unused_qs, last_region_id)
-            else:
-                all_qs = POI.objects.all()
-                selected = pick_with_region_preference(all_qs, last_region_id)
+            unused_qs = eligible_qs.exclude(id__in=used_ids)
+            selected = self._pick_random_from_qs(unused_qs) or self._pick_random_from_qs(eligible_qs)
 
             if selected:
                 self.poi = selected
