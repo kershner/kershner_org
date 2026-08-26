@@ -249,21 +249,23 @@ def ensure_active_quests():
     """Return one active quest in each stable slot, creating any missing quests."""
     from apps.daggerwalk.models import Quest
 
-    active_quests = list(
-        Quest.objects
-        .filter(status='in_progress')
-        .select_related('poi', 'poi__region')
-        .order_by('slot', '-created_at')
-    )
-    used_slots = {quest.slot for quest in active_quests if quest.slot}
+    with transaction.atomic():
+        active_quests = list(
+            Quest.objects
+            .select_for_update()
+            .filter(status='in_progress')
+            .select_related('poi', 'poi__region')
+            .order_by('slot', '-created_at')
+        )
+        used_slots = {quest.slot for quest in active_quests if quest.slot}
 
-    for slot in (1, 2, 3):
-        if slot not in used_slots:
-            Quest.objects.create(status='in_progress', slot=slot)
+        for slot in (1, 2, 3):
+            if slot not in used_slots:
+                Quest.objects.create(status='in_progress', slot=slot)
 
-    return list(
-        Quest.objects
-        .filter(status='in_progress', slot__in=(1, 2, 3))
-        .select_related('poi', 'poi__region')
-        .order_by('slot')
-    )
+        return list(
+            Quest.objects
+            .filter(status='in_progress', slot__in=(1, 2, 3))
+            .select_related('poi', 'poi__region')
+            .order_by('slot')
+        )

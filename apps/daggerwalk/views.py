@@ -58,9 +58,11 @@ class DaggerwalkHomeView(APIView):
 
         logger.warning('Daggerwalk home HTML cache miss')
         active_quests = cache.get("daggerwalk_active_quests") or []
-        quest = active_quests[0] if active_quests else cache.get("daggerwalk_current_quest")
-        if not active_quests and quest:
-            active_quests = [quest]
+        if len(active_quests) != 3:
+            active_quests = ensure_active_quests()
+            cache.set("daggerwalk_active_quests", active_quests, timeout=None)
+        quest = active_quests[0] if active_quests else None
+        cache.set("daggerwalk_current_quest", quest, timeout=None)
         previous_quests = cache.get("daggerwalk_previous_quests") or []
         quest_data = QuestSerializer(active_quests, many=True).data
         return render(request, self.template_path, {

@@ -18,9 +18,10 @@ const daggerwalk = {
 
   updateStatus() {
     const status = document.querySelector('.current-status');
-    if (!status || !this.latestLog) return;
+    if (!status || !this.latestLog?.date) return;
 
     const log = this.latestLog;
+    const region = log.region_fk || {};
 
     // Define emoji mappings
     const weatherEmoji = {
@@ -35,9 +36,10 @@ const daggerwalk = {
     // Get corresponding emojis
     const weatherIcon = weatherEmoji[log.weather] || "🌈";
     const seasonIcon = seasonEmoji[log.season] || "❓";
-    const climateLocationStr = `${log.region_fk.emoji}${log.region_fk.climate.replace(/s$/, '')} ${log.location.toLowerCase()}`;
-    const location = log.poi ? `${log.poi.emoji}${log.poi.name}` : climateLocationStr;
-    let locationDisplay = `<h2><span>🌍${log.region}</span><span>${location}</span></h2>`;
+    const climate = region.climate ? `${region.climate.replace(/s$/, '')} ` : '';
+    const climateLocationStr = `${region.emoji || ''}${climate}${(log.location || 'unknown location').toLowerCase()}`;
+    const location = log.poi ? `${log.poi.emoji || ''}${log.poi.name}` : climateLocationStr;
+    let locationDisplay = `<h2><span>🌍${log.region || region.name || 'Unknown region'}</span><span>${location}</span></h2>`;
     if (this.inOcean) {
       locationDisplay = `<h2><span>🌊Ocean near ${log.last_known_region}</span></h2>`;
     }
