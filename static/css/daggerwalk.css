@@ -1035,10 +1035,42 @@ blockquote cite {
   font-family: Georgia, serif;
 }
 .active-quests-composite .quest-info {
-  flex-direction: column;
+  display: contents;
 }
 .active-quests-composite .quest-giver {
   width: 5rem;
+  height: 5rem;
+}
+.active-quests-composite .quest-giver img {
+  height: 100%;
+  object-fit: cover;
+}
+.active-quests-composite .quests-wrapper {
+  height: 100%;
+  margin-top: 0;
+}
+.active-quests-composite .quest-card {
+  display: grid;
+  grid-template-rows: 6rem 6rem minmax(10rem, 1fr) auto;
+  height: 100%;
+}
+.active-quests-composite .quest-desc-wrapper {
+  display: contents;
+}
+.active-quests-composite .quest-desc {
+  align-self: start;
+}
+.active-quests-composite .quest-meta {
+  width: 100%;
+  justify-content: space-between;
+}
+@media (max-width: 900px) {
+  .active-quests-composite .quest-card {
+    grid-template-rows: auto auto auto auto;
+  }
+  .active-quests-composite .quest-giver {
+    margin: 1rem 0;
+  }
 }
 
 .faq {
