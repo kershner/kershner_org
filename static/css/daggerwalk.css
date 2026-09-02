@@ -1135,6 +1135,21 @@ blockquote cite {
   display: none;
 }
 
+.completed-quest-page {
+  width: min(60rem, calc(100% - 2rem));
+  margin: 2rem auto;
+}
+.completed-quest-page > .quests-wrapper {
+  margin: 2rem 0;
+}
+.quest-participants ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
 .map-container .map-marker.latest-log {
   width: 20px !important;
   height: 20px !important;

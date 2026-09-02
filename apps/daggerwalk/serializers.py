@@ -43,6 +43,7 @@ class QuestSerializer(serializers.ModelSerializer):
     poi = POISerializer(read_only=True)
     quest_giver_img_url = serializers.SerializerMethodField()
     quest_name = serializers.SerializerMethodField()
+    participant_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Quest
@@ -53,6 +54,9 @@ class QuestSerializer(serializers.ModelSerializer):
 
     def get_quest_name(self, obj):
         return obj.quest_name  # model property
+
+    def get_participant_count(self, obj):
+        return obj.completed_by.count()
 
 
 class TwitchUserProfileSerializer(serializers.ModelSerializer):

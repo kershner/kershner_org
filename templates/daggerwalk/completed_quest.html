@@ -1,0 +1,39 @@
+{% load static kershner_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="See who completed {{ quest.quest_name }} during Daggerwalk's journey through the Iliac Bay.">
+  <title>{{ quest.quest_name }} · Daggerwalk</title>
+  <link rel="icon" type="image/png" href="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/Daggerwalk.ico">
+  <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/daggerwalk.css">
+</head>
+<body>
+  <main class="completed-quest-page">
+    <a href="{% url 'daggerwalk' %}">← Back to Daggerwalk</a>
+
+    <div class="quests-wrapper" style="background-image: url('{% static 'img/daggerwalk/scroll.png' %}');">
+      {% include "daggerwalk/quest.html" with quest=quest %}
+    </div>
+
+    <section class="quest-participants" aria-labelledby="quest-participants-title">
+      <h2 id="quest-participants-title">Walkers who completed this quest</h2>
+      {% if participants %}
+        <ul>
+          {% for participant in participants %}
+            <li>
+              <a href="https://www.twitch.tv/{{ participant.twitch_username }}" target="_blank" rel="noopener">
+                {{ participant.twitch_username }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No walkers were credited for this quest.</p>
+      {% endif %}
+    </section>
+  </main>
+</body>
+</html>

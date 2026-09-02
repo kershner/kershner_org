@@ -9,6 +9,11 @@ import math
 
 EST_TIMEZONE = pytz.timezone('US/Eastern')
 
+
+def format_weather_name(weather):
+    return "Thunderstorming" if (weather or "").lower() == "thunderstorm" else weather
+
+
 def get_latest_log_data():
     # Get the absolute latest log regardless of region
     actual_latest_log = DaggerwalkLog.objects.select_related('region_fk', 'poi', 'last_known_region').latest('created_at')
@@ -107,7 +112,7 @@ def get_top_values_by_time_counts(value_counts, attr, top_n=10):
         value = value_data[attr]
         count = value_data['count']
         entry = {
-            'name': value,
+            'name': format_weather_name(value) if attr == 'weather' else value,
             'time': format_minutes(count * 5)
         }
         if attr == 'weather':
@@ -364,7 +369,7 @@ def calculate_daggerwalk_stats(range_keyword, all_logs, all_chats, all_quests):
         sorted_items = sorted(items_dict.items(), key=lambda x: x[1], reverse=True)[:top_n]
         for value, count in sorted_items:
             entry = {
-                'name': value,
+                'name': format_weather_name(value) if attr_name == 'weather' else value,
                 'time': format_minutes(count * 5)
             }
             if attr_name == 'weather':
@@ -380,7 +385,7 @@ def calculate_daggerwalk_stats(range_keyword, all_logs, all_chats, all_quests):
         'formattedPlaytime': format_minutes(total_minutes),
         'totalDistanceKm': format_distance(total_distance_km),
         'mostVisitedRegions': mostVisitedRegions,
-        'mostCommonWeather': most_common_weather,
+        'mostCommonWeather': format_weather_name(most_common_weather),
         'topPOIsVisited': topPOIsVisited,
         'mostCommonSong': most_common_song,
         'totalSongsHeard': total_songs_heard,

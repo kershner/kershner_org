@@ -3,7 +3,11 @@ from django.template.loader import render_to_string
 from rest_framework.renderers import JSONRenderer
 from apps.daggerwalk.models import POI, ChatCommandLog, DaggerwalkLog, ProvinceShape, Quest, Region, TwitchUserProfile
 from apps.daggerwalk.quest_gen import ensure_active_quests
-from apps.daggerwalk.utils import calculate_daggerwalk_stats, get_latest_log_data
+from apps.daggerwalk.utils import (
+    calculate_daggerwalk_stats,
+    format_weather_name,
+    get_latest_log_data,
+)
 from django.db.models import Sum, Count, IntegerField, Max, Max
 from django.db.models.functions import Coalesce
 from playwright.sync_api import sync_playwright
@@ -280,7 +284,7 @@ def generate_bluesky_caption(log_data, stats_data):
     if climate == "woodlands":
         climate = "woodland"
 
-    weather = log_data['weather'].lower()
+    weather = format_weather_name(log_data['weather']).lower()
     weather_emoji = DaggerwalkLog.get_weather_emoji(log_data['weather'])
     poi_data = log_data['poi']
 

@@ -47,7 +47,7 @@ const daggerwalk = {
     status.innerHTML = `
       ${locationDisplay}
       ${this.formatTime(log.date)}
-      <p>${seasonIcon} ${log.season}  ${weatherIcon} ${log.weather}
+      <p>${seasonIcon} ${log.season}  ${weatherIcon} ${log.weather === "Thunderstorm" ? "Thunderstorming" : log.weather}
       ${log.current_song ? `  🎵 ${log.current_song}` : ''}</p>
     `;
   },

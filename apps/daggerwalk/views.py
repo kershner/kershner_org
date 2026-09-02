@@ -16,7 +16,7 @@ from django.db.models.functions import Lower
 from apps.api.views import BaseListAPIView
 from rest_framework.views import APIView
 from django.utils.text import slugify
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.core.cache import cache
 from django.shortcuts import render
@@ -76,6 +76,20 @@ class DaggerwalkHomeView(APIView):
             "quest_json": cache.get("daggerwalk_map_quest") or [],
             "shape_data": cache.get("daggerwalk_map_shape_data") or [],
         })
+
+
+def completed_quest_detail(request, quest_id):
+    """Show one completed quest and the walkers who earned its XP."""
+    quest = get_object_or_404(
+        Quest.objects.select_related("poi", "poi__region"),
+        pk=quest_id,
+        status="completed",
+    )
+    participants = quest.completed_by.order_by(Lower("twitch_username"))
+    return render(request, "daggerwalk/completed_quest.html", {
+        "quest": quest,
+        "participants": participants,
+    })
     
 
 @api_view(["GET"])
