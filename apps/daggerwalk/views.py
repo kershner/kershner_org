@@ -63,7 +63,15 @@ class DaggerwalkHomeView(APIView):
             cache.set("daggerwalk_active_quests", active_quests, timeout=None)
         quest = active_quests[0] if active_quests else None
         cache.set("daggerwalk_current_quest", quest, timeout=None)
-        previous_quests = cache.get("daggerwalk_previous_quests") or []
+        previous_quests = cache.get("daggerwalk_previous_quests")
+        if previous_quests is None:
+            previous_quests = (
+                Quest.objects
+                .filter(status="completed")
+                .select_related("poi", "poi__region")
+                .order_by("-created_at")[:10]
+            )
+            cache.set("daggerwalk_previous_quests", previous_quests, timeout=None)
         quest_data = QuestSerializer(active_quests, many=True).data
         return render(request, self.template_path, {
             "active_quests": active_quests,

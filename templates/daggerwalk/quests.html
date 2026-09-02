@@ -40,7 +40,7 @@
     {% for quest in previous_quests %}
       <tr>
         <td class="quests-wrapper">
-          {% include 'daggerwalk/quest.html' with quest=quest %}
+          {% include 'daggerwalk/quest.html' with quest=quest link_to_detail=True %}
         </td>
       </tr>
     {% endfor %}

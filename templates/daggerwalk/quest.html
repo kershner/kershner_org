@@ -2,7 +2,13 @@
 
 <article class="quest-card" aria-labelledby="quest-title-{{ quest.id }}">
     <div class="quest-title-wrapper">
-        <h1 id="quest-title-{{ quest.id }}" class="quest-name">{% if quest.status == "in_progress" %}Quest {{ quest.slot }}: {% endif %}{{ quest.quest_name }}</h1>
+        <h1 id="quest-title-{{ quest.id }}" class="quest-name">
+            {% if link_to_detail %}
+                <a href="{% url 'daggerwalk_quest_detail' quest.id %}">{{ quest.quest_name }}</a>
+            {% else %}
+                {% if quest.status == "in_progress" %}Quest {{ quest.slot }}: {% endif %}{{ quest.quest_name }}
+            {% endif %}
+        </h1>
         <a
             title="View {{ quest.poi.name }} on the map"
             class="quest-map-link"

@@ -1,5 +1,8 @@
+from django.core.cache import cache
 from django.test import TestCase
+from django.template.loader import render_to_string
 from django.urls import reverse
+from unittest.mock import patch
 
 from apps.daggerwalk.models import POI, Quest, Region, TwitchUserProfile
 from apps.daggerwalk.serializers import QuestSerializer
@@ -7,6 +10,7 @@ from apps.daggerwalk.serializers import QuestSerializer
 
 class CompletedQuestDetailTests(TestCase):
     def setUp(self):
+        cache.clear()
         region = Region.objects.create(
             name="Wayrest",
             province="High Rock",
@@ -58,3 +62,28 @@ class CompletedQuestDetailTests(TestCase):
 
     def test_quest_payload_includes_participant_count(self):
         self.assertEqual(QuestSerializer(self.quest).data["participant_count"], 2)
+
+    def test_previous_quest_title_links_to_detail_page(self):
+        html = render_to_string("daggerwalk/quests.html", {
+            "active_quests": [],
+            "previous_quests": [self.quest],
+            "leaderboard": [],
+        })
+
+        self.assertIn(
+            f'href="{reverse("daggerwalk_quest_detail", args=[self.quest.id])}"',
+            html,
+        )
+
+    def test_home_cache_miss_loads_previous_quests_from_database(self):
+        with patch(
+            "apps.daggerwalk.views.ensure_active_quests",
+            return_value=[],
+        ):
+            response = self.client.get(reverse("daggerwalk"))
+
+        self.assertContains(response, self.quest.quest_name)
+        self.assertContains(
+            response,
+            reverse("daggerwalk_quest_detail", args=[self.quest.id]),
+        )
