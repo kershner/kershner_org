@@ -45,6 +45,21 @@ logger = logging.getLogger(__name__)
 DAGGERWALK_HOME_HTML_CACHE_KEY = 'daggerwalk_home_html'
 
 
+def get_command_state():
+    """Return the command history needed by the bot's stuck detector."""
+    def latest(command=None):
+        queryset = ChatCommandLog.objects.all()
+        if command:
+            queryset = queryset.filter(command=command)
+        return queryset.order_by("-id").values("id", "command", "timestamp").first()
+
+    return {
+        "last_stop": latest("stop"),
+        "last_walk": latest("walk"),
+        "last_command": latest(),
+    }
+
+
 # @method_decorator(cache_page(60 * 60 * 24 * 30), name="dispatch")  # 30 days
 class DaggerwalkHomeView(APIView):
     """Home view for the Daggerwalk app"""
@@ -235,6 +250,7 @@ def create_daggerwalk_log(request):
             "current_quest": current_quest_payload,      # serialized Quest or null
             "completed_quests": completed_quest_payloads,
             "active_quests": active_quest_payloads,
+            "command_state": get_command_state(),
         }, status=status.HTTP_201_CREATED)
 
     except KeyError as e:

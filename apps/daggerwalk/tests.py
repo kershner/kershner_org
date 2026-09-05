@@ -4,8 +4,16 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from unittest.mock import patch
 
-from apps.daggerwalk.models import POI, Quest, Region, TwitchUserProfile
-from apps.daggerwalk.serializers import QuestSerializer
+from apps.daggerwalk.models import (
+    ChatCommandLog,
+    DaggerwalkLog,
+    POI,
+    Quest,
+    Region,
+    TwitchUserProfile,
+)
+from apps.daggerwalk.serializers import DaggerwalkLogSerializer, QuestSerializer
+from apps.daggerwalk.views import get_command_state
 
 
 class CompletedQuestDetailTests(TestCase):
@@ -87,3 +95,60 @@ class CompletedQuestDetailTests(TestCase):
             response,
             reverse("daggerwalk_quest_detail", args=[self.quest.id]),
         )
+
+
+class DaggerwalkLogSerializerTests(TestCase):
+    def test_last_known_region_is_nested_for_ocean_titles(self):
+        region = Region.objects.create(
+            name="Wayrest",
+            province="High Rock",
+            climate="Woodlands",
+        )
+        log = DaggerwalkLog(
+            world_x=1,
+            world_z=2,
+            map_pixel_x=3,
+            map_pixel_y=4,
+            region="Ocean",
+            location="Ocean",
+            player_x=0,
+            player_y=0,
+            player_z=0,
+            date="Tirdas, 12 Sun's Height, 3E 405, 18:30:00",
+            weather="Clear",
+            last_known_region=region,
+        )
+
+        self.assertEqual(
+            DaggerwalkLogSerializer(log).data["last_known_region"]["name"],
+            "Wayrest",
+        )
+
+    def test_command_state_contains_latest_stop_walk_and_overall_command(self):
+        request_log = DaggerwalkLog.objects.create(
+            world_x=1,
+            world_z=2,
+            map_pixel_x=3,
+            map_pixel_y=4,
+            region="Ocean",
+            location="Ocean",
+            player_x=0,
+            player_y=0,
+            player_z=0,
+            date="Tirdas, 12 Sun's Height, 3E 405, 18:30:00",
+            weather="Clear",
+        )
+        ChatCommandLog.objects.bulk_create([
+            ChatCommandLog(
+                request_log=request_log,
+                timestamp=request_log.created_at,
+                user="walker",
+                command=command,
+            )
+            for command in ("walk", "stop", "jump", "walk")
+        ])
+
+        state = get_command_state()
+
+        self.assertEqual(state["last_stop"]["command"], "stop")
+        self.assertEqual(state["last_walk"]["id"], state["last_command"]["id"])
