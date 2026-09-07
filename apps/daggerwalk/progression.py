@@ -214,7 +214,15 @@ def change_guild(profile, guild):
         raise ValueError("You already have that guild allegiance.")
     profile.current_guild = guild
     profile.save(update_fields=["current_guild"])
-    ProgressionEvent.objects.create(profile=profile, event_type="guild_change", payload={"old_guild": old, "new_guild": guild})
+    ProgressionEvent.objects.create(
+        profile=profile,
+        event_type="guild_change",
+        payload={
+            "old_guild": old,
+            "new_guild": guild,
+            "title": GUILDS[guild]["titles"][0] if guild else "",
+        },
+    )
     profile.guild_cooldown_value = now + timedelta(days=settings.DAGGERWALK_GUILD_COOLDOWN_DAYS)
     return profile_payload(profile)
 
@@ -460,11 +468,23 @@ def guild_hall_payload():
         if row["profile__current_guild"] == guild:
             aggregate["active"] += row["total"]
 
+    member_counts = dict(
+        TwitchUserProfile.objects.filter(current_guild__in=GUILDS)
+        .values("current_guild").annotate(total=Count("id"))
+        .values_list("current_guild", "total")
+    )
+
     result = []
     for key, info in GUILDS.items():
         values = aggregates[key]
         total, contributors, active = values["total"], values["contributors"], values["active"]
-        result.append({"key": key, **info, "total_xp": total, "contributors": contributors, "active_service_xp": active, "average_per_contributor": round(total / contributors, 1) if contributors else 0})
+        result.append({
+            "key": key, **info, "total_xp": total,
+            "contributors": contributors,
+            "walkers": member_counts.get(key, 0),
+            "active_service_xp": active,
+            "average_per_contributor": round(total / contributors, 1) if contributors else 0,
+        })
     return result
 
 
@@ -490,20 +510,36 @@ def guild_hall_page_payload(guilds=None):
         for walker in contributors:
             walker._guild_rank_levels = rank_levels_by_profile.get(walker.id, {})
         guild["top_contributors"] = contributors[:10]
+        members = list(
+            TwitchUserProfile.objects.filter(current_guild=guild["key"])
+            .annotate(guild_xp_value=Coalesce(Sum(
+                "progression_events__quest__xp",
+                filter=Q(
+                    progression_events__event_type="quest",
+                    progression_events__payload__guild=guild["key"],
+                ),
+            ), 0, output_field=IntegerField()))
+        )
+        for walker in members:
+            walker._guild_rank_levels = rank_levels_by_profile.get(walker.id, {})
         guild["monuments"] = Monument.objects.filter(
             guild_at_placement=guild["key"]
         ).select_related("poi", "owner")[:8]
         rank_counts = Counter(
             guild_rank(guild["key"], walker.guild_xp_value, walker)[0]
-            for walker in contributors
+            for walker in members
         )
         guild["rank_ladder"] = [
             {"level": level + 1, "title": title, "count": rank_counts.get(level, 0)}
             for level, title in enumerate(guild["titles"])
         ]
-        guild["recent_promotions"] = ProgressionEvent.objects.filter(
-            event_type="guild_rank", payload__guild=guild["key"]
-        ).select_related("profile").order_by("-created_at")[:5]
+        recent_promotions = list(ProgressionEvent.objects.filter(
+            Q(event_type="guild_rank", payload__guild=guild["key"])
+            | Q(event_type="guild_change", payload__new_guild=guild["key"])
+        ).select_related("profile").order_by("-created_at")[:5])
+        for event in recent_promotions:
+            event.guild_hall_title = (event.payload or {}).get("title") or guild["titles"][0]
+        guild["recent_promotions"] = recent_promotions
     return guilds
 
 

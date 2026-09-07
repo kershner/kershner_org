@@ -21,7 +21,7 @@ from apps.daggerwalk.models import (
     Monument,
 )
 from apps.daggerwalk.cache_keys import PROGRESSION_CACHE_KEYS
-from apps.daggerwalk.progression import cached_progression_snapshot, change_guild, credit_quest_progression, guild_xp, place_monument, profile_payload, progression_snapshot, resolve_profile, token_count_for_xp
+from apps.daggerwalk.progression import cached_progression_snapshot, change_guild, credit_quest_progression, guild_hall_page_payload, guild_xp, place_monument, profile_payload, progression_snapshot, resolve_profile, token_count_for_xp
 from apps.daggerwalk.quest_gen import complete_and_rotate_quest
 from apps.daggerwalk.serializers import DaggerwalkLogSerializer, QuestSerializer
 from apps.daggerwalk.views import get_command_state
@@ -262,6 +262,18 @@ class ProgressionTests(TestCase):
 
         self.assertEqual(guild_xp(profile, "mages"), 75)
         self.assertContains(self.client.get(reverse("daggerwalk_guild_hall")), "Walker")
+
+    def test_new_guild_member_appears_in_hall_before_earning_guild_xp(self):
+        profile = TwitchUserProfile.objects.create(twitch_username="Walker")
+        self.award(profile, 50)
+        change_guild(profile, "mages")
+
+        mages = next(guild for guild in guild_hall_page_payload() if guild["key"] == "mages")
+
+        self.assertEqual(mages["walkers"], 1)
+        self.assertEqual(mages["rank_ladder"][0]["count"], 1)
+        self.assertEqual(mages["recent_promotions"][0].profile, profile)
+        self.assertEqual(mages["recent_promotions"][0].guild_hall_title, "Apprentice")
 
     def test_twitch_rename_creates_a_new_profile(self):
         original = resolve_profile("OldName", "123")

@@ -29,7 +29,7 @@
       <dl class="guild-ledger">
         <div><dt>Total XP</dt><dd>{{ guild.total_xp }}</dd></div>
         <div><dt>Active Service</dt><dd>{{ guild.active_service_xp }} XP</dd></div>
-        <div><dt>Walkers</dt><dd>{{ guild.contributors }}</dd></div>
+        <div><dt>Walkers</dt><dd>{{ guild.walkers }}</dd></div>
         <div><dt>Average</dt><dd>{{ guild.average_per_contributor }} XP</dd></div>
       </dl>
 
@@ -60,7 +60,7 @@
           <h3>Recent Promotions</h3>
           <ul class="progression-list">
             {% for event in guild.recent_promotions %}
-              <li><a href="{% url 'daggerwalk_walker' event.profile.twitch_username %}">{{ event.profile.twitch_username }}</a><span>{{ event.payload.title }}</span></li>
+              <li><a href="{% url 'daggerwalk_walker' event.profile.twitch_username %}">{{ event.profile.twitch_username }}</a><span>{{ event.guild_hall_title }}</span></li>
             {% empty %}<li class="muted">The ledger is empty.</li>{% endfor %}
           </ul>
         </section>
