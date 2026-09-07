@@ -11,8 +11,48 @@ from django import forms
 from urllib.parse import urlencode
 from django.contrib import admin
 from django.core.cache import cache
+from django.db import transaction
 from django.urls import reverse
 from django.urls import path
+
+
+MONUMENT_TYPE_CHOICES = [(key, details[0]) for key, details in MONUMENT_TYPES.items()]
+GUILD_CHOICES = [("", "Unaffiliated"), *[(key, guild["name"]) for key, guild in GUILDS.items()]]
+
+
+def refresh_progression_caches(model_admin, request, extra_keys=()):
+    try:
+        cache.delete_many((*PROGRESSION_CACHE_KEYS, *extra_keys))
+        update_all_daggerwalk_caches.delay()
+    except Exception:
+        model_admin.message_user(
+            request,
+            "The change was saved, but caches could not be refreshed. The next Daggerwalk update will retry.",
+            level=messages.WARNING,
+        )
+
+
+@transaction.atomic
+def undo_guild_change(profile):
+    event = profile.progression_events.filter(event_type="guild_change").order_by("-created_at").first()
+    if not event:
+        return False
+
+    old_guild = (event.payload or {}).get("old_guild", "")
+    new_guild = (event.payload or {}).get("new_guild", "")
+    quest_events = list(profile.progression_events.filter(
+        event_type="quest", created_at__gte=event.created_at, payload__guild=new_guild,
+    ))
+    for quest_event in quest_events:
+        quest_event.payload = {**quest_event.payload, "guild": old_guild}
+    ProgressionEvent.objects.bulk_update(quest_events, ["payload"])
+    profile.progression_events.filter(
+        event_type="guild_rank", created_at__gte=event.created_at, payload__guild=new_guild,
+    ).delete()
+    profile.current_guild = old_guild
+    profile.save(update_fields=["current_guild"])
+    event.delete()
+    return True
 
 
 class MonumentTypeFilter(admin.SimpleListFilter):
@@ -20,7 +60,7 @@ class MonumentTypeFilter(admin.SimpleListFilter):
     parameter_name = "monument_type"
 
     def lookups(self, request, model_admin):
-        return [(key, details[0]) for key, details in MONUMENT_TYPES.items()]
+        return MONUMENT_TYPE_CHOICES
 
     def queryset(self, request, queryset):
         return queryset.filter(monument_type=self.value()) if self.value() else queryset
@@ -31,7 +71,7 @@ class MonumentGuildFilter(admin.SimpleListFilter):
     parameter_name = "guild_at_placement"
 
     def lookups(self, request, model_admin):
-        return [("unaffiliated", "Unaffiliated"), *((key, guild["name"]) for key, guild in GUILDS.items())]
+        return [("unaffiliated", "Unaffiliated"), *GUILD_CHOICES[1:]]
 
     def queryset(self, request, queryset):
         if self.value() == "unaffiliated":
@@ -40,13 +80,8 @@ class MonumentGuildFilter(admin.SimpleListFilter):
 
 
 class MonumentAdminForm(forms.ModelForm):
-    monument_type = forms.ChoiceField(
-        choices=[(key, details[0]) for key, details in MONUMENT_TYPES.items()],
-    )
-    guild_at_placement = forms.ChoiceField(
-        required=False,
-        choices=[("", "Unaffiliated"), *((key, guild["name"]) for key, guild in GUILDS.items())],
-    )
+    monument_type = forms.ChoiceField(choices=MONUMENT_TYPE_CHOICES)
+    guild_at_placement = forms.ChoiceField(required=False, choices=GUILD_CHOICES)
 
     class Meta:
         model = Monument
@@ -90,15 +125,20 @@ class MonumentAdmin(admin.ModelAdmin):
                 profile=obj.owner, event_type="monument", monument=obj,
                 defaults={"payload": {"name": obj.poi.name, "type": obj.monument_type, "admin": True}},
             )
-        cache.delete_many(PROGRESSION_CACHE_KEYS)
-        try:
-            update_all_daggerwalk_caches.delay()
-        except Exception:
-            self.message_user(
-                request,
-                "Monument saved, but the cache worker could not be reached. The next Daggerwalk update will refresh it.",
-                level=messages.WARNING,
-            )
+        refresh_progression_caches(self, request, ("daggerwalk_map_monuments", "daggerwalk_map_pois"))
+
+    def delete_model(self, request, obj):
+        self.delete_queryset(request, Monument.objects.filter(pk=obj.pk))
+
+    @transaction.atomic
+    def delete_queryset(self, request, queryset):
+        monuments = list(queryset.values_list("id", "poi_id"))
+        if not monuments:
+            return
+        monument_ids, poi_ids = zip(*monuments)
+        ProgressionEvent.objects.filter(monument_id__in=monument_ids).delete()
+        POI.objects.filter(id__in=poi_ids).delete()
+        refresh_progression_caches(self, request, ("daggerwalk_map_monuments", "daggerwalk_map_pois"))
 
     @admin.display(description="Monument type", ordering="monument_type")
     def monument_type_name(self, obj):
@@ -559,6 +599,7 @@ class TwitchUserProfileAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
     search_fields = ('twitch_username',)
     readonly_fields = ('id', 'twitch_username', 'created_at', 'view_all_chat_commands', 'total_xp', 'monument_token_summary')
     autocomplete_fields = ('completed_quests',)
+    actions = ('undo_latest_guild_change',)
     inlines = [ChatCommandLogInline]
 
     fieldsets = (
@@ -598,15 +639,14 @@ class TwitchUserProfileAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         if 'monument_token_adjustment' in form.changed_data:
-            cache.delete_many(PROGRESSION_CACHE_KEYS)
-            try:
-                update_all_daggerwalk_caches.delay()
-            except Exception:
-                self.message_user(
-                    request,
-                    "Token adjustment saved, but the cache worker could not be reached. The next Daggerwalk update will refresh it.",
-                    level=messages.WARNING,
-                )
+            refresh_progression_caches(self, request)
+
+    @admin.action(description='Undo latest guild change')
+    def undo_latest_guild_change(self, request, queryset):
+        undone = sum(undo_guild_change(profile) for profile in queryset)
+        if undone:
+            refresh_progression_caches(self, request)
+        self.message_user(request, f'Undid the latest guild change for {undone} walker(s).')
 
     @admin.display(description='Current balance')
     def monument_token_summary(self, obj):

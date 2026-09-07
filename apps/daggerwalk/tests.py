@@ -1,5 +1,6 @@
 from django.core.cache import cache
 from django.core.management import call_command
+from django.contrib.admin.sites import AdminSite
 from django.db import connection
 from django.test import TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
@@ -7,7 +8,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from apps.daggerwalk.models import (
     ChatCommandLog,
@@ -24,6 +25,7 @@ from apps.daggerwalk.progression import cached_progression_snapshot, change_guil
 from apps.daggerwalk.quest_gen import complete_and_rotate_quest
 from apps.daggerwalk.serializers import DaggerwalkLogSerializer, QuestSerializer
 from apps.daggerwalk.views import get_command_state
+from apps.daggerwalk.admin import MonumentAdmin, TwitchUserProfileAdmin
 
 
 class CompletedQuestDetailTests(TestCase):
@@ -196,6 +198,47 @@ class ProgressionTests(TestCase):
         self.assertEqual(profile_payload(profile)["tokens_available"], 3)
         place_monument(profile, "cairn", state)
         self.assertEqual(profile_payload(profile)["tokens_available"], 2)
+
+    def test_admin_can_undo_latest_guild_change_and_its_guild_xp(self):
+        profile = TwitchUserProfile.objects.create(twitch_username="Walker")
+        self.award(profile, 50)
+        change_guild(profile, "mages")
+        profile.refresh_from_db()
+        guild_quest = self.award(profile, 200)
+        credit_quest_progression(guild_quest, [profile])
+        self.assertEqual(guild_xp(profile, "mages"), 200)
+
+        model_admin = TwitchUserProfileAdmin(TwitchUserProfile, AdminSite())
+        model_admin.message_user = Mock()
+        with patch("apps.daggerwalk.admin.update_all_daggerwalk_caches.delay"):
+            model_admin.undo_latest_guild_change(
+                Mock(), TwitchUserProfile.objects.filter(pk=profile.pk),
+            )
+
+        profile.refresh_from_db()
+        self.assertEqual(profile.current_guild, "")
+        self.assertEqual(guild_xp(profile, "mages"), 0)
+        self.assertFalse(profile.progression_events.filter(event_type="guild_change").exists())
+        self.assertFalse(profile.progression_events.filter(event_type="guild_rank").exists())
+        self.assertEqual(
+            profile.progression_events.get(event_type="quest", quest=guild_quest).payload["guild"], "",
+        )
+
+    def test_admin_deleting_monument_removes_poi_and_history_and_refunds_token(self):
+        profile = TwitchUserProfile.objects.create(twitch_username="Walker")
+        self.award(profile, 200)
+        state = {"worldX": 100000, "worldZ": 100000, "mapPixelX": 10, "mapPixelY": 20, "region": self.region.name, "locationType": "Wilderness", "date": "Loredas, 1 Frostfall"}
+        monument = place_monument(profile, "cairn", state)
+        poi_id = monument.poi_id
+
+        model_admin = MonumentAdmin(Monument, AdminSite())
+        with patch("apps.daggerwalk.admin.update_all_daggerwalk_caches.delay"):
+            model_admin.delete_model(Mock(), monument)
+
+        self.assertFalse(Monument.objects.filter(pk=monument.pk).exists())
+        self.assertFalse(POI.objects.filter(pk=poi_id).exists())
+        self.assertFalse(ProgressionEvent.objects.filter(monument_id=monument.pk).exists())
+        self.assertEqual(profile_payload(profile)["tokens_available"], 1)
 
     def test_guild_requires_xp_and_starts_configured_cooldown(self):
         profile = TwitchUserProfile.objects.create(twitch_username="Walker")
