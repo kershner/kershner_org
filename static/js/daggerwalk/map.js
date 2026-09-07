@@ -10,7 +10,7 @@ const SEASON_EMOJIS = {
   Winter: "☃️", Spring: "🌸", Summer: "🌻", Autumn: "🍂"
 };
 const refreshDataUrl = '/daggerwalk/refresh-data/';
-let map, poiLayer, logLayer, questLayer, regionShapeLayer;
+let map, poiLayer, monumentLayer, logLayer, questLayer, regionShapeLayer;
 let CURRENT_LOG_TYPE_FILTER = "default";
 let logLineLayer = null;
 
@@ -62,6 +62,7 @@ function isAltMapActive() {
 function getMapData() {
   return {
     pois: JSON.parse(document.getElementById('poi-data').textContent),
+    monuments: JSON.parse(document.getElementById('monuments-data').textContent),
     logs: JSON.parse(document.getElementById('logs-data').textContent),
     quests: JSON.parse(document.getElementById('quest-data').textContent),
     shapes: JSON.parse(document.getElementById('shape-data').textContent),
@@ -232,6 +233,7 @@ function popupHtml(item) {
     add([
       source.description && `<div>${source.description}</div>`,
       source.discovered && `<div class="popup-discovered">Discovered: ${new Date(source.discovered).toLocaleDateString("en-US")}</div>`,
+      source.monument_owner && `<div><b>Raised by:</b> ${source.monument_owner}</div>`,
     ].filter(Boolean).join(""));
   }
 
@@ -443,7 +445,7 @@ function handleZoomImageSwap(map) {
       const base = map.baseImageLayer?.getElement?.()
       if (base) base.style.display = 'none'
 
-      ;[poiLayer, logLayer, questLayer, regionShapeLayer, logLineLayer]
+      ;[poiLayer, monumentLayer, logLayer, questLayer, regionShapeLayer, logLineLayer]
         .forEach(l => l && map.hasLayer(l) && map.removeLayer(l))
 
       togglePanes(false)
@@ -482,11 +484,13 @@ function handleZoomImageSwap(map) {
 
       const toggles = {
         poi: document.getElementById("toggle-pois")?.checked,
+        monuments: document.getElementById("toggle-monuments")?.checked,
         quest: document.getElementById("toggle-quest")?.checked,
         shapes: document.getElementById("toggle-shapes")?.checked
       }
 
       if (toggles.poi && poiLayer) map.addLayer(poiLayer)
+      if (toggles.monuments && monumentLayer) map.addLayer(monumentLayer)
       if (toggles.quest && questLayer) map.addLayer(questLayer)
       if (logLayer) map.addLayer(logLayer)
       if (toggles.shapes) drawRegionShapes(true)
@@ -511,17 +515,20 @@ async function refreshMapData() {
 
     document.getElementById("logs-data").textContent = JSON.stringify(data.logs);
     document.getElementById("poi-data").textContent = JSON.stringify(data.pois);
+    document.getElementById("monuments-data").textContent = JSON.stringify(data.monuments || []);
     document.getElementById("quest-data").textContent = JSON.stringify(data.quests);
     document.getElementById("shape-data").textContent = JSON.stringify(data.shapes);
 
-    [logLayer, poiLayer, questLayer].forEach(layer => map.hasLayer(layer) && map.removeLayer(layer));
+    [logLayer, poiLayer, monumentLayer, questLayer].forEach(layer => layer && map.hasLayer(layer) && map.removeLayer(layer));
 
     poiLayer = buildLayer(data.pois, { isPOI: true });
+    monumentLayer = buildLayer(data.monuments || [], { isPOI: true });
     rebuildLogLayer(data.logs);
     questLayer = buildLayer(data.quests, { isQuest: true });
 
     if (document.getElementById("toggle-quest").checked) map.addLayer(questLayer);
     if (document.getElementById("toggle-pois").checked) map.addLayer(poiLayer);
+    if (document.getElementById("toggle-monuments").checked) map.addLayer(monumentLayer);
 
     filterLogsByDate();
     applyLogTypeFilter();
@@ -621,6 +628,7 @@ function bindUIEvents() {
   };
 
   toggle("toggle-pois", () => poiLayer);
+  toggle("toggle-monuments", () => monumentLayer);
   toggle("toggle-quest", () => questLayer);
   document.getElementById("toggle-shapes").addEventListener("change", e => drawRegionShapes(e.target.checked));
   document.getElementById("refresh-map").addEventListener("click", refreshMapData);
@@ -642,7 +650,7 @@ function daggerwalkMapInit() {
   window.daggerwalkMap = map;
   handleZoomImageSwap(map);
 
-  const { pois, logs, quests, shapes } = getMapData();
+  const { pois, monuments, logs, quests, shapes } = getMapData();
   window.shapes = shapes;
   window.SHAPE_EXTENTS = computeShapeExtents(window.shapes || []);
 
@@ -650,6 +658,7 @@ function daggerwalkMapInit() {
     new Date(a.created_at) > new Date(b.created_at) ? a : b, logs[0]);
 
   poiLayer  = buildLayer(pois,  { isPOI: true });
+  monumentLayer = buildLayer(monuments, { isPOI: true });
   logLayer  = buildLayer(logs,  { highlightId: latest.id });
   questLayer = buildLayer(quests, { isQuest: true });
 
@@ -670,4 +679,16 @@ function daggerwalkMapInit() {
   map.on('moveend', applyLogTypeFilter);
 
   filterLogsByDate();
+
+  const monumentId = new URLSearchParams(window.location.search).get("monument");
+  if (monumentId) {
+    document.getElementById("toggle-monuments").checked = true;
+    map.addLayer(monumentLayer);
+    monumentLayer.eachLayer(marker => {
+      if (String(marker.options.item?.monument_id) === monumentId) {
+        map.setView(marker.getLatLng(), 4, { animate: false });
+        marker.openPopup();
+      }
+    });
+  }
 }

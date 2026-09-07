@@ -19,4 +19,8 @@ app.conf.beat_schedule = {
         'task': 'apps.daggerwalk.tasks.post_to_bluesky',
         'schedule': crontab(minute=0, hour=14),  # 2:00 PM Eastern
     },
+    'daggerwalk-refresh-twitch-profiles-weekly': {
+        'task': 'apps.daggerwalk.tasks.refresh_daggerwalk_twitch_profiles',
+        'schedule': crontab(minute=20, hour=4, day_of_week='monday'),
+    },
 }

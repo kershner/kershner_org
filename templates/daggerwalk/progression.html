@@ -1,0 +1,39 @@
+<section class="progression-intro" aria-labelledby="progression-title">
+  <h4 id="progression-title">Renown, Guilds & Monuments</h4>
+  <p>Complete any Daggerwalk quest to become a Wayfarer and unlock progression. Participate by sending a qualifying game command in Twitch chat while a quest is active.</p>
+  <p>Use <code>!renown</code> to see your XP and rank, <code>!guild</code> to manage your allegiance, and <code>!monument</code> when you have earned a Monument Token.</p>
+</section>
+
+<div class="progression-actions">
+  <a href="{% url 'daggerwalk_guild_hall' %}">Enter the Guild Hall</a>
+  <a href="{% url 'daggerwalk_monuments' %}">Browse all {{ monument_count }} Monuments</a>
+</div>
+
+<h4>The Four Guilds</h4>
+<div class="progression-grid guild-summary-grid">
+  {% for guild in progression_guilds %}
+    <section class="progression-card">
+      <h3>{{ guild.emoji }} {{ guild.name }}</h3>
+      <p><strong>{{ guild.total_xp }} XP</strong> earned by {{ guild.contributors }} contributor{{ guild.contributors|pluralize }}.</p>
+    </section>
+  {% endfor %}
+</div>
+
+<h4>Recently Raised Monuments</h4>
+<div class="progression-table-wrapper">
+  <table class="styled-table progression-table">
+    <thead><tr><th>Monument</th><th>Walker</th><th>Region</th><th>Visits</th></tr></thead>
+    <tbody>
+      {% for monument in recent_monuments %}
+        <tr>
+          <td>{{ monument.poi.emoji }} <a href="{% url 'daggerwalk' %}?monument={{ monument.id }}">{{ monument.poi.name }}</a></td>
+          <td><a href="{% url 'daggerwalk_walker' monument.owner.twitch_username %}">{{ monument.owner.twitch_username }}</a></td>
+          <td>{{ monument.poi.region.name }}</td>
+          <td>{{ monument.visit_count }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">No monuments have been raised yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

@@ -285,6 +285,671 @@ a {
   display: flex;
   justify-content: space-between;
 }
+
+.progression-body {
+  overflow: auto;
+}
+
+.progression-page {
+  width: min(72rem, 100% - 2rem);
+  margin: 0 auto;
+  padding: 1rem 0 3rem;
+}
+
+.progression-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 0.3rem solid var(--accent-color);
+}
+
+.progression-home-link {
+  font-family: Georgia, serif;
+  font-size: 1.25rem;
+}
+
+.progression-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0 2rem;
+}
+.progression-actions a {
+  cursor: pointer;
+  color: var(--accent-color);
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--accent-color);
+  border-radius: 0.2rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-decoration: none;
+}
+.progression-actions a:hover,
+.progression-actions a.active {
+  background-color: var(--accent-color);
+  color: var(--background-color);
+}
+
+.progression-heading {
+  margin-bottom: 1.5rem;
+}
+.progression-heading h1 {
+  margin: 0;
+  color: var(--accent-color);
+  font-family: Georgia, serif;
+}
+.progression-heading p {
+  margin-bottom: 0;
+}
+
+.progression-intro {
+  max-width: 50rem;
+  line-height: 1.5;
+}
+.progression-intro h4 {
+  margin-bottom: 0.5rem;
+}
+.progression-intro p {
+  margin: 0.4rem 0;
+}
+
+.about-tabs h4 + .progression-grid,
+.about-tabs h4 + .progression-table-wrapper {
+  margin-top: 1rem;
+}
+
+.progression-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.guild-summary-grid,
+.chronicle-details,
+.guild-hall-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.guild-hall-grid {
+  gap: 2.25rem;
+}
+
+.guild-hall-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.guild-hall-crests {
+  display: flex;
+  gap: 0.35rem;
+  font-size: 1.6rem;
+}
+.guild-hall-crests span {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 1px solid var(--accent-color);
+  border-radius: 0.2rem;
+  background: var(--alternate-dark);
+}
+
+.guild-hall-notice {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem 2rem;
+}
+.guild-hall-notice strong {
+  white-space: nowrap;
+}
+
+.guild-card {
+  overflow: hidden;
+}
+.guild-card h3 {
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--accent-color);
+}
+
+.guild-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.15rem;
+  background: var(--background-color);
+}
+.guild-card-header h2 {
+  margin: 0;
+}
+.guild-card-header span:not(.guild-card-crest) {
+  font-family: Georgia, serif;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.guild-card-crest {
+  display: grid;
+  flex: 0 0 4rem;
+  width: 4rem;
+  height: 4rem;
+  place-items: center;
+  border: 2px solid var(--accent-color);
+  border-radius: 0.2rem;
+  background: var(--background-color);
+  font-size: 2rem;
+}
+
+.guild-ledger,
+.quest-detail-ledger {
+  display: grid;
+  padding: 0.75rem 1rem;
+  background: var(--alternate-dark);
+}
+.guild-ledger div,
+.quest-detail-ledger div {
+  padding: 0 0.6rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+.guild-ledger div:first-child,
+.quest-detail-ledger div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.guild-ledger dt,
+.quest-detail-ledger dt {
+  color: var(--accent-color);
+  font-size: 0.68rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.guild-ledger dd,
+.quest-detail-ledger dd {
+  margin: 0.2rem 0 0;
+  font-weight: bold;
+}
+
+.guild-ledger {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.guild-card-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  padding: 1rem;
+}
+
+.guild-standing-list,
+.guild-rank-ladder {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guild-standing-list li {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 1.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.85rem;
+}
+.guild-standing-list li strong {
+  color: var(--accent-color);
+  font-size: 0.75rem;
+}
+
+.guild-standing-number {
+  display: grid;
+  width: 1.25rem;
+  height: 1.25rem;
+  place-items: center;
+  border: 1px solid var(--accent-color);
+  border-radius: 0.2rem;
+  color: var(--accent-color);
+  font-size: 0.65rem;
+  font-weight: bold;
+}
+
+.guild-standing-list .guild-empty {
+  display: block;
+  padding: 0.5rem 0;
+  opacity: 0.7;
+}
+
+.guild-rank-ladder li {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) 1.5rem;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 1.55rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.78rem;
+  opacity: 0.65;
+}
+.guild-rank-ladder li > span {
+  color: var(--accent-color);
+  font-size: 0.65rem;
+  font-weight: bold;
+}
+.guild-rank-ladder li small {
+  text-align: right;
+}
+.guild-rank-ladder li.occupied {
+  opacity: 1;
+}
+.guild-rank-ladder li.occupied small {
+  color: var(--accent-color);
+  font-weight: bold;
+}
+
+.guild-card-footer {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  padding: 1rem;
+  border-top: 1px solid var(--accent-color);
+}
+.guild-card-footer .progression-list {
+  font-size: 0.8rem;
+}
+
+.progression-card,
+.progression-filter {
+  border-left: 0.3rem solid var(--accent-color);
+  border-radius: 0.2rem;
+  background: var(--alternate-dark);
+}
+
+.progression-card {
+  padding: 1rem;
+}
+.progression-card h2,
+.progression-card h3 {
+  margin: 0 0 0.65rem;
+  font-family: Georgia, serif;
+}
+.progression-card h2 {
+  color: var(--accent-color);
+}
+.progression-card h3:not(:first-child) {
+  margin-top: 1.5rem;
+}
+.progression-card p {
+  margin: 0.5rem 0;
+}
+
+.progression-card.guild-card {
+  padding: 0;
+  background: var(--background-color);
+}
+
+.parchment-panel {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  color: #1a1a1a;
+}
+
+.guild-hall-notice.parchment-panel {
+  border: 0;
+}
+.guild-hall-notice.parchment-panel strong,
+.guild-hall-notice.parchment-panel code,
+.chronicle-guild-scroll strong,
+.chronicle-guild-scroll code {
+  color: inherit;
+}
+
+.chronicle-guild-scroll {
+  padding: 1.5rem 2rem;
+  border-left: 0;
+}
+.chronicle-guild-scroll h2 {
+  color: inherit;
+}
+
+.quest-detail-heading {
+  margin-bottom: 1rem;
+}
+
+.quest-detail-scroll {
+  margin: 0 0 1.5rem;
+}
+
+.quest-detail-ledger {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0 0 1.5rem;
+  border-left: 0.3rem solid var(--accent-color);
+}
+.quest-detail-ledger div {
+  padding: 0 0.75rem;
+}
+
+.quest-participants h2 {
+  margin-bottom: 1rem;
+}
+.quest-participants .quest-participant-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.quest-participants .quest-participant-list a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--accent-color);
+  border-radius: 0.2rem;
+  text-decoration: none;
+}
+.quest-participants .quest-participant-list a:hover {
+  background: var(--accent-color);
+  color: var(--background-color);
+}
+.quest-participants .quest-participant-list img {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.progression-list {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+.progression-list li {
+  padding: 0.25rem 0;
+}
+.progression-list li span {
+  float: right;
+  margin-left: 1rem;
+}
+
+.progression-monument-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.progression-filter {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+.progression-filter label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+.progression-filter input,
+.progression-filter select {
+  min-width: 9rem;
+  padding: 0.4rem;
+  border: 1px solid var(--accent-color);
+  border-radius: 0.2rem;
+  background: var(--background-color);
+  color: var(--text-color);
+}
+.progression-filter button {
+  all: unset;
+  cursor: pointer;
+  color: var(--accent-color);
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--accent-color);
+  border-radius: 0.2rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-decoration: none;
+  padding: 0.45rem 0.75rem;
+}
+.progression-filter button:hover, .progression-filter button.active {
+  background-color: var(--accent-color);
+  color: var(--background-color);
+}
+
+.progression-table-wrapper {
+  overflow-x: auto;
+}
+
+.progression-table {
+  min-width: 38rem;
+  table-layout: auto;
+}
+.progression-table td,
+.progression-table th {
+  vertical-align: top;
+}
+
+.monument-table {
+  min-width: 64rem;
+  table-layout: fixed;
+}
+.monument-table td {
+  overflow-wrap: anywhere;
+}
+.monument-table th:nth-child(1) {
+  width: 27%;
+}
+.monument-table th:nth-child(2) {
+  width: 20%;
+}
+.monument-table th:nth-child(3) {
+  width: 16%;
+}
+.monument-table th:nth-child(4) {
+  width: 19%;
+}
+.monument-table th:nth-child(5) {
+  width: 10%;
+}
+.monument-table th:nth-child(6) {
+  width: 8%;
+}
+
+.table-action {
+  cursor: pointer;
+  color: var(--accent-color);
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--accent-color);
+  border-radius: 0.2rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-decoration: none;
+}
+.table-action:hover, .table-action.active {
+  background-color: var(--accent-color);
+  color: var(--background-color);
+}
+
+.walker-avatar {
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--alternate-dark);
+}
+
+.muted {
+  opacity: 0.7;
+}
+
+.chronicle-hero h1 {
+  margin: 0 0 0.35rem;
+  font-family: Georgia, serif;
+}
+
+.chronicle-identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.chronicle-identity p {
+  margin: 0;
+}
+
+.chronicle-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--accent-color);
+}
+.chronicle-stats div {
+  min-width: 0;
+}
+.chronicle-stats dt {
+  color: var(--accent-color);
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+.chronicle-stats dd {
+  margin: 0.2rem 0 0;
+}
+
+.chronicle-hero + .chronicle-details {
+  margin-top: 1rem;
+}
+
+.progression-section > h2 {
+  margin: 0 0 1rem;
+  color: var(--accent-color);
+  font-family: Georgia, serif;
+}
+
+.chronicle-deeds,
+.progression-section {
+  margin-top: 2rem;
+}
+
+.chronicle-quest-table {
+  table-layout: fixed;
+}
+.chronicle-quest-table th:nth-child(2),
+.chronicle-quest-table th:nth-child(3),
+.chronicle-quest-table td:nth-child(2),
+.chronicle-quest-table td:nth-child(3) {
+  width: 6rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .progression-body .top-row {
+    min-height: 5.25rem;
+  }
+  .progression-page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .guild-summary-grid,
+  .chronicle-details,
+  .guild-hall-grid {
+    grid-template-columns: 1fr;
+  }
+  .guild-hall-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .guild-hall-notice {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .guild-ledger,
+  .quest-detail-ledger {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 0.75rem;
+  }
+  .guild-ledger div:nth-child(3),
+  .quest-detail-ledger div:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .guild-card-columns,
+  .guild-card-footer {
+    grid-template-columns: 1fr;
+  }
+  .progression-filter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .progression-filter input,
+  .progression-filter select {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .monument-table-wrapper {
+    overflow: visible;
+  }
+  .monument-table {
+    display: block;
+    min-width: 0;
+  }
+  .monument-table thead {
+    display: none;
+  }
+  .monument-table tbody,
+  .monument-table tr,
+  .monument-table td {
+    display: block;
+  }
+  .monument-table tr {
+    margin-bottom: 1rem;
+    border-left: 0.3rem solid var(--accent-color);
+    background: var(--alternate-dark);
+  }
+  .monument-table tbody td {
+    display: grid;
+    grid-template-columns: 5rem minmax(0, 1fr);
+    gap: 0.75rem;
+    min-height: 1.25rem;
+    padding: 0.45rem 0.75rem;
+  }
+  .monument-table tbody td::before {
+    color: var(--accent-color);
+    content: attr(data-label);
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  .monument-table tbody td[colspan] {
+    display: block;
+  }
+  .monument-table tbody td[colspan]::before {
+    display: none;
+  }
+  .monument-table .monument-cell-value {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .monument-table tr:hover td::before {
+    color: var(--background-color);
+  }
+  .chronicle-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 .top-row img {
   position: absolute;
   top: 0;
@@ -300,11 +965,6 @@ a {
   gap: 0.5rem;
   z-index: 999;
 }
-.top-row .menu-container.open .menu-toggle {
-  color: var(--background-color);
-  background: var(--accent-color);
-  border-radius: 0.2rem 0.2rem 0 0;
-}
 .top-row .menu-container .menu-toggle {
   display: flex;
   align-items: center;
@@ -316,10 +976,6 @@ a {
   border-color: transparent;
   border-radius: 0.2rem;
 }
-.top-row .menu-container .menu-toggle:hover {
-  color: var(--background-color);
-  background: var(--accent-color);
-}
 .top-row .menu-container .menu-toggle .title {
   margin: 0;
   font-family: Georgia, serif;
@@ -330,6 +986,18 @@ a {
 .top-row .menu-container .menu-toggle .menu-icon {
   font-size: 1.25rem;
   line-height: 1.25rem;
+}
+.top-row .menu-container.open .menu-toggle,
+.top-row .menu-container .menu-toggle:hover {
+  color: var(--background-color);
+  background: var(--accent-color);
+}
+.top-row .menu-container.open .menu-toggle .title,
+.top-row .menu-container .menu-toggle:hover .title {
+  color: var(--background-color);
+}
+.top-row .menu-container.open .menu-toggle {
+  border-radius: 0.2rem 0.2rem 0 0;
 }
 .top-row .menu-container .site-menu {
   position: relative;
@@ -351,6 +1019,28 @@ a {
 }
 .top-row .menu-container .site-menu .site-controls .site-control-row:last-of-type {
   border-bottom: none;
+}
+.top-row .menu-container .site-menu .site-controls .site-control-row.site-control-links {
+  display: flex;
+  gap: 0.35rem;
+}
+.top-row .menu-container .site-menu .site-controls .site-control-row.site-control-links a {
+  cursor: pointer;
+  color: var(--accent-color);
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--accent-color);
+  border-radius: 0.2rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-decoration: none;
+  flex: 0 0 auto;
+  text-align: center;
+  white-space: nowrap;
+}
+.top-row .menu-container .site-menu .site-controls .site-control-row.site-control-links a:hover,
+.top-row .menu-container .site-menu .site-controls .site-control-row.site-control-links a.active {
+  background-color: var(--accent-color);
+  color: var(--background-color);
 }
 .top-row .menu-container .site-menu .site-controls .site-control-row .site-control-label {
   text-align: right;
@@ -481,6 +1171,16 @@ a {
   width: 100%;
 }
 .tabs input:nth-of-type(5):checked ~ .tab-content:nth-of-type(5) {
+  display: block;
+}
+.tabs input:nth-of-type(6):checked ~ label:nth-of-type(6) {
+  font-weight: bold;
+  color: var(--text-color);
+}
+.tabs input:nth-of-type(6):checked ~ label:nth-of-type(6)::after {
+  width: 100%;
+}
+.tabs input:nth-of-type(6):checked ~ .tab-content:nth-of-type(6) {
   display: block;
 }
 
@@ -744,19 +1444,72 @@ a {
 
 .leaderboard-wrapper {
   padding-top: 1rem;
+  overflow-x: auto;
 }
 
-#leaderboard :is(th, td):first-child {
-  width: 5%;
+#leaderboard {
+  table-layout: auto;
+}
+#leaderboard .leaderboard-rank {
+  width: 3rem;
   white-space: nowrap;
 }
-#leaderboard :is(th, td):nth-child(2),
-#leaderboard :is(th, td):nth-child(3) {
-  width: 50%;
+#leaderboard .leaderboard-user {
+  width: 24%;
+}
+#leaderboard .leaderboard-renown {
+  width: 25%;
+}
+#leaderboard .leaderboard-guild {
+  width: 25%;
+}
+#leaderboard .leaderboard-xp,
+#leaderboard .leaderboard-quests {
+  width: 5rem;
+  white-space: nowrap;
 }
 #leaderboard td {
   white-space: normal;
   overflow-wrap: break-word;
+}
+#leaderboard .leaderboard-walker {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+#leaderboard .leaderboard-walker img {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: 0 0 1.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  #leaderboard {
+    font-size: 0.78rem;
+  }
+  #leaderboard th, #leaderboard td {
+    padding: 0.45rem 0.3rem;
+  }
+  #leaderboard .leaderboard-guild,
+  #leaderboard .leaderboard-quests {
+    display: none;
+  }
+  #leaderboard .leaderboard-rank {
+    width: 2rem;
+  }
+  #leaderboard .leaderboard-user {
+    width: 34%;
+  }
+  #leaderboard .leaderboard-renown {
+    width: auto;
+  }
+  #leaderboard .leaderboard-xp {
+    width: 3.5rem;
+    text-align: right;
+  }
 }
 
 .pager {
@@ -927,6 +1680,14 @@ blockquote cite {
 @media (max-width: 900px) {
   .active-quests-composite {
     grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 768px) {
+  .top-row .menu-container .menu-toggle:hover .title,
+  .top-row .menu-container .menu-toggle.open .title,
+  .top-row .menu-container.open .menu-toggle .title {
+    color: #000 !important;
+    -webkit-text-fill-color: #000;
   }
 }
 
@@ -1133,21 +1894,6 @@ blockquote cite {
 }
 .previous-quests-table .quests-wrapper .quest-map-link {
   display: none;
-}
-
-.completed-quest-page {
-  width: min(60rem, calc(100% - 2rem));
-  margin: 2rem auto;
-}
-.completed-quest-page > .quests-wrapper {
-  margin: 2rem 0;
-}
-.quest-participants ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem 1.5rem;
-  padding: 0;
-  list-style: none;
 }
 
 .map-container .map-marker.latest-log {

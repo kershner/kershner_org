@@ -8,7 +8,7 @@
     <meta name="description" content="Watch The Elder Scrolls II: Daggerfall come alive with Daggerwalk — a live-streamed bot endlessly exploring the Iliac Bay. Interact in chat and track The Walker’s journey on the map.">
     <title>Daggerwalk</title>
     <link rel="icon" type="image/png" href="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/Daggerwalk.ico">
-    <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/daggerwalk.css">
+    <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/daggerwalk.css?v=20260907-mobile-hover-5">
 
     {% block extra_head %}{% endblock %}
 </head>
@@ -19,7 +19,7 @@
             <img alt="Daggerwalk Logo" src="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/Daggerwalk_logo_small.png">
         </div>
 
-        {% include "daggerwalk/site_menu.html" %}
+        {% include "daggerwalk/site_menu.html" with show_chat_toggle=True %}
     </div>
 
     <div class="tabs main-tabs">
@@ -52,21 +52,27 @@
     {# About tabs #}
     <div class="tabs about-tabs">
         <input type="radio" name="tabs-group-2" id="quests-tab-btn" checked>
+        <input type="radio" name="tabs-group-2" id="progression-tab-btn">
         <input type="radio" name="tabs-group-2" id="stats-tab-btn">
         <input type="radio" name="tabs-group-2" id="commands-tab-btn">
         <input type="radio" name="tabs-group-2" id="songs-tab-btn">
         <input type="radio" name="tabs-group-2" id="about-tab-btn">
 
         <label data-tab="1" for="quests-tab-btn" tabindex="0">Quests</label>
-        <label data-tab="2" for="stats-tab-btn" tabindex="0">Stats</label>
-        <label data-tab="3" for="commands-tab-btn" tabindex="0">Cmds</label>
-        <label data-tab="4" for="songs-tab-btn" tabindex="0">Songs</label>
-        <label data-tab="5" for="about-tab-btn" tabindex="0">About</label>
+        <label data-tab="2" for="progression-tab-btn" tabindex="0">Renown</label>
+        <label data-tab="3" for="stats-tab-btn" tabindex="0">Stats</label>
+        <label data-tab="4" for="commands-tab-btn" tabindex="0">Cmds</label>
+        <label data-tab="5" for="songs-tab-btn" tabindex="0">Songs</label>
+        <label data-tab="6" for="about-tab-btn" tabindex="0">About</label>
 
         <div class="tab-content">
             <div id="quests-content">
                 {% include 'daggerwalk/quests.html' %}
             </div>
+        </div>
+
+        <div class="tab-content">
+            {% include 'daggerwalk/progression.html' %}
         </div>
         
         <div class="tab-content">
@@ -87,7 +93,7 @@
     </div>
 
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
-    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalk.js"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalk.js?v=20260907-tabs"></script>
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/map.js"></script>
     <script type="text/javascript" defer>
         window.BASE_S3_URL = '{% settings_value "BASE_S3_URL" %}';

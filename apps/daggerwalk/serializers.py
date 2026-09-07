@@ -1,6 +1,6 @@
 import math
 
-from .models import ChatCommandLog, Quest, Region, POI, DaggerwalkLog, TwitchUserProfile
+from .models import ChatCommandLog, Quest, Region, POI, DaggerwalkLog
 from rest_framework import serializers
 
 
@@ -12,6 +12,18 @@ class RegionSerializer(serializers.ModelSerializer):
 
 class POISerializer(serializers.ModelSerializer):
     region = RegionSerializer(read_only=True)
+    monument_id = serializers.SerializerMethodField()
+    monument_owner = serializers.SerializerMethodField()
+    monument_guild = serializers.SerializerMethodField()
+
+    def get_monument_id(self, obj):
+        return obj.monument.id if hasattr(obj, "monument") else None
+
+    def get_monument_owner(self, obj):
+        return obj.monument.owner.twitch_username if hasattr(obj, "monument") else None
+
+    def get_monument_guild(self, obj):
+        return obj.monument.guild_at_placement if hasattr(obj, "monument") else ""
 
     class Meta:
         model = POI
@@ -47,8 +59,10 @@ class QuestSerializer(serializers.ModelSerializer):
     quest_giver_img_url = serializers.SerializerMethodField()
     quest_name = serializers.SerializerMethodField()
     participant_count = serializers.SerializerMethodField()
+    participant_names = serializers.SerializerMethodField()
     duration_minutes = serializers.SerializerMethodField()
     distance_km = serializers.SerializerMethodField()
+    progression_announcements = serializers.SerializerMethodField()
 
     class Meta:
         model = Quest
@@ -62,6 +76,9 @@ class QuestSerializer(serializers.ModelSerializer):
 
     def get_participant_count(self, obj):
         return obj.completed_by.count()
+
+    def get_participant_names(self, obj):
+        return list(obj.completed_by.order_by("twitch_username").values_list("twitch_username", flat=True)[:3])
 
     def get_duration_minutes(self, obj):
         if not obj.completed_at:
@@ -90,15 +107,5 @@ class QuestSerializer(serializers.ModelSerializer):
 
         return round(total_world_units / 1000.0, 2)
 
-
-class TwitchUserProfileSerializer(serializers.ModelSerializer):
-    total_xp = serializers.IntegerField(read_only=True)  # reads the model property 'total_xp'
-    completed_quests_count = serializers.SerializerMethodField()
-
-    class Meta:
-        model = TwitchUserProfile
-        fields = ('twitch_username', 'created_at', 'total_xp', 'completed_quests_count')
-
-    def get_completed_quests_count(self, obj):
-        # uses annotated value if present; falls back to a count()
-        return getattr(obj, 'completed_quests_count', obj.completed_quests.count())
+    def get_progression_announcements(self, obj):
+        return getattr(obj, "progression_announcements", [])

@@ -1,7 +1,9 @@
 from django.utils import timezone
 from django.db import transaction
 from dataclasses import dataclass
-from django.db.models import Max
+from django.db.models import Max, Q
+from django.db.models.functions import Lower
+from django.conf import settings
 from typing import Iterable
 import hashlib, random, re
 
@@ -172,6 +174,7 @@ def complete_and_rotate_quest(active_quest, completed_at, completion_request_log
     Returns (completed_meta, next_active_quest).
     """
     from apps.daggerwalk.models import ChatCommandLog, Quest, TwitchUserProfile
+    from apps.daggerwalk.progression import credit_quest_progression
 
     # Resolve window_end
     base_completed_at = completed_at or timezone.now()
@@ -193,35 +196,64 @@ def complete_and_rotate_quest(active_quest, completed_at, completion_request_log
         active_quest.save(update_fields=["status", "completed_at"])
 
         # Unique participants during quest window (inclusive)
-        participants = list(
+        excluded = Q()
+        for username in settings.DAGGERWALK_PROGRESSION_EXCLUDED_USERS:
+            excluded |= Q(user__iexact=username)
+        participant_names = (
             ChatCommandLog.objects
-            .filter(timestamp__gte=active_quest.created_at, timestamp__lte=window_end)
+            .filter(
+                timestamp__gte=active_quest.created_at,
+                timestamp__lte=window_end,
+                command__in=settings.DAGGERWALK_QUALIFYING_COMMANDS,
+            )
+            .exclude(excluded)
             .values_list("user", flat=True)
             .distinct()
         )
+        # Collapse casing variants while retaining the latest observed spelling.
+        participants = list({name.casefold(): name for name in participant_names}.values())
 
         # Ensure profiles (case-insensitive) + credit completion (M2M)
+        participant_profiles = []
         if participants:
-            profile_ids = []
-            for uname in participants:
-                # Case-insensitive lookup first
-                try:
-                    prof = TwitchUserProfile.objects.get(twitch_username__iexact=uname)
-                except TwitchUserProfile.DoesNotExist:
-                    # Create with the exact casing from this command
-                    prof = TwitchUserProfile.objects.create(twitch_username=uname)
-                profile_ids.append(prof.id)
-                
-                # Link any orphaned chat logs for this user
-                ChatCommandLog.objects.filter(
-                    user__iexact=uname,
-                    profile__isnull=True
-                ).update(profile=prof)
+            participant_names = {name.casefold(): name for name in participants}
+            participant_profiles = list(
+                TwitchUserProfile.objects.annotate(username_key=Lower("twitch_username"))
+                .filter(username_key__in=participant_names)
+            )
+            profiles_by_name = {
+                profile.twitch_username.casefold(): profile for profile in participant_profiles
+            }
+            missing_profiles = [
+                TwitchUserProfile(twitch_username=name)
+                for key, name in participant_names.items() if key not in profiles_by_name
+            ]
+            if missing_profiles:
+                TwitchUserProfile.objects.bulk_create(missing_profiles)
+                participant_profiles.extend(missing_profiles)
+                profiles_by_name.update({
+                    profile.twitch_username.casefold(): profile for profile in missing_profiles
+                })
+
+            orphaned_logs = list(
+                ChatCommandLog.objects.annotate(user_key=Lower("user"))
+                .filter(profile__isnull=True, user_key__in=participant_names)
+                .only("id", "user")
+            )
+            for log in orphaned_logs:
+                log.profile_id = profiles_by_name[log.user.casefold()].id
+            if orphaned_logs:
+                ChatCommandLog.objects.bulk_update(orphaned_logs, ["profile"])
 
             through = TwitchUserProfile.completed_quests.through
-            rows = [through(twitchuserprofile_id=pid, quest_id=active_quest.id) for pid in profile_ids]
+            rows = [
+                through(twitchuserprofile_id=profile.id, quest_id=active_quest.id)
+                for profile in participant_profiles
+            ]
             if rows:
                 through.objects.bulk_create(rows, ignore_conflicts=True)
+
+        progression_events = credit_quest_progression(active_quest, participant_profiles)
 
         # New in-progress quest
         next_quest = Quest.objects.create(status="in_progress", slot=active_quest.slot)
@@ -241,7 +273,9 @@ def complete_and_rotate_quest(active_quest, completed_at, completion_request_log
             "region_name": getattr(getattr(active_quest.poi, "region", None), "name", None),
             "status": active_quest.status,
             "participants": participants,
+            "progression_events": progression_events,
         }
+        active_quest.progression_announcements = progression_events
         return completed_meta, next_quest
 
 

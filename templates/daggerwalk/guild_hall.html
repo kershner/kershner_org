@@ -1,0 +1,79 @@
+{% extends "daggerwalk/progression_base.html" %}
+{% load static %}
+{% block title %}Guild Hall · Daggerwalk{% endblock %}
+{% block content %}
+<header class="progression-heading guild-hall-heading">
+  <div>
+    <h1>Guild Hall</h1>
+    <p>Guild XP is earned only from quests completed while a walker actively serves that guild.</p>
+  </div>
+  <div class="guild-hall-crests" aria-hidden="true"><span>⚔️</span><span>🔮</span><span>🗝️</span><span>🗡️</span></div>
+</header>
+
+<aside class="guild-hall-notice parchment-panel" style="background-image: url('{% static 'img/daggerwalk/scroll.png' %}');">
+  <strong>Seeking membership?</strong>
+  <span>Complete a quest, then use <code>!guild join &lt;guild&gt;</code> and <code>!guild confirm</code> in Twitch chat. Changing allegiance begins a 30-day cooldown.</span>
+</aside>
+
+<div class="progression-grid guild-hall-grid">
+  {% for guild in guilds %}
+    <article class="progression-card guild-card">
+      <header class="guild-card-header">
+        <span class="guild-card-crest" aria-hidden="true">{{ guild.emoji }}</span>
+        <div>
+          <h2>{{ guild.name }}</h2>
+          <span>From {{ guild.titles.0 }} to {{ guild.titles.9 }}</span>
+        </div>
+      </header>
+
+      <dl class="guild-ledger">
+        <div><dt>Total XP</dt><dd>{{ guild.total_xp }}</dd></div>
+        <div><dt>Active Service</dt><dd>{{ guild.active_service_xp }} XP</dd></div>
+        <div><dt>Walkers</dt><dd>{{ guild.contributors }}</dd></div>
+        <div><dt>Average</dt><dd>{{ guild.average_per_contributor }} XP</dd></div>
+      </dl>
+
+      <div class="guild-card-columns">
+        <section>
+          <h3>Top Contributors</h3>
+          <ol class="guild-standing-list">
+            {% for walker in guild.top_contributors %}
+              <li><span class="guild-standing-number">{{ forloop.counter }}</span><a href="{% url 'daggerwalk_walker' walker.twitch_username %}">{{ walker.twitch_username }}</a><strong>{{ walker.guild_xp_value }} XP</strong></li>
+            {% empty %}
+              <li class="guild-empty">No service recorded yet.</li>
+            {% endfor %}
+          </ol>
+        </section>
+
+        <section>
+          <h3>Ranks of the Order</h3>
+          <ol class="guild-rank-ladder">
+            {% for rank in guild.rank_ladder %}
+              <li class="{% if rank.count %}occupied{% endif %}"><span>{{ rank.level }}</span><strong>{{ rank.title }}</strong><small>{{ rank.count }}</small></li>
+            {% endfor %}
+          </ol>
+        </section>
+      </div>
+
+      <footer class="guild-card-footer">
+        <section>
+          <h3>Recent Promotions</h3>
+          <ul class="progression-list">
+            {% for event in guild.recent_promotions %}
+              <li><a href="{% url 'daggerwalk_walker' event.profile.twitch_username %}">{{ event.profile.twitch_username }}</a><span>{{ event.payload.title }}</span></li>
+            {% empty %}<li class="muted">The ledger is empty.</li>{% endfor %}
+          </ul>
+        </section>
+        <section>
+          <h3>Guild Monuments</h3>
+          <ul class="progression-list progression-monument-list">
+            {% for monument in guild.monuments %}
+              <li>{{ monument.poi.emoji }} <a href="{% url 'daggerwalk' %}?monument={{ monument.id }}">{{ monument.poi.name }}</a></li>
+            {% empty %}<li class="muted">None raised yet.</li>{% endfor %}
+          </ul>
+        </section>
+      </footer>
+    </article>
+  {% endfor %}
+</div>
+{% endblock %}

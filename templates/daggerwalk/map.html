@@ -42,6 +42,7 @@
       
       <label><input type="checkbox" id="toggle-quest" checked> Quest</label>
       <label><input type="checkbox" id="toggle-pois"> POIs</label>
+      <label><input type="checkbox" id="toggle-monuments"> Monuments</label>
       <label><input type="checkbox" id="toggle-shapes"> Labels</label>
     </div>
   </div>
@@ -50,6 +51,7 @@
 {# Data elements used by JS #}
 {{ logs_json|json_script:"logs-data" }}
 {{ poi_json|json_script:"poi-data" }}
+{{ monuments_json|json_script:"monuments-data" }}
 {{ quest_json|json_script:"quest-data" }}
 {{ shape_data|json_script:"shape-data" }}
 

@@ -5,25 +5,31 @@
     <table class="styled-table" id="leaderboard">
       <thead>
           <tr>
-              <th>#</th>
-              <th>User</th>
-              <th>Total XP</th>
+              <th class="leaderboard-rank">#</th>
+              <th class="leaderboard-user">Walker</th>
+              <th class="leaderboard-renown">Renown</th>
+              <th class="leaderboard-guild">Guild</th>
+              <th class="leaderboard-xp">XP</th>
+              <th class="leaderboard-quests">Quests</th>
           </tr>
       </thead>
       <tbody>
         {% for row in leaderboard %}
           <tr>
-              <td class="leaderboard-position">
-                  <strong>{{ forloop.counter }}</strong>
+              <td class="leaderboard-rank leaderboard-position">
+                  <strong>{{ row.position }}</strong>
               </td>
               
-              <td>
-                  <a href="https://www.twitch.tv/{{ row.twitch_username }}" target="_blank" rel="noopener">
-                      {{ row.twitch_username }}
-                  </a>
+              <td class="leaderboard-user">
+                  <span class="leaderboard-walker">
+                    {% if row.profile_image_url %}<img src="{{ row.profile_image_url }}" alt="">{% endif %}
+                    <a href="{% url 'daggerwalk_walker' row.username %}">{{ row.username }}</a>
+                  </span>
               </td>
-
-              <td><strong>{{ row.total_xp }}</strong></td>
+              <td class="leaderboard-renown">{{ row.renown_title }}</td>
+              <td class="leaderboard-guild">{% if row.guild %}{{ row.guild.emoji }} {{ row.guild.title }}{% else %}—{% endif %}</td>
+              <td class="leaderboard-xp"><strong>{{ row.xp }}</strong></td>
+              <td class="leaderboard-quests">{{ row.quests }}</td>
           </tr>
         {% endfor %}
       </tbody>

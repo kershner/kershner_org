@@ -7,6 +7,8 @@
 $error: #ff6b6b
 $border-width: 0.3rem
 $border-radius: 0.2rem
+$divider-color: rgba(255, 255, 255, 0.08)
+$strong-divider-color: rgba(255, 255, 255, 0.12)
 
 $primary-font-family: Helvetica, Arial, sans-serif
 $secondary-font-family: Georgia, serif
@@ -312,12 +314,6 @@ a
     gap: 0.5rem
     z-index: 999
 
-    &.open
-      .menu-toggle
-        color: var(--background-color)
-        background: var(--accent-color)
-        border-radius: $border-radius $border-radius 0 0 
-
     .menu-toggle
       display: flex
       align-items: center
@@ -329,10 +325,6 @@ a
       border-color: transparent
       border-radius: $border-radius
       
-      &:hover
-        color: var(--background-color)
-        background: var(--accent-color)
-
       .title
         margin: 0
         font-family: $secondary-font-family
@@ -343,6 +335,17 @@ a
       .menu-icon
         font-size: 1.25rem
         line-height: 1.25rem
+
+    &.open .menu-toggle,
+    .menu-toggle:hover
+      color: var(--background-color)
+      background: var(--accent-color)
+
+      .title
+        color: var(--background-color)
+
+    &.open .menu-toggle
+      border-radius: $border-radius $border-radius 0 0
     
     .site-menu
       position: relative
@@ -363,6 +366,16 @@ a
           border-bottom: 1px solid var(--alternate-dark)
           &:last-of-type
             border-bottom: none
+
+          &.site-control-links
+            display: flex
+            gap: 0.35rem
+
+            a
+              +button-style
+              flex: 0 0 auto
+              text-align: center
+              white-space: nowrap
 
           .site-control-label
             text-align: right
@@ -398,7 +411,582 @@ a
             cursor: pointer !important
             color: var(--accent-color)
             font-weight: bold
-              
+
+.progression-body
+  overflow: auto
+
+.progression-page
+  width: min(72rem, calc(100% - 2rem))
+  margin: 0 auto
+  padding: 1rem 0 3rem
+
+.progression-page-header
+  display: flex
+  align-items: center
+  justify-content: space-between
+  gap: 1rem
+  padding-bottom: 0.75rem
+  margin-bottom: 1.5rem
+  border-bottom: $border-width solid var(--accent-color)
+
+.progression-home-link
+  font-family: $secondary-font-family
+  font-size: 1.25rem
+
+.progression-actions
+  display: flex
+  align-items: center
+  flex-wrap: wrap
+  gap: 0.5rem
+  margin: 1rem 0 2rem
+
+  a
+    +button-style
+
+.progression-heading
+  margin-bottom: 1.5rem
+
+  h1
+    margin: 0
+    color: var(--accent-color)
+    font-family: $secondary-font-family
+
+  p
+    margin-bottom: 0
+
+.progression-intro
+  max-width: 50rem
+  line-height: 1.5
+
+  h4
+    margin-bottom: 0.5rem
+
+  p
+    margin: 0.4rem 0
+
+.about-tabs h4 + .progression-grid,
+.about-tabs h4 + .progression-table-wrapper
+  margin-top: 1rem
+
+.progression-grid
+  display: grid
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr))
+  gap: 1rem
+  margin-bottom: 2rem
+
+.guild-summary-grid,
+.chronicle-details,
+.guild-hall-grid
+  grid-template-columns: repeat(2, minmax(0, 1fr))
+
+.guild-hall-grid
+  gap: 2.25rem
+
+.guild-hall-heading
+  display: flex
+  align-items: flex-end
+  justify-content: space-between
+  gap: 2rem
+
+.guild-hall-crests
+  display: flex
+  gap: 0.35rem
+  font-size: 1.6rem
+
+  span
+    display: grid
+    width: 2.5rem
+    height: 2.5rem
+    place-items: center
+    border: 1px solid var(--accent-color)
+    border-radius: $border-radius
+    background: var(--alternate-dark)
+
+.guild-hall-notice
+  display: flex
+  align-items: baseline
+  gap: 0.75rem
+  margin-bottom: 1.5rem
+  padding: 1.5rem 2rem
+
+  strong
+    white-space: nowrap
+
+.guild-card
+  overflow: hidden
+
+  h3
+    padding-bottom: 0.4rem
+    border-bottom: 1px solid var(--accent-color)
+
+.guild-card-header
+  display: flex
+  align-items: center
+  gap: 1rem
+  padding: 1.15rem
+  background: var(--background-color)
+
+  h2
+    margin: 0
+
+  span:not(.guild-card-crest)
+    font-family: $secondary-font-family
+    font-size: 0.8rem
+    opacity: 0.7
+
+.guild-card-crest
+  display: grid
+  flex: 0 0 4rem
+  width: 4rem
+  height: 4rem
+  place-items: center
+  border: 2px solid var(--accent-color)
+  border-radius: $border-radius
+  background: var(--background-color)
+  font-size: 2rem
+
+.guild-ledger,
+.quest-detail-ledger
+  display: grid
+  padding: 0.75rem 1rem
+  background: var(--alternate-dark)
+
+  div
+    padding: 0 0.6rem
+    border-left: 1px solid $strong-divider-color
+
+    &:first-child
+      padding-left: 0
+      border-left: 0
+
+  dt
+    color: var(--accent-color)
+    font-size: 0.68rem
+    font-weight: bold
+    text-transform: uppercase
+
+  dd
+    margin: 0.2rem 0 0
+    font-weight: bold
+
+.guild-ledger
+  grid-template-columns: repeat(4, minmax(0, 1fr))
+  margin: 0
+  border-top: 1px solid $divider-color
+  border-bottom: 1px solid $divider-color
+
+.guild-card-columns
+  display: grid
+  grid-template-columns: repeat(2, minmax(0, 1fr))
+  gap: 1.25rem
+  padding: 1rem
+
+.guild-standing-list,
+.guild-rank-ladder
+  margin: 0
+  padding: 0
+  list-style: none
+
+.guild-standing-list li
+  display: grid
+  grid-template-columns: 1.5rem minmax(0, 1fr) auto
+  align-items: center
+  gap: 0.4rem
+  min-height: 1.8rem
+  border-bottom: 1px solid $divider-color
+  font-size: 0.85rem
+
+  strong
+    color: var(--accent-color)
+    font-size: 0.75rem
+
+.guild-standing-number
+  display: grid
+  width: 1.25rem
+  height: 1.25rem
+  place-items: center
+  border: 1px solid var(--accent-color)
+  border-radius: $border-radius
+  color: var(--accent-color)
+  font-size: 0.65rem
+  font-weight: bold
+
+.guild-standing-list .guild-empty
+  display: block
+  padding: 0.5rem 0
+  opacity: 0.7
+
+.guild-rank-ladder li
+  display: grid
+  grid-template-columns: 1.5rem minmax(0, 1fr) 1.5rem
+  align-items: center
+  gap: 0.35rem
+  min-height: 1.55rem
+  border-bottom: 1px solid $divider-color
+  font-size: 0.78rem
+  opacity: 0.65
+
+  > span
+    color: var(--accent-color)
+    font-size: 0.65rem
+    font-weight: bold
+
+  small
+    text-align: right
+
+  &.occupied
+    opacity: 1
+
+    small
+      color: var(--accent-color)
+      font-weight: bold
+
+.guild-card-footer
+  display: grid
+  grid-template-columns: repeat(2, minmax(0, 1fr))
+  gap: 1.25rem
+  padding: 1rem
+  border-top: 1px solid var(--accent-color)
+
+  .progression-list
+    font-size: 0.8rem
+
+.progression-card,
+.progression-filter
+  border-left: $border-width solid var(--accent-color)
+  border-radius: $border-radius
+  background: var(--alternate-dark)
+
+.progression-card
+  padding: 1rem
+
+  h2,
+  h3
+    margin: 0 0 0.65rem
+    font-family: $secondary-font-family
+
+  h2
+    color: var(--accent-color)
+
+  h3:not(:first-child)
+    margin-top: 1.5rem
+
+  p
+    margin: 0.5rem 0
+
+.progression-card.guild-card
+  padding: 0
+  background: var(--background-color)
+
+.parchment-panel
+  background-repeat: no-repeat
+  background-position: center
+  background-size: 100% 100%
+  color: #1a1a1a
+
+.guild-hall-notice.parchment-panel
+  border: 0
+
+.guild-hall-notice.parchment-panel,
+.chronicle-guild-scroll
+  strong,
+  code
+    color: inherit
+
+.chronicle-guild-scroll
+  padding: 1.5rem 2rem
+  border-left: 0
+
+  h2
+    color: inherit
+
+.quest-detail-heading
+  margin-bottom: 1rem
+
+.quest-detail-scroll
+  margin: 0 0 1.5rem
+
+.quest-detail-ledger
+  grid-template-columns: repeat(4, minmax(0, 1fr))
+  margin: 0 0 1.5rem
+  border-left: $border-width solid var(--accent-color)
+
+  div
+    padding: 0 0.75rem
+
+.quest-participants
+  h2
+    margin-bottom: 1rem
+
+.quest-participants .quest-participant-list
+  display: flex
+  flex-wrap: wrap
+  gap: 0.5rem
+  margin: 0
+  padding: 0
+  list-style: none
+
+  a
+    display: flex
+    align-items: center
+    gap: 0.5rem
+    padding: 0.45rem 0.6rem
+    border: 1px solid var(--accent-color)
+    border-radius: $border-radius
+    text-decoration: none
+
+    &:hover
+      background: var(--accent-color)
+      color: var(--background-color)
+
+  img
+    width: 1.5rem
+    height: 1.5rem
+    border-radius: 50%
+    object-fit: cover
+
+.progression-list
+  margin: 0
+  padding-left: 1.25rem
+
+  li
+    padding: 0.25rem 0
+
+    span
+      float: right
+      margin-left: 1rem
+
+.progression-monument-list
+  list-style: none
+  padding-left: 0
+
+.progression-filter
+  display: flex
+  align-items: flex-end
+  flex-wrap: wrap
+  gap: 0.75rem
+  padding: 1rem
+  margin-bottom: 1.5rem
+
+  label
+    display: flex
+    flex-direction: column
+    gap: 0.25rem
+    font-size: 0.8rem
+    font-weight: bold
+
+  input,
+  select
+    min-width: 9rem
+    padding: 0.4rem
+    border: 1px solid var(--accent-color)
+    border-radius: $border-radius
+    background: var(--background-color)
+    color: var(--text-color)
+
+  button
+    all: unset
+    +button-style
+    padding: 0.45rem 0.75rem
+
+.progression-table-wrapper
+  overflow-x: auto
+
+.progression-table
+  min-width: 38rem
+  table-layout: auto
+
+  td,
+  th
+    vertical-align: top
+
+.monument-table
+  min-width: 64rem
+  table-layout: fixed
+
+  td
+    overflow-wrap: anywhere
+
+  th:nth-child(1)
+    width: 27%
+
+  th:nth-child(2)
+    width: 20%
+
+  th:nth-child(3)
+    width: 16%
+
+  th:nth-child(4)
+    width: 19%
+
+  th:nth-child(5)
+    width: 10%
+
+  th:nth-child(6)
+    width: 8%
+
+.table-action
+  +button-style
+
+.walker-avatar
+  width: 4.5rem
+  height: 4.5rem
+  border-radius: 50%
+  object-fit: cover
+  background: var(--alternate-dark)
+
+.muted
+  opacity: 0.7
+
+.chronicle-hero
+  h1
+    margin: 0 0 0.35rem
+    font-family: $secondary-font-family
+
+.chronicle-identity
+  display: flex
+  align-items: center
+  gap: 1rem
+
+  p
+    margin: 0
+
+.chronicle-stats
+  display: grid
+  grid-template-columns: repeat(3, minmax(0, 1fr))
+  gap: 1rem
+  margin: 1rem 0 0
+  padding-top: 1rem
+  border-top: 1px solid var(--accent-color)
+
+  div
+    min-width: 0
+
+  dt
+    color: var(--accent-color)
+    font-size: 0.75rem
+    font-weight: bold
+
+  dd
+    margin: 0.2rem 0 0
+
+.chronicle-hero + .chronicle-details
+  margin-top: 1rem
+
+.progression-section
+  > h2
+    margin: 0 0 1rem
+    color: var(--accent-color)
+    font-family: $secondary-font-family
+
+.chronicle-deeds,
+.progression-section
+  margin-top: 2rem
+
+.chronicle-quest-table
+  table-layout: fixed
+
+  th:nth-child(2),
+  th:nth-child(3),
+  td:nth-child(2),
+  td:nth-child(3)
+    width: 6rem
+    white-space: nowrap
+
+@media (max-width: $mobile-breakpoint)
+  .progression-body .top-row
+    min-height: 5.25rem
+
+  .progression-page-header
+    align-items: flex-start
+    flex-direction: column
+
+  .guild-summary-grid,
+  .chronicle-details,
+  .guild-hall-grid
+    grid-template-columns: 1fr
+
+  .guild-hall-heading
+    align-items: flex-start
+    flex-direction: column
+    gap: 1rem
+
+  .guild-hall-notice
+    align-items: flex-start
+    flex-direction: column
+
+  .guild-ledger,
+  .quest-detail-ledger
+    grid-template-columns: repeat(2, minmax(0, 1fr))
+    row-gap: 0.75rem
+
+    div:nth-child(3)
+      padding-left: 0
+      border-left: 0
+
+  .guild-card-columns,
+  .guild-card-footer
+    grid-template-columns: 1fr
+
+  .progression-filter
+    align-items: stretch
+    flex-direction: column
+
+    input,
+    select
+      width: 100%
+      box-sizing: border-box
+
+  .monument-table-wrapper
+    overflow: visible
+
+  .monument-table
+    display: block
+    min-width: 0
+
+    thead
+      display: none
+
+    tbody,
+    tr,
+    td
+      display: block
+
+    tr
+      margin-bottom: 1rem
+      border-left: $border-width solid var(--accent-color)
+      background: var(--alternate-dark)
+
+    tbody td
+      display: grid
+      grid-template-columns: 5rem minmax(0, 1fr)
+      gap: 0.75rem
+      min-height: 1.25rem
+      padding: 0.45rem 0.75rem
+
+      &::before
+        color: var(--accent-color)
+        content: attr(data-label)
+        font-size: 0.7rem
+        font-weight: bold
+        text-transform: uppercase
+
+      &[colspan]
+        display: block
+
+        &::before
+          display: none
+
+    .monument-cell-value
+      min-width: 0
+      overflow-wrap: anywhere
+
+    tr:hover td::before
+      color: var(--background-color)
+
+  .chronicle-stats
+    grid-template-columns: repeat(2, minmax(0, 1fr))
+
 .tabs
   input
     display: none
@@ -430,7 +1018,7 @@ a
     padding-top: 1.5rem
 
   // "Selected" styles
-  @for $i from 1 through 5
+  @for $i from 1 through 6
     // tab label
     input:nth-of-type(#{$i}):checked ~ label:nth-of-type(#{$i})
       font-weight: bold
@@ -665,18 +1253,69 @@ a
 
 .leaderboard-wrapper
   padding-top: 1rem
+  overflow-x: auto
   
 #leaderboard
-  :is(th, td):first-child
-    width: 5%
+  table-layout: auto
+
+  .leaderboard-rank
+    width: 3rem
     white-space: nowrap
-  :is(th, td):nth-child(2),
-  :is(th, td):nth-child(3)
-    width: 50%
+
+  .leaderboard-user
+    width: 24%
+
+  .leaderboard-renown
+    width: 25%
+
+  .leaderboard-guild
+    width: 25%
+
+  .leaderboard-xp,
+  .leaderboard-quests
+    width: 5rem
+    white-space: nowrap
 
   td
     white-space: normal
     overflow-wrap: break-word
+
+  .leaderboard-walker
+    display: flex
+    align-items: center
+    gap: 0.45rem
+    min-width: 0
+
+    img
+      width: 1.5rem
+      height: 1.5rem
+      flex: 0 0 1.5rem
+      border-radius: 50%
+      object-fit: cover
+
+@media (max-width: $mobile-breakpoint)
+  #leaderboard
+    font-size: 0.78rem
+
+    th, td
+      padding: 0.45rem 0.3rem
+
+    .leaderboard-guild,
+    .leaderboard-quests
+      display: none
+
+    .leaderboard-rank
+      width: 2rem
+
+    .leaderboard-user
+      width: 34%
+
+    .leaderboard-renown
+      width: auto
+
+    .leaderboard-xp
+      width: 3.5rem
+      text-align: right
 
 .pager
   margin-top: 1rem
@@ -816,7 +1455,7 @@ $quests-text-color: darken(#333333, 10%)
   grid-template-columns: repeat(3, minmax(0, 1fr))
   gap: 0.75rem
 
-  @media (max-width: 900px)
+@media (max-width: 900px)
     grid-template-columns: 1fr
 
 .quests-wrapper
@@ -1009,6 +1648,14 @@ $quests-text-color: darken(#333333, 10%)
 
     .quest-map-link
       display: none
+
+@media (max-width: $mobile-breakpoint)
+  .top-row .menu-container
+    .menu-toggle:hover .title,
+    .menu-toggle.open .title,
+    &.open .menu-toggle .title
+      color: #000 !important
+      -webkit-text-fill-color: #000
 
 .map-container .map-marker.latest-log 
   width: 20px !important

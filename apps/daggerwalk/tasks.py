@@ -1,14 +1,28 @@
-from apps.daggerwalk.serializers import  POISerializer, QuestSerializer, TwitchUserProfileSerializer
+from apps.daggerwalk.serializers import POISerializer, QuestSerializer
 from django.template.loader import render_to_string
 from rest_framework.renderers import JSONRenderer
 from apps.daggerwalk.models import POI, ChatCommandLog, DaggerwalkLog, ProvinceShape, Quest, Region, TwitchUserProfile
+from apps.daggerwalk.cache_keys import (
+    DAGGERWALK_HOME_HTML_CACHE_KEY,
+    GUILD_HALL_HTML_CACHE_KEY,
+    LEADERBOARD_CACHE_KEY,
+    PROGRESSION_HOME_CACHE_KEY,
+    PROGRESSION_SNAPSHOT_CACHE_KEY,
+)
+from apps.daggerwalk.progression import (
+    guild_hall_page_payload,
+    guild_hall_payload,
+    progression_home_payload,
+    progression_snapshot,
+)
 from apps.daggerwalk.quest_gen import ensure_active_quests
 from apps.daggerwalk.utils import (
     calculate_daggerwalk_stats,
     format_weather_name,
     get_latest_log_data,
 )
-from django.db.models import Sum, Count, IntegerField, Max, Max
+from django.db.models import Sum, IntegerField, Max
+from django.db.models import Q
 from django.db.models.functions import Coalesce
 from playwright.sync_api import sync_playwright
 from datetime import datetime, timedelta
@@ -34,7 +48,40 @@ logger = logging.getLogger(__name__)
 BASE_URL = 'https://kershner.org'
 API_BASE_URL = f'{BASE_URL}/api/daggerwalk'
 TWITCH_CLIP_URL = 'https://api.twitch.tv/helix/clips'
-DAGGERWALK_HOME_HTML_CACHE_KEY = 'daggerwalk_home_html'
+@shared_task
+def refresh_daggerwalk_twitch_profiles():
+    """Initial participant enrichment, then weekly refresh for recently active walkers."""
+    cutoff = timezone.now() - timedelta(days=90)
+    profiles = list(
+        TwitchUserProfile.objects.annotate(
+            total_xp_value=Coalesce(Sum("completed_quests__xp"), 0, output_field=IntegerField()),
+            last_command_at=Max("chat_command_logs__timestamp"),
+        ).filter(total_xp_value__gt=0).filter(
+            Q(twitch_user_id__isnull=True) | Q(last_command_at__gte=cutoff)
+        ).order_by("id")
+    )
+    if not profiles:
+        return 0
+    token = get_valid_access_token()
+    headers = {"Authorization": f"Bearer {token}", "Client-Id": settings.DAGGERWALK_TWITCH_CLIENT_ID}
+    updated = 0
+    for start in range(0, len(profiles), 100):
+        batch = profiles[start:start + 100]
+        response = requests.get(
+            "https://api.twitch.tv/helix/users", headers=headers,
+            params=[("login", profile.twitch_username) for profile in batch], timeout=20,
+        )
+        response.raise_for_status()
+        by_login = {item["login"].casefold(): item for item in response.json().get("data", [])}
+        for profile in batch:
+            item = by_login.get(profile.twitch_username.casefold())
+            if not item:
+                continue
+            profile.twitch_user_id = item["id"]
+            profile.twitch_profile_image_url = item.get("profile_image_url", "")
+            profile.save(update_fields=["twitch_user_id", "twitch_profile_image_url"])
+            updated += 1
+    return updated
 
 
 def get_valid_access_token():
@@ -733,19 +780,10 @@ def update_all_daggerwalk_caches():
 
     # 5. Leaderboard
     total_leaderboard_rows = 100
-    excluded_usernames = ["billcrystals", "daggerwalk", "daggerwalk_bot"]
-    leaders_qs = (
-        TwitchUserProfile.objects
-        .annotate(
-            total_xp_value=Coalesce(Sum("completed_quests__xp"), 0, output_field=IntegerField()),
-            completed_quests_count=Count("completed_quests", distinct=True),
-        )
-        .filter(total_xp_value__gt=0)
-        .exclude(twitch_username__in=excluded_usernames)
-        .order_by("-total_xp_value", "twitch_username")[:total_leaderboard_rows]
-    )
-    leaderboard_data = TwitchUserProfileSerializer(leaders_qs, many=True).data
-    cache.set("daggerwalk_leaderboard", leaderboard_data, timeout=None)
+    progression = progression_snapshot()
+    leaderboard_data = list(progression["profiles"].values())[:total_leaderboard_rows]
+    cache.set(PROGRESSION_SNAPSHOT_CACHE_KEY, progression, timeout=None)
+    cache.set(LEADERBOARD_CACHE_KEY, leaderboard_data, timeout=None)
 
     # 6. Map logs (downsample + include related fields)
     two_weeks_ago = timezone.now() - timedelta(weeks=2)
@@ -756,7 +794,7 @@ def update_all_daggerwalk_caches():
         .values(
             "id", "map_pixel_x", "map_pixel_y",
             "region", "location", "weather", "season", "current_song", "created_at",
-            "date", "created_at",
+            "date",
             "region_fk__name", "region_fk__province", "region_fk__climate", "region_fk__emoji",
             "poi__name", "poi__emoji", "poi__type"
         )
@@ -776,9 +814,12 @@ def update_all_daggerwalk_caches():
     cache.set("daggerwalk_map_logs", combined, timeout=None)
 
     # 7. POIs + quests + shapes
-    pois_qs = POI.objects.select_related('region').all()
+    pois_qs = POI.objects.select_related('region').filter(monument__isnull=True)
     poi_json = POISerializer(pois_qs, many=True).data
     cache.set("daggerwalk_map_pois", poi_json, timeout=None)
+    monuments_qs = POI.objects.select_related('region', 'monument', 'monument__owner').filter(monument__isnull=False)
+    monuments_json = POISerializer(monuments_qs, many=True).data
+    cache.set("daggerwalk_map_monuments", monuments_json, timeout=None)
     
     quest_qs = Quest.objects.filter(status="in_progress").select_related("poi", "poi__region").order_by("slot")
     quest_json = QuestSerializer(quest_qs, many=True).data
@@ -795,7 +836,7 @@ def update_all_daggerwalk_caches():
 
     # 8. Rendered home page HTML
     quest_data = QuestSerializer(active_quests, many=True).data
-    html = render_to_string('daggerwalk/index.html', {
+    home_context = {
         "active_quests": active_quests,
         "current_quest": current_quest,
         "previous_quests": previous_quests,
@@ -803,7 +844,21 @@ def update_all_daggerwalk_caches():
         "leaderboard": leaderboard_data,
         "logs_json": combined,
         "poi_json": poi_json,
+        "monuments_json": monuments_json,
         "quest_json": quest_json,
         "shape_data": shape_data,
-    })
+    }
+    guild_summaries = guild_hall_payload()
+    progression_home = progression_home_payload(guild_summaries)
+    cache.set(PROGRESSION_HOME_CACHE_KEY, progression_home, timeout=None)
+    cache.set(
+        GUILD_HALL_HTML_CACHE_KEY,
+        render_to_string(
+            "daggerwalk/guild_hall.html",
+            {"guilds": guild_hall_page_payload([dict(guild) for guild in guild_summaries])},
+        ),
+        timeout=None,
+    )
+    home_context.update(progression_home)
+    html = render_to_string('daggerwalk/index.html', home_context)
     cache.set(DAGGERWALK_HOME_HTML_CACHE_KEY, html, timeout=None)

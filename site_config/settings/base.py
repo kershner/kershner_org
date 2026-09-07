@@ -207,6 +207,27 @@ DAGGERWALK_TWITCH_SECRET = PARAMETERS['daggerwalk_twitch_secret']
 DAGGERWALK_TWITCH_BROADCASTER_ID = PARAMETERS['daggerwalk_twitch_broadcaster_id']
 DAGGERWALK_TWITCH_REFRESH_TOKEN = PARAMETERS['daggerwalk_twitch_refresh_token']
 
+# Daggerwalk progression. These are deliberately plain settings so balancing does
+# not require a migration or bot release.
+DAGGERWALK_RENOWN_LADDER = [
+    (0, "Unknown Traveler"), (1, "Wayfarer"), (60, "Roadwarden"),
+    (200, "Pathfinder"), (400, "Adventurer"), (750, "Knight-Errant"),
+    (1250, "Champion"), (2500, "Hero of the Iliac Bay"), (5000, "Living Legend"),
+]
+DAGGERWALK_MONUMENT_TOKEN_THRESHOLDS = [200, 1250, 2500, 5000]
+DAGGERWALK_REPEAT_MONUMENT_TOKEN_XP = 30000
+DAGGERWALK_GUILD_RANK_THRESHOLDS = [0, 120, 300, 575, 1000, 1450, 2000, 2800, 3700, 5000]
+DAGGERWALK_GUILD_COOLDOWN_DAYS = 30
+DAGGERWALK_MONUMENT_MIN_WORLD_DISTANCE = 32768
+DAGGERWALK_MONUMENT_QUEST_MIN_WORLD_DISTANCE = 32768
+DAGGERWALK_PROGRESSION_EXCLUDED_USERS = ["daggerwalk_bot"]
+DAGGERWALK_QUALIFYING_COMMANDS = [
+    "walk", "stop", "jump", "left", "right", "up", "down", "center",
+    "forward", "back", "cursor", "click", "doubleclick", "map", "song",
+    "use", "weather", "levitate", "toggle_ai", "exit", "gravity", "playvid",
+    "shotgun", "camera", "torch", "killall", "bighop",
+]
+
 PLAYWRIGHT_CHROMIUM_PATH = os.getenv("PLAYWRIGHT_CHROMIUM_PATH", "/opt/playwright-browsers/chromium-1181/chrome-linux/chrome")
 
 YOUTUBE_API_KEY = PARAMETERS['youtube_api_key']

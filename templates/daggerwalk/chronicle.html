@@ -1,0 +1,83 @@
+{% extends "daggerwalk/progression_base.html" %}
+{% load static %}
+{% block title %}{{ profile.twitch_username }} · Walker Chronicle{% endblock %}
+{% block content %}
+<header class="progression-card chronicle-hero">
+  <div class="chronicle-identity">
+    {% if profile.twitch_profile_image_url %}<img class="walker-avatar" src="{{ profile.twitch_profile_image_url }}" alt="">{% else %}<div class="walker-avatar"></div>{% endif %}
+    <div>
+      <h1>{{ profile.twitch_username }}</h1>
+      <p><a href="https://twitch.tv/{{ profile.twitch_username }}">Twitch channel</a> · All-time #{{ summary.position }}</p>
+    </div>
+  </div>
+  <dl class="chronicle-stats">
+    <div><dt>Renown</dt><dd>{{ summary.renown_title }}</dd></div>
+    <div><dt>Lifetime XP</dt><dd>{{ summary.xp }}</dd></div>
+    <div><dt>Quests</dt><dd>{{ summary.quests }}</dd></div>
+    <div><dt>Journey</dt><dd>{{ unique_regions }} regions · {{ unique_pois }} destinations</dd></div>
+    <div><dt>Guild</dt><dd>{% if summary.guild %}{{ summary.guild.emoji }} {{ summary.guild.title }}{% else %}Unaffiliated{% endif %}</dd></div>
+    <div><dt>Monument Tokens</dt><dd>{{ summary.tokens_available }} available · {{ summary.monuments_placed }} used</dd></div>
+  </dl>
+</header>
+
+<div class="progression-grid chronicle-details">
+  <section class="progression-card parchment-panel chronicle-guild-scroll" style="background-image: url('{% static 'img/daggerwalk/scroll.png' %}');">
+    <h2>Guild Service</h2>
+    {% if summary.guild %}
+      <p>{{ summary.guild.emoji }} {{ summary.guild.name }} · <strong>{{ summary.guild.title }}</strong></p>
+      <p>{{ summary.guild.xp }} guild XP{% if summary.guild.next_xp %} · next rank at {{ summary.guild.next_xp }}{% endif %}</p>
+    {% else %}
+      <p>Unaffiliated. Join through Twitch chat with <code>!guild</code> after completing a quest.</p>
+    {% endif %}
+    {% for item in guild_history %}<p class="muted">{{ item.guild.emoji }} {{ item.guild.name }}: {{ item.xp }} XP</p>{% endfor %}
+  </section>
+
+  <section class="progression-card">
+    <h2>Chat Activity</h2>
+    <p><strong>{{ command_count }}</strong> qualifying commands</p>
+    <p>{% for row in commands|slice:':5' %}!{{ row.command }} ({{ row.count }}){% if not forloop.last %} · {% endif %}{% empty %}No qualifying command history.{% endfor %}</p>
+  </section>
+</div>
+
+{% if monuments %}
+<section class="progression-section">
+  <h2>Monuments</h2>
+  <div class="progression-grid">
+    {% for monument in monuments %}
+      <article class="progression-card">
+        <h3>{{ monument.poi.emoji }} {{ monument.poi.name }}</h3>
+        <p>{{ monument.poi.description }}</p>
+        <p class="muted">{{ monument.visit_count }} quest visit{{ monument.visit_count|pluralize }}{% if monument.latest_visit %} · latest {{ monument.latest_visit|date:'M j, Y' }}{% endif %}</p>
+        <a class="table-action" href="{% url 'daggerwalk' %}?monument={{ monument.id }}">View on map</a>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if events %}
+<section class="progression-card chronicle-deeds">
+  <h2>Recent Deeds</h2>
+  {% for event in events %}<p>{{ event.created_at|date:'M j, Y' }} · {{ event.display_name }}{% if event.payload.title %}: {{ event.payload.title }}{% elif event.payload.name %}: {{ event.payload.name }}{% endif %}</p>{% endfor %}
+</section>
+{% endif %}
+
+<section class="progression-section">
+  <h2>Quest History</h2>
+  <div class="progression-table-wrapper">
+    <table class="styled-table progression-table chronicle-quest-table">
+      <thead><tr><th>Quest</th><th>XP</th><th>Completed</th></tr></thead>
+      <tbody>
+        {% for quest in quests %}
+          <tr><td><a href="{% url 'daggerwalk_quest_detail' quest.id %}">{{ quest.quest_name }}</a></td><td>{{ quest.xp }}</td><td>{{ quest.completed_at|date:'M j, Y' }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <nav class="pager" aria-label="Quest history pages">
+    {% if quests.has_previous %}<a class="table-action" href="?page={{ quests.previous_page_number }}">Newer</a>{% endif %}
+    <span>Page {{ quests.number }} of {{ quests.paginator.num_pages }}</span>
+    {% if quests.has_next %}<a class="table-action" href="?page={{ quests.next_page_number }}">Older</a>{% endif %}
+  </nav>
+</section>
+{% endblock %}

@@ -223,9 +223,12 @@ const daggerwalk = {
     
     // Map tab parameter to tab button ID for the second tab group
     const validTabs = {
+      'quests': 'quests-tab-btn',
+      'progression': 'progression-tab-btn',
+      'renown': 'progression-tab-btn',
+      'stats': 'stats-tab-btn',
       'commands': 'commands-tab-btn',
       'songs': 'songs-tab-btn',
-      'schedule': 'schedule-tab-btn',
       'about': 'about-tab-btn'
     };
     

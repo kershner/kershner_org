@@ -2,10 +2,11 @@ from .quest_gen import build_ctx_from_quest, seed_for_quest, unique_description,
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.conf import settings
 from django.db import models
 import random
+import math
 
 
 class Region(models.Model):
@@ -402,6 +403,19 @@ class Quest(models.Model):
                 .exclude(region_id__in=active_region_ids)
             )
 
+            # Prevent a newly selected monument quest from completing instantly.
+            latest_log = DaggerwalkLog.objects.order_by("-created_at").first()
+            if latest_log:
+                radius = settings.DAGGERWALK_MONUMENT_QUEST_MIN_WORLD_DISTANCE
+                nearby_monument_ids = []
+                for monument in Monument.objects.select_related("poi").filter(poi__region=latest_log.region_fk):
+                    if (
+                        (monument.poi.map_pixel_x == latest_log.map_pixel_x and monument.poi.map_pixel_y == latest_log.map_pixel_y)
+                        or math.hypot(monument.world_x - latest_log.world_x, monument.world_z - latest_log.world_z) < radius
+                    ):
+                        nearby_monument_ids.append(monument.poi_id)
+                eligible_qs = eligible_qs.exclude(id__in=nearby_monument_ids)
+
             # Unused first
             used_ids = (
                 Quest.objects.exclude(poi__isnull=True)
@@ -449,6 +463,13 @@ class Quest(models.Model):
 
 class TwitchUserProfile(models.Model):
     twitch_username = models.CharField(max_length=50, unique=True, db_index=True)
+    twitch_user_id = models.CharField(max_length=32, null=True, blank=True, db_index=True)
+    twitch_profile_image_url = models.URLField(max_length=500, blank=True, default="")
+    current_guild = models.CharField(max_length=32, blank=True, default="", db_index=True)
+    monument_token_adjustment = models.IntegerField(
+        default=0,
+        help_text="Admin adjustment to XP-earned Monument Tokens. Positive grants tokens; negative removes them.",
+    )
     completed_quests = models.ManyToManyField(Quest, related_name='completed_by', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -457,9 +478,36 @@ class TwitchUserProfile(models.Model):
 
     @property
     def chat_commands(self):
-        return ChatCommandLog.objects.filter(user__iexact=self.twitch_username)
+        return ChatCommandLog.objects.filter(
+            Q(profile=self) | Q(user__iexact=self.twitch_username)
+        ).distinct()
     
     @property
     def total_xp(self):
         result = self.completed_quests.aggregate(total=Sum('xp'))
         return result['total'] or 0
+
+
+class Monument(models.Model):
+    poi = models.OneToOneField(POI, on_delete=models.CASCADE, related_name="monument")
+    owner = models.ForeignKey(TwitchUserProfile, on_delete=models.PROTECT, related_name="monuments")
+    monument_type = models.CharField(max_length=50, db_index=True)
+    world_x = models.IntegerField()
+    world_z = models.IntegerField()
+    game_date = models.CharField(max_length=255)
+    guild_at_placement = models.CharField(max_length=32, blank=True, default="")
+    renown_title_at_placement = models.CharField(max_length=100)
+    guild_title_at_placement = models.CharField(max_length=100, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.poi.name if self.poi_id else "Monument"
+
+
+class ProgressionEvent(models.Model):
+    profile = models.ForeignKey(TwitchUserProfile, on_delete=models.CASCADE, related_name="progression_events")
+    event_type = models.CharField(max_length=32, db_index=True)
+    quest = models.ForeignKey(Quest, on_delete=models.SET_NULL, null=True, blank=True, related_name="progression_events")
+    monument = models.ForeignKey(Monument, on_delete=models.SET_NULL, null=True, blank=True, related_name="progression_events")
+    payload = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)

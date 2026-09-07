@@ -1,0 +1,27 @@
+{% load kershner_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Daggerwalk Chronicles{% endblock %}</title>
+  <link rel="icon" type="image/png" href="{% settings_value 'BASE_S3_URL' %}/img/daggerwalk/Daggerwalk.ico">
+  <link rel="stylesheet" href="{% settings_value 'BASE_S3_URL' %}/css/daggerwalk.css?v=20260907-mobile-hover-5">
+</head>
+<body class="progression-body">
+  <div class="top-row">
+    <div class="logo-wrapper">
+      <img alt="Daggerwalk Logo" src="{% settings_value 'BASE_S3_URL' %}/img/daggerwalk/Daggerwalk_logo_small.png">
+    </div>
+    {% include "daggerwalk/site_menu.html" %}
+  </div>
+  <main class="progression-page">
+    <header class="progression-page-header">
+      <a class="progression-home-link" href="{% url 'daggerwalk' %}">← Daggerwalk</a>
+    </header>
+    {% block content %}{% endblock %}
+  </main>
+  <script src="{% settings_value 'BASE_S3_URL' %}/js/daggerwalk/daggerwalk.js?v=20260907-tabs"></script>
+  <script>daggerwalk.siteMenu();</script>
+</body>
+</html>

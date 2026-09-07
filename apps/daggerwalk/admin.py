@@ -1,14 +1,216 @@
-from apps.daggerwalk.models import DaggerwalkLog, Quest, Region, RegionMapPart, POI, ProvinceShape, ChatCommandLog, TwitchUserProfile
+from apps.daggerwalk.models import DaggerwalkLog, Quest, Region, RegionMapPart, POI, ProvinceShape, ChatCommandLog, TwitchUserProfile, Monument, ProgressionEvent
 from kershner.mixins.admin_advanced_filter import AdminAdvancedFilterMixin
-from apps.daggerwalk.tasks import post_to_bluesky
+from apps.daggerwalk.tasks import post_to_bluesky, update_all_daggerwalk_caches
+from apps.daggerwalk.progression import GUILDS, MONUMENT_TYPES, monument_token_balance
+from apps.daggerwalk.cache_keys import PROGRESSION_CACHE_KEYS
 from django.forms.models import BaseInlineFormSet
 from django.http import HttpResponseRedirect
 from django.utils.html import format_html
 from django.contrib import messages
+from django import forms
 from urllib.parse import urlencode
 from django.contrib import admin
+from django.core.cache import cache
 from django.urls import reverse
 from django.urls import path
+
+
+class MonumentTypeFilter(admin.SimpleListFilter):
+    title = "monument type"
+    parameter_name = "monument_type"
+
+    def lookups(self, request, model_admin):
+        return [(key, details[0]) for key, details in MONUMENT_TYPES.items()]
+
+    def queryset(self, request, queryset):
+        return queryset.filter(monument_type=self.value()) if self.value() else queryset
+
+
+class MonumentGuildFilter(admin.SimpleListFilter):
+    title = "guild at placement"
+    parameter_name = "guild_at_placement"
+
+    def lookups(self, request, model_admin):
+        return [("unaffiliated", "Unaffiliated"), *((key, guild["name"]) for key, guild in GUILDS.items())]
+
+    def queryset(self, request, queryset):
+        if self.value() == "unaffiliated":
+            return queryset.filter(guild_at_placement="")
+        return queryset.filter(guild_at_placement=self.value()) if self.value() else queryset
+
+
+class MonumentAdminForm(forms.ModelForm):
+    monument_type = forms.ChoiceField(
+        choices=[(key, details[0]) for key, details in MONUMENT_TYPES.items()],
+    )
+    guild_at_placement = forms.ChoiceField(
+        required=False,
+        choices=[("", "Unaffiliated"), *((key, guild["name"]) for key, guild in GUILDS.items())],
+    )
+
+    class Meta:
+        model = Monument
+        fields = "__all__"
+
+
+@admin.register(Monument)
+class MonumentAdmin(admin.ModelAdmin):
+    form = MonumentAdminForm
+    list_display = ("poi", "owner", "monument_type_name", "guild_name", "created_at")
+    list_filter = (MonumentTypeFilter, MonumentGuildFilter, "created_at")
+    search_fields = ("poi__name", "owner__twitch_username", "poi__description")
+    list_select_related = ("poi", "owner")
+    autocomplete_fields = ("poi", "owner")
+    readonly_fields = (
+        "poi", "owner", "monument_type_name", "world_x", "world_z", "game_date",
+        "guild_name", "renown_title_at_placement", "guild_title_at_placement",
+        "created_at", "view_on_map_link",
+    )
+    fieldsets = (
+        ("Monument", {"fields": ("poi", "owner", "monument_type_name", "view_on_map_link", "created_at")}),
+        ("Placement", {"fields": ("world_x", "world_z", "game_date")}),
+        ("Standing at placement", {"fields": ("renown_title_at_placement", "guild_name", "guild_title_at_placement")}),
+    )
+    add_fieldsets = (
+        ("Monument", {"fields": ("poi", "owner", "monument_type")}),
+        ("Placement", {"fields": ("world_x", "world_z", "game_date")}),
+        ("Standing at placement", {"fields": ("renown_title_at_placement", "guild_at_placement", "guild_title_at_placement")}),
+    )
+
+    def get_fieldsets(self, request, obj=None):
+        return self.fieldsets if obj else self.add_fieldsets
+
+    def get_readonly_fields(self, request, obj=None):
+        return self.readonly_fields if obj else ()
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if not change:
+            ProgressionEvent.objects.get_or_create(
+                profile=obj.owner, event_type="monument", monument=obj,
+                defaults={"payload": {"name": obj.poi.name, "type": obj.monument_type, "admin": True}},
+            )
+        cache.delete_many(PROGRESSION_CACHE_KEYS)
+        try:
+            update_all_daggerwalk_caches.delay()
+        except Exception:
+            self.message_user(
+                request,
+                "Monument saved, but the cache worker could not be reached. The next Daggerwalk update will refresh it.",
+                level=messages.WARNING,
+            )
+
+    @admin.display(description="Monument type", ordering="monument_type")
+    def monument_type_name(self, obj):
+        return MONUMENT_TYPES.get(obj.monument_type, (obj.monument_type.replace("-", " ").title(),))[0]
+
+    @admin.display(description="Guild", ordering="guild_at_placement")
+    def guild_name(self, obj):
+        return GUILDS.get(obj.guild_at_placement, {}).get("name", "Unaffiliated")
+
+    @admin.display(description="Map")
+    def view_on_map_link(self, obj):
+        if not obj or not obj.pk:
+            return "-"
+        return format_html('<a class="button" href="{}?monument={}" target="_blank">Open</a>', reverse("daggerwalk"), obj.pk)
+
+
+EVENT_LABELS = {
+    "guild_change": "Guild allegiance",
+    "quest": "Quest completed",
+    "renown": "Renown earned",
+    "guild_rank": "Guild promotion",
+    "monument": "Monument raised",
+    "monument_visit": "Monument visited",
+}
+
+
+class ProgressionEventTypeFilter(admin.SimpleListFilter):
+    title = "event"
+    parameter_name = "event_type"
+
+    def lookups(self, request, model_admin):
+        return EVENT_LABELS.items()
+
+    def queryset(self, request, queryset):
+        return queryset.filter(event_type=self.value()) if self.value() else queryset
+
+
+@admin.register(ProgressionEvent)
+class ProgressionEventAdmin(admin.ModelAdmin):
+    list_display = ("created_at", "profile_link", "event_name", "event_summary", "related_record")
+    list_filter = (ProgressionEventTypeFilter, "created_at")
+    search_fields = (
+        "profile__twitch_username", "quest__description", "quest__poi__name",
+        "monument__poi__name",
+    )
+    list_select_related = ("profile", "quest", "quest__poi", "monument", "monument__poi")
+    date_hierarchy = "created_at"
+    ordering = ("-created_at",)
+    readonly_fields = (
+        "created_at", "profile_link", "event_name", "event_summary",
+        "quest_link", "monument_link", "event_type", "payload",
+    )
+    fieldsets = (
+        ("Event", {"fields": ("created_at", "profile_link", "event_name", "event_summary")}),
+        ("Related records", {"fields": ("quest_link", "monument_link")}),
+        ("Technical details", {"fields": ("event_type", "payload"), "classes": ("collapse",)}),
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    @admin.display(description="Walker", ordering="profile__twitch_username")
+    def profile_link(self, obj):
+        return self._admin_link(obj.profile, obj.profile.twitch_username)
+
+    @admin.display(description="Event", ordering="event_type")
+    def event_name(self, obj):
+        return EVENT_LABELS.get(obj.event_type, obj.event_type.replace("_", " ").title())
+
+    @admin.display(description="What happened")
+    def event_summary(self, obj):
+        payload = obj.payload or {}
+        if obj.event_type == "quest" and obj.quest:
+            return f"Earned {obj.quest.xp} XP for completing {obj.quest.quest_name}"
+        if obj.event_type == "renown":
+            return f"Reached {payload.get('title', 'a new Renown rank')}"
+        if obj.event_type == "guild_rank":
+            return f"Promoted to {payload.get('title', 'a new rank')} in {self._guild_name(payload.get('guild'))}"
+        if obj.event_type == "guild_change":
+            old_guild, new_guild = payload.get("old_guild"), payload.get("new_guild")
+            if new_guild:
+                return f"Joined {self._guild_name(new_guild)}" if not old_guild else f"Changed allegiance from {self._guild_name(old_guild)} to {self._guild_name(new_guild)}"
+            return f"Left {self._guild_name(old_guild)}" if old_guild else "Became unaffiliated"
+        if obj.event_type == "monument" and obj.monument:
+            return f"Raised {obj.monument.poi.name}"
+        if obj.event_type == "monument_visit" and obj.monument:
+            return f"{obj.monument.poi.name} was visited during a quest"
+        return "Progression history recorded"
+
+    @admin.display(description="Related record")
+    def related_record(self, obj):
+        return self.quest_link(obj) if obj.quest_id else self.monument_link(obj)
+
+    @admin.display(description="Quest")
+    def quest_link(self, obj):
+        return self._admin_link(obj.quest, obj.quest.quest_name) if obj.quest_id else "—"
+
+    @admin.display(description="Monument")
+    def monument_link(self, obj):
+        return self._admin_link(obj.monument, obj.monument.poi.name) if obj.monument_id else "—"
+
+    @staticmethod
+    def _guild_name(key):
+        return GUILDS.get(key, {}).get("name", str(key or "Unknown guild").replace("-", " ").title())
+
+    @staticmethod
+    def _admin_link(obj, label):
+        url = reverse(f"admin:{obj._meta.app_label}_{obj._meta.model_name}_change", args=[obj.pk])
+        return format_html('<a href="{}">{}</a>', url, label)
 
 
 
@@ -355,7 +557,7 @@ class TwitchUserProfileAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
     list_display = ('twitch_username', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('twitch_username',)
-    readonly_fields = ('id', 'twitch_username', 'created_at', 'view_all_chat_commands', 'total_xp')
+    readonly_fields = ('id', 'twitch_username', 'created_at', 'view_all_chat_commands', 'total_xp', 'monument_token_summary')
     autocomplete_fields = ('completed_quests',)
     inlines = [ChatCommandLogInline]
 
@@ -373,6 +575,14 @@ class TwitchUserProfileAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
                 'total_xp',
                 'completed_quests',
             ),
+            'classes': ('collapse',),
+        }),
+        ('Monument Tokens', {
+            'fields': (
+                'monument_token_summary',
+                'monument_token_adjustment',
+            ),
+            'description': 'Use a positive adjustment to grant tokens or a negative adjustment to remove them. Existing monuments are never removed.',
         }),
     )
 
@@ -384,6 +594,26 @@ class TwitchUserProfileAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
         if 'completed_quests' in form.base_fields:
             form.base_fields['completed_quests'].queryset = Quest.objects.filter(status='completed')
         return form
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if 'monument_token_adjustment' in form.changed_data:
+            cache.delete_many(PROGRESSION_CACHE_KEYS)
+            try:
+                update_all_daggerwalk_caches.delay()
+            except Exception:
+                self.message_user(
+                    request,
+                    "Token adjustment saved, but the cache worker could not be reached. The next Daggerwalk update will refresh it.",
+                    level=messages.WARNING,
+                )
+
+    @admin.display(description='Current balance')
+    def monument_token_summary(self, obj):
+        if not obj or not obj.pk:
+            return '-'
+        earned, adjustment, used, available = monument_token_balance(obj)
+        return f'{available} available ({earned} XP-earned {adjustment:+d} admin adjustment − {used} used)'
 
     def view_all_chat_commands(self, obj):
         if not obj or not obj.pk:

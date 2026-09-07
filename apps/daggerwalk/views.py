@@ -1,4 +1,4 @@
-from .models import POI, DaggerwalkLog, Quest, Region, ChatCommandLog, TwitchUserProfile
+from .models import POI, DaggerwalkLog, Quest, Region, ChatCommandLog, TwitchUserProfile, Monument, ProgressionEvent
 from django.contrib.admin.views.decorators import staff_member_required
 from rest_framework.decorators import api_view, permission_classes
 from apps.daggerwalk.quest_gen import complete_and_rotate_quest, ensure_active_quests
@@ -9,13 +9,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
 from django.utils.dateparse import parse_datetime
 from rest_framework.renderers import JSONRenderer
-from apps.daggerwalk.models import ChatCommandLog
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from django.db.models.functions import Lower
+from django.db.models.functions import Coalesce, Lower
+from django.db.models import Count, IntegerField, Sum, Max, Q
+from django.core.paginator import Paginator
 from apps.api.views import BaseListAPIView
 from rest_framework.views import APIView
-from django.utils.text import slugify
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.core.cache import cache
@@ -24,9 +24,7 @@ from django.http import HttpResponse
 from urllib.parse import urlencode
 from rest_framework import status
 from django.utils import timezone
-from .models import ProvinceShape
 from django.urls import reverse
-from datetime import timedelta
 from .utils import EST_TIMEZONE
 from django.conf import settings
 from .serializers import (
@@ -37,12 +35,17 @@ from .serializers import (
     RegionSerializer,
 )
 import logging
+from .cache_keys import (
+    DAGGERWALK_HOME_HTML_CACHE_KEY,
+    GUILD_HALL_HTML_CACHE_KEY,
+    LEADERBOARD_CACHE_KEY,
+    PROGRESSION_CACHE_KEYS,
+    PROGRESSION_HOME_CACHE_KEY,
+)
+from .progression import GUILDS, MONUMENT_TYPES, cached_progression_snapshot, change_guild, guild_hall_page_payload, place_monument, profile_payload, progression_home_payload, resolve_profile
 
 
 logger = logging.getLogger(__name__)
-
-
-DAGGERWALK_HOME_HTML_CACHE_KEY = 'daggerwalk_home_html'
 
 
 def get_command_state():
@@ -58,6 +61,27 @@ def get_command_state():
         "last_walk": latest("walk"),
         "last_command": latest(),
     }
+
+
+def _bot_authorized(request):
+    api_key = getattr(settings, "DAGGERWALK_API_KEY", None)
+    return bool(api_key and request.headers.get("Authorization") == f"Bearer {api_key}")
+
+
+def _invalidate_progression_caches(keys=PROGRESSION_CACHE_KEYS):
+    try:
+        cache.delete_many(keys)
+    except Exception:
+        logger.exception("Could not invalidate Daggerwalk progression caches")
+
+
+def _queue_cache_rebuild():
+    try:
+        update_all_daggerwalk_caches.delay()
+    except Exception:
+        # Database mutations have already committed; a cache outage must not turn
+        # a successful guild, monument, or quest action into a false API failure.
+        logger.exception("Could not queue Daggerwalk cache rebuild")
 
 
 # @method_decorator(cache_page(60 * 60 * 24 * 30), name="dispatch")  # 30 days
@@ -87,18 +111,29 @@ class DaggerwalkHomeView(APIView):
                 .order_by("-created_at")[:10]
             )
             cache.set("daggerwalk_previous_quests", previous_quests, timeout=None)
+        leaderboard = cache.get(LEADERBOARD_CACHE_KEY)
+        if leaderboard is None:
+            leaderboard = list(cached_progression_snapshot()["profiles"].values())[:100]
+            cache.set(LEADERBOARD_CACHE_KEY, leaderboard, timeout=None)
         quest_data = QuestSerializer(active_quests, many=True).data
-        return render(request, self.template_path, {
+        context = {
             "active_quests": active_quests,
             "current_quest": quest,
             "previous_quests": previous_quests,
             "active_quests_json": JSONRenderer().render(quest_data).decode("utf-8"),
-            "leaderboard": cache.get("daggerwalk_leaderboard") or [],
+            "leaderboard": leaderboard,
             "logs_json": cache.get("daggerwalk_map_logs") or [],
             "poi_json": cache.get("daggerwalk_map_pois") or [],
+            "monuments_json": cache.get("daggerwalk_map_monuments") or [],
             "quest_json": cache.get("daggerwalk_map_quest") or [],
             "shape_data": cache.get("daggerwalk_map_shape_data") or [],
-        })
+        }
+        progression_home = cache.get(PROGRESSION_HOME_CACHE_KEY)
+        if progression_home is None:
+            progression_home = progression_home_payload()
+            cache.set(PROGRESSION_HOME_CACHE_KEY, progression_home, timeout=None)
+        context.update(progression_home)
+        return render(request, self.template_path, context)
 
 
 def completed_quest_detail(request, quest_id):
@@ -113,6 +148,91 @@ def completed_quest_detail(request, quest_id):
         "quest": quest,
         "participants": participants,
     })
+
+
+def walker_chronicle(request, username):
+    profile = TwitchUserProfile.objects.filter(twitch_username__iexact=username).first()
+    if not profile:
+        return HttpResponse(status=404)
+    snapshot = cached_progression_snapshot()
+    summary = snapshot["profiles"].get(profile.twitch_username.casefold())
+    if summary is None:
+        snapshot = cached_progression_snapshot(refresh=True)
+        summary = snapshot["profiles"].get(profile.twitch_username.casefold())
+    if summary is None:
+        return HttpResponse(status=404)
+    if username != profile.twitch_username:
+        return redirect("daggerwalk_walker", username=profile.twitch_username, permanent=True)
+    guild_credits = profile.progression_events.filter(event_type="quest").exclude(
+        payload__guild=""
+    ).values("payload__guild").annotate(
+        total=Coalesce(Sum("quest__xp"), 0, output_field=IntegerField())
+    )
+    profile._guild_xp_by_key = {row["payload__guild"]: row["total"] for row in guild_credits}
+    qualifying = profile.chat_commands.filter(command__in=settings.DAGGERWALK_QUALIFYING_COMMANDS)
+    command_rows = list(qualifying.values("command").annotate(count=Count("id")).order_by("-count", "command"))
+    guild_history = [
+        {"guild": info, "xp": profile._guild_xp_by_key[key]}
+        for key, info in GUILDS.items() if key in profile._guild_xp_by_key
+    ]
+    quests = profile.completed_quests.select_related("poi", "poi__region").order_by("-completed_at")
+    quest_page = Paginator(quests, 15).get_page(request.GET.get("page"))
+    monuments = list(profile.monuments.select_related("poi", "poi__region").annotate(
+        visit_count=Count("progression_events", filter=Q(progression_events__event_type="monument_visit")),
+        latest_visit=Max("progression_events__created_at", filter=Q(progression_events__event_type="monument_visit")),
+    ))
+    events = list(profile.progression_events.select_related("quest", "monument", "monument__poi").order_by("-created_at")[:10])
+    event_labels = {
+        "guild_change": "Guild Allegiance", "quest": "Quest Completed",
+        "renown": "Renown Earned", "guild_rank": "Guild Promotion",
+        "monument": "Monument Raised", "monument_visit": "Monument Visited",
+    }
+    for event in events:
+        event.display_name = event_labels.get(event.event_type, event.event_type.replace("_", " ").title())
+    return render(request, "daggerwalk/chronicle.html", {
+        "profile": profile, "summary": summary, "commands": command_rows,
+        "command_count": sum(row["count"] for row in command_rows), "guild_history": guild_history,
+        "monuments": monuments,
+        "events": events,
+        "quests": quest_page, "unique_regions": quests.values("poi__region_id").distinct().count(),
+        "unique_pois": quests.values("poi_id").distinct().count(),
+    })
+
+
+def guild_hall(request):
+    html = cache.get(GUILD_HALL_HTML_CACHE_KEY)
+    if html is None:
+        html = render_to_string(
+            "daggerwalk/guild_hall.html",
+            {"guilds": guild_hall_page_payload()},
+            request=request,
+        )
+        cache.set(GUILD_HALL_HTML_CACHE_KEY, html, timeout=None)
+    return HttpResponse(html)
+
+
+def monument_registry(request):
+    monuments = Monument.objects.select_related("poi", "poi__region", "owner").annotate(
+        visit_count=Count("progression_events", filter=Q(progression_events__event_type="monument_visit")),
+        latest_visit=Max("progression_events__created_at", filter=Q(progression_events__event_type="monument_visit")),
+    ).order_by("-created_at")
+    filters = {key: request.GET.get(key, "").strip() for key in ("owner", "guild", "type", "region")}
+    if filters["owner"]:
+        monuments = monuments.filter(owner__twitch_username__iexact=filters["owner"])
+    if filters["guild"]:
+        monuments = monuments.filter(guild_at_placement=filters["guild"])
+    if filters["type"]:
+        monuments = monuments.filter(monument_type=filters["type"])
+    if filters["region"]:
+        monuments = monuments.filter(poi__region__name__iexact=filters["region"])
+    monuments = list(monuments[:250])
+    for monument in monuments:
+        monument.type_name = MONUMENT_TYPES.get(monument.monument_type, (monument.monument_type.replace("-", " ").title(),))[0]
+        monument.guild_name = GUILDS.get(monument.guild_at_placement, {}).get("name", monument.guild_at_placement.replace("-", " ").title())
+    return render(request, "daggerwalk/monument_registry.html", {
+        "monuments": monuments, "filters": filters, "guilds": GUILDS,
+        "monument_types": MONUMENT_TYPES,
+    })
     
 
 @api_view(["GET"])
@@ -123,6 +243,7 @@ def daggerwalk_refresh_data(request):
     data = {
         "logs": cache.get("daggerwalk_map_logs") or [],
         "pois": cache.get("daggerwalk_map_pois") or [],
+        "monuments": cache.get("daggerwalk_map_monuments") or [],
         "quests": cache.get("daggerwalk_map_quest") or [],
         "shapes": cache.get("daggerwalk_map_shape_data") or [],
     }
@@ -147,9 +268,7 @@ class DaggerwalkHomeDataView(APIView):
 @csrf_exempt
 def create_daggerwalk_log(request):
     """API endpoint to create a new Daggerwalk log entry along with associated chat logs and quest handling"""
-    API_KEY = getattr(settings, "DAGGERWALK_API_KEY", None)
-    auth_header = request.headers.get("Authorization")
-    if not API_KEY or auth_header != f"Bearer {API_KEY}":
+    if not _bot_authorized(request):
         return Response({"status": "error", "message": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
 
     try:
@@ -194,23 +313,11 @@ def create_daggerwalk_log(request):
                     ))
 
         if chat_logs_to_create:
-            # Case-insensitive lookup: get or create profiles
-            profile_map = {}  # username_lower -> profile_id
-            
-            for uname in usernames:
-                uname_lower = uname.lower()
-                # Try case-insensitive lookup first
-                try:
-                    prof = TwitchUserProfile.objects.get(twitch_username__iexact=uname)
-                except TwitchUserProfile.DoesNotExist:
-                    # Create profile if it doesn't exist
-                    prof = TwitchUserProfile.objects.create(twitch_username=uname)
-                
-                profile_map[uname_lower] = prof.id
+            profile_map = {uname.casefold(): resolve_profile(uname).id for uname in usernames}
             
             # Assign profile IDs to chat logs
             for obj in chat_logs_to_create:
-                pid = profile_map.get(obj.user.lower())
+                pid = profile_map.get(obj.user.casefold())
                 if pid:
                     obj.profile_id = pid
                     
@@ -221,13 +328,27 @@ def create_daggerwalk_log(request):
         completed_quests = []
 
         for active_quest in active_quests:
-            if log_entry.poi_id and active_quest.poi_id == log_entry.poi_id:
+            ordinary_arrival = log_entry.poi_id and active_quest.poi_id == log_entry.poi_id
+            monument_arrival = (
+                hasattr(active_quest.poi, "monument")
+                and active_quest.poi.region_id == log_entry.region_fk_id
+                and active_quest.poi.map_pixel_x == log_entry.map_pixel_x
+                and active_quest.poi.map_pixel_y == log_entry.map_pixel_y
+            )
+            if ordinary_arrival or monument_arrival:
                 complete_and_rotate_quest(
                     active_quest,
                     completed_at=log_entry.created_at,
                     completion_request_log_id=log_entry.id,
                 )
                 completed_quests.append(active_quest)
+                if hasattr(active_quest.poi, "monument"):
+                    monument = active_quest.poi.monument
+                    ProgressionEvent.objects.create(
+                        profile=monument.owner, event_type="monument_visit",
+                        quest=active_quest, monument=monument,
+                        payload={"name": active_quest.poi.name},
+                    )
 
         active_quests = ensure_active_quests()
 
@@ -238,7 +359,15 @@ def create_daggerwalk_log(request):
         current_quest_payload = active_quest_payloads[0] if active_quest_payloads else None
         completed_quest_payload = completed_quest_payloads[0] if completed_quest_payloads else None
 
-        update_all_daggerwalk_caches.delay()
+        progression = cached_progression_snapshot(refresh=bool(completed_quests))
+        if completed_quests:
+            _invalidate_progression_caches([
+                DAGGERWALK_HOME_HTML_CACHE_KEY,
+                PROGRESSION_HOME_CACHE_KEY,
+                GUILD_HALL_HTML_CACHE_KEY,
+                LEADERBOARD_CACHE_KEY,
+            ])
+        _queue_cache_rebuild()
 
         return Response({
             "status": "success",
@@ -251,6 +380,7 @@ def create_daggerwalk_log(request):
             "completed_quests": completed_quest_payloads,
             "active_quests": active_quest_payloads,
             "command_state": get_command_state(),
+            "progression": progression,
         }, status=status.HTTP_201_CREATED)
 
     except KeyError as e:
@@ -259,6 +389,50 @@ def create_daggerwalk_log(request):
     except Exception as e:
         return Response({"status": "error", "message": f"An error occurred: {str(e)}"},
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def bot_progression_snapshot(request):
+    if not _bot_authorized(request):
+        return Response({"status": "error", "message": "Unauthorized"}, status=401)
+    return Response(cached_progression_snapshot())
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@csrf_exempt
+def bot_guild_action(request):
+    if not _bot_authorized(request):
+        return Response({"status": "error", "message": "Unauthorized"}, status=401)
+    try:
+        profile = resolve_profile(request.data["username"], request.data.get("twitch_user_id", ""))
+        payload = change_guild(profile, request.data.get("guild", ""))
+        _invalidate_progression_caches()
+        _queue_cache_rebuild()
+        return Response({"status": "success", "profile": payload})
+    except (KeyError, ValueError) as exc:
+        return Response({"status": "error", "message": str(exc)}, status=400)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@csrf_exempt
+def bot_monument_action(request):
+    if not _bot_authorized(request):
+        return Response({"status": "error", "message": "Unauthorized"}, status=401)
+    try:
+        profile = resolve_profile(request.data["username"], request.data.get("twitch_user_id", ""))
+        monument = place_monument(profile, request.data["monument_type"], request.data["state"])
+        _invalidate_progression_caches()
+        _queue_cache_rebuild()
+        return Response({"status": "success", "profile": profile_payload(profile), "monument": {
+            "id": monument.id, "name": monument.poi.name, "description": monument.poi.description,
+            "region": monument.poi.region.name, "map_pixel_x": monument.poi.map_pixel_x,
+            "map_pixel_y": monument.poi.map_pixel_y,
+        }}, status=201)
+    except (KeyError, ValueError) as exc:
+        return Response({"status": "error", "message": str(exc)}, status=400)
 
 
 @api_view(["GET"])
