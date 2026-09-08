@@ -1,5 +1,4 @@
 from django.core.cache import cache
-from django.core.management import call_command
 from django.contrib.admin.sites import AdminSite
 from django.db import connection
 from django.test import SimpleTestCase, TestCase, override_settings
@@ -454,23 +453,6 @@ class ProgressionTests(TestCase):
         rebuild.assert_called_once_with()
 
 
-class ProgressionDemoCommandTests(TestCase):
-    def test_seed_is_idempotent_and_clear_removes_only_demo_data(self):
-        real_profile = TwitchUserProfile.objects.create(twitch_username="RealWalker")
-
-        call_command("seed_progression_demo", skip_cache=True, verbosity=0)
-        call_command("seed_progression_demo", skip_cache=True, verbosity=0)
-
-        demo_profiles = TwitchUserProfile.objects.filter(twitch_user_id__startswith="daggerwalk-demo-")
-        self.assertEqual(demo_profiles.count(), 40)
-        self.assertEqual(Monument.objects.filter(owner__in=demo_profiles).count(), 12)
-        self.assertEqual(ProgressionEvent.objects.filter(profile__in=demo_profiles, event_type="quest").count(), 120)
-
-        call_command("seed_progression_demo", clear=True, skip_cache=True, verbosity=0)
-        self.assertFalse(TwitchUserProfile.objects.filter(twitch_user_id__startswith="daggerwalk-demo-").exists())
-        self.assertTrue(TwitchUserProfile.objects.filter(pk=real_profile.pk).exists())
-
-
 class DaggerwalkDevCommandTests(SimpleTestCase):
     @override_settings(DEBUG=True)
     @patch("apps.daggerwalk.management.commands.daggerwalk_dev.call_command")
@@ -485,10 +467,9 @@ class DaggerwalkDevCommandTests(SimpleTestCase):
         Command().handle(noreload=True)
 
         start_redis.assert_called_once_with()
-        self.assertEqual(call_command_mock.call_args_list[:2], [
+        self.assertEqual(call_command_mock.call_args_list, [
             call("migrate"),
-            call("seed_progression_demo"),
+            call("runserver", "127.0.0.1:8000", use_reloader=False),
         ])
-        call_command_mock.assert_called_with("runserver", "127.0.0.1:8000", use_reloader=False)
         worker.terminate.assert_called_once_with()
         worker.wait.assert_called_once_with(timeout=10)

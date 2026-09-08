@@ -30,7 +30,6 @@ class Command(BaseCommand):
         if not reloader_child:
             self._start_redis()
             call_command("migrate")
-            call_command("seed_progression_demo")
 
         worker = None
         if reloader_child or not use_reloader:
