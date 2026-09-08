@@ -1,5 +1,6 @@
 from django.core.cache import cache
 from django.contrib.admin.sites import AdminSite
+from django.core.management import call_command
 from django.db import connection
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
@@ -8,6 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from datetime import timedelta
+from io import StringIO
 from unittest.mock import Mock, call, patch
 
 from apps.daggerwalk.models import (
@@ -25,6 +27,34 @@ from apps.daggerwalk.progression import cached_progression_snapshot, change_guil
 from apps.daggerwalk.quest_gen import complete_and_rotate_quest
 from apps.daggerwalk.serializers import DaggerwalkLogSerializer, QuestSerializer
 from apps.daggerwalk.admin import MonumentAdmin, TwitchUserProfileAdmin
+
+
+@override_settings(
+    CLOUDFRONT_DOMAIN="cdn.example.com",
+    AWS_ACCESS_KEY_ID="key",
+    AWS_SECRET_ACCESS_KEY="secret",
+)
+class CloudFrontInvalidationTests(SimpleTestCase):
+    @patch("apps.daggerwalk.management.commands.invalidate_cloudfront.boto3.client")
+    def test_invalidates_entire_distribution(self, boto_client):
+        client = boto_client.return_value
+        client.get_paginator.return_value.paginate.return_value = [{
+            "DistributionList": {"Items": [{
+                "Id": "DIST123",
+                "DomainName": "distribution.cloudfront.net",
+                "Aliases": {"Items": ["cdn.example.com"]},
+            }]},
+        }]
+        client.create_invalidation.return_value = {"Invalidation": {"Id": "INV123"}}
+
+        call_command("invalidate_cloudfront", stdout=StringIO())
+
+        batch = client.create_invalidation.call_args.kwargs
+        self.assertEqual(batch["DistributionId"], "DIST123")
+        self.assertEqual(batch["InvalidationBatch"]["Paths"], {
+            "Quantity": 1,
+            "Items": ["/*"],
+        })
 
 TEST_CACHES = {
     "default": {

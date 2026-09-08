@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 ####################################
 # Place this file in /usr/local/sbin
 ####################################
@@ -9,6 +11,23 @@ VENVDIR=$BASEDIR/venv
 PIP="$VENVDIR/bin/pip"
 PYTHON="$VENVDIR/bin/python"
 PROD_SETTINGS="--settings=site_config.settings.prod"
+SKIP_COLLECTSTATIC=false
+SKIP_CLOUDFRONT_PURGE=false
+
+for DEPLOY_OPTION in "$@"; do
+    case "$DEPLOY_OPTION" in
+        --skip-collectstatic) SKIP_COLLECTSTATIC=true ;;
+        --skip-cloudfront-purge) SKIP_CLOUDFRONT_PURGE=true ;;
+        --help)
+            echo "Usage: kershner-deploy [--skip-collectstatic] [--skip-cloudfront-purge]"
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $DEPLOY_OPTION" >&2
+            exit 2
+            ;;
+    esac
+done
 
 # react apps
 REACT_BASE_DIR=$BASEDIR/static/react-apps
@@ -50,15 +69,23 @@ echo ''
 # npm install
 # npm run build
 
+if [ "$SKIP_COLLECTSTATIC" = false ]; then
+    echo '==========[ Collecting static files ]=========='
+    $PYTHON $BASEDIR/manage.py collectstatic $PROD_SETTINGS --noinput --ignore=node_modules
+    echo ''
+fi
+
+if [ "$SKIP_CLOUDFRONT_PURGE" = false ]; then
+    echo '==========[ Invalidating CloudFront ]=========='
+    $PYTHON $BASEDIR/manage.py invalidate_cloudfront $PROD_SETTINGS
+    echo ''
+fi
+
 echo '==========[ Restarting supervisor ]=========='
 sudo service supervisor restart
 echo ''
 
 echo '==========[ Web server should be back online now... ]=========='
-echo ''
-
-# echo '==========[ Collecting static files ]=========='
-# $PYTHON $BASEDIR/manage.py collectstatic $PROD_SETTINGS --noinput --ignore=node_modules
 echo ''
 
 echo '==========[ Deploy Complete! ]=========='
