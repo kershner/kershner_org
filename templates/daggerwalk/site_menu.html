@@ -10,6 +10,7 @@
     {% endif %}
     <a class="site-nav-link{% if active_nav == 'guild_hall' or request.resolver_match.url_name == 'daggerwalk_guild_hall' %} active{% endif %}" href="{% url 'daggerwalk_guild_hall' %}">Guild Hall</a>
     <a class="site-nav-link{% if request.resolver_match.url_name == 'daggerwalk_monuments' %} active{% endif %}" href="{% url 'daggerwalk_monuments' %}">Monuments</a>
+    <a class="site-nav-link" data-site-section="about" href="{% url 'daggerwalk' %}?tab=about#about">About</a>
     <div class="menu-container">
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-controls" aria-label="Open settings" title="Settings">
         <span class="menu-icon" aria-hidden="true"></span>

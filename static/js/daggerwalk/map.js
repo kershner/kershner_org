@@ -59,6 +59,12 @@ function isAltMapActive() {
   return map?.getZoom?.() < 0;
 }
 
+function updateMapTitle() {
+  const title = document.querySelector('.map-title');
+  if (!title || !map) return;
+  title.textContent = map.getZoom() <= map.getMinZoom() ? 'Tamriel' : 'The Iliac Bay';
+}
+
 function getMapData() {
   return {
     pois: JSON.parse(document.getElementById('poi-data').textContent),
@@ -652,6 +658,8 @@ function daggerwalkMapInit() {
   map = leafletMap;
   window.daggerwalkMap = map;
   handleZoomImageSwap(map);
+  map.on('zoomend', updateMapTitle);
+  updateMapTitle();
 
   const { pois, monuments, logs, quests, shapes } = getMapData();
   window.shapes = shapes;

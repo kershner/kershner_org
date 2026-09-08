@@ -59,6 +59,14 @@ TEST_CACHES = {
 
 
 class DaggerwalkModsTemplateTests(SimpleTestCase):
+    def test_sticky_navigation_links_to_about_tab(self):
+        html = render_to_string("daggerwalk/site_menu.html", {"show_view_tabs": True})
+
+        self.assertIn(
+            'data-site-section="about" href="/daggerwalk/?tab=about#about">About</a>',
+            html,
+        )
+
     def test_about_contains_canonical_mod_anchor_and_current_mods(self):
         html = render_to_string("daggerwalk/about.html")
 

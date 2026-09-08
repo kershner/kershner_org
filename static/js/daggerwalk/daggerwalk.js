@@ -209,20 +209,42 @@ const daggerwalk = {
   },
 
   initAboutTabs() {
+    const tabContainer = document.querySelector('.about-tabs');
     const tabButtons = [...document.querySelectorAll('.about-tabs input[data-query-tab]')];
+    const aboutNavLink = document.querySelector('[data-site-section="about"]');
+    const scrollToTabNav = () => {
+      if (!tabContainer) return;
+      const headerHeight = document.querySelector('.site-header')?.offsetHeight || 0;
+      const top = window.scrollY + tabContainer.getBoundingClientRect().top - headerHeight;
+      window.scrollTo({ top, behavior: 'smooth' });
+    };
+    const syncAboutNav = (aboutIsActive) => {
+      aboutNavLink?.classList.toggle('active', aboutIsActive);
+      document.querySelectorAll('[data-site-view]').forEach(link => {
+        const viewButton = document.getElementById(`${link.dataset.siteView}-tab-btn`);
+        link.classList.toggle('active', !aboutIsActive && Boolean(viewButton?.checked));
+      });
+    };
     const requestedTab = new URLSearchParams(window.location.search).get('tab')?.toLowerCase();
     const requestedButton = tabButtons.find(button => button.dataset.queryTab === requestedTab);
     if (requestedButton) {
       requestedButton.checked = true;
+      syncAboutNav(requestedTab === 'about');
 
       const anchorId = window.location.hash.slice(1);
       const anchor = anchorId ? document.getElementById(anchorId) : null;
-      if (anchor) requestAnimationFrame(() => anchor.scrollIntoView());
+      if (anchor && anchorId !== 'about') {
+        requestAnimationFrame(() => anchor.scrollIntoView());
+      } else {
+        requestAnimationFrame(scrollToTabNav);
+      }
     }
 
     tabButtons.forEach(button => {
+      button.addEventListener('click', scrollToTabNav);
       button.addEventListener('change', (event) => {
         if (!event.target.checked) return;
+        syncAboutNav(event.target.dataset.queryTab === 'about');
         const urlParams = new URLSearchParams(window.location.search);
         urlParams.set('tab', event.target.dataset.queryTab);
         history.pushState({}, '', `${window.location.pathname}?${urlParams}`);
@@ -475,6 +497,7 @@ daggerwalk.init = () => {
 
   const activatePrimaryView = (view) => {
     viewLinks.forEach(link => link.classList.toggle('active', link.dataset.siteView === view));
+    document.querySelector('[data-site-section="about"]')?.classList.remove('active');
     if (chatControlRow) chatControlRow.classList.toggle('hidden', view !== 'twitch');
     if (view === 'twitch') {
       daggerwalk.initTwitch();
@@ -484,8 +507,15 @@ daggerwalk.init = () => {
   };
 
   if (mapTab && twitchTab) {
-    mapTab.addEventListener('click', () => history.pushState({}, '', window.location.pathname));
-    twitchTab.addEventListener('click', () => history.pushState({}, '', `${window.location.pathname}?view=twitch`));
+    mapTab.addEventListener('click', () => {
+      activatePrimaryView('map');
+      history.pushState({}, '', window.location.pathname);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    twitchTab.addEventListener('click', () => {
+      activatePrimaryView('twitch');
+      history.pushState({}, '', `${window.location.pathname}?view=twitch`);
+    });
 
     mapTab.addEventListener('change', () => {
       if (!mapTab.checked) return;
