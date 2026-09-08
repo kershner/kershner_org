@@ -12,10 +12,14 @@
 </div>
 
 <dl class="quest-detail-ledger">
-  <div><dt>Status</dt><dd>Completed</dd></div>
+  <div><dt>Distance</dt><dd>{{ journey.distance_km }} km</dd></div>
+  <div><dt>Journey Time</dt><dd>{{ journey.duration }}</dd></div>
+  <div class="quest-route-stat"><dt>Route</dt><dd>{{ journey.start }} → {{ journey.end }}</dd></div>
+  <div><dt>Regions Crossed</dt><dd title="{{ journey.region_route }}">{{ journey.regions|length }}</dd></div>
+  <div><dt>POIs Visited</dt><dd title="{{ journey.poi_names }}">{{ journey.pois|length }}</dd></div>
+  <div><dt>Weather</dt><dd>{{ journey.weather_summary }}</dd></div>
   <div><dt>Reward</dt><dd>{{ quest.xp }} XP</dd></div>
   <div><dt>Walkers Credited</dt><dd>{{ participants|length }}</dd></div>
-  <div><dt>Region</dt><dd>{{ quest.poi.region.name }}</dd></div>
 </dl>
 
 <section class="progression-card quest-participants" aria-labelledby="quest-participants-title">

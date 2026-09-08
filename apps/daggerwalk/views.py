@@ -11,7 +11,7 @@ from django.utils.dateparse import parse_datetime
 from rest_framework.renderers import JSONRenderer
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from django.db.models.functions import Coalesce, Lower
+from django.db.models.functions import Coalesce
 from django.db.models import Count, IntegerField, Sum, Max, Q
 from django.core.paginator import Paginator
 from apps.api.views import BaseListAPIView
@@ -41,26 +41,13 @@ from .cache_keys import (
     LEADERBOARD_CACHE_KEY,
     PROGRESSION_CACHE_KEYS,
     PROGRESSION_HOME_CACHE_KEY,
+    completed_quest_html_cache_key,
 )
-from .progression import GUILDS, MONUMENT_TYPES, cached_progression_snapshot, change_guild, guild_hall_page_payload, place_monument, profile_payload, progression_home_payload, resolve_profile
+from .journeys import completed_quest_detail_context
+from .progression import GUILDS, MONUMENT_TYPES, cached_progression_snapshot, change_guild, guild_hall_page_payload, monument_display_rows, place_monument, profile_payload, progression_home_payload, resolve_profile
 
 
 logger = logging.getLogger(__name__)
-
-
-def get_command_state():
-    """Return the command history needed by the bot's stuck detector."""
-    def latest(command=None):
-        queryset = ChatCommandLog.objects.all()
-        if command:
-            queryset = queryset.filter(command=command)
-        return queryset.order_by("-id").values("id", "command", "timestamp").first()
-
-    return {
-        "last_stop": latest("stop"),
-        "last_walk": latest("walk"),
-        "last_command": latest(),
-    }
 
 
 def _bot_authorized(request):
@@ -138,16 +125,22 @@ class DaggerwalkHomeView(APIView):
 
 def completed_quest_detail(request, quest_id):
     """Show one completed quest and the walkers who earned its XP."""
+    cache_key = completed_quest_html_cache_key(quest_id)
+    html = cache.get(cache_key)
+    if html is not None:
+        return HttpResponse(html)
+
     quest = get_object_or_404(
         Quest.objects.select_related("poi", "poi__region"),
         pk=quest_id,
         status="completed",
     )
-    participants = quest.completed_by.order_by(Lower("twitch_username"))
-    return render(request, "daggerwalk/completed_quest.html", {
-        "quest": quest,
-        "participants": participants,
-    })
+    html = render_to_string(
+        "daggerwalk/completed_quest.html",
+        completed_quest_detail_context(quest),
+    )
+    cache.set(cache_key, html, timeout=None)
+    return HttpResponse(html)
 
 
 def walker_chronicle(request, username):
@@ -213,7 +206,6 @@ def guild_hall(request):
 
 def monument_registry(request):
     monuments = Monument.objects.select_related("poi", "poi__region", "owner").annotate(
-        visit_count=Count("progression_events", filter=Q(progression_events__event_type="monument_visit")),
         latest_visit=Max("progression_events__created_at", filter=Q(progression_events__event_type="monument_visit")),
     ).order_by("-created_at")
     filters = {key: request.GET.get(key, "").strip() for key in ("owner", "guild", "type", "region")}
@@ -225,10 +217,7 @@ def monument_registry(request):
         monuments = monuments.filter(monument_type=filters["type"])
     if filters["region"]:
         monuments = monuments.filter(poi__region__name__iexact=filters["region"])
-    monuments = list(monuments[:250])
-    for monument in monuments:
-        monument.type_name = MONUMENT_TYPES.get(monument.monument_type, (monument.monument_type.replace("-", " ").title(),))[0]
-        monument.guild_name = GUILDS.get(monument.guild_at_placement, {}).get("name", monument.guild_at_placement.replace("-", " ").title())
+    monuments = monument_display_rows(list(monuments[:250]))
     return render(request, "daggerwalk/monument_registry.html", {
         "monuments": monuments, "filters": filters, "guilds": GUILDS,
         "monument_types": MONUMENT_TYPES,
@@ -379,7 +368,6 @@ def create_daggerwalk_log(request):
             "current_quest": current_quest_payload,      # serialized Quest or null
             "completed_quests": completed_quest_payloads,
             "active_quests": active_quest_payloads,
-            "command_state": get_command_state(),
             "progression": progression,
         }, status=status.HTTP_201_CREATED)
 

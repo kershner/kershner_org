@@ -2,13 +2,14 @@ from django.core.cache import cache
 from django.core.management import call_command
 from django.contrib.admin.sites import AdminSite
 from django.db import connection
-from django.test import TestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
-from unittest.mock import Mock, patch
+from datetime import timedelta
+from unittest.mock import Mock, call, patch
 
 from apps.daggerwalk.models import (
     ChatCommandLog,
@@ -20,11 +21,10 @@ from apps.daggerwalk.models import (
     TwitchUserProfile,
     Monument,
 )
-from apps.daggerwalk.cache_keys import PROGRESSION_CACHE_KEYS
-from apps.daggerwalk.progression import cached_progression_snapshot, change_guild, credit_quest_progression, guild_hall_page_payload, guild_xp, place_monument, profile_payload, progression_snapshot, resolve_profile, token_count_for_xp
+from apps.daggerwalk.cache_keys import PROGRESSION_CACHE_KEYS, completed_quest_html_cache_key
+from apps.daggerwalk.progression import cached_progression_snapshot, change_guild, credit_quest_progression, guild_hall_page_payload, guild_xp, place_monument, profile_payload, progression_home_payload, progression_snapshot, resolve_profile, token_count_for_xp
 from apps.daggerwalk.quest_gen import complete_and_rotate_quest
 from apps.daggerwalk.serializers import DaggerwalkLogSerializer, QuestSerializer
-from apps.daggerwalk.views import get_command_state
 from apps.daggerwalk.admin import MonumentAdmin, TwitchUserProfileAdmin
 
 
@@ -68,6 +68,56 @@ class CompletedQuestDetailTests(TestCase):
         self.assertContains(response, "30 XP")
         self.assertContains(response, "aliceWalker")
         self.assertContains(response, "ZedWalker")
+
+    def test_completed_quest_page_shows_cached_journey_stats(self):
+        daggerfall = Region.objects.create(
+            name="Daggerfall",
+            province="High Rock",
+            climate="Woodlands",
+        )
+        started_at = timezone.now() - timedelta(minutes=30)
+        completed_at = timezone.now()
+        Quest.objects.filter(pk=self.quest.pk).update(
+            created_at=started_at,
+            completed_at=completed_at,
+        )
+        self.quest.refresh_from_db()
+
+        def create_log(world_x, world_z, region, location, weather, created_at):
+            log = DaggerwalkLog.objects.create(
+                world_x=world_x,
+                world_z=world_z,
+                map_pixel_x=100,
+                map_pixel_y=200,
+                region=region,
+                location=location,
+                player_x=0,
+                player_y=0,
+                player_z=0,
+                date="Loredas, 7 Sun's Dusk, 3E 406, 12:47:25",
+                weather=weather,
+            )
+            DaggerwalkLog.objects.filter(pk=log.pk).update(created_at=created_at)
+
+        create_log(0, 0, daggerfall.name, "Wilderness", "Clear", started_at - timedelta(seconds=1))
+        create_log(3000, 4000, "Ocean", "Ocean", "Rainy", started_at + timedelta(minutes=10))
+        create_log(6000, 8000, "Wayrest", "Wayrest", "Rainy", completed_at - timedelta(seconds=1))
+
+        url = reverse("daggerwalk_quest_detail", args=[self.quest.id])
+        response = self.client.get(url)
+
+        self.assertContains(response, "10 km")
+        self.assertContains(response, "30m")
+        self.assertContains(response, "Wilderness, Daggerfall")
+        self.assertContains(response, "Wayrest")
+        self.assertContains(response, "Clear · Rainy")
+        self.assertContains(response, '<dd title="Daggerfall → Ocean → Wayrest">3</dd>', html=True)
+        self.assertContains(response, '<dd title="Wayrest">1</dd>', html=True)
+        self.assertIsNotNone(cache.get(completed_quest_html_cache_key(self.quest.id)))
+
+        with self.assertNumQueries(0):
+            cached_response = self.client.get(url)
+        self.assertEqual(cached_response.content, response.content)
 
     def test_non_completed_quest_is_not_public(self):
         self.quest.status = "in_progress"
@@ -135,36 +185,6 @@ class DaggerwalkLogSerializerTests(TestCase):
             DaggerwalkLogSerializer(log).data["last_known_region"]["name"],
             "Wayrest",
         )
-
-    def test_command_state_contains_latest_stop_walk_and_overall_command(self):
-        request_log = DaggerwalkLog.objects.create(
-            world_x=1,
-            world_z=2,
-            map_pixel_x=3,
-            map_pixel_y=4,
-            region="Ocean",
-            location="Ocean",
-            player_x=0,
-            player_y=0,
-            player_z=0,
-            date="Tirdas, 12 Sun's Height, 3E 405, 18:30:00",
-            weather="Clear",
-        )
-        ChatCommandLog.objects.bulk_create([
-            ChatCommandLog(
-                request_log=request_log,
-                timestamp=request_log.created_at,
-                user="walker",
-                command=command,
-            )
-            for command in ("walk", "stop", "jump", "walk")
-        ])
-
-        state = get_command_state()
-
-        self.assertEqual(state["last_stop"]["command"], "stop")
-        self.assertEqual(state["last_walk"]["id"], state["last_command"]["id"])
-
 
 class ProgressionTests(TestCase):
     def setUp(self):
@@ -329,9 +349,30 @@ class ProgressionTests(TestCase):
         self.assertEqual(monument.game_date, "Loredas, 17 Rain's Hand, 3E 405")
         self.assertContains(self.client.get(reverse("daggerwalk_walker", args=["Walker"])), "Pathfinder")
         self.assertContains(self.client.get(reverse("daggerwalk_guild_hall")), "Fighters Guild")
-        registry = self.client.get(reverse("daggerwalk_monuments"))
+        with self.assertTemplateUsed("daggerwalk/includes/monument_table.html"):
+            registry = self.client.get(reverse("daggerwalk_monuments"))
         self.assertContains(registry, "Cairn")
         self.assertContains(registry, "How Monuments Work")
+        self.assertContains(registry, "parchment-panel monument-registry-heading")
+        self.assertContains(registry, "monument-emoji-cell")
+        self.assertContains(registry, "Last Visited")
+        self.assertContains(registry, "Never")
+        self.assertContains(registry, "!monument &lt;type&gt;")
+        self.assertContains(registry, "!monument types more")
+        self.assertNotContains(registry, "!monument place")
+
+        overview = render_to_string(
+            "daggerwalk/progression.html",
+            progression_home_payload(guilds=[{
+                "emoji": "⚔️", "name": "Fighters Guild",
+                "total_xp": 200, "contributors": 1,
+            }]),
+        )
+        self.assertIn("monument-table", overview)
+        self.assertIn("guild-summary-card", overview)
+        self.assertIn("guild-summary-ledger", overview)
+        self.assertIn("Last Visited", overview)
+        self.assertIn("Loredas, 17 Rain&#x27;s Hand, 3E 405", overview)
 
     def test_progression_snapshot_uses_constant_query_count(self):
         quest = Quest.objects.create(status="completed", poi=self.poi, xp=25, completed_at=timezone.now())
@@ -428,3 +469,26 @@ class ProgressionDemoCommandTests(TestCase):
         call_command("seed_progression_demo", clear=True, skip_cache=True, verbosity=0)
         self.assertFalse(TwitchUserProfile.objects.filter(twitch_user_id__startswith="daggerwalk-demo-").exists())
         self.assertTrue(TwitchUserProfile.objects.filter(pk=real_profile.pk).exists())
+
+
+class DaggerwalkDevCommandTests(SimpleTestCase):
+    @override_settings(DEBUG=True)
+    @patch("apps.daggerwalk.management.commands.daggerwalk_dev.call_command")
+    @patch("apps.daggerwalk.management.commands.daggerwalk_dev.subprocess.Popen")
+    @patch("apps.daggerwalk.management.commands.daggerwalk_dev.Command._start_redis")
+    def test_starts_web_services_and_cleans_up_worker(self, start_redis, popen, call_command_mock):
+        from apps.daggerwalk.management.commands.daggerwalk_dev import Command
+
+        worker = popen.return_value
+        worker.poll.return_value = None
+
+        Command().handle(noreload=True)
+
+        start_redis.assert_called_once_with()
+        self.assertEqual(call_command_mock.call_args_list[:2], [
+            call("migrate"),
+            call("seed_progression_demo"),
+        ])
+        call_command_mock.assert_called_with("runserver", "127.0.0.1:8000", use_reloader=False)
+        worker.terminate.assert_called_once_with()
+        worker.wait.assert_called_once_with(timeout=10)

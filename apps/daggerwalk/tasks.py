@@ -8,7 +8,9 @@ from apps.daggerwalk.cache_keys import (
     LEADERBOARD_CACHE_KEY,
     PROGRESSION_HOME_CACHE_KEY,
     PROGRESSION_SNAPSHOT_CACHE_KEY,
+    completed_quest_html_cache_key,
 )
+from apps.daggerwalk.journeys import completed_quest_detail_context
 from apps.daggerwalk.progression import (
     guild_hall_page_payload,
     guild_hall_payload,
@@ -32,6 +34,7 @@ from django.conf import settings
 from celery import shared_task
 from atproto import Client
 from io import BytesIO
+from bisect import bisect_right
 import tempfile
 import requests
 import logging
@@ -735,7 +738,8 @@ def update_all_daggerwalk_caches():
         .select_related('region_fk', 'poi')
         .order_by('created_at')
         .values(
-            'id', 'created_at', 'player_x', 'player_z', 'date', 'season',
+            'id', 'created_at', 'world_x', 'world_z', 'player_x', 'player_z',
+            'date', 'season', 'location', 'poi_id',
             'region', 'weather', 'current_song', 'poi__name', 'poi__emoji',
             'region_fk__name'
         )
@@ -777,6 +781,41 @@ def update_all_daggerwalk_caches():
         .order_by("-created_at")[:10]
     )
     cache.set("daggerwalk_previous_quests", previous_quests, timeout=None)
+
+    page_keys = {
+        quest["id"]: completed_quest_html_cache_key(quest["id"])
+        for quest in all_quests
+    }
+    cached_pages = cache.get_many(page_keys.values())
+    missing_page_ids = [
+        quest_id for quest_id, page_key in page_keys.items()
+        if page_key not in cached_pages
+    ]
+    completed_quest_pages = (
+        Quest.objects
+        .filter(id__in=missing_page_ids)
+        .select_related("poi", "poi__region")
+        .prefetch_related("completed_by")
+        .order_by("id")
+    )
+    log_timestamps = [log["created_at"] for log in all_logs]
+    for quest in completed_quest_pages:
+        page_key = page_keys[quest.id]
+        first_index = max(0, bisect_right(log_timestamps, quest.created_at) - 1)
+        end_index = bisect_right(log_timestamps, quest.completed_at)
+        route_logs = all_logs[first_index:end_index] if end_index else []
+        cache.set(
+            page_key,
+            render_to_string(
+                "daggerwalk/completed_quest.html",
+                completed_quest_detail_context(
+                    quest,
+                    route_logs=route_logs,
+                    participants=list(quest.completed_by.all()),
+                ),
+            ),
+            timeout=None,
+        )
 
     # 5. Leaderboard
     total_leaderboard_rows = 100

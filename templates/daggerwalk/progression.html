@@ -12,28 +12,27 @@
 <h4>The Four Guilds</h4>
 <div class="progression-grid guild-summary-grid">
   {% for guild in progression_guilds %}
-    <section class="progression-card">
-      <h3>{{ guild.emoji }} {{ guild.name }}</h3>
-      <p><strong>{{ guild.total_xp }} XP</strong> earned by {{ guild.contributors }} contributor{{ guild.contributors|pluralize }}.</p>
-    </section>
+    <article class="progression-card guild-card guild-summary-card">
+      <header class="guild-card-header guild-summary-heading">
+        <span class="guild-card-crest" aria-hidden="true">{{ guild.emoji }}</span>
+        <div>
+          <h3>{{ guild.name }}</h3>
+          <span>Guild record</span>
+        </div>
+      </header>
+      <dl class="guild-ledger guild-summary-ledger">
+        <div>
+          <dt>Guild XP</dt>
+          <dd>{{ guild.total_xp }}</dd>
+        </div>
+        <div>
+          <dt>Contributors</dt>
+          <dd>{{ guild.contributors }}</dd>
+        </div>
+      </dl>
+    </article>
   {% endfor %}
 </div>
 
 <h4>Recently Raised Monuments</h4>
-<div class="progression-table-wrapper">
-  <table class="styled-table progression-table">
-    <thead><tr><th>Monument</th><th>Walker</th><th>Region</th><th>Visits</th></tr></thead>
-    <tbody>
-      {% for monument in recent_monuments %}
-        <tr>
-          <td>{{ monument.poi.emoji }} <a href="{% url 'daggerwalk' %}?monument={{ monument.id }}">{{ monument.poi.name }}</a></td>
-          <td><a href="{% url 'daggerwalk_walker' monument.owner.twitch_username %}">{{ monument.owner.twitch_username }}</a></td>
-          <td>{{ monument.poi.region.name }}</td>
-          <td>{{ monument.visit_count }}</td>
-        </tr>
-      {% empty %}
-        <tr><td colspan="4">No monuments have been raised yet.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+{% include "daggerwalk/includes/monument_table.html" with monuments=recent_monuments %}

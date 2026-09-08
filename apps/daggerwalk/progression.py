@@ -543,14 +543,27 @@ def guild_hall_page_payload(guilds=None):
     return guilds
 
 
+def monument_display_rows(monuments):
+    for monument in monuments:
+        monument.type_name = MONUMENT_TYPES.get(
+            monument.monument_type,
+            (monument.monument_type.replace("-", " ").title(),),
+        )[0]
+        monument.guild_name = GUILDS.get(
+            monument.guild_at_placement,
+            {},
+        ).get("name", monument.guild_at_placement.replace("-", " ").title())
+    return monuments
+
+
 def progression_home_payload(guilds=None):
     """Small, cache-friendly progression summary for the Daggerwalk home page."""
     recent_monuments = list(
         Monument.objects
         .select_related("poi", "poi__region", "owner")
         .annotate(
-            visit_count=Count(
-                "progression_events",
+            latest_visit=Max(
+                "progression_events__created_at",
                 filter=Q(progression_events__event_type="monument_visit"),
             )
         )
@@ -558,6 +571,6 @@ def progression_home_payload(guilds=None):
     )
     return {
         "progression_guilds": guilds if guilds is not None else guild_hall_payload(),
-        "recent_monuments": recent_monuments,
+        "recent_monuments": monument_display_rows(recent_monuments),
         "monument_count": Monument.objects.count(),
     }
