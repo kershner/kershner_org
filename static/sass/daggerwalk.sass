@@ -1511,14 +1511,17 @@ blockquote
     border-radius: $border-radius
 
     a
-      display: flex
-      align-items: center
+      display: block
+      width: 100%
       
       &:hover
         opacity: 0.8
       
       img
+        display: block
         width: 100%
+        height: auto
+        object-fit: contain
       
   .cite
     display: block

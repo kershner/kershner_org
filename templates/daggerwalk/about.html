@@ -12,10 +12,10 @@
 
 <p class="paragraph extra-margin-bottom">
   <a href="https://en.wikipedia.org/wiki/The_Elder_Scrolls_II:_Daggerfall" target="_blank">The Elder Scrolls II: Daggerfall</a> was released in September 1996 and features one of the largest game worlds ever created.
-  Using advanced procedural generation techniques, Daggerfall's developers were able to achieve an unprecented scale that is still mind-blowing today.
+  Using advanced procedural generation techniques, Daggerfall's developers were able to achieve an unprecedented scale that is still mind-blowing today.
   <br><br>
   <strong>Daggerwalk</strong> is a collection of technologies that live-streams a bot endlessly walking through the massive Iliac Bay, trudging through landscapes that few players would ever naturally see.
-  Viewers can interact with the game by typing commands into the chat and The Walker's progress can be viewed on this website.
+  Viewers can steer The Walker, interact with the game, complete quests, earn Renown, join guilds, and raise permanent monuments through Twitch chat. The Walker's journey and the community's progress are recorded on this website.
 </p>
 
 {% include 'daggerwalk/schedule.html' %}
@@ -51,60 +51,26 @@
 <hr>
 
 <h2>Software</h2>
-<h4>Mods</h4>
 
-<h5>Nexus Mods:</h5>
-<ul id="nexus-modlist">
-  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/249" target="_blank">World of Daggerfall</a></li>  
-  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/193" target="_blank">Interesting Eroded Terrains</a></li>
-  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/390" target="_blank">Wilderness Overhaul</a></li>
-  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/134" target="_blank">Basic Roads</a></li>
-  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/376" target="_blank">Dynamic Skies</a></li>
-  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/20" target="_blank">Real Grass</a></li>
-  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/18" target="_blank">Birds in Daggerfall</a></li>
-  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/777" target="_blank">HUD Be Gone</a></li>
-  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/706" target="_blank">Immersive Footsteps</a></li>
-  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/411" target="_blank">Future Shock Weapons</a></li>  
-  <li><a href="https://www.nexusmods.com/daggerfallunity/mods/382" target="_blank">Climates Travel Map</a></li>
-</ul>
-
-<h5>My Own Custom Mods:</h5>
-<ul id="custom-modlist">
-  <li>
-    <a href="https://github.com/kershner/daggerwalk/blob/master/dfu_mods/MapDataLogger.cs" target="_blank">Map Data Logger</a>
-    <p class="less-margin">Dumps current game state data to a local JSON file.</p>
-  </li>
-
-  <li>
-    <a href="https://github.com/kershner/daggerwalk/blob/master/dfu_mods/AutoWalk.cs" target="_blank">Auto Walk</a>
-    <p class="less-margin">Daggerfall Unity comes with Auto-Run out of the box, but not Auto-Walk.</p>
-  </li>
-
-  <li>
-    <a href="https://github.com/kershner/daggerwalk/blob/master/dfu_mods/MusicChanger.cs" target="_blank">Music Changer</a>
-    <p class="less-margin">Adds console commands to play songs on command as well as endlessly shuffle.</p>
-  </li>
-
-  <li>
-    <a href="https://github.com/kershner/daggerwalk/blob/master/dfu_mods/FasterNights.cs" target="_blank">Faster Nights</a>
-    <p class="less-margin">Alters the timescale dynamically - 1 hour days, 6 minute nights.</p>
-  </li>
-</ul>
+<section id="mods">
+  {% include 'daggerwalk/mods.html' %}
+</section>
 
 <h4>Game automation / Twitch bot</h4>
 <ul>
-  <li><a href="https://github.com/kershner/daggerwalk/blob/master/start_daggerwalk.py" target="_blank">start_daggerwalk.py</a></li>
-  <li><a href="https://github.com/kershner/daggerwalk/blob/master/daggerwalk_twitch_bot.py" target="_blank">daggerwalk_twitch_bot.py</a></li>
+  <li><a href="https://github.com/kershner/daggerwalk/blob/master/start_daggerwalk.bat" target="_blank">start_daggerwalk.bat</a></li>
+  <li><a href="https://github.com/kershner/daggerwalk/blob/master/daggerwalk/supervisor.py" target="_blank">supervisor.py</a></li>
+  <li><a href="https://github.com/kershner/daggerwalk/blob/master/daggerwalk/twitch_bot.py" target="_blank">twitch_bot.py</a></li>
 </ul>
 <p class="paragraph">
-  To automate the game first a Python script launches Daggerfall Unity, waits for the game to load, enters a few console commands like "god mode," and starts walking.  Next it launches OBS which is set up to begin streaming immediately.  Finally the Twitch bot starts up, handling input from chat and making requests to the <a href="https://kershner.org">kershner.org</a> web server.
+  A Windows launcher starts a Python supervisor that coordinates OBS, Daggerfall Unity, game setup, and the Twitch bot. It waits for the game to become ready before enabling chat commands and automatically relaunches failed components. The bot handles viewer input, samples local game state, and synchronizes the journey and community progression with the <a href="https://kershner.org">kershner.org</a> web server.
 </p>
 
 <h4>Website</h4>
 <ul>
   <li><a href="https://github.com/kershner/kershner_org/tree/master/apps/daggerwalk" target="_blank">Python/Django</a></li>
-  <li><a href="https://github.com/kershner/kershner_org/tree/master/static/js/daggerwalk" target="_blank">JavaScripts</a></li>
-  <li><a href="https://github.com/kershner/kershner_org/blob/master/static/sass/daggerwalk.sass" target="_blank">SASS</a></li>
+  <li><a href="https://github.com/kershner/kershner_org/tree/master/static/js/daggerwalk" target="_blank">JavaScript</a></li>
+  <li><a href="https://github.com/kershner/kershner_org/blob/master/static/sass/daggerwalk.sass" target="_blank">Sass</a></li>
 </ul>
 
 <p class="paragraph">

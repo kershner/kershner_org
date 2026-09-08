@@ -1725,14 +1725,17 @@ blockquote cite {
   border-radius: 0.2rem;
 }
 .gallery-container .images a {
-  display: flex;
-  align-items: center;
+  display: block;
+  width: 100%;
 }
 .gallery-container .images a:hover {
   opacity: 0.8;
 }
 .gallery-container .images a img {
+  display: block;
   width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 .gallery-container .cite {
   display: block;

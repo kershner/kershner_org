@@ -220,10 +220,11 @@ function popupHtml(item) {
   } else if (isLog) {
     const weatherEmoji = WEATHER_EMOJIS[item.weather] || "";
     const seasonEmoji = SEASON_EMOJIS[item.season] || "";
+    const seasonDisplay = daggerwalk.formatSeason(item.date, item.season);
     const song = item.current_song?.replace("song_", "");
     add(`
       <div><b>Weather:</b> ${weatherEmoji} ${item.weather === "Thunderstorm" ? "Thunderstorming" : item.weather || "—"}</div>
-      <div><b>Season:</b> ${seasonEmoji} ${item.season || "—"}</div>
+      <div><b>Season:</b> ${seasonEmoji} ${seasonDisplay}</div>
       <div><b>Climate:</b> ${regionEmoji} ${climate || "—"}</div>
       ${song ? `<div><b>Song:</b> 🎵 ${song}</div>` : ""}
       <hr class="popup-divider">

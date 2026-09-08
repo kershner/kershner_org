@@ -16,6 +16,21 @@ const daggerwalk = {
     });
   },
 
+  formatSeason(dateStr, season) {
+    const seasonMonths = {
+      Winter: ["eveningstar", "morningstar", "sunsdawn"],
+      Spring: ["firstseed", "rainshand", "secondseed"],
+      Summer: ["midyear", "sunsheight", "lastseed"],
+      Autumn: ["hearthfire", "frostfall", "sunsdusk"]
+    };
+    const phases = ["Early", "Mid", "Late"];
+    const normalizedDate = (dateStr || "").toLowerCase().replace(/[^a-z]/g, "");
+    const months = seasonMonths[season];
+    const monthIndex = months?.findIndex(month => normalizedDate.includes(month)) ?? -1;
+
+    return monthIndex >= 0 ? `${phases[monthIndex]} ${season}` : (season || "—");
+  },
+
   updateStatus() {
     const status = document.querySelector('.current-status');
     if (!status || !this.latestLog?.date) return;
@@ -36,6 +51,7 @@ const daggerwalk = {
     // Get corresponding emojis
     const weatherIcon = weatherEmoji[log.weather] || "🌈";
     const seasonIcon = seasonEmoji[log.season] || "❓";
+    const seasonDisplay = this.formatSeason(log.date, log.season);
     const climate = region.climate ? `${region.climate.replace(/s$/, '')} ` : '';
     const climateLocationStr = `${region.emoji || ''}${climate}${(log.location || 'unknown location').toLowerCase()}`;
     const location = log.poi ? `${log.poi.emoji || ''}${log.poi.name}` : climateLocationStr;
@@ -47,7 +63,7 @@ const daggerwalk = {
     status.innerHTML = `
       ${locationDisplay}
       ${this.formatTime(log.date)}
-      <p>${seasonIcon} ${log.season}  ${weatherIcon} ${log.weather === "Thunderstorm" ? "Thunderstorming" : log.weather}
+      <p>${seasonIcon} ${seasonDisplay}  ${weatherIcon} ${log.weather === "Thunderstorm" ? "Thunderstorming" : log.weather}
       ${log.current_song ? `  🎵 ${log.current_song}` : ''}</p>
     `;
   },
@@ -196,7 +212,13 @@ const daggerwalk = {
     const tabButtons = [...document.querySelectorAll('.about-tabs input[data-query-tab]')];
     const requestedTab = new URLSearchParams(window.location.search).get('tab')?.toLowerCase();
     const requestedButton = tabButtons.find(button => button.dataset.queryTab === requestedTab);
-    if (requestedButton) requestedButton.checked = true;
+    if (requestedButton) {
+      requestedButton.checked = true;
+
+      const anchorId = window.location.hash.slice(1);
+      const anchor = anchorId ? document.getElementById(anchorId) : null;
+      if (anchor) requestAnimationFrame(() => anchor.scrollIntoView());
+    }
 
     tabButtons.forEach(button => {
       button.addEventListener('change', (event) => {

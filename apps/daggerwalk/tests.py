@@ -57,6 +57,31 @@ TEST_CACHES = {
     }
 }
 
+
+class DaggerwalkModsTemplateTests(SimpleTestCase):
+    def test_about_contains_canonical_mod_anchor_and_current_mods(self):
+        html = render_to_string("daggerwalk/about.html")
+
+        self.assertIn('id="mods"', html)
+        self.assertIn("World of Daggerfall", html)
+        self.assertIn("World of Daggerfall &ndash; Biomes", html)
+        self.assertIn("Climates Travel Map", html)
+        self.assertIn("Context-Sensitive Interaction (fork)", html)
+        self.assertIn("Console Command Binds", html)
+        self.assertIn("Future Shock Weapons", html)
+        self.assertIn("Daggerfall Expanded Textures", html)
+        self.assertIn("Sprite Sound Framework", html)
+        self.assertIn("Wandering NPCs", html)
+        self.assertIn("Seasons of the Iliac Bay", html)
+        self.assertIn("Custom Daggerwalk mods", html)
+        self.assertIn("nexusmods.com/daggerfallunity/mods/1377", html)
+
+    def test_commands_lists_both_mod_aliases(self):
+        html = render_to_string("daggerwalk/commands.html")
+
+        self.assertIn("!modlist / !mods", html)
+
+
 @override_settings(CACHES=TEST_CACHES)
 class CompletedQuestDetailTests(TestCase):
     def setUp(self):
