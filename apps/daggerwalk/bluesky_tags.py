@@ -77,7 +77,17 @@ def _created_at(post):
     value = post.get("record", {}).get("createdAt")
     if not value:
         return None
-    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    # Bluesky can return nanoseconds, while Python 3.10's ISO parser accepts at
+    # most six fractional digits. Preserve microseconds and discard the excess.
+    value = re.sub(
+        r"(\.\d{6})\d+(?=(?:Z|[+-]\d{2}:\d{2})$)",
+        r"\1",
+        str(value),
+    ).replace("Z", "+00:00")
+    try:
+        return datetime.fromisoformat(value)
+    except ValueError:
+        return None
 
 
 def _discover_candidates(client, own_did, now):
@@ -121,9 +131,10 @@ def _audit_candidate(client, tag, own_did, now):
         post for post in posts
         if post.get("author", {}).get("did") not in (None, own_did)
     ]
+    dated_posts = [(post, _created_at(post)) for post in posts]
     recent_posts = [
-        post for post in posts
-        if _created_at(post) and _created_at(post) >= now - timedelta(days=7)
+        post for post, created_at in dated_posts
+        if created_at and created_at >= now - timedelta(days=7)
     ]
     author_counts = Counter(post.get("author", {}).get("did") for post in posts)
     interactions = [_engagement(post) for post in posts]

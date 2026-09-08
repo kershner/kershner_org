@@ -32,6 +32,28 @@ from apps.daggerwalk import tasks as daggerwalk_tasks
 
 
 class BlueskyVideoTagTests(SimpleTestCase):
+    def test_bluesky_nanosecond_timestamp_is_accepted_on_python_310(self):
+        from apps.daggerwalk import bluesky_tags
+
+        created_at = bluesky_tags._created_at({
+            "record": {"createdAt": "2026-09-07T22:06:36.969953734Z"},
+        })
+
+        self.assertEqual(
+            created_at,
+            datetime(
+                2026, 9, 7, 22, 6, 36, 969953,
+                tzinfo=datetime_timezone.utc,
+            ),
+        )
+
+    def test_malformed_bluesky_timestamp_does_not_abort_weekly_audit(self):
+        from apps.daggerwalk import bluesky_tags
+
+        self.assertIsNone(bluesky_tags._created_at({
+            "record": {"createdAt": "not-a-timestamp"},
+        }))
+
     def test_tag_catalog_is_large_relevant_and_each_post_stays_focused(self):
         self.assertGreaterEqual(len(daggerwalk_tasks.BLUESKY_AVAILABLE_TAGS), 30)
         self.assertTrue({
