@@ -758,7 +758,7 @@ def update_all_daggerwalk_caches():
     all_quests = list(
         Quest.objects
         .filter(status="completed")
-        .values('id', 'created_at', 'completed_at', 'xp')
+        .values('id', 'created_at', 'started_at', 'completed_at', 'xp')
     )
     
     for keyword in ['all', 'today', 'yesterday', 'last_7_days', 'this_month']:
@@ -778,7 +778,7 @@ def update_all_daggerwalk_caches():
         Quest.objects
         .filter(status="completed")
         .select_related("poi", "poi__region")
-        .order_by("-created_at")[:10]
+        .order_by("-completed_at")[:10]
     )
     cache.set("daggerwalk_previous_quests", previous_quests, timeout=None)
 
@@ -801,7 +801,7 @@ def update_all_daggerwalk_caches():
     log_timestamps = [log["created_at"] for log in all_logs]
     for quest in completed_quest_pages:
         page_key = page_keys[quest.id]
-        first_index = max(0, bisect_right(log_timestamps, quest.created_at) - 1)
+        first_index = max(0, bisect_right(log_timestamps, quest.start_time) - 1)
         end_index = bisect_right(log_timestamps, quest.completed_at)
         route_logs = all_logs[first_index:end_index] if end_index else []
         cache.set(

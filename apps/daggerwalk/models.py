@@ -312,7 +312,7 @@ def rand_quest_giver_img_number():
 
 class Quest(models.Model):
     STATUS_CHOICES = [
-        ('available', 'Available'),
+        ('available', 'Queued'),
         ('in_progress', 'In Progress'),
         ('completed', 'Completed'),
         ('disabled', 'Disabled'),
@@ -330,11 +330,13 @@ class Quest(models.Model):
         choices=((1, '1'), (2, '2'), (3, '3')),
         null=True,
         blank=True,
+        help_text="Queued quests are promoted only when this slot becomes available.",
     )
     xp = models.PositiveIntegerField(default=0)
     poi = models.ForeignKey('POI', on_delete=models.SET_NULL, null=True, blank=True, related_name='quests')
 
     created_at = models.DateTimeField(auto_now_add=True)
+    started_at = models.DateTimeField(null=True, blank=True, db_index=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -358,6 +360,11 @@ class Quest(models.Model):
     @property
     def quest_giver_img_url(self):
         return f"{settings.BASE_CLOUDFRONT_URL}daggerwalk/quests/quest_giver_images/{self.quest_giver_img_number}.png"
+
+    @property
+    def start_time(self):
+        """Quest start, falling back for records created before started_at existed."""
+        return self.started_at or self.created_at
 
     def __str__(self):
         return self.quest_name
@@ -395,11 +402,15 @@ class Quest(models.Model):
                 status='in_progress',
                 poi__isnull=False,
             )
-            active_poi_ids = active_quests.values_list('poi_id', flat=True)
+            reserved_poi_ids = (
+                Quest.objects
+                .filter(status__in=('available', 'in_progress'), poi__isnull=False)
+                .values_list('poi_id', flat=True)
+            )
             active_region_ids = active_quests.values_list('poi__region_id', flat=True)
             eligible_qs = (
                 POI.objects
-                .exclude(id__in=active_poi_ids)
+                .exclude(id__in=reserved_poi_ids)
                 .exclude(region_id__in=active_region_ids)
             )
 
@@ -448,6 +459,12 @@ class Quest(models.Model):
             # If reverting from completed, clear timestamp
             self.completed_at = None
 
+    def _sync_started_at(self, old_status):
+        if self.status == "in_progress" and old_status != "in_progress":
+            self.started_at = timezone.now()
+        elif self.status == "available" and old_status in {"in_progress", "completed"}:
+            self.started_at = None
+
     def save(self, *args, **kwargs):
         is_create = self.pk is None
         old_status = None if is_create else self._get_old_status()
@@ -456,6 +473,7 @@ class Quest(models.Model):
         self._choose_poi_if_needed(is_create)
         self._maybe_init_giver_name(is_create)
         self._maybe_init_description(is_create)
+        self._sync_started_at(old_status)
         self._sync_completed_at(old_status)
 
         super().save(*args, **kwargs)

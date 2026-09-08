@@ -83,7 +83,7 @@ class QuestSerializer(serializers.ModelSerializer):
     def get_duration_minutes(self, obj):
         if not obj.completed_at:
             return None
-        return max(0, int((obj.completed_at - obj.created_at).total_seconds() / 60))
+        return max(0, int((obj.completed_at - obj.start_time).total_seconds() / 60))
 
     def get_distance_km(self, obj):
         """Return the recorded world-path distance traveled during this quest."""
@@ -91,7 +91,7 @@ class QuestSerializer(serializers.ModelSerializer):
             return None
 
         points = DaggerwalkLog.objects.filter(
-            created_at__gte=obj.created_at,
+            created_at__gte=obj.start_time,
             created_at__lte=obj.completed_at,
         ).order_by("created_at").values_list("world_x", "world_z")
 

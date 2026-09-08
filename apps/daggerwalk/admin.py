@@ -537,12 +537,25 @@ class ChatCommandLogAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         return [f.name for f in self.model._meta.fields]
 
+class QuestAdminForm(forms.ModelForm):
+    class Meta:
+        model = Quest
+        fields = "__all__"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get("status") in {"available", "in_progress"} and not cleaned_data.get("slot"):
+            self.add_error("slot", "Choose the quest slot this queued or active quest belongs to.")
+        return cleaned_data
+
+
 @admin.register(Quest)
 class QuestAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
-    list_display = ('quest_name', 'slot', 'status', 'quest_giver_img_thumb', 'description', 'xp', 'view_on_map_link', 'created_at')
+    form = QuestAdminForm
+    list_display = ('quest_name', 'slot', 'status', 'quest_giver_img_thumb', 'description', 'xp', 'view_on_map_link', 'started_at', 'created_at')
     list_filter = ('status', 'poi__region', 'created_at')
     search_fields = ('description', 'poi__name', 'poi__region__name')
-    readonly_fields = ('id', 'created_at', 'view_on_map_link', 'completed_at', 'quest_name', 'quest_giver_img_thumb')
+    readonly_fields = ('id', 'created_at', 'started_at', 'view_on_map_link', 'completed_at', 'quest_name', 'quest_giver_img_thumb')
     autocomplete_fields = ('poi',)
 
     fieldsets = (
@@ -554,6 +567,7 @@ class QuestAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
                 'status',
                 'xp',
                 'completed_at',
+                'started_at',
                 'created_at',
             ),
         }),

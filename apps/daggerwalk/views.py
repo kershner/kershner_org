@@ -95,7 +95,7 @@ class DaggerwalkHomeView(APIView):
                 Quest.objects
                 .filter(status="completed")
                 .select_related("poi", "poi__region")
-                .order_by("-created_at")[:10]
+                .order_by("-completed_at")[:10]
             )
             cache.set("daggerwalk_previous_quests", previous_quests, timeout=None)
         leaderboard = cache.get(LEADERBOARD_CACHE_KEY)

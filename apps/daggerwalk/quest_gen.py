@@ -164,10 +164,35 @@ def generate_giver_name(seed_str: str) -> str:
     title = rng.choice(GIVER_TITLES)
     return f"{first} {title}".strip()
 
+def _activate_next_quest(slot):
+    """Promote the first usable queued quest for a slot, or generate one."""
+    from apps.daggerwalk.models import Quest
+
+    active_poi_ids = (
+        Quest.objects
+        .filter(status="in_progress", poi__isnull=False)
+        .values_list("poi_id", flat=True)
+    )
+    next_quest = (
+        Quest.objects
+        .select_for_update()
+        .filter(status="available", slot=slot)
+        .exclude(poi_id__in=active_poi_ids)
+        .order_by("created_at", "pk")
+        .first()
+    )
+    if next_quest is None:
+        return Quest.objects.create(status="in_progress", slot=slot)
+
+    next_quest.status = "in_progress"
+    next_quest.save()
+    return next_quest
+
+
 def complete_and_rotate_quest(active_quest, completed_at, completion_request_log_id=None):
     """
     Marks the active quest complete, credits participants, and creates the next quest.
-    Uses a reward window of [active_quest.created_at, window_end], where window_end is:
+    Uses a reward window of [active_quest.started_at, window_end], where window_end is:
       max(completed_at, latest ChatCommandLog.timestamp attached to the completing request_log)
     if completion_request_log_id is provided; otherwise window_end = completed_at.
 
@@ -202,7 +227,7 @@ def complete_and_rotate_quest(active_quest, completed_at, completion_request_log
         participant_names = (
             ChatCommandLog.objects
             .filter(
-                timestamp__gte=active_quest.created_at,
+                timestamp__gte=active_quest.start_time,
                 timestamp__lte=window_end,
                 command__in=settings.DAGGERWALK_QUALIFYING_COMMANDS,
             )
@@ -255,12 +280,12 @@ def complete_and_rotate_quest(active_quest, completed_at, completion_request_log
 
         progression_events = credit_quest_progression(active_quest, participant_profiles)
 
-        # New in-progress quest
-        next_quest = Quest.objects.create(status="in_progress", slot=active_quest.slot)
+        # Promote the next manually queued quest, falling back to generation.
+        next_quest = _activate_next_quest(active_quest.slot)
         next_quest = (
             Quest.objects.select_related("poi", "poi__region")
             .only(
-                "id", "status", "slot", "xp", "description",
+                "id", "status", "slot", "xp", "description", "started_at",
                 "quest_giver_name", "quest_giver_img_number",
                 "poi__name", "poi__region__name"
             )
@@ -280,7 +305,7 @@ def complete_and_rotate_quest(active_quest, completed_at, completion_request_log
 
 
 def ensure_active_quests():
-    """Return one active quest in each stable slot, creating any missing quests."""
+    """Return one active quest per slot, promoting queued quests when possible."""
     from apps.daggerwalk.models import Quest
 
     with transaction.atomic():
@@ -295,7 +320,7 @@ def ensure_active_quests():
 
         for slot in (1, 2, 3):
             if slot not in used_slots:
-                Quest.objects.create(status='in_progress', slot=slot)
+                _activate_next_quest(slot)
 
         return list(
             Quest.objects

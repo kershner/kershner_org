@@ -38,16 +38,16 @@
                 {% if quest.status == "completed" %}
                 <p class="quest-completed">
                     <span>
-                    {{ quest.created_at|naturalday }} - {{ quest.completed_at|naturalday }}
+                    {{ quest.start_time|naturalday }} - {{ quest.completed_at|naturalday }}
                     </span>
 
                     <span class="quest-duration">
-                    ({{ quest.created_at|timesince:quest.completed_at }})
+                    ({{ quest.start_time|timesince:quest.completed_at }})
                     </span>
                 </p>
                 {% else %}
                 <p class="quest-started">
-                    Started {{ quest.created_at|naturalday }}
+                    Started {{ quest.start_time|naturalday }}
                 </p>
                 {% endif %}
             </div>

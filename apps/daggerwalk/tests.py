@@ -24,7 +24,7 @@ from apps.daggerwalk.models import (
 )
 from apps.daggerwalk.cache_keys import PROGRESSION_CACHE_KEYS, completed_quest_html_cache_key
 from apps.daggerwalk.progression import cached_progression_snapshot, change_guild, credit_quest_progression, guild_hall_page_payload, guild_xp, place_monument, profile_payload, progression_home_payload, progression_snapshot, resolve_profile, token_count_for_xp
-from apps.daggerwalk.quest_gen import complete_and_rotate_quest
+from apps.daggerwalk.quest_gen import complete_and_rotate_quest, ensure_active_quests
 from apps.daggerwalk.serializers import DaggerwalkLogSerializer, QuestSerializer
 from apps.daggerwalk.admin import MonumentAdmin, TwitchUserProfileAdmin
 
@@ -248,6 +248,75 @@ class DaggerwalkLogSerializerTests(TestCase):
             DaggerwalkLogSerializer(log).data["last_known_region"]["name"],
             "Wayrest",
         )
+
+@override_settings(CACHES=TEST_CACHES)
+class QuestQueueTests(TestCase):
+    def setUp(self):
+        self.pois = []
+        for index in range(1, 8):
+            region = Region.objects.create(
+                name=f"Queue Region {index}",
+                province="High Rock",
+                climate="Woodlands",
+            )
+            self.pois.append(POI.objects.create(
+                name=f"Queue Destination {index}",
+                region=region,
+                type="town",
+                map_pixel_x=index,
+                map_pixel_y=index,
+            ))
+
+    def test_completion_promotes_first_queued_quest_for_same_slot(self):
+        active = Quest.objects.create(status="in_progress", slot=1, poi=self.pois[0])
+        first = Quest.objects.create(status="available", slot=1, poi=self.pois[1])
+        second = Quest.objects.create(status="available", slot=1, poi=self.pois[2])
+        created_at = first.created_at
+
+        _, next_quest = complete_and_rotate_quest(active, timezone.now())
+
+        first.refresh_from_db()
+        second.refresh_from_db()
+        self.assertEqual(next_quest.pk, first.pk)
+        self.assertEqual(first.status, "in_progress")
+        self.assertEqual(first.created_at, created_at)
+        self.assertGreater(first.started_at, first.created_at)
+        self.assertEqual(second.status, "available")
+        self.assertIsNone(second.started_at)
+
+    def test_queue_is_isolated_by_slot(self):
+        active = Quest.objects.create(status="in_progress", slot=1, poi=self.pois[0])
+        other_slot = Quest.objects.create(
+            status="available", slot=2, poi=self.pois[1]
+        )
+
+        _, next_quest = complete_and_rotate_quest(active, timezone.now())
+
+        other_slot.refresh_from_db()
+        self.assertNotEqual(next_quest.pk, other_slot.pk)
+        self.assertEqual(next_quest.slot, 1)
+        self.assertEqual(other_slot.status, "available")
+
+    def test_ensure_active_quests_promotes_queue_before_generating(self):
+        queued = Quest.objects.create(
+            status="available", slot=2, poi=self.pois[0]
+        )
+
+        active_quests = ensure_active_quests()
+
+        self.assertEqual([quest.slot for quest in active_quests], [1, 2, 3])
+        self.assertEqual(next(quest.pk for quest in active_quests if quest.slot == 2), queued.pk)
+
+    def test_random_fallback_does_not_take_a_queued_destination(self):
+        active = Quest.objects.create(status="in_progress", slot=1, poi=self.pois[0])
+        queued = Quest.objects.create(
+            status="available", slot=2, poi=self.pois[1]
+        )
+
+        _, next_quest = complete_and_rotate_quest(active, timezone.now())
+
+        self.assertNotEqual(next_quest.poi_id, queued.poi_id)
+
 
 @override_settings(CACHES=TEST_CACHES)
 class ProgressionTests(TestCase):

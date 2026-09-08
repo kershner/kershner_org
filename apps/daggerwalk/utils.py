@@ -268,7 +268,7 @@ def calculate_daggerwalk_stats(range_keyword, all_logs, all_chats, all_quests):
     
     if quest_count > 0:
         dur_minutes = [
-            int((q['completed_at'] - q['created_at']).total_seconds() / 60)
+            int((q['completed_at'] - (q.get('started_at') or q['created_at'])).total_seconds() / 60)
             for q in filtered_quests
             if q.get('created_at') and q.get('completed_at')
         ]

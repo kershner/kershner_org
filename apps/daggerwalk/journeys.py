@@ -50,16 +50,17 @@ def _format_duration(start, end):
 
 
 def _quest_route_logs(quest):
+    start_time = quest.start_time
     start_log = (
         DaggerwalkLog.objects
-        .filter(created_at__lte=quest.created_at)
+        .filter(created_at__lte=start_time)
         .order_by("-created_at")
         .values(*JOURNEY_LOG_FIELDS)
         .first()
     )
     journey_logs = list(
         DaggerwalkLog.objects
-        .filter(created_at__gt=quest.created_at, created_at__lte=quest.completed_at)
+        .filter(created_at__gt=start_time, created_at__lte=quest.completed_at)
         .order_by("created_at")
         .values(*JOURNEY_LOG_FIELDS)
     )
@@ -94,7 +95,7 @@ def completed_quest_detail_context(quest, route_logs=None, participants=None):
         "participants": participants,
         "journey": {
             "distance_km": f"{distance_km:.2f}" if distance_km < 1 else f"{distance_km:.0f}",
-            "duration": _format_duration(quest.created_at, quest.completed_at),
+            "duration": _format_duration(quest.start_time, quest.completed_at),
             "start": _location_label(start_log),
             "end": end_label,
             "regions": regions,
