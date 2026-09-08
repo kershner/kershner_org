@@ -1068,6 +1068,14 @@ a {
   display: flex;
   align-items: center;
   gap: 1rem;
+  min-width: 0;
+}
+.chronicle-identity > div {
+  min-width: 0;
+}
+.chronicle-identity h2,
+.chronicle-identity a {
+  overflow-wrap: anywhere;
 }
 .chronicle-identity p {
   margin: 0;
@@ -1237,11 +1245,18 @@ a {
 
   .chronicle-hero {
     align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
     padding: 2.5rem 2rem;
   }
 
   .chronicle-rank {
-    padding-left: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 1rem 0 0;
+    border-top: 1px solid rgba(26, 26, 26, 0.25);
+    border-left: 0;
+    text-align: left;
   }
 
   .chronicle-monuments,

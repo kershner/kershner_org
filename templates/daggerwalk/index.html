@@ -8,7 +8,7 @@
     <meta name="description" content="Watch The Elder Scrolls II: Daggerfall come alive with Daggerwalk — a live-streamed bot endlessly exploring the Iliac Bay. Interact in chat and track The Walker’s journey on the map.">
     <title>Daggerwalk</title>
     <link rel="icon" type="image/png" href="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/Daggerwalk.ico">
-    <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/daggerwalk.css?v=20260908-guild-heading-margin">
+    <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/daggerwalk.css">
 
     {% block extra_head %}{% endblock %}
 </head>
@@ -84,8 +84,8 @@
     </div>
 
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
-    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalk.js?v=20260908-cleanup-2"></script>
-    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/map.js?v=20260908-marker-anchor"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalk.js"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/map.js"></script>
     <script type="text/javascript" defer>
         window.BASE_S3_URL = '{% settings_value "BASE_S3_URL" %}';
 
