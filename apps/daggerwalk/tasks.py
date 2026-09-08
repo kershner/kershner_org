@@ -10,6 +10,12 @@ from apps.daggerwalk.cache_keys import (
     PROGRESSION_SNAPSHOT_CACHE_KEY,
     completed_quest_html_cache_key,
 )
+from apps.daggerwalk.bluesky_tags import (
+    AVAILABLE_TAGS as BLUESKY_AVAILABLE_TAGS,
+    CORE_TAGS as BLUESKY_CORE_TAGS,
+    refresh_tag_pool,
+    select_video_tags,
+)
 from apps.daggerwalk.journeys import completed_quest_detail_context
 from apps.daggerwalk.progression import (
     guild_hall_page_payload,
@@ -38,7 +44,6 @@ from bisect import bisect_right
 import tempfile
 import requests
 import logging
-import random
 import httpx
 import time
 import os
@@ -51,6 +56,28 @@ logger = logging.getLogger(__name__)
 BASE_URL = 'https://kershner.org'
 API_BASE_URL = f'{BASE_URL}/api/daggerwalk'
 TWITCH_CLIP_URL = 'https://api.twitch.tv/helix/clips'
+
+def select_bluesky_video_tags():
+    return select_video_tags()
+
+
+@shared_task
+def audit_bluesky_video_tags():
+    """Refresh the daily video's rotating tag pool from Bluesky engagement."""
+    client = Client()
+    client.request._client.timeout = httpx.Timeout(60.0)
+    client.login(
+        settings.DAGGERWALK_BLUESKY_HANDLE,
+        settings.DAGGERWALK_BLUESKY_APP_PASSWORD,
+    )
+    payload = refresh_tag_pool(client, client.me.did)
+    logger.info(
+        "Updated Bluesky video tag pool: %s",
+        ", ".join(item["tag"] for item in payload["tags"]),
+    )
+    return payload
+
+
 @shared_task
 def refresh_daggerwalk_twitch_profiles():
     """Initial participant enrichment, then weekly refresh for recently active walkers."""
@@ -364,13 +391,7 @@ def generate_bluesky_caption(log_data, stats_data):
 def post_video_to_bluesky(caption, video_blob, client: Client):
     logger.info("Preparing Bluesky post")
 
-    random_tags = [
-        "streaming", "obs", "twitch", "gaming", "gamedev",
-        "webdev", "javascript", "python", "coding", "programming", "django",
-        "bethesda", "elderscrolls", "fantasy", "retrogaming", "retro",
-        "pcgaming", "pcgames", "rpg", "dos", "msdos", "90s",
-    ]
-    tags = ["daggerfall"] + random.sample(random_tags, 5)
+    tags = select_bluesky_video_tags()
     hashtags_text = " ".join([f"#{tag}" for tag in tags])
 
     text = f"{caption}\n\n{hashtags_text}"
@@ -398,6 +419,7 @@ def post_video_to_bluesky(caption, video_blob, client: Client):
         record = {
             "text": text,
             "createdAt": client.get_current_time_iso(),
+            "langs": ["en"],
             "embed": {
                 "$type": "app.bsky.embed.video",
                 "video": video_blob,

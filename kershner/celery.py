@@ -23,4 +23,8 @@ app.conf.beat_schedule = {
         'task': 'apps.daggerwalk.tasks.refresh_daggerwalk_twitch_profiles',
         'schedule': crontab(minute=20, hour=4, day_of_week='monday'),
     },
+    'daggerwalk-audit-bluesky-tags-weekly': {
+        'task': 'apps.daggerwalk.tasks.audit_bluesky_video_tags',
+        'schedule': crontab(minute=40, hour=4, day_of_week='monday'),
+    },
 }

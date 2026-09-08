@@ -8,7 +8,8 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
-from datetime import timedelta
+from collections import Counter
+from datetime import datetime, timedelta, timezone as datetime_timezone
 from io import StringIO
 from unittest.mock import Mock, call, patch
 
@@ -27,6 +28,159 @@ from apps.daggerwalk.progression import cached_progression_snapshot, change_guil
 from apps.daggerwalk.quest_gen import complete_and_rotate_quest, ensure_active_quests
 from apps.daggerwalk.serializers import DaggerwalkLogSerializer, QuestSerializer
 from apps.daggerwalk.admin import MonumentAdmin, TwitchUserProfileAdmin
+from apps.daggerwalk import tasks as daggerwalk_tasks
+
+
+class BlueskyVideoTagTests(SimpleTestCase):
+    def test_tag_catalog_is_large_relevant_and_each_post_stays_focused(self):
+        self.assertGreaterEqual(len(daggerwalk_tasks.BLUESKY_AVAILABLE_TAGS), 30)
+        self.assertTrue({
+            "crpg",
+            "dosgaming",
+            "retrogames",
+            "twitchclips",
+            "gamingcommunity",
+            "pcgaming",
+        }.issubset(daggerwalk_tasks.BLUESKY_AVAILABLE_TAGS))
+        self.assertTrue({
+            "webdev",
+            "javascript",
+            "django",
+            "obs",
+            "gameautomation",
+            "proceduralstorytelling",
+        }.isdisjoint(daggerwalk_tasks.BLUESKY_AVAILABLE_TAGS))
+
+        with (
+            patch("apps.daggerwalk.bluesky_tags.cache.get", return_value=None),
+            patch(
+                "apps.daggerwalk.bluesky_tags.random.sample",
+                return_value=["crpg", "twitchclips", "pcgaming"],
+            ),
+        ):
+            tags = daggerwalk_tasks.select_bluesky_video_tags()
+
+        self.assertEqual(tags, [
+            "daggerfall",
+            "elderscrolls",
+            "retrogaming",
+            "crpg",
+            "twitchclips",
+            "pcgaming",
+        ])
+
+    def test_video_post_publishes_all_tags_as_searchable_facets(self):
+        client = Mock()
+        client.me.did = "did:example:daggerwalk"
+        client.get_current_time_iso.return_value = "2026-09-08T18:00:00Z"
+        client.com.atproto.repo.create_record.return_value = {
+            "uri": "at://post",
+            "cid": "post-cid",
+        }
+
+        with (
+            patch("apps.daggerwalk.bluesky_tags.cache.get", return_value=None),
+            patch(
+                "apps.daggerwalk.bluesky_tags.random.sample",
+                return_value=["crpg", "twitchclips", "pcgaming"],
+            ),
+        ):
+            daggerwalk_tasks.post_video_to_bluesky("Daily walk", "video-blob", client)
+
+        data = client.com.atproto.repo.create_record.call_args.kwargs["data"]
+        record = data["record"]
+        self.assertEqual(record["langs"], ["en"])
+        self.assertEqual(len(record["facets"]), 6)
+        self.assertEqual(
+            [facet["features"][0]["tag"] for facet in record["facets"]],
+            [
+                "daggerfall",
+                "elderscrolls",
+                "retrogaming",
+                "crpg",
+                "twitchclips",
+                "pcgaming",
+            ],
+        )
+        encoded_text = record["text"].encode("utf-8")
+        for facet in record["facets"]:
+            start = facet["index"]["byteStart"]
+            end = facet["index"]["byteEnd"]
+            tag = facet["features"][0]["tag"]
+            self.assertEqual(encoded_text[start:end].decode("utf-8"), f"#{tag}")
+
+    def test_weekly_audit_promotes_discovered_tags_and_updates_cache(self):
+        from apps.daggerwalk import bluesky_tags
+
+        now = datetime(2026, 9, 8, tzinfo=datetime_timezone.utc)
+
+        def metrics(_client, tag, _own_did, _now):
+            if tag == "promisingtag":
+                return {
+                    "posts_7d": 50,
+                    "posts_30d": 100,
+                    "authors_30d": 60,
+                    "top_author_share": 0.05,
+                    "median_engagement": 12,
+                    "p75_engagement": 25,
+                }
+            return {
+                "posts_7d": 10,
+                "posts_30d": 40,
+                "authors_30d": 20,
+                "top_author_share": 0.1,
+                "median_engagement": 3,
+                "p75_engagement": 6,
+            }
+
+        with (
+            patch.object(
+                bluesky_tags,
+                "_discover_candidates",
+                return_value=Counter({"promisingtag": 12}),
+            ),
+            patch.object(bluesky_tags, "_audit_candidate", side_effect=metrics),
+            patch.object(bluesky_tags.cache, "set") as cache_set,
+        ):
+            payload = bluesky_tags.refresh_tag_pool(Mock(), "did:example:own", now)
+
+        self.assertEqual(payload["tags"][0]["tag"], "promisingtag")
+        self.assertEqual(len(payload["tags"]), bluesky_tags.MAX_POOL_SIZE)
+        cache_set.assert_called_once_with(
+            bluesky_tags.TAG_POOL_CACHE_KEY,
+            payload,
+            timeout=None,
+        )
+
+    def test_weekly_audit_does_not_replace_pool_with_bad_results(self):
+        from apps.daggerwalk import bluesky_tags
+
+        bad_metrics = {
+            "posts_7d": 1,
+            "posts_30d": 2,
+            "authors_30d": 1,
+            "top_author_share": 1.0,
+            "median_engagement": 0,
+            "p75_engagement": 0,
+        }
+        with (
+            patch.object(bluesky_tags, "_discover_candidates", return_value=Counter()),
+            patch.object(bluesky_tags, "_audit_candidate", return_value=bad_metrics),
+            patch.object(bluesky_tags.cache, "set") as cache_set,
+        ):
+            with self.assertRaises(RuntimeError):
+                bluesky_tags.refresh_tag_pool(Mock(), "did:example:own")
+
+        cache_set.assert_not_called()
+
+    def test_weekly_audit_is_registered_with_celery_beat(self):
+        from kershner.celery import app
+
+        schedule = app.conf.beat_schedule["daggerwalk-audit-bluesky-tags-weekly"]
+        self.assertEqual(
+            schedule["task"],
+            "apps.daggerwalk.tasks.audit_bluesky_video_tags",
+        )
 
 
 @override_settings(
