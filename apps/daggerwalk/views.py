@@ -197,7 +197,7 @@ def guild_hall(request):
     if html is None:
         html = render_to_string(
             "daggerwalk/guild_hall.html",
-            {"guilds": guild_hall_page_payload()},
+            {"guilds": guild_hall_page_payload(), "active_nav": "guild_hall"},
             request=request,
         )
         cache.set(GUILD_HALL_HTML_CACHE_KEY, html, timeout=None)

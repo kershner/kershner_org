@@ -356,7 +356,9 @@ class ProgressionTests(TestCase):
         )
         self.assertEqual(monument.game_date, "Loredas, 17 Rain's Hand, 3E 405")
         self.assertContains(self.client.get(reverse("daggerwalk_walker", args=["Walker"])), "Pathfinder")
-        self.assertContains(self.client.get(reverse("daggerwalk_guild_hall")), "Fighters Guild")
+        guild_hall = self.client.get(reverse("daggerwalk_guild_hall"))
+        self.assertContains(guild_hall, "Fighters Guild")
+        self.assertContains(guild_hall, 'class="site-nav-link active" href="/daggerwalk/guilds/"')
         with self.assertTemplateUsed("daggerwalk/includes/monument_table.html"):
             registry = self.client.get(reverse("daggerwalk_monuments"))
         self.assertContains(registry, "Cairn")

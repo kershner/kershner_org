@@ -8,7 +8,7 @@
       <a class="site-nav-link" href="{% url 'daggerwalk' %}">Map</a>
       <a class="site-nav-link" href="{% url 'daggerwalk' %}?view=twitch">Twitch</a>
     {% endif %}
-    <a class="site-nav-link{% if request.resolver_match.url_name == 'daggerwalk_guild_hall' %} active{% endif %}" href="{% url 'daggerwalk_guild_hall' %}">Guild Hall</a>
+    <a class="site-nav-link{% if active_nav == 'guild_hall' or request.resolver_match.url_name == 'daggerwalk_guild_hall' %} active{% endif %}" href="{% url 'daggerwalk_guild_hall' %}">Guild Hall</a>
     <a class="site-nav-link{% if request.resolver_match.url_name == 'daggerwalk_monuments' %} active{% endif %}" href="{% url 'daggerwalk_monuments' %}">Monuments</a>
     <div class="menu-container">
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-controls" aria-label="Open settings" title="Settings">

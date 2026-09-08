@@ -1,7 +1,7 @@
 DAGGERWALK_HOME_HTML_CACHE_KEY = "daggerwalk_home_html:v20260908-guild-heading-margin"
 PROGRESSION_SNAPSHOT_CACHE_KEY = "daggerwalk_progression_snapshot"
 PROGRESSION_HOME_CACHE_KEY = "daggerwalk_progression_home"
-GUILD_HALL_HTML_CACHE_KEY = "daggerwalk_guild_hall_html"
+GUILD_HALL_HTML_CACHE_KEY = "daggerwalk_guild_hall_html:v2"
 LEADERBOARD_CACHE_KEY = "daggerwalk_leaderboard"
 
 

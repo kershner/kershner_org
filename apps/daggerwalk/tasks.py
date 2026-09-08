@@ -894,7 +894,10 @@ def update_all_daggerwalk_caches():
         GUILD_HALL_HTML_CACHE_KEY,
         render_to_string(
             "daggerwalk/guild_hall.html",
-            {"guilds": guild_hall_page_payload([dict(guild) for guild in guild_summaries])},
+            {
+                "guilds": guild_hall_page_payload([dict(guild) for guild in guild_summaries]),
+                "active_nav": "guild_hall",
+            },
         ),
         timeout=None,
     )
