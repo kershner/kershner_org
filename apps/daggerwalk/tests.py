@@ -30,7 +30,7 @@ from apps.daggerwalk.admin import MonumentAdmin, TwitchUserProfileAdmin
 
 
 @override_settings(
-    CLOUDFRONT_DOMAIN="cdn.example.com",
+    CLOUDFRONT_DISTRIBUTION_ID="DIST123",
     AWS_ACCESS_KEY_ID="key",
     AWS_SECRET_ACCESS_KEY="secret",
 )
@@ -38,19 +38,13 @@ class CloudFrontInvalidationTests(SimpleTestCase):
     @patch("apps.daggerwalk.management.commands.invalidate_cloudfront.boto3.client")
     def test_invalidates_entire_distribution(self, boto_client):
         client = boto_client.return_value
-        client.get_paginator.return_value.paginate.return_value = [{
-            "DistributionList": {"Items": [{
-                "Id": "DIST123",
-                "DomainName": "distribution.cloudfront.net",
-                "Aliases": {"Items": ["cdn.example.com"]},
-            }]},
-        }]
         client.create_invalidation.return_value = {"Invalidation": {"Id": "INV123"}}
 
         call_command("invalidate_cloudfront", stdout=StringIO())
 
         batch = client.create_invalidation.call_args.kwargs
         self.assertEqual(batch["DistributionId"], "DIST123")
+        client.get_paginator.assert_not_called()
         self.assertEqual(batch["InvalidationBatch"]["Paths"], {
             "Quantity": 1,
             "Items": ["/*"],

@@ -13,6 +13,16 @@ PYTHON="$VENVDIR/bin/python"
 PROD_SETTINGS="--settings=site_config.settings.prod"
 SKIP_COLLECTSTATIC=false
 SKIP_CLOUDFRONT_PURGE=false
+SUPERVISOR_STOPPED=false
+
+restore_supervisor() {
+    if [ "$SUPERVISOR_STOPPED" = true ]; then
+        echo '==========[ Restoring supervisor after deploy failure ]=========='
+        sudo service supervisor start
+    fi
+}
+
+trap restore_supervisor EXIT
 
 for DEPLOY_OPTION in "$@"; do
     case "$DEPLOY_OPTION" in
@@ -39,6 +49,7 @@ echo ''
 
 echo '==========[ Stopping supervisor ]=========='
 sudo service supervisor stop
+SUPERVISOR_STOPPED=true
 echo ''
 
 echo '==========[ Reverting repo to HEAD (git checkout .) ]=========='
@@ -83,6 +94,7 @@ fi
 
 echo '==========[ Restarting supervisor ]=========='
 sudo service supervisor restart
+SUPERVISOR_STOPPED=false
 echo ''
 
 echo '==========[ Web server should be back online now... ]=========='
@@ -90,3 +102,4 @@ echo ''
 
 echo '==========[ Deploy Complete! ]=========='
 echo ''
+trap - EXIT
