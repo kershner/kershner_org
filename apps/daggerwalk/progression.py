@@ -545,6 +545,7 @@ def guild_hall_page_payload(guilds=None):
 
 def monument_display_rows(monuments):
     for monument in monuments:
+        monument.latest_visit = monument.latest_visit or monument.created_at
         monument.type_name = MONUMENT_TYPES.get(
             monument.monument_type,
             (monument.monument_type.replace("-", " ").title(),),

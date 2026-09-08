@@ -1,14 +1,13 @@
 {% extends "daggerwalk/progression_base.html" %}
-{% load static %}
 {% block title %}Monument Registry · Daggerwalk{% endblock %}
 {% block content %}
-<header class="progression-heading parchment-panel monument-registry-heading" style="background-image: url('{% static 'img/daggerwalk/scroll.png' %}');">
+<header class="progression-heading">
   <h1>Monument Registry</h1>
   <p>Permanent landmarks raised by Daggerwalk viewers and eligible as destinations for future quests.</p>
 </header>
 
-<section class="faq" aria-labelledby="monument-guide-title">
-  <h2 id="monument-guide-title">How Monuments Work</h2>
+<section class="faq monument-guide" aria-labelledby="monument-guide-title">
+  <h2 class="monument-guide-title parchment-title" id="monument-guide-title">How Monuments Work</h2>
   <details open>
     <summary>How do I earn and place one?</summary>
     <p>Monuments become available at Pathfinder Renown (200 XP), when you earn your first Monument Token and unlock the first set of types. More tokens and types unlock at major Renown milestones, followed by another token every 30,000 XP after Living Legend. In Twitch chat, use <code>!monument</code> to check your balance, <code>!monument types</code> to draw a short list, and <code>!monument types more</code> to see the remaining unlocked choices.</p>

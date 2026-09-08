@@ -54,6 +54,7 @@ const daggerwalk = {
 
   async fetchLatest() {
     const fiveMinutesAndBuffer = (5 * 60 * 1000) + 10000; // 5 min + 10 sec buffer
+    const retryDelay = 10000;
 
     if (this.latestLog && this.latestLog.created_at) {
         const lastLogTime = new Date(this.latestLog.created_at).getTime();
@@ -68,7 +69,6 @@ const daggerwalk = {
     }
 
     try {
-        const buffer = 10000;  // 10s  
         const response = await fetch('/daggerwalk/logs/latest/');
         const responseJson = await response.json();
         const newLog = JSON.parse(responseJson.log);
@@ -76,7 +76,7 @@ const daggerwalk = {
 
         // Ensure created_at exists and is valid before scheduling the next fetch
         if (!newLog.created_at) {
-            this.scheduleNextFetch(buffer);
+            this.scheduleNextFetch(retryDelay);
             return;
         }
 
@@ -87,11 +87,11 @@ const daggerwalk = {
         // Calculate the next fetch time based on the new log's created_at
         const newLogTime = new Date(newLog.created_at).getTime();
         const nextFetchTime = newLogTime + fiveMinutesAndBuffer;
-        const delay = Math.max(nextFetchTime - Date.now(), buffer); // Ensure a minimum delay of 10 sec
+        const delay = Math.max(nextFetchTime - Date.now(), retryDelay);
         
         this.scheduleNextFetch(delay);
     } catch (err) {
-        this.scheduleNextFetch(buffer); // Retry in 10 seconds on failure
+        this.scheduleNextFetch(retryDelay);
     }
   },
 
@@ -124,12 +124,14 @@ const daggerwalk = {
     const defaultBackground = 'dark';
     const defaultAccentColor = '#F2E530';
 
-    let isPinned = false;
+    if (!toggle || !menuContainer || !siteControlsContainer || !accentColorInput || !resetButton) return;
 
     const setOpen = (open) => {
       siteControlsContainer.classList.toggle('hidden', !open);
       menuContainer.classList.toggle('open', open);
-      if (toggle) toggle.classList.toggle('open', open);
+      toggle.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Close settings' : 'Open settings');
     };
 
     const savedBackground = localStorage.getItem('background') || defaultBackground;
@@ -142,40 +144,17 @@ const daggerwalk = {
     document.documentElement.style.setProperty('--accent-color', savedAccent);
     document.body.classList.add(savedBackground);
 
-    if (toggle) {
-      // CLICK: pin/unpin
-      toggle.addEventListener('click', (e) => {
-        e.stopPropagation(); // prevent outside click handler from firing
-        if (!isPinned) {
-          isPinned = true;
-          setOpen(true);
-        } else {
-          isPinned = false;
-          setOpen(false);
-        }
-      });
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+    });
 
-      // HOVER for desktop only
-      toggle.addEventListener('mouseenter', () => { if (!isPinned) setOpen(true); });
-      toggle.addEventListener('mouseleave', () => { if (!isPinned && !menuContainer.matches(':hover')) setOpen(false); });
-    }
-
-    // HOVER for desktop
-    menuContainer.addEventListener('mouseenter', () => { if (!isPinned) setOpen(true); });
-    menuContainer.addEventListener('mouseleave', () => { if (!isPinned) setOpen(false); });
-
-    // OUTSIDE CLICK/TAP (covers mobile)
     document.addEventListener('click', (e) => {
-      const clickedInside = toggle.contains(e.target) || menuContainer.contains(e.target);
-      if (!clickedInside) {
-        isPinned = false;
-        setOpen(false);
-      }
+      if (!menuContainer.contains(e.target)) setOpen(false);
     }, true);
 
-    // Optional: ESC closes & unpins
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { isPinned = false; setOpen(false); }
+      if (e.key === 'Escape') setOpen(false);
     });
 
     backgroundRadios.forEach(radio => {
@@ -205,61 +184,26 @@ const daggerwalk = {
       localStorage.setItem('background', defaultBackground);
       localStorage.setItem('accentColor', defaultAccentColor);
 
-      isPinned = false;
       setOpen(false);
     });
 
     if (chatToggleBtn) {
-      chatToggleBtn.addEventListener('click', () => { isPinned = false; setOpen(false); });
+      chatToggleBtn.addEventListener('click', () => setOpen(false));
     }
   },
 
-  // New function to handle the "tab" parameter for about-tabs group
-  handleAboutTabParameter() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get('tab');
-    
-    if (!tabParam) return false;
-    
-    // Map tab parameter to tab button ID for the second tab group
-    const validTabs = {
-      'quests': 'quests-tab-btn',
-      'progression': 'progression-tab-btn',
-      'renown': 'progression-tab-btn',
-      'stats': 'stats-tab-btn',
-      'commands': 'commands-tab-btn',
-      'songs': 'songs-tab-btn',
-      'about': 'about-tab-btn'
-    };
-    
-    const tabId = validTabs[tabParam.toLowerCase()];
-    if (!tabId) return false;
-    
-    const tabElement = document.querySelector(`#${tabId}`);
-    if (tabElement) {
-      // Select the tab and trigger its change event
-      tabElement.checked = true;
-      tabElement.dispatchEvent(new Event("change", { bubbles: true }));
-      return true;
-    }
-    
-    return false;
-  },
-
-  // Function to initialize about-tabs event listeners
   initAboutTabs() {
-    const tabButtons = document.querySelectorAll('.about-tabs input[type="radio"]');
-    
+    const tabButtons = [...document.querySelectorAll('.about-tabs input[data-query-tab]')];
+    const requestedTab = new URLSearchParams(window.location.search).get('tab')?.toLowerCase();
+    const requestedButton = tabButtons.find(button => button.dataset.queryTab === requestedTab);
+    if (requestedButton) requestedButton.checked = true;
+
     tabButtons.forEach(button => {
       button.addEventListener('change', (event) => {
-        if (event.target.checked) {
-          const tabName = event.target.id.replace('-tab-btn', '');
-          
-          // Update URL without affecting other parameters
-          const urlParams = new URLSearchParams(window.location.search);
-          urlParams.set('tab', tabName);
-          history.pushState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
-        }
+        if (!event.target.checked) return;
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('tab', event.target.dataset.queryTab);
+        history.pushState({}, '', `${window.location.pathname}?${urlParams}`);
       });
     });
   }
@@ -395,12 +339,14 @@ daggerwalk.initDaggerwalkStats = function() {
   const statsApiUrl = '/api/daggerwalk/stats/';
 
   async function fetchStats(range) {
-    
     try {
       statsContainer.innerHTML = '<p class="secondary-font">Loading stats...</p>';
       const response = await fetch(`${statsApiUrl}?range=${range}`);
       const data = await response.json();
-      if (!response.ok || !data.html) throw new Error('Failed to fetch stats');
+      if (!response.ok || !data.html) {
+        statsContainer.innerHTML = `<p class="secondary-font">${data.error || 'Stats are currently unavailable.'}</p>`;
+        return;
+      }
 
       statsContainer.innerHTML = data.html;
 
@@ -418,9 +364,8 @@ daggerwalk.initDaggerwalkStats = function() {
 
       const select = document.getElementById('rangeSelect');
       if (select) select.value = range;
-    } catch (error) {
-      statsContainer.innerHTML = '<p class="secondary-font">Error loading stats.</p>';
-      console.error(error);
+    } catch {
+      statsContainer.innerHTML = '<p class="secondary-font">Stats are currently unavailable.</p>';
     }
   }
 
@@ -440,7 +385,6 @@ daggerwalk.initDaggerwalkStats = function() {
     }
   }
 
-  attachEvents();
   fetchStats("today");
 }
 
@@ -448,7 +392,7 @@ daggerwalk.labelSelectActivation = function() {
   // Allows the label+inputs to be activated with keyboard
   document.addEventListener('keydown', (e) => {
     if (e.key !== ' ' && e.key !== 'Enter') return;
-    const label = e.target.closest('.about-tabs label[for]');
+    const label = e.target.closest('.about-tabs label[for], .site-nav label[for]');
     if (!label) return;
     e.preventDefault();       // stop Space from scrolling
     label.click();            // fires the associated radio's native click
@@ -501,44 +445,58 @@ daggerwalk.initTwitch = function () {
   
 daggerwalk.init = () => {
   const urlParams = new URLSearchParams(window.location.search);
-  let regionParam = urlParams.get('region');
+  const regionParam = urlParams.get('region');
   const mapTab = document.querySelector('#map-tab-btn');
-  if (mapTab) {
-    mapTab.addEventListener('change', (e) => {
-      if (e.target.checked && window.daggerwalkMap) {
-        const map = window.daggerwalkMap;
-        setTimeout(() => {
-          // Fix Leaflet map misalignment when returning to the Map tab
-          map.invalidateSize();
-          map.setView(map.getCenter(), map.getZoom(), { animate: false });
-        }, 150);
-      }
+  const twitchTab = document.querySelector('#twitch-tab-btn');
+  const chatControlRow = document.querySelector('.chat-control-row');
+  const viewLinks = document.querySelectorAll('[data-site-view]');
+
+  const activatePrimaryView = (view) => {
+    viewLinks.forEach(link => link.classList.toggle('active', link.dataset.siteView === view));
+    if (chatControlRow) chatControlRow.classList.toggle('hidden', view !== 'twitch');
+    if (view === 'twitch') {
+      daggerwalk.initTwitch();
+    } else if (window.daggerwalkMap) {
+      setTimeout(() => window.daggerwalkMap.invalidateSize(), 150);
+    }
+  };
+
+  if (mapTab && twitchTab) {
+    mapTab.addEventListener('click', () => history.pushState({}, '', window.location.pathname));
+    twitchTab.addEventListener('click', () => history.pushState({}, '', `${window.location.pathname}?view=twitch`));
+
+    mapTab.addEventListener('change', () => {
+      if (!mapTab.checked) return;
+      activatePrimaryView('map');
+      history.replaceState({}, '', window.location.pathname);
     });
-  }
+    twitchTab.addEventListener('change', () => {
+      if (!twitchTab.checked) return;
+      activatePrimaryView('twitch');
+      history.replaceState({}, '', `${window.location.pathname}?view=twitch`);
+    });
 
-  if (regionParam && mapTab) {
-    mapTab.checked = true;
-    mapTab.dispatchEvent(new Event("change", { bubbles: true }));
-  }
-
-  const twitchTab = document.querySelector('#twitch-tab-btn')
-  if (twitchTab) {
-    if (twitchTab.checked) daggerwalk.initTwitch()
-
-    twitchTab.addEventListener('change', (e) => {
-      if (e.target.checked) {
-        daggerwalk.initTwitch();
-        history.pushState({}, '', window.location.pathname)
-      }
-    })
+    const initialView = !regionParam && urlParams.get('view') === 'twitch' ? 'twitch' : 'map';
+    (initialView === 'twitch' ? twitchTab : mapTab).checked = true;
+    activatePrimaryView(initialView);
   }
   
   daggerwalk.labelSelectActivation();
-  daggerwalk.handleAboutTabParameter();
   daggerwalk.initAboutTabs();
   daggerwalk.updateStatus();
   daggerwalk.startPolling();
   daggerwalk.siteMenu();
   daggerwalk.initTables();
-  daggerwalk.initDaggerwalkStats();
+  const statsTab = document.getElementById('stats-tab-btn');
+  if (statsTab) {
+    let statsLoaded = false;
+    const loadStats = () => {
+      if (statsTab.checked && !statsLoaded) {
+        statsLoaded = true;
+        daggerwalk.initDaggerwalkStats();
+      }
+    };
+    statsTab.addEventListener('change', loadStats);
+    loadStats();
+  }
 }

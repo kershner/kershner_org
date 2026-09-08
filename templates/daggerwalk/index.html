@@ -8,27 +8,18 @@
     <meta name="description" content="Watch The Elder Scrolls II: Daggerfall come alive with Daggerwalk — a live-streamed bot endlessly exploring the Iliac Bay. Interact in chat and track The Walker’s journey on the map.">
     <title>Daggerwalk</title>
     <link rel="icon" type="image/png" href="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/Daggerwalk.ico">
-    <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/daggerwalk.css?v=20260907-guild-hall-summary-9">
+    <link rel="stylesheet" href="{% settings_value "BASE_S3_URL" %}/css/daggerwalk.css?v=20260908-guild-heading-margin">
 
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    {# Main tabs - Twitch/Map #}
-    <div class="top-row">
-        <div class="logo-wrapper">
-            <img alt="Daggerwalk Logo" src="{% settings_value "BASE_S3_URL" %}/img/daggerwalk/Daggerwalk_logo_small.png">
-        </div>
-
-        {% include "daggerwalk/site_menu.html" with show_chat_toggle=True %}
-    </div>
+    {% include "daggerwalk/site_menu.html" with show_view_tabs=True show_chat_toggle=True %}
 
     <div class="tabs main-tabs">
         <input type="radio" name="tabs" id="map-tab-btn" checked>
         <input type="radio" name="tabs" id="twitch-tab-btn">
-        <label data-tab="1" for="map-tab-btn">Map</label>
-        <label data-tab="2" for="twitch-tab-btn">Twitch</label>
         
-        <div class="tab-content">{% include 'daggerwalk/map.html' %}</div>
+        <div class="tab-content map-tab">{% include 'daggerwalk/map.html' %}</div>
         <div class="tab-content twitch-tab">{% include 'daggerwalk/twitch_player.html' %}</div>
     </div>
 
@@ -51,12 +42,12 @@
 
     {# About tabs #}
     <div class="tabs about-tabs">
-        <input type="radio" name="tabs-group-2" id="quests-tab-btn" checked>
-        <input type="radio" name="tabs-group-2" id="progression-tab-btn">
-        <input type="radio" name="tabs-group-2" id="stats-tab-btn">
-        <input type="radio" name="tabs-group-2" id="commands-tab-btn">
-        <input type="radio" name="tabs-group-2" id="songs-tab-btn">
-        <input type="radio" name="tabs-group-2" id="about-tab-btn">
+        <input type="radio" name="tabs-group-2" id="quests-tab-btn" data-query-tab="quests" checked>
+        <input type="radio" name="tabs-group-2" id="progression-tab-btn" data-query-tab="renown">
+        <input type="radio" name="tabs-group-2" id="stats-tab-btn" data-query-tab="stats">
+        <input type="radio" name="tabs-group-2" id="commands-tab-btn" data-query-tab="commands">
+        <input type="radio" name="tabs-group-2" id="songs-tab-btn" data-query-tab="songs">
+        <input type="radio" name="tabs-group-2" id="about-tab-btn" data-query-tab="about">
 
         <label data-tab="1" for="quests-tab-btn" tabindex="0">Quests</label>
         <label data-tab="2" for="progression-tab-btn" tabindex="0">Renown</label>
@@ -93,8 +84,8 @@
     </div>
 
     <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
-    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalk.js?v=20260907-tabs"></script>
-    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/map.js"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/daggerwalk.js?v=20260908-cleanup-2"></script>
+    <script type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/daggerwalk/map.js?v=20260908-marker-anchor"></script>
     <script type="text/javascript" defer>
         window.BASE_S3_URL = '{% settings_value "BASE_S3_URL" %}';
 

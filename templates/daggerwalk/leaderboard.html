@@ -22,7 +22,7 @@
               
               <td class="leaderboard-user">
                   <span class="leaderboard-walker">
-                    {% if row.profile_image_url %}<img src="{{ row.profile_image_url }}" alt="">{% endif %}
+                    {% if row.profile_image_url %}<img src="{{ row.profile_image_url }}" alt="" width="24" height="24" loading="lazy">{% endif %}
                     <a href="{% url 'daggerwalk_walker' row.username %}">{{ row.username }}</a>
                   </span>
               </td>

@@ -26,7 +26,14 @@ from apps.daggerwalk.quest_gen import complete_and_rotate_quest
 from apps.daggerwalk.serializers import DaggerwalkLogSerializer, QuestSerializer
 from apps.daggerwalk.admin import MonumentAdmin, TwitchUserProfileAdmin
 
+TEST_CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "daggerwalk-tests",
+    }
+}
 
+@override_settings(CACHES=TEST_CACHES)
 class CompletedQuestDetailTests(TestCase):
     def setUp(self):
         cache.clear()
@@ -185,8 +192,10 @@ class DaggerwalkLogSerializerTests(TestCase):
             "Wayrest",
         )
 
+@override_settings(CACHES=TEST_CACHES)
 class ProgressionTests(TestCase):
     def setUp(self):
+        cache.clear()
         self.region = Region.objects.create(name="Daggerfall", province="High Rock", climate="Woodlands")
         self.poi = POI.objects.create(name="Privateer's Hold", region=self.region, type="dungeon", map_pixel_x=100, map_pixel_y=100)
 
@@ -352,10 +361,10 @@ class ProgressionTests(TestCase):
             registry = self.client.get(reverse("daggerwalk_monuments"))
         self.assertContains(registry, "Cairn")
         self.assertContains(registry, "How Monuments Work")
-        self.assertContains(registry, "parchment-panel monument-registry-heading")
-        self.assertContains(registry, "monument-emoji-cell")
+        self.assertContains(registry, "monument-guide-title")
+        self.assertContains(registry, "monument-heading-icon")
         self.assertContains(registry, "Last Visited")
-        self.assertContains(registry, "Never")
+        self.assertNotContains(registry, "Never")
         self.assertContains(registry, "!monument &lt;type&gt;")
         self.assertContains(registry, "!monument types more")
         self.assertNotContains(registry, "!monument place")

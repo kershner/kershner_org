@@ -1,16 +1,12 @@
 {% extends "daggerwalk/progression_base.html" %}
-{% load static %}
 {% block title %}Guild Hall · Daggerwalk{% endblock %}
 {% block content %}
-<header class="progression-heading guild-hall-heading">
-  <div>
-    <h1>Guild Hall</h1>
-    <p>Guild XP is earned only from quests completed while a walker actively serves that guild.</p>
-  </div>
-  <div class="guild-hall-crests" aria-hidden="true"><span>⚔️</span><span>🔮</span><span>🗝️</span><span>🗡️</span></div>
+<header class="progression-heading">
+  <h1>Guild Hall</h1>
+  <p>Guild XP is earned only from quests completed while a walker actively serves that guild.</p>
 </header>
 
-<aside class="guild-hall-notice parchment-panel" style="background-image: url('{% static 'img/daggerwalk/scroll.png' %}');">
+<aside class="guild-hall-notice parchment-panel">
   <strong>Seeking membership?</strong>
   <span>Complete a quest, then use <code>!guild join &lt;guild&gt;</code> and <code>!guild confirm</code> in Twitch chat. Changing allegiance begins a 30-day cooldown.</span>
 </aside>

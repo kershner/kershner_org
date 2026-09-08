@@ -1,5 +1,4 @@
 {% extends "daggerwalk/progression_base.html" %}
-{% load static %}
 {% block title %}{{ quest.quest_name }} · Daggerwalk{% endblock %}
 {% block content %}
 <header class="progression-heading quest-detail-heading">
@@ -7,7 +6,7 @@
   <p>{{ quest.poi.emoji }} {{ quest.poi.name }} in {{ quest.poi.region.name }}</p>
 </header>
 
-<div class="quests-wrapper quest-detail-scroll" style="background-image: url('{% static 'img/daggerwalk/scroll.png' %}');">
+<div class="quests-wrapper quest-detail-scroll">
   {% include "daggerwalk/quest.html" with quest=quest %}
 </div>
 
@@ -29,7 +28,7 @@
       {% for participant in participants %}
         <li>
           <a href="{% url 'daggerwalk_walker' participant.twitch_username %}">
-            {% if participant.twitch_profile_image_url %}<img src="{{ participant.twitch_profile_image_url }}" alt="" loading="lazy">{% endif %}
+            {% if participant.twitch_profile_image_url %}<img src="{{ participant.twitch_profile_image_url }}" alt="" width="24" height="24" loading="lazy">{% endif %}
             <span>{{ participant.twitch_username }}</span>
           </a>
         </li>

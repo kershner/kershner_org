@@ -1,10 +1,8 @@
-{% load static %}
-
 {% if active_quests %}
 <h4>Active Quests</h4>
 <div class="active-quests-composite">
   {% for quest in active_quests %}
-  <div class="quests-wrapper" style="background-image: url('{% static 'img/daggerwalk/scroll.png' %}');">
+  <div class="quests-wrapper">
     {% include 'daggerwalk/quest.html' with quest=quest %}
   </div>
   {% endfor %}
@@ -39,7 +37,7 @@
 
 {% if previous_quests %}
 <h4>Previous Quests</h4>
-<table class="previous-quests-table styled-table">
+<table class="previous-quests-table">
   <tbody>
     {% for quest in previous_quests %}
       <tr>

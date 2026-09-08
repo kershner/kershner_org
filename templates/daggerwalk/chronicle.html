@@ -1,27 +1,33 @@
 {% extends "daggerwalk/progression_base.html" %}
-{% load static %}
 {% block title %}{{ profile.twitch_username }} · Walker Chronicle{% endblock %}
 {% block content %}
-<header class="progression-card chronicle-hero">
-  <div class="chronicle-identity">
-    {% if profile.twitch_profile_image_url %}<img class="walker-avatar" src="{{ profile.twitch_profile_image_url }}" alt="">{% else %}<div class="walker-avatar"></div>{% endif %}
-    <div>
-      <h1>{{ profile.twitch_username }}</h1>
-      <p><a href="https://twitch.tv/{{ profile.twitch_username }}">Twitch channel</a> · All-time #{{ summary.position }}</p>
-    </div>
-  </div>
-  <dl class="chronicle-stats">
-    <div><dt>Renown</dt><dd>{{ summary.renown_title }}</dd></div>
-    <div><dt>Lifetime XP</dt><dd>{{ summary.xp }}</dd></div>
-    <div><dt>Quests</dt><dd>{{ summary.quests }}</dd></div>
-    <div><dt>Journey</dt><dd>{{ unique_regions }} regions · {{ unique_pois }} destinations</dd></div>
-    <div><dt>Guild</dt><dd>{% if summary.guild %}{{ summary.guild.emoji }} {{ summary.guild.title }}{% else %}Unaffiliated{% endif %}</dd></div>
-    <div><dt>Monument Tokens</dt><dd>{{ summary.tokens_available }} available · {{ summary.monuments_placed }} used</dd></div>
-  </dl>
+<header class="progression-heading chronicle-heading">
+  <h1>Chronicle</h1>
+  <p>A record of renown, service, monuments, and journeys across the Iliac Bay.</p>
 </header>
 
+<section class="parchment-panel chronicle-hero">
+  <div class="chronicle-identity">
+    {% if profile.twitch_profile_image_url %}<img class="walker-avatar" src="{{ profile.twitch_profile_image_url }}" alt="" width="72" height="72">{% else %}<div class="walker-avatar"></div>{% endif %}
+    <div>
+      <h2>{{ profile.twitch_username }}</h2>
+      <p><a href="https://twitch.tv/{{ profile.twitch_username }}">Twitch channel</a></p>
+    </div>
+  </div>
+  <div class="chronicle-rank"><span>All-time rank</span><strong>#{{ summary.position }}</strong></div>
+</section>
+
+<dl class="progression-card chronicle-stats">
+  <div><dt>Renown</dt><dd>{{ summary.renown_title }}</dd></div>
+  <div><dt>Lifetime XP</dt><dd>{{ summary.xp }}</dd></div>
+  <div><dt>Quests</dt><dd>{{ summary.quests }}</dd></div>
+  <div><dt>Journey</dt><dd>{{ unique_regions }} regions · {{ unique_pois }} destinations</dd></div>
+  <div><dt>Guild</dt><dd>{% if summary.guild %}{{ summary.guild.emoji }} {{ summary.guild.title }}{% else %}Unaffiliated{% endif %}</dd></div>
+  <div><dt>Monument Tokens</dt><dd>{{ summary.tokens_available }} available · {{ summary.monuments_placed }} used</dd></div>
+</dl>
+
 <div class="progression-grid chronicle-details">
-  <section class="progression-card parchment-panel chronicle-guild-scroll" style="background-image: url('{% static 'img/daggerwalk/scroll.png' %}');">
+  <section class="progression-card">
     <h2>Guild Service</h2>
     {% if summary.guild %}
       <p>{{ summary.guild.emoji }} {{ summary.guild.name }} · <strong>{{ summary.guild.title }}</strong></p>
@@ -40,14 +46,17 @@
 </div>
 
 {% if monuments %}
-<section class="progression-section">
+<section class="progression-section chronicle-monuments">
   <h2>Monuments</h2>
   <div class="progression-grid">
     {% for monument in monuments %}
       <article class="progression-card">
-        <h3>{{ monument.poi.emoji }} {{ monument.poi.name }}</h3>
+        <div class="parchment-panel monument-heading">
+          <span class="monument-heading-icon" aria-hidden="true">{{ monument.poi.emoji }}</span>
+          <h3 class="monument-heading-title">{{ monument.poi.name }}</h3>
+        </div>
         <p>{{ monument.poi.description }}</p>
-        <p class="muted">{{ monument.visit_count }} quest visit{{ monument.visit_count|pluralize }}{% if monument.latest_visit %} · latest {{ monument.latest_visit|date:'M j, Y' }}{% endif %}</p>
+        {% if monument.visit_count %}<p class="muted">{{ monument.visit_count }} quest visit{{ monument.visit_count|pluralize }}{% if monument.latest_visit %} · latest {{ monument.latest_visit|date:'M j, Y' }}{% endif %}</p>{% endif %}
         <a class="table-action" href="{% url 'daggerwalk' %}?monument={{ monument.id }}">View on map</a>
       </article>
     {% endfor %}

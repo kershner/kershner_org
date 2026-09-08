@@ -1,42 +1,54 @@
-<div class="menu-container">
-  <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-controls">
-    <span class="title">Daggerwalk</span>
-    <div class="menu-icon">☰</div>
-  </button>
+{% load kershner_tags %}
+<header class="site-header">
+  <nav class="site-nav" aria-label="Primary navigation">
+    {% if show_view_tabs %}
+      <label class="site-nav-link active" data-site-view="map" for="map-tab-btn" tabindex="0">Map</label>
+      <label class="site-nav-link" data-site-view="twitch" for="twitch-tab-btn" tabindex="0">Twitch</label>
+    {% else %}
+      <a class="site-nav-link" href="{% url 'daggerwalk' %}">Map</a>
+      <a class="site-nav-link" href="{% url 'daggerwalk' %}?view=twitch">Twitch</a>
+    {% endif %}
+    <a class="site-nav-link{% if request.resolver_match.url_name == 'daggerwalk_guild_hall' %} active{% endif %}" href="{% url 'daggerwalk_guild_hall' %}">Guild Hall</a>
+    <a class="site-nav-link{% if request.resolver_match.url_name == 'daggerwalk_monuments' %} active{% endif %}" href="{% url 'daggerwalk_monuments' %}">Monuments</a>
+    <div class="menu-container">
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-controls" aria-label="Open settings" title="Settings">
+        <span class="menu-icon" aria-hidden="true"></span>
+      </button>
 
-  <div class="site-menu">
-    <div id="site-controls" class="site-controls hidden">
-      <div class="site-control-row site-control-links">
-        <a href="{% url 'daggerwalk_guild_hall' %}">Guild Hall</a>
-        <a href="{% url 'daggerwalk_monuments' %}">Monuments</a>
-      </div>
-      <div class="site-control-row">
-        <div class="site-control-checkbox">
-          <input type="radio" id="light" name="background" value="light" checked>
-          <label for="light">Light</label>
-        </div>
-        <div class="site-control-checkbox">
-          <input type="radio" id="dark" name="background" value="dark">
-          <label for="dark">Dark</label>
-        </div>
-      </div>
-
-      <div class="site-control-row">
-        <div class="site-control-input">
-          <label for="accentColor">Accent</label>
-          <input id="accentColor" type="color" name="accent-color">
-        </div>
-      </div>
-
-      <div class="site-control-row">
-        <button class="reset-default-button" type="button">Reset colors</button>
-      </div>
-
-      {% if show_chat_toggle %}
+      <div id="site-controls" class="site-controls hidden">
         <div class="site-control-row">
-          <button id="toggle-chat" type="button" aria-pressed="false">Hide Chat</button>
+          <div class="site-control-checkbox">
+            <input type="radio" id="light" name="background" value="light">
+            <label for="light">Light</label>
+          </div>
+          <div class="site-control-checkbox">
+            <input type="radio" id="dark" name="background" value="dark" checked>
+            <label for="dark">Dark</label>
+          </div>
         </div>
-      {% endif %}
+
+        <div class="site-control-row">
+          <div class="site-control-input">
+            <label for="accentColor">Accent</label>
+            <input id="accentColor" type="color" name="accent-color">
+          </div>
+        </div>
+
+        <div class="site-control-row">
+          <button class="reset-default-button" type="button">Reset colors</button>
+        </div>
+
+        {% if show_chat_toggle %}
+          <div class="site-control-row chat-control-row hidden">
+            <button id="toggle-chat" type="button" aria-pressed="false">Hide Chat</button>
+          </div>
+        {% endif %}
+      </div>
     </div>
-  </div>
-</div>
+  </nav>
+
+  <a class="site-brand" href="{% url 'daggerwalk' %}" aria-label="Daggerwalk home">
+    <span>Daggerwalk</span>
+    <img alt="" src="{% settings_value 'BASE_S3_URL' %}/img/daggerwalk/Daggerwalk_logo_small.png" width="100" height="100">
+  </a>
+</header>

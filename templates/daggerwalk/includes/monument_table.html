@@ -2,7 +2,6 @@
   <table class="styled-table progression-table monument-table">
     <thead>
       <tr>
-        <th class="monument-emoji-column" aria-label="Monument symbol"></th>
         <th>Monument</th>
         <th>Owner</th>
         <th>Region</th>
@@ -14,8 +13,12 @@
     <tbody>
       {% for monument in monuments %}
         <tr>
-          <td class="monument-emoji-cell" data-label=""><div class="monument-cell-value">{{ monument.poi.emoji }}</div></td>
-          <td data-label="Monument"><div class="monument-cell-value">{{ monument.poi.name }}<br><span class="muted">{{ monument.type_name }}</span></div></td>
+          <td data-label="Monument">
+            <div class="parchment-panel monument-heading">
+              <span class="monument-heading-icon" aria-hidden="true">{{ monument.poi.emoji }}</span>
+              <span class="monument-heading-title">{{ monument.poi.name }}</span>
+            </div>
+          </td>
           <td data-label="Owner"><div class="monument-cell-value"><a href="{% url 'daggerwalk_walker' monument.owner.twitch_username %}">{{ monument.owner.twitch_username }}</a>{% if monument.guild_at_placement %}<br><span class="muted">{{ monument.guild_name }}</span>{% endif %}</div></td>
           <td data-label="Region"><div class="monument-cell-value">{{ monument.poi.region.name }}</div></td>
           <td data-label="Raised"><div class="monument-cell-value">{{ monument.game_date }}</div></td>
@@ -23,7 +26,7 @@
           <td data-label="Map"><div class="monument-cell-value"><a class="table-action" href="{% url 'daggerwalk' %}?monument={{ monument.id }}">Open</a></div></td>
         </tr>
       {% empty %}
-        <tr><td colspan="7">No monuments have been raised yet.</td></tr>
+        <tr><td colspan="6">No monuments have been raised yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>

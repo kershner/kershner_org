@@ -162,9 +162,11 @@ function makeIcon({ emoji, dot = false, quest = false, questImg = null, highligh
   });
   if (quest) return L.divIcon({
     ...baseIconOptions(),
-    html: `<div class="quest-marker"><img src="${questImg}"></img></div>`,
+    html: `<div class="quest-marker"><img src="${questImg}" alt="" width="128" height="128"></div>`,
     className: `${baseClass} quest-marker`,
-    popupAnchor: [8, -20],
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -14],
   });
   return L.divIcon({
     ...baseIconOptions(),
@@ -208,7 +210,7 @@ function popupHtml(item) {
     add(`
       ${item.description ? `<div class="popup-description">${item.description}</div>` : ""}
       <div class="popup-quest-row">
-        ${item.quest_giver_img_url ? `<img src="${item.quest_giver_img_url}" class="popup-quest-img">` : ""}
+        ${item.quest_giver_img_url ? `<img src="${item.quest_giver_img_url}" class="popup-quest-img" alt="" width="64" height="64">` : ""}
         <div class="popup-quest-info">
           ${item.quest_giver_name ? `<div class="quest-giver"><b>${item.quest_giver_name}</b></div>` : ""}
           ${item.xp ? `<div class="quest-xp"><b>XP:</b> ${item.xp}</div>` : ""}
@@ -654,12 +656,12 @@ function daggerwalkMapInit() {
   window.shapes = shapes;
   window.SHAPE_EXTENTS = computeShapeExtents(window.shapes || []);
 
-  const latest = logs.reduce((a, b) =>
-    new Date(a.created_at) > new Date(b.created_at) ? a : b, logs[0]);
+  const latest = logs.length ? logs.reduce((a, b) =>
+    new Date(a.created_at) > new Date(b.created_at) ? a : b) : null;
 
   poiLayer  = buildLayer(pois,  { isPOI: true });
   monumentLayer = buildLayer(monuments, { isPOI: true });
-  logLayer  = buildLayer(logs,  { highlightId: latest.id });
+  logLayer  = buildLayer(logs,  { highlightId: latest?.id });
   questLayer = buildLayer(quests, { isQuest: true });
 
   map.addLayer(logLayer);
