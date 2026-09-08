@@ -664,8 +664,9 @@ class ProgressionTests(TestCase):
         with self.assertTemplateUsed("daggerwalk/includes/monument_table.html"):
             registry = self.client.get(reverse("daggerwalk_monuments"))
         self.assertContains(registry, "Cairn")
-        self.assertContains(registry, "How Monuments Work")
-        self.assertContains(registry, "monument-guide-title")
+        self.assertNotContains(registry, "How Monuments Work")
+        self.assertNotContains(registry, "monument-guide-title")
+        self.assertContains(registry, "How do I earn and place a monument?")
         self.assertContains(registry, "monument-heading-icon")
         self.assertContains(registry, "Last Visited")
         self.assertNotContains(registry, "Never")
