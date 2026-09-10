@@ -1,7 +1,7 @@
 import math
 
 from apps.daggerwalk.models import DaggerwalkLog
-from apps.daggerwalk.progression import is_publicly_unlisted
+from apps.daggerwalk.progression import exclude_publicly_unlisted, is_publicly_unlisted, progression_event_description
 
 
 JOURNEY_LOG_FIELDS = (
@@ -76,6 +76,16 @@ def completed_quest_detail_context(quest, route_logs=None, participants=None):
         if not is_publicly_unlisted(profile.twitch_username)
     ]
     participants.sort(key=lambda profile: profile.twitch_username.casefold())
+    herald_events = list(
+        exclude_publicly_unlisted(
+            quest.progression_events.filter(event_type__in=("renown", "guild_rank")),
+            "profile__twitch_username",
+        )
+        .select_related("profile", "quest")
+        .order_by("created_at", "id")
+    )
+    for event in herald_events:
+        event.description = progression_event_description(event)
     if route_logs is None:
         route_logs = _quest_route_logs(quest)
 
@@ -98,6 +108,7 @@ def completed_quest_detail_context(quest, route_logs=None, participants=None):
     return {
         "quest": quest,
         "participants": participants,
+        "herald_events": herald_events,
         "journey": {
             "distance_km": f"{distance_km:.2f}" if distance_km < 1 else f"{distance_km:.0f}",
             "duration": _format_duration(quest.start_time, quest.completed_at),

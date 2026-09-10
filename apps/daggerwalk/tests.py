@@ -308,6 +308,31 @@ class CompletedQuestDetailTests(TestCase):
         self.assertContains(response, "aliceWalker")
         self.assertContains(response, "ZedWalker")
 
+    def test_completed_quest_page_has_persisted_herald(self):
+        walker = TwitchUserProfile.objects.get(twitch_username="aliceWalker")
+        ProgressionEvent.objects.create(
+            profile=walker,
+            quest=self.quest,
+            event_type="renown",
+            payload={"level": 1, "title": "Wayfarer"},
+        )
+        ProgressionEvent.objects.create(
+            profile=walker,
+            quest=self.quest,
+            event_type="guild_rank",
+            payload={"guild": "fighters", "level": 3, "title": "Protector"},
+        )
+
+        response = self.client.get(reverse(
+            "daggerwalk_quest_detail",
+            args=[self.quest.id],
+        ))
+
+        self.assertContains(response, "📯 Herald")
+        self.assertContains(response, "aliceWalker")
+        self.assertContains(response, "Reached Wayfarer Renown")
+        self.assertContains(response, "Promoted to Protector in the Fighters Guild")
+
     def test_completed_quest_page_shows_cached_journey_stats(self):
         daggerfall = Region.objects.create(
             name="Daggerfall",

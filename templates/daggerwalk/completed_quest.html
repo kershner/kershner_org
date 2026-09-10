@@ -21,6 +21,21 @@
   <div><dt>Walkers Credited</dt><dd>{{ participants|length }}</dd></div>
 </dl>
 
+<section class="progression-section quest-herald" aria-labelledby="quest-herald-title">
+  <h2 id="quest-herald-title">📯 Herald</h2>
+  <div class="progression-card">
+    {% if herald_events %}
+      <ul class="progression-list">
+        {% for event in herald_events %}
+          <li><a href="{% url 'daggerwalk_walker' event.profile.twitch_username %}">{{ event.profile.twitch_username }}</a> · {{ event.description }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No milestones proclaimed for this quest.</p>
+    {% endif %}
+  </div>
+</section>
+
 <section class="progression-card quest-participants" aria-labelledby="quest-participants-title">
   <h2 id="quest-participants-title">Walkers Credited</h2>
   {% if participants %}
