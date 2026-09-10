@@ -44,7 +44,7 @@ from .cache_keys import (
     completed_quest_html_cache_key,
 )
 from .journeys import completed_quest_detail_context
-from .progression import GUILDS, MONUMENT_TYPES, cached_progression_snapshot, change_guild, exclude_publicly_unlisted, guild_hall_page_payload, is_publicly_unlisted, monument_display_rows, place_monument, profile_payload, progression_home_payload, resolve_profile
+from .progression import GUILDS, MONUMENT_TYPES, cached_progression_snapshot, change_guild, exclude_publicly_unlisted, guild_hall_page_payload, is_publicly_unlisted, monument_display_rows, place_monument, profile_payload, progression_event_description, progression_home_payload, resolve_profile
 
 
 logger = logging.getLogger(__name__)
@@ -164,7 +164,8 @@ def walker_chronicle(request, username):
         total=Coalesce(Sum("quest__xp"), 0, output_field=IntegerField())
     )
     profile._guild_xp_by_key = {row["payload__guild"]: row["total"] for row in guild_credits}
-    qualifying = profile.chat_commands.filter(command__in=settings.DAGGERWALK_QUALIFYING_COMMANDS)
+    command_log = profile.chat_commands.order_by("-timestamp")
+    qualifying = command_log.filter(command__in=settings.DAGGERWALK_QUALIFYING_COMMANDS)
     command_rows = list(qualifying.values("command").annotate(count=Count("id")).order_by("-count", "command"))
     guild_history = [
         {"guild": info, "xp": profile._guild_xp_by_key[key]}
@@ -177,16 +178,12 @@ def walker_chronicle(request, username):
         latest_visit=Max("progression_events__created_at", filter=Q(progression_events__event_type="monument_visit")),
     ))
     events = list(profile.progression_events.select_related("quest", "monument", "monument__poi").order_by("-created_at")[:10])
-    event_labels = {
-        "guild_change": "Guild Allegiance", "quest": "Quest Completed",
-        "renown": "Renown Earned", "guild_rank": "Guild Promotion",
-        "monument": "Monument Raised", "monument_visit": "Monument Visited",
-    }
     for event in events:
-        event.display_name = event_labels.get(event.event_type, event.event_type.replace("_", " ").title())
+        event.description = progression_event_description(event)
     return render(request, "daggerwalk/chronicle.html", {
         "profile": profile, "summary": summary, "commands": command_rows,
         "command_count": sum(row["count"] for row in command_rows), "guild_history": guild_history,
+        "command_log": command_log[:25],
         "monuments": monuments,
         "events": events,
         "quests": quest_page, "unique_regions": quests.values("poi__region_id").distinct().count(),

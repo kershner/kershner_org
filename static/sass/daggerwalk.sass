@@ -1062,7 +1062,7 @@ a
 .chronicle-monuments,
 .chronicle-deeds
   width: 100%
-  max-width: calc((100% - 1rem) / 2)
+  max-width: 100%
   box-sizing: border-box
 
 .chronicle-quest-table
@@ -1073,6 +1073,18 @@ a
   td:nth-child(2),
   td:nth-child(3)
     width: 6rem
+    white-space: nowrap
+
+.chronicle-command-table
+  table-layout: fixed
+
+  th:first-child,
+  td:first-child
+    width: 8rem
+
+  th:last-child,
+  td:last-child
+    width: 11rem
     white-space: nowrap
 
 @media (max-width: $mobile-breakpoint)
@@ -1696,7 +1708,7 @@ $quests-text-color: darken(#333333, 10%)
     img
       aspect-ratio: 1
       width: 100%
-      object-fit: cover
+      object-fit: contain
       border-radius: $border-radius
 
   .quest-desc-wrapper
@@ -1753,6 +1765,10 @@ $quests-text-color: darken(#333333, 10%)
 
       img
         display: block
+        width: 9rem
+        height: 9rem
+        max-width: 100%
+        margin-inline: auto
 
     .quests-wrapper
       margin-top: 0

@@ -38,6 +38,32 @@ MONUMENT_TYPES = {
 }
 
 
+def progression_event_description(event):
+    """Return the public, human-readable account of a progression event."""
+    payload = event.payload or {}
+    guild_name = lambda key: GUILDS.get(key, {}).get(
+        "name", str(key or "Unknown guild").replace("-", " ").title()
+    )
+    if event.event_type == "quest" and event.quest:
+        service = f" for the {guild_name(payload['guild'])}" if payload.get("guild") else ""
+        return f"Completed {event.quest.quest_name} and earned {event.quest.xp} XP{service}"
+    if event.event_type == "renown":
+        return f"Reached {payload.get('title', 'a new rank')} Renown"
+    if event.event_type == "guild_rank":
+        return f"Promoted to {payload.get('title', 'a new rank')} in the {guild_name(payload.get('guild'))}"
+    if event.event_type == "guild_change":
+        old_guild, new_guild = payload.get("old_guild"), payload.get("new_guild")
+        if new_guild:
+            return f"Joined the {guild_name(new_guild)}" if not old_guild else f"Changed allegiance from the {guild_name(old_guild)} to the {guild_name(new_guild)}"
+        return f"Left the {guild_name(old_guild)}" if old_guild else "Became unaffiliated"
+    if event.event_type == "monument" and event.monument:
+        return f"Raised {event.monument.poi.name}"
+    if event.event_type == "monument_visit" and event.monument:
+        quest = f" during {event.quest.quest_name}" if event.quest else " during a quest"
+        return f"{event.monument.poi.name} was visited{quest}"
+    return "Progression history recorded"
+
+
 def is_publicly_unlisted(username):
     return username.casefold() in {
         name.casefold() for name in settings.DAGGERWALK_PUBLICLY_UNLISTED_USERS
@@ -497,6 +523,16 @@ def guild_hall_payload():
         .values("current_guild").annotate(total=Count("id"))
         .values_list("current_guild", "total")
     )
+    quest_counts = {
+        row["payload__guild"]: row["total"]
+        for row in exclude_publicly_unlisted(
+            ProgressionEvent.objects.filter(
+                event_type="quest",
+                payload__guild__in=GUILDS,
+            ),
+            "profile__twitch_username",
+        ).values("payload__guild").annotate(total=Count("quest_id", distinct=True))
+    }
 
     result = []
     for key, info in GUILDS.items():
@@ -506,6 +542,7 @@ def guild_hall_payload():
             "key": key, **info, "total_xp": total,
             "contributors": contributors,
             "walkers": member_counts.get(key, 0),
+            "quests_completed": quest_counts.get(key, 0),
             "active_service_xp": active,
             "average_per_contributor": round(total / contributors, 1) if contributors else 0,
         })

@@ -1,7 +1,7 @@
 from apps.daggerwalk.models import DaggerwalkLog, Quest, Region, RegionMapPart, POI, ProvinceShape, ChatCommandLog, TwitchUserProfile, Monument, ProgressionEvent
 from kershner.mixins.admin_advanced_filter import AdminAdvancedFilterMixin
 from apps.daggerwalk.tasks import post_to_bluesky, update_all_daggerwalk_caches
-from apps.daggerwalk.progression import GUILDS, MONUMENT_TYPES, monument_token_balance
+from apps.daggerwalk.progression import GUILDS, MONUMENT_TYPES, monument_token_balance, progression_event_description
 from apps.daggerwalk.cache_keys import PROGRESSION_CACHE_KEYS
 from django.forms.models import BaseInlineFormSet
 from django.http import HttpResponseRedirect
@@ -213,23 +213,7 @@ class ProgressionEventAdmin(admin.ModelAdmin):
 
     @admin.display(description="What happened")
     def event_summary(self, obj):
-        payload = obj.payload or {}
-        if obj.event_type == "quest" and obj.quest:
-            return f"Earned {obj.quest.xp} XP for completing {obj.quest.quest_name}"
-        if obj.event_type == "renown":
-            return f"Reached {payload.get('title', 'a new Renown rank')}"
-        if obj.event_type == "guild_rank":
-            return f"Promoted to {payload.get('title', 'a new rank')} in {self._guild_name(payload.get('guild'))}"
-        if obj.event_type == "guild_change":
-            old_guild, new_guild = payload.get("old_guild"), payload.get("new_guild")
-            if new_guild:
-                return f"Joined {self._guild_name(new_guild)}" if not old_guild else f"Changed allegiance from {self._guild_name(old_guild)} to {self._guild_name(new_guild)}"
-            return f"Left {self._guild_name(old_guild)}" if old_guild else "Became unaffiliated"
-        if obj.event_type == "monument" and obj.monument:
-            return f"Raised {obj.monument.poi.name}"
-        if obj.event_type == "monument_visit" and obj.monument:
-            return f"{obj.monument.poi.name} was visited during a quest"
-        return "Progression history recorded"
+        return progression_event_description(obj)
 
     @admin.display(description="Related record")
     def related_record(self, obj):

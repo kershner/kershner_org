@@ -27,49 +27,81 @@
 </dl>
 
 <div class="progression-grid chronicle-details">
-  <section class="progression-card">
+  <section class="progression-section">
     <h2>Guild Service</h2>
-    {% if summary.guild %}
-      <p>{{ summary.guild.emoji }} {{ summary.guild.name }} · <strong>{{ summary.guild.title }}</strong></p>
-      <p>{{ summary.guild.xp }} guild XP{% if summary.guild.next_xp %} · next rank at {{ summary.guild.next_xp }}{% endif %}</p>
-    {% else %}
-      <p>Unaffiliated. Join through Twitch chat with <code>!guild</code> after completing a quest.</p>
-    {% endif %}
-    {% for item in guild_history %}<p class="muted">{{ item.guild.emoji }} {{ item.guild.name }}: {{ item.xp }} XP</p>{% endfor %}
+    <div class="progression-card">
+      {% if summary.guild %}
+        <p>{{ summary.guild.emoji }} {{ summary.guild.name }} · <strong>{{ summary.guild.title }}</strong></p>
+        <p>{{ summary.guild.xp }} guild XP{% if summary.guild.next_xp %} · next rank at {{ summary.guild.next_xp }}{% endif %}</p>
+      {% else %}
+        <p>Unaffiliated. Join through Twitch chat with <code>!guild</code> after completing a quest.</p>
+      {% endif %}
+      {% for item in guild_history %}<p class="muted">{{ item.guild.emoji }} {{ item.guild.name }}: {{ item.xp }} XP</p>{% endfor %}
+    </div>
   </section>
 
-  <section class="progression-card">
+  <section class="progression-section">
     <h2>Chat Activity</h2>
-    <p><strong>{{ command_count }}</strong> qualifying commands</p>
-    <p>{% for row in commands|slice:':5' %}!{{ row.command }} ({{ row.count }}){% if not forloop.last %} · {% endif %}{% empty %}No qualifying command history.{% endfor %}</p>
+    <div class="progression-card">
+      <p><strong>{{ command_count }}</strong> qualifying commands</p>
+      <p>{% for row in commands|slice:':5' %}!{{ row.command }} ({{ row.count }}){% if not forloop.last %} · {% endif %}{% empty %}No qualifying command history.{% endfor %}</p>
+    </div>
   </section>
 </div>
 
-{% if monuments %}
-<section class="progression-section chronicle-monuments">
-  <h2>Monuments</h2>
-  <div class="progression-grid">
-    {% for monument in monuments %}
-      <article class="progression-card">
-        <div class="parchment-panel monument-heading">
-          <span class="monument-heading-icon" aria-hidden="true">{{ monument.poi.emoji }}</span>
-          <h3 class="monument-heading-title">{{ monument.poi.name }}</h3>
-        </div>
-        <p>{{ monument.poi.description }}</p>
-        {% if monument.visit_count %}<p class="muted">{{ monument.visit_count }} quest visit{{ monument.visit_count|pluralize }}{% if monument.latest_visit %} · latest {{ monument.latest_visit|date:'M j, Y' }}{% endif %}</p>{% endif %}
-        <a class="table-action" href="{% url 'daggerwalk' %}?monument={{ monument.id }}">View on map</a>
-      </article>
-    {% endfor %}
-  </div>
-</section>
+{% if monuments or events %}
+<div class="progression-grid chronicle-details">
+  {% if monuments %}
+  <section class="progression-section chronicle-monuments">
+    <h2>Monuments</h2>
+    <div class="progression-grid">
+      {% for monument in monuments %}
+        <article class="progression-card">
+          <div class="parchment-panel monument-heading">
+            <span class="monument-heading-icon" aria-hidden="true">{{ monument.poi.emoji }}</span>
+            <h3 class="monument-heading-title">{{ monument.poi.name }}</h3>
+          </div>
+          <p>{{ monument.poi.description }}</p>
+          {% if monument.visit_count %}<p class="muted">{{ monument.visit_count }} quest visit{{ monument.visit_count|pluralize }}{% if monument.latest_visit %} · latest {{ monument.latest_visit|date:'M j, Y' }}{% endif %}</p>{% endif %}
+          <a class="table-action" href="{% url 'daggerwalk' %}?monument={{ monument.id }}">View on map</a>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if events %}
+  <section class="progression-section chronicle-deeds">
+    <h2>Recent Deeds</h2>
+    <div class="progression-card">
+      {% for event in events %}<p><strong>{{ event.created_at|date:'M j, Y' }}</strong> · {{ event.description }}</p>{% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
 {% endif %}
 
-{% if events %}
-<section class="progression-card chronicle-deeds">
-  <h2>Recent Deeds</h2>
-  {% for event in events %}<p>{{ event.created_at|date:'M j, Y' }} · {{ event.display_name }}{% if event.payload.title %}: {{ event.payload.title }}{% elif event.payload.name %}: {{ event.payload.name }}{% endif %}</p>{% endfor %}
+<section class="progression-section faq chronicle-command-log">
+  <details>
+    <summary>Recent Command Log ({{ command_log|length }} entr{{ command_log|length|pluralize:'y,ies' }})</summary>
+    <div class="progression-table-wrapper">
+      <table class="styled-table progression-table chronicle-command-table">
+        <thead><tr><th>Command</th><th>Arguments</th><th>Used</th></tr></thead>
+        <tbody>
+          {% for entry in command_log %}
+            <tr>
+              <td><code>!{{ entry.command }}</code></td>
+              <td>{% if entry.args %}{{ entry.args }}{% else %}<span class="muted">—</span>{% endif %}</td>
+              <td>{{ entry.timestamp|date:'M j, Y, g:i A' }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="3" class="muted">No command history recorded.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </details>
 </section>
-{% endif %}
 
 <section class="progression-section">
   <h2>Quest History</h2>

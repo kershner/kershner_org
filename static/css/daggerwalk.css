@@ -1157,7 +1157,7 @@ a {
 .chronicle-monuments,
 .chronicle-deeds {
   width: 100%;
-  max-width: calc((100% - 1rem) / 2);
+  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -1169,6 +1169,19 @@ a {
 .chronicle-quest-table td:nth-child(2),
 .chronicle-quest-table td:nth-child(3) {
   width: 6rem;
+  white-space: nowrap;
+}
+
+.chronicle-command-table {
+  table-layout: fixed;
+}
+.chronicle-command-table th:first-child,
+.chronicle-command-table td:first-child {
+  width: 8rem;
+}
+.chronicle-command-table th:last-child,
+.chronicle-command-table td:last-child {
+  width: 11rem;
   white-space: nowrap;
 }
 
@@ -1937,7 +1950,7 @@ blockquote cite {
 .quests-wrapper .quest-giver img {
   aspect-ratio: 1;
   width: 100%;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 0.2rem;
 }
 .quests-wrapper .quest-desc-wrapper {
@@ -1994,6 +2007,10 @@ blockquote cite {
   }
   .active-quests-composite .quest-giver img {
     display: block;
+    width: 9rem;
+    height: 9rem;
+    max-width: 100%;
+    margin-inline: auto;
   }
   .active-quests-composite .quests-wrapper {
     margin-top: 0;

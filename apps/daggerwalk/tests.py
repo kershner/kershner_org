@@ -24,7 +24,7 @@ from apps.daggerwalk.models import (
     Monument,
 )
 from apps.daggerwalk.cache_keys import PROGRESSION_CACHE_KEYS, completed_quest_html_cache_key
-from apps.daggerwalk.progression import cached_progression_snapshot, change_guild, credit_quest_progression, guild_hall_page_payload, guild_xp, place_monument, profile_payload, progression_home_payload, progression_snapshot, resolve_profile, token_count_for_xp
+from apps.daggerwalk.progression import cached_progression_snapshot, change_guild, credit_quest_progression, guild_hall_page_payload, guild_xp, place_monument, profile_payload, progression_event_description, progression_home_payload, progression_snapshot, resolve_profile, token_count_for_xp
 from apps.daggerwalk.quest_gen import complete_and_rotate_quest, ensure_active_quests
 from apps.daggerwalk.serializers import DaggerwalkLogSerializer, QuestSerializer
 from apps.daggerwalk.admin import MonumentAdmin, TwitchUserProfileAdmin
@@ -605,6 +605,37 @@ class ProgressionTests(TestCase):
         self.assertEqual(mages["recent_promotions"][0].profile, profile)
         self.assertEqual(mages["recent_promotions"][0].guild_hall_title, "Apprentice")
 
+    def test_guild_quest_total_counts_shared_quest_once(self):
+        walkers = [
+            TwitchUserProfile.objects.create(
+                twitch_username=username,
+                current_guild="fighters",
+            )
+            for username in ("WalkerOne", "WalkerTwo")
+        ]
+        quest = Quest.objects.create(
+            status="completed",
+            poi=self.poi,
+            xp=50,
+            completed_at=timezone.now(),
+        )
+        for walker in walkers:
+            walker.completed_quests.add(quest)
+            ProgressionEvent.objects.create(
+                profile=walker,
+                quest=quest,
+                event_type="quest",
+                payload={"guild": "fighters"},
+            )
+
+        fighters = next(
+            guild for guild in guild_hall_page_payload()
+            if guild["key"] == "fighters"
+        )
+
+        self.assertEqual(fighters["walkers"], 2)
+        self.assertEqual(fighters["quests_completed"], 1)
+
     def test_twitch_rename_creates_a_new_profile(self):
         original = resolve_profile("OldName", "123")
         renamed = resolve_profile("NewName", "123")
@@ -658,6 +689,20 @@ class ProgressionTests(TestCase):
         profile = TwitchUserProfile.objects.create(twitch_username="Walker")
         self.award(profile, 200)
         change_guild(profile, "fighters")
+        request_log = DaggerwalkLog.objects.create(
+            world_x=1000, world_z=1000, map_pixel_x=100, map_pixel_y=100,
+            region=self.region.name, location=self.poi.name,
+            player_x=0, player_y=0, player_z=0,
+            date="1 Morning Star", weather="Clear",
+        )
+        ChatCommandLog.objects.create(
+            request_log=request_log,
+            profile=profile,
+            timestamp=timezone.now(),
+            user=profile.twitch_username,
+            command="renown",
+            args="details",
+        )
         state = {
             "worldX": 100000, "worldZ": 100000, "mapPixelX": 10, "mapPixelY": 20,
             "region": self.region.name, "locationType": "Town",
@@ -671,7 +716,13 @@ class ProgressionTests(TestCase):
             "Pathfinder and Apprentice of the Fighters Guild. Loredas, 17 Rain's Hand, 3E 405.",
         )
         self.assertEqual(monument.game_date, "Loredas, 17 Rain's Hand, 3E 405")
-        self.assertContains(self.client.get(reverse("daggerwalk_walker", args=["Walker"])), "Pathfinder")
+        chronicle = self.client.get(reverse("daggerwalk_walker", args=["Walker"]))
+        self.assertContains(chronicle, "Pathfinder")
+        self.assertContains(chronicle, "Recent Command Log")
+        self.assertContains(chronicle, "!renown")
+        self.assertContains(chronicle, "details")
+        self.assertContains(chronicle, "Joined the Fighters Guild")
+        self.assertContains(chronicle, "Raised Walker&#x27;s Cairn")
         guild_hall = self.client.get(reverse("daggerwalk_guild_hall"))
         self.assertContains(guild_hall, "Fighters Guild")
         self.assertContains(guild_hall, 'class="site-nav-link active" href="/daggerwalk/guilds/"')
@@ -692,14 +743,39 @@ class ProgressionTests(TestCase):
             "daggerwalk/progression.html",
             progression_home_payload(guilds=[{
                 "emoji": "⚔️", "name": "Fighters Guild",
-                "total_xp": 200, "contributors": 1,
+                "total_xp": 200, "walkers": 1, "quests_completed": 1,
             }]),
         )
         self.assertIn("monument-table", overview)
         self.assertIn("guild-summary-card", overview)
         self.assertIn("guild-summary-ledger", overview)
+        self.assertIn("Members", overview)
+        self.assertIn("Quests", overview)
+        self.assertNotIn("Contributors", overview)
         self.assertIn("Last Visited", overview)
         self.assertIn("Loredas, 17 Rain&#x27;s Hand, 3E 405", overview)
+
+    def test_every_progression_event_has_a_specific_description(self):
+        profile = TwitchUserProfile.objects.create(twitch_username="Walker")
+        quest = self.award(profile, 200)
+        monument = place_monument(profile, "cairn", {
+            "worldX": 100000, "worldZ": 100000,
+            "mapPixelX": 10, "mapPixelY": 20,
+            "region": self.region.name, "locationType": "Wilderness",
+            "date": "Loredas, 1 Frostfall",
+        })
+        cases = [
+            (ProgressionEvent(event_type="quest", quest=quest, payload={"guild": "fighters"}), f"Completed {quest.quest_name} and earned 200 XP for the Fighters Guild"),
+            (ProgressionEvent(event_type="renown", payload={"title": "Pathfinder"}), "Reached Pathfinder Renown"),
+            (ProgressionEvent(event_type="guild_rank", payload={"guild": "fighters", "title": "Protector"}), "Promoted to Protector in the Fighters Guild"),
+            (ProgressionEvent(event_type="guild_change", payload={"old_guild": "mages", "new_guild": "fighters"}), "Changed allegiance from the Mages Guild to the Fighters Guild"),
+            (ProgressionEvent(event_type="monument", monument=monument), "Raised Walker's Cairn"),
+            (ProgressionEvent(event_type="monument_visit", quest=quest, monument=monument), f"Walker's Cairn was visited during {quest.quest_name}"),
+        ]
+
+        for event, expected in cases:
+            with self.subTest(event_type=event.event_type):
+                self.assertEqual(progression_event_description(event), expected)
 
     def test_unlisted_walker_keeps_public_chronicle_without_public_rankings(self):
         hidden = TwitchUserProfile.objects.create(
