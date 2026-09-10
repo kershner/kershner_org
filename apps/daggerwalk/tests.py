@@ -640,6 +640,20 @@ class ProgressionTests(TestCase):
             place_monument(other, "cairn", {**state, "worldX": 100001})
         self.assertEqual(Monument.objects.count(), 1)
 
+    def test_monument_after_midnight_is_described_as_night(self):
+        profile = TwitchUserProfile.objects.create(twitch_username="Walker")
+        self.award(profile, 200)
+        monument = place_monument(profile, "cairn", {
+            "worldX": 100000, "worldZ": 100000,
+            "mapPixelX": 10, "mapPixelY": 20,
+            "region": self.region.name, "locationType": "Wilderness",
+            "date": "Sundas, 29 Frostfall, 3E 424, 00:53:25",
+            "weather": "Rainy", "season": "Autumn",
+        })
+
+        self.assertIn("rainy night", monument.poi.description)
+        self.assertNotIn("afternoon", monument.poi.description)
+
     def test_chronicle_guild_hall_and_registry_render(self):
         profile = TwitchUserProfile.objects.create(twitch_username="Walker")
         self.award(profile, 200)

@@ -313,7 +313,14 @@ def _game_date_details(game_date):
         hour = datetime.strptime(date_parts[-1].strip(), "%H:%M:%S").hour
     except ValueError:
         return game_date, ""
-    time_of_day = "morning" if 6 <= hour < 12 else "afternoon" if hour < 18 else "evening" if hour < 22 else "night"
+    if 6 <= hour < 12:
+        time_of_day = "morning"
+    elif 12 <= hour < 18:
+        time_of_day = "afternoon"
+    elif 18 <= hour < 22:
+        time_of_day = "evening"
+    else:
+        time_of_day = "night"
     return date_parts[0].strip(), time_of_day
 
 
