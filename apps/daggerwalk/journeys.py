@@ -1,6 +1,7 @@
 import math
 
 from apps.daggerwalk.models import DaggerwalkLog
+from apps.daggerwalk.progression import is_publicly_unlisted
 
 
 JOURNEY_LOG_FIELDS = (
@@ -70,6 +71,10 @@ def _quest_route_logs(quest):
 def completed_quest_detail_context(quest, route_logs=None, participants=None):
     if participants is None:
         participants = list(quest.completed_by.all())
+    participants = [
+        profile for profile in participants
+        if not is_publicly_unlisted(profile.twitch_username)
+    ]
     participants.sort(key=lambda profile: profile.twitch_username.casefold())
     if route_logs is None:
         route_logs = _quest_route_logs(quest)

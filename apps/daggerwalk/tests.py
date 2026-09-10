@@ -687,6 +687,39 @@ class ProgressionTests(TestCase):
         self.assertIn("Last Visited", overview)
         self.assertIn("Loredas, 17 Rain&#x27;s Hand, 3E 405", overview)
 
+    def test_unlisted_walker_keeps_public_chronicle_without_public_rankings(self):
+        hidden = TwitchUserProfile.objects.create(
+            twitch_username="billcrystals",
+            current_guild="mages",
+        )
+        visible = TwitchUserProfile.objects.create(twitch_username="VisibleWalker")
+        quest = self.award(hidden, 200)
+        visible.completed_quests.add(quest)
+        ProgressionEvent.objects.create(
+            profile=hidden,
+            quest=quest,
+            event_type="quest",
+            payload={"guild": "mages"},
+        )
+
+        snapshot = progression_snapshot()
+
+        self.assertNotIn("billcrystals", snapshot["profiles"])
+        self.assertEqual(snapshot["profiles"]["visiblewalker"]["position"], 1)
+        chronicle = self.client.get(reverse("daggerwalk_walker", args=["billcrystals"]))
+        self.assertEqual(chronicle.status_code, 200)
+        self.assertContains(chronicle, "billcrystals")
+        self.assertNotContains(chronicle, "All-time rank")
+
+        quest_page = self.client.get(reverse("daggerwalk_quest_detail", args=[quest.pk]))
+        self.assertContains(quest_page, "VisibleWalker")
+        self.assertNotContains(quest_page, "billcrystals")
+        self.assertEqual(QuestSerializer(quest).data["participant_names"], ["VisibleWalker"])
+
+        mages = next(guild for guild in guild_hall_page_payload() if guild["key"] == "mages")
+        self.assertNotIn(hidden, mages["top_contributors"])
+        self.assertEqual(mages["walkers"], 0)
+
     def test_progression_snapshot_uses_constant_query_count(self):
         quest = Quest.objects.create(status="completed", poi=self.poi, xp=25, completed_at=timezone.now())
         profiles = [
@@ -765,4 +798,3 @@ class ProgressionTests(TestCase):
             "mages",
         )
         rebuild.assert_called_once_with()
-

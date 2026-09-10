@@ -14,7 +14,7 @@
       <p><a href="https://twitch.tv/{{ profile.twitch_username }}">Twitch channel</a></p>
     </div>
   </div>
-  <div class="chronicle-rank"><span>All-time rank</span><strong>#{{ summary.position }}</strong></div>
+  {% if summary.position %}<div class="chronicle-rank"><span>All-time rank</span><strong>#{{ summary.position }}</strong></div>{% endif %}
 </section>
 
 <dl class="progression-card chronicle-stats">

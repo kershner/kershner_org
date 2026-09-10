@@ -44,7 +44,7 @@ from .cache_keys import (
     completed_quest_html_cache_key,
 )
 from .journeys import completed_quest_detail_context
-from .progression import GUILDS, MONUMENT_TYPES, cached_progression_snapshot, change_guild, guild_hall_page_payload, monument_display_rows, place_monument, profile_payload, progression_home_payload, resolve_profile
+from .progression import GUILDS, MONUMENT_TYPES, cached_progression_snapshot, change_guild, exclude_publicly_unlisted, guild_hall_page_payload, is_publicly_unlisted, monument_display_rows, place_monument, profile_payload, progression_home_payload, resolve_profile
 
 
 logger = logging.getLogger(__name__)
@@ -152,6 +152,8 @@ def walker_chronicle(request, username):
     if summary is None:
         snapshot = cached_progression_snapshot(refresh=True)
         summary = snapshot["profiles"].get(profile.twitch_username.casefold())
+    if summary is None and is_publicly_unlisted(profile.twitch_username):
+        summary = profile_payload(profile)
     if summary is None:
         return HttpResponse(status=404)
     if username != profile.twitch_username:
@@ -205,7 +207,9 @@ def guild_hall(request):
 
 
 def monument_registry(request):
-    monuments = Monument.objects.select_related("poi", "poi__region", "owner").annotate(
+    monuments = exclude_publicly_unlisted(
+        Monument.objects, "owner__twitch_username"
+    ).select_related("poi", "poi__region", "owner").annotate(
         latest_visit=Max("progression_events__created_at", filter=Q(progression_events__event_type="monument_visit")),
     ).order_by("-created_at")
     filters = {key: request.GET.get(key, "").strip() for key in ("owner", "guild", "type", "region")}
@@ -437,7 +441,7 @@ class RegionListAPIView(BaseListAPIView):
 
 
 class POIListAPIView(BaseListAPIView):
-    queryset = POI.objects.all()
+    queryset = exclude_publicly_unlisted(POI.objects.all(), "monument__owner__twitch_username")
     serializer_class = POISerializer
     
     def get_queryset(self):
@@ -504,6 +508,9 @@ class ChatCommandLogListAPIView(BaseListAPIView):
     serializer_class = ChatCommandLogSerializer
     filterset_fields = ('user', 'command')
     ordering = ("-id",)
+
+    def get_queryset(self):
+        return exclude_publicly_unlisted(super().get_queryset(), "profile__twitch_username")
 
 
 class QuestListAPIView(BaseListAPIView):

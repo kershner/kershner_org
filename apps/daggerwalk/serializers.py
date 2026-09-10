@@ -1,6 +1,7 @@
 import math
 
 from .models import ChatCommandLog, Quest, Region, POI, DaggerwalkLog
+from .progression import exclude_publicly_unlisted
 from rest_framework import serializers
 
 
@@ -75,10 +76,10 @@ class QuestSerializer(serializers.ModelSerializer):
         return obj.quest_name  # model property
 
     def get_participant_count(self, obj):
-        return obj.completed_by.count()
+        return exclude_publicly_unlisted(obj.completed_by.all()).count()
 
     def get_participant_names(self, obj):
-        return list(obj.completed_by.order_by("twitch_username").values_list("twitch_username", flat=True)[:3])
+        return list(exclude_publicly_unlisted(obj.completed_by.all()).order_by("twitch_username").values_list("twitch_username", flat=True)[:3])
 
     def get_duration_minutes(self, obj):
         if not obj.completed_at:

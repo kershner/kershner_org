@@ -18,6 +18,7 @@ from apps.daggerwalk.bluesky_tags import (
 )
 from apps.daggerwalk.journeys import completed_quest_detail_context
 from apps.daggerwalk.progression import (
+    exclude_publicly_unlisted,
     guild_hall_page_payload,
     guild_hall_payload,
     progression_home_payload,
@@ -878,7 +879,10 @@ def update_all_daggerwalk_caches():
     pois_qs = POI.objects.select_related('region').filter(monument__isnull=True)
     poi_json = POISerializer(pois_qs, many=True).data
     cache.set("daggerwalk_map_pois", poi_json, timeout=None)
-    monuments_qs = POI.objects.select_related('region', 'monument', 'monument__owner').filter(monument__isnull=False)
+    monuments_qs = exclude_publicly_unlisted(
+        POI.objects.select_related('region', 'monument', 'monument__owner').filter(monument__isnull=False),
+        "monument__owner__twitch_username",
+    )
     monuments_json = POISerializer(monuments_qs, many=True).data
     cache.set("daggerwalk_map_monuments", monuments_json, timeout=None)
     

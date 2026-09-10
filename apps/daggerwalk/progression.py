@@ -38,6 +38,19 @@ MONUMENT_TYPES = {
 }
 
 
+def is_publicly_unlisted(username):
+    return username.casefold() in {
+        name.casefold() for name in settings.DAGGERWALK_PUBLICLY_UNLISTED_USERS
+    }
+
+
+def exclude_publicly_unlisted(queryset, field="twitch_username"):
+    excluded = Q()
+    for username in settings.DAGGERWALK_PUBLICLY_UNLISTED_USERS:
+        excluded |= Q(**{f"{field}__iexact": username})
+    return queryset.exclude(excluded)
+
+
 def renown_for_xp(xp):
     ladder = settings.DAGGERWALK_RENOWN_LADDER
     level = max(i for i, (threshold, _) in enumerate(ladder) if xp >= threshold)
@@ -125,10 +138,10 @@ def profile_payload(profile, position=None):
 
 
 def progression_snapshot():
-    profiles = list(TwitchUserProfile.objects.annotate(
+    profiles = list(exclude_publicly_unlisted(TwitchUserProfile.objects.annotate(
         xp_value=Coalesce(Sum("completed_quests__xp"), 0, output_field=IntegerField()),
         completed_quests_count_value=Count("completed_quests", distinct=True),
-    ).filter(xp_value__gt=0).order_by("-xp_value", Lower("twitch_username")))
+    ).filter(xp_value__gt=0)).order_by("-xp_value", Lower("twitch_username")))
     excluded = {name.casefold() for name in settings.DAGGERWALK_PROGRESSION_EXCLUDED_USERS}
     profiles = [profile for profile in profiles if profile.twitch_username.casefold() not in excluded]
     profile_ids = [profile.id for profile in profiles]
@@ -171,7 +184,9 @@ def progression_snapshot():
             position = index
             previous_xp = profile.xp_value
         payload[profile.twitch_username.casefold()] = profile_payload(profile, position)
-    monuments = list(Monument.objects.select_related("poi", "poi__region").values(
+    monuments = list(exclude_publicly_unlisted(
+        Monument.objects.select_related("poi", "poi__region"), "owner__twitch_username"
+    ).values(
         "id", "poi__name", "poi__region__name", "poi__map_pixel_x", "poi__map_pixel_y"
     ))
     return {"profiles": payload, "guilds": GUILDS, "monument_types": monument_type_payload(), "monuments": monuments}
@@ -432,9 +447,9 @@ def credit_quest_progression(quest, profiles):
                 profile=profile, quest=quest, event_type="renown",
                 payload={"old_level": old_level, "level": new_level, "title": new_title},
             ))
-        if old_level == 0 and new_level >= 1:
+        if not is_publicly_unlisted(profile.twitch_username) and old_level == 0 and new_level >= 1:
             events.append({"type": "unlock", "username": profile.twitch_username, "title": "Wayfarer"})
-        if new_level > old_level and new_level in {3, 6, 7, 8}:
+        if not is_publicly_unlisted(profile.twitch_username) and new_level > old_level and new_level in {3, 6, 7, 8}:
             events.append({"type": "renown", "username": profile.twitch_username, "title": settings.DAGGERWALK_RENOWN_LADDER[new_level][1]})
         if guild:
             profile._guild_rank_levels = rank_levels_by_profile.get(profile.id, {})
@@ -447,7 +462,7 @@ def credit_quest_progression(quest, profiles):
                     profile=profile, quest=quest, event_type="guild_rank",
                     payload={"guild": guild, "level": rank_level, "title": title},
                 ))
-                if public:
+                if public and not is_publicly_unlisted(profile.twitch_username):
                     events.append({"type": "guild_rank", "username": profile.twitch_username, "guild": GUILDS[guild]["name"], "title": title})
     ProgressionEvent.objects.bulk_create(quest_events)
     ProgressionEvent.objects.bulk_create(milestone_events)
@@ -456,7 +471,9 @@ def credit_quest_progression(quest, profiles):
 
 def guild_hall_payload():
     aggregates = {key: {"total": 0, "contributors": 0, "active": 0} for key in GUILDS}
-    for row in ProgressionEvent.objects.filter(event_type="quest").values(
+    for row in exclude_publicly_unlisted(
+        ProgressionEvent.objects.filter(event_type="quest"), "profile__twitch_username"
+    ).values(
         "payload__guild", "profile_id", "profile__current_guild"
     ).annotate(total=Coalesce(Sum("quest__xp"), 0, output_field=IntegerField())):
         guild = row["payload__guild"]
@@ -469,7 +486,7 @@ def guild_hall_payload():
             aggregate["active"] += row["total"]
 
     member_counts = dict(
-        TwitchUserProfile.objects.filter(current_guild__in=GUILDS)
+        exclude_publicly_unlisted(TwitchUserProfile.objects.filter(current_guild__in=GUILDS))
         .values("current_guild").annotate(total=Count("id"))
         .values_list("current_guild", "total")
     )
@@ -501,17 +518,17 @@ def guild_hall_page_payload(guilds=None):
 
     for guild in guilds:
         contributors = list(
-            TwitchUserProfile.objects.filter(
+            exclude_publicly_unlisted(TwitchUserProfile.objects.filter(
                 progression_events__event_type="quest",
                 progression_events__payload__guild=guild["key"],
-            ).annotate(guild_xp_value=Sum("progression_events__quest__xp"))
+            )).annotate(guild_xp_value=Sum("progression_events__quest__xp"))
             .order_by("-guild_xp_value", Lower("twitch_username"))
         )
         for walker in contributors:
             walker._guild_rank_levels = rank_levels_by_profile.get(walker.id, {})
         guild["top_contributors"] = contributors[:10]
         members = list(
-            TwitchUserProfile.objects.filter(current_guild=guild["key"])
+            exclude_publicly_unlisted(TwitchUserProfile.objects.filter(current_guild=guild["key"]))
             .annotate(guild_xp_value=Coalesce(Sum(
                 "progression_events__quest__xp",
                 filter=Q(
@@ -522,8 +539,8 @@ def guild_hall_page_payload(guilds=None):
         )
         for walker in members:
             walker._guild_rank_levels = rank_levels_by_profile.get(walker.id, {})
-        guild["monuments"] = Monument.objects.filter(
-            guild_at_placement=guild["key"]
+        guild["monuments"] = exclude_publicly_unlisted(
+            Monument.objects.filter(guild_at_placement=guild["key"]), "owner__twitch_username"
         ).select_related("poi", "owner")[:8]
         rank_counts = Counter(
             guild_rank(guild["key"], walker.guild_xp_value, walker)[0]
@@ -533,10 +550,10 @@ def guild_hall_page_payload(guilds=None):
             {"level": level + 1, "title": title, "count": rank_counts.get(level, 0)}
             for level, title in enumerate(guild["titles"])
         ]
-        recent_promotions = list(ProgressionEvent.objects.filter(
+        recent_promotions = list(exclude_publicly_unlisted(ProgressionEvent.objects.filter(
             Q(event_type="guild_rank", payload__guild=guild["key"])
             | Q(event_type="guild_change", payload__new_guild=guild["key"])
-        ).select_related("profile").order_by("-created_at")[:5])
+        ), "profile__twitch_username").select_related("profile").order_by("-created_at")[:5])
         for event in recent_promotions:
             event.guild_hall_title = (event.payload or {}).get("title") or guild["titles"][0]
         guild["recent_promotions"] = recent_promotions
@@ -560,7 +577,7 @@ def monument_display_rows(monuments):
 def progression_home_payload(guilds=None):
     """Small, cache-friendly progression summary for the Daggerwalk home page."""
     recent_monuments = list(
-        Monument.objects
+        exclude_publicly_unlisted(Monument.objects, "owner__twitch_username")
         .select_related("poi", "poi__region", "owner")
         .annotate(
             latest_visit=Max(

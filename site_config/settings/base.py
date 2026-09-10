@@ -226,6 +226,7 @@ DAGGERWALK_GUILD_COOLDOWN_DAYS = 30
 DAGGERWALK_MONUMENT_MIN_WORLD_DISTANCE = 32768
 DAGGERWALK_MONUMENT_QUEST_MIN_WORLD_DISTANCE = 32768
 DAGGERWALK_PROGRESSION_EXCLUDED_USERS = ["daggerwalk_bot"]
+DAGGERWALK_PUBLICLY_UNLISTED_USERS = ["billcrystals"]
 DAGGERWALK_QUALIFYING_COMMANDS = [
     "walk", "stop", "jump", "left", "right", "up", "down", "center",
     "forward", "back", "cursor", "click", "doubleclick", "map", "song",
