@@ -695,6 +695,18 @@ function daggerwalkMapInit() {
   map.addLayer(questLayer);
   bindUIEvents();
 
+  const monumentId = new URLSearchParams(window.location.search).get("monument");
+  let monumentMarker = null;
+  if (monumentId) {
+    document.getElementById("toggle-monuments").checked = true;
+    map.addLayer(monumentLayer);
+    monumentLayer.eachLayer(marker => {
+      if (String(marker.options.item?.monument_id) === monumentId) {
+        monumentMarker = marker;
+      }
+    });
+  }
+
   // Apply the default date filter before displaying logs so older markers do
   // not flash briefly, then use the closest view that contains every visible
   // log and quest marker.
@@ -702,7 +714,19 @@ function daggerwalkMapInit() {
   highlightLatestMarker();
   requestAnimationFrame(() => {
     map.invalidateSize({ pan: false });
-    zoomToVisibleMarkers();
+    if (monumentMarker) {
+      const reveal = () => {
+        map.setView(monumentMarker.getLatLng(), 4, { animate: false });
+        monumentMarker.openPopup();
+      };
+      if (typeof monumentLayer.zoomToShowLayer === "function") {
+        monumentLayer.zoomToShowLayer(monumentMarker, reveal);
+      } else {
+        reveal();
+      }
+    } else {
+      zoomToVisibleMarkers();
+    }
   });
 
   map.on('zoomend', () => {
@@ -716,15 +740,4 @@ function daggerwalkMapInit() {
   // Emoji overlays respond to pan as well
   map.on('moveend', applyLogTypeFilter);
 
-  const monumentId = new URLSearchParams(window.location.search).get("monument");
-  if (monumentId) {
-    document.getElementById("toggle-monuments").checked = true;
-    map.addLayer(monumentLayer);
-    monumentLayer.eachLayer(marker => {
-      if (String(marker.options.item?.monument_id) === monumentId) {
-        map.setView(marker.getLatLng(), 4, { animate: false });
-        marker.openPopup();
-      }
-    });
-  }
 }
