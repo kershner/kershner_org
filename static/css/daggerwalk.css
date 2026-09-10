@@ -1969,6 +1969,7 @@ blockquote cite {
 }
 .quests-wrapper .quest-giver-name {
   font-style: italic;
+  font-weight: bold;
   padding-left: 1rem;
 }
 .quests-wrapper .quest-meta {
