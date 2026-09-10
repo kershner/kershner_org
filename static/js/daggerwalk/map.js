@@ -248,7 +248,7 @@ function popupHtml(item) {
     const weatherEmoji = WEATHER_EMOJIS[item.weather] || "";
     const seasonEmoji = SEASON_EMOJIS[item.season] || "";
     const seasonDisplay = daggerwalk.formatSeason(item.date, item.season);
-    const song = item.current_song?.replace("song_", "");
+    const song = daggerwalk.formatSong(item.current_song);
     add(`
       <div><b>Weather:</b> ${weatherEmoji} ${item.weather === "Thunderstorm" ? "Thunderstorming" : item.weather || "—"}</div>
       <div><b>Season:</b> ${seasonEmoji} ${seasonDisplay}</div>
@@ -467,6 +467,7 @@ function handleZoomImageSwap(map) {
     const z = map.getZoom(), minZ = map.getMinZoom()
     const mode = z <= minZ ? 2 : z <= minZ + 1 ? 1 : 0
     const url = mode === 2 ? alt2 : mode === 1 ? alt1 : null
+    document.getElementById('filters')?.classList.toggle('hidden', mode !== 0)
 
     clearLayer('altImageLayer')
 

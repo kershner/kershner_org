@@ -307,6 +307,7 @@ class CompletedQuestDetailTests(TestCase):
         self.assertContains(response, "30 XP")
         self.assertContains(response, "aliceWalker")
         self.assertContains(response, "ZedWalker")
+        self.assertNotContains(response, "📯 Herald")
 
     def test_completed_quest_page_has_persisted_herald(self):
         walker = TwitchUserProfile.objects.get(twitch_username="aliceWalker")

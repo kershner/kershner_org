@@ -31,6 +31,11 @@ const daggerwalk = {
     return monthIndex >= 0 ? `${phases[monthIndex]} ${season}` : (season || "—");
   },
 
+  formatSong(song) {
+    const value = String(song ?? '').trim().replace(/^song_/, '');
+    return value && value.toLowerCase() !== 'none' ? value : '';
+  },
+
   updateStatus() {
     const status = document.querySelector('.current-status');
     if (!status || !this.latestLog?.date) return;
@@ -52,6 +57,7 @@ const daggerwalk = {
     const weatherIcon = weatherEmoji[log.weather] || "🌈";
     const seasonIcon = seasonEmoji[log.season] || "❓";
     const seasonDisplay = this.formatSeason(log.date, log.season);
+    const song = this.formatSong(log.current_song);
     const climate = region.climate ? `${region.climate.replace(/s$/, '')} ` : '';
     const climateLocationStr = `${region.emoji || ''}${climate}${(log.location || 'unknown location').toLowerCase()}`;
     const location = log.poi ? `${log.poi.emoji || ''}${log.poi.name}` : climateLocationStr;
@@ -64,7 +70,7 @@ const daggerwalk = {
       ${locationDisplay}
       ${this.formatTime(log.date)}
       <p>${seasonIcon} ${seasonDisplay}  ${weatherIcon} ${log.weather === "Thunderstorm" ? "Thunderstorming" : log.weather}
-      ${log.current_song ? `  🎵 ${log.current_song}` : ''}</p>
+      ${song ? `  🎵 ${song}` : ''}</p>
     `;
   },
 
