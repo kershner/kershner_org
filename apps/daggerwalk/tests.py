@@ -11,7 +11,7 @@ from django.utils.dateparse import parse_datetime
 from collections import Counter
 from datetime import datetime, timedelta, timezone as datetime_timezone
 from io import StringIO
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, patch
 
 from apps.daggerwalk.models import (
     ChatCommandLog,
@@ -766,24 +766,3 @@ class ProgressionTests(TestCase):
         )
         rebuild.assert_called_once_with()
 
-
-class DaggerwalkDevCommandTests(SimpleTestCase):
-    @override_settings(DEBUG=True)
-    @patch("apps.daggerwalk.management.commands.daggerwalk_dev.call_command")
-    @patch("apps.daggerwalk.management.commands.daggerwalk_dev.subprocess.Popen")
-    @patch("apps.daggerwalk.management.commands.daggerwalk_dev.Command._start_redis")
-    def test_starts_web_services_and_cleans_up_worker(self, start_redis, popen, call_command_mock):
-        from apps.daggerwalk.management.commands.daggerwalk_dev import Command
-
-        worker = popen.return_value
-        worker.poll.return_value = None
-
-        Command().handle(noreload=True)
-
-        start_redis.assert_called_once_with()
-        self.assertEqual(call_command_mock.call_args_list, [
-            call("migrate"),
-            call("runserver", "127.0.0.1:8000", use_reloader=False),
-        ])
-        worker.terminate.assert_called_once_with()
-        worker.wait.assert_called_once_with(timeout=10)

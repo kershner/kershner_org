@@ -21,6 +21,7 @@ APPEND_SLASH = True
 
 # Application definition
 INSTALLED_APPS = [
+    'kershner',
     'apps.song',
     'apps.project',
     'apps.whoosh',
