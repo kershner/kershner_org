@@ -29,7 +29,7 @@ function setupMap() {
     inertia: true,
     wheelPxPerZoomLevel: 120,
     scrollWheelZoom: 'center',
-    zoomSnap: 1,
+    zoomSnap: 0.25,
     zoomDelta: 1,
     bounceAtZoomLimits: false,
     maxBoundsViscosity: 1.0,
@@ -48,8 +48,9 @@ function setupMap() {
   map.fitBounds(imgBounds);
   map.setMaxBounds(imgBounds.pad(0.5));
 
-  // Start two levels above minZoom
-  map.setZoom(map.getMinZoom() + 2);
+  const fullscreenControl = map.getContainer().querySelector('.leaflet-control-fullscreen');
+  const filters = document.getElementById('filters');
+  if (fullscreenControl && filters) filters.appendChild(fullscreenControl);
 
   return { map, imageLayer, imgBounds };
 }
@@ -91,6 +92,26 @@ function rebuildLogLayer(logs) {
   logLayer = buildLayer(logs);
   map.addLayer(logLayer);
   drawLogLine(true);
+}
+
+function zoomToVisibleMarkers() {
+  const points = [];
+  [logLayer, questLayer].forEach(layer => {
+    if (!layer || !map.hasLayer(layer)) return;
+    layer.eachLayer(marker => {
+      if (!marker.getLatLng) return;
+      points.push(marker.getLatLng());
+    });
+  });
+
+  if (!points.length) return;
+  const markerBounds = L.latLngBounds(points);
+  map.fitBounds(markerBounds, { padding: L.point(0, 0), animate: false });
+
+  // Put any spare space from the map's aspect ratio on the left and bottom.
+  const topRight = map.latLngToContainerPoint(markerBounds.getNorthEast());
+  const mapSize = map.getSize();
+  map.panBy([topRight.x - mapSize.x, topRight.y], { animate: false });
 }
 
 /* -------------------- Clustering (POIs only) -------------------- */
@@ -553,8 +574,8 @@ async function refreshMapData() {
   }
 }
 
-function filterLogsByDate() {
-  if (isAltMapActive()) return;
+function filterLogsByDate(force = false) {
+  if (force !== true && isAltMapActive()) return;
 
   const value = document.getElementById("log-date-filter").value;
   const now = new Date();
@@ -661,22 +682,27 @@ function daggerwalkMapInit() {
   map.on('zoomend', updateMapTitle);
   updateMapTitle();
 
-  const { pois, monuments, logs, quests, shapes } = getMapData();
+  const { pois, monuments, quests, shapes } = getMapData();
   window.shapes = shapes;
   window.SHAPE_EXTENTS = computeShapeExtents(window.shapes || []);
 
-  const latest = logs.length ? logs.reduce((a, b) =>
-    new Date(a.created_at) > new Date(b.created_at) ? a : b) : null;
-
   poiLayer  = buildLayer(pois,  { isPOI: true });
   monumentLayer = buildLayer(monuments, { isPOI: true });
-  logLayer  = buildLayer(logs,  { highlightId: latest?.id });
+  logLayer = L.layerGroup();
   questLayer = buildLayer(quests, { isQuest: true });
 
-  map.addLayer(logLayer);
   map.addLayer(questLayer);
-  highlightLatestMarker();
   bindUIEvents();
+
+  // Apply the default date filter before displaying logs so older markers do
+  // not flash briefly, then use the closest view that contains every visible
+  // log and quest marker.
+  filterLogsByDate(true);
+  highlightLatestMarker();
+  requestAnimationFrame(() => {
+    map.invalidateSize({ pan: false });
+    zoomToVisibleMarkers();
+  });
 
   map.on('zoomend', () => {
     const z = map.getZoom();
@@ -688,8 +714,6 @@ function daggerwalkMapInit() {
 
   // Emoji overlays respond to pan as well
   map.on('moveend', applyLogTypeFilter);
-
-  filterLogsByDate();
 
   const monumentId = new URLSearchParams(window.location.search).get("monument");
   if (monumentId) {
