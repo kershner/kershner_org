@@ -204,9 +204,7 @@ def guild_hall(request):
 
 
 def monument_registry(request):
-    monuments = exclude_publicly_unlisted(
-        Monument.objects, "owner__twitch_username"
-    ).select_related("poi", "poi__region", "owner").annotate(
+    monuments = Monument.objects.select_related("poi", "poi__region", "owner").annotate(
         latest_visit=Max("progression_events__created_at", filter=Q(progression_events__event_type="monument_visit")),
     ).order_by("-created_at")
     filters = {key: request.GET.get(key, "").strip() for key in ("owner", "guild", "type", "region")}
@@ -438,7 +436,7 @@ class RegionListAPIView(BaseListAPIView):
 
 
 class POIListAPIView(BaseListAPIView):
-    queryset = exclude_publicly_unlisted(POI.objects.all(), "monument__owner__twitch_username")
+    queryset = POI.objects.all()
     serializer_class = POISerializer
     
     def get_queryset(self):

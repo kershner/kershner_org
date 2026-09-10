@@ -802,6 +802,36 @@ class ProgressionTests(TestCase):
             with self.subTest(event_type=event.event_type):
                 self.assertEqual(progression_event_description(event), expected)
 
+    def test_progression_home_lists_latest_twenty_monuments(self):
+        profile = TwitchUserProfile.objects.create(twitch_username="Walker")
+        created_at = timezone.now() - timedelta(days=1)
+        for index in range(21):
+            poi = POI.objects.create(
+                name=f"Monument {index}",
+                region=self.region,
+                type="landmark",
+                map_pixel_x=index,
+                map_pixel_y=index,
+            )
+            monument = Monument.objects.create(
+                poi=poi,
+                owner=profile,
+                monument_type="cairn",
+                world_x=index,
+                world_z=index,
+                game_date="1 Morning Star",
+                renown_title_at_placement="Wayfarer",
+            )
+            Monument.objects.filter(pk=monument.pk).update(
+                created_at=created_at + timedelta(minutes=index),
+            )
+
+        payload = progression_home_payload(guilds=[])
+
+        self.assertEqual(len(payload["recent_monuments"]), 20)
+        self.assertEqual(payload["recent_monuments"][0].poi.name, "Monument 20")
+        self.assertEqual(payload["recent_monuments"][-1].poi.name, "Monument 1")
+
     def test_unlisted_walker_keeps_public_chronicle_without_public_rankings(self):
         hidden = TwitchUserProfile.objects.create(
             twitch_username="billcrystals",
@@ -816,11 +846,22 @@ class ProgressionTests(TestCase):
             event_type="quest",
             payload={"guild": "mages"},
         )
+        monument = place_monument(hidden, "cairn", {
+            "worldX": 100000, "worldZ": 100000,
+            "mapPixelX": 10, "mapPixelY": 20,
+            "region": self.region.name, "locationType": "Wilderness",
+            "date": "Loredas, 1 Frostfall",
+        })
 
         snapshot = progression_snapshot()
 
         self.assertNotIn("billcrystals", snapshot["profiles"])
         self.assertEqual(snapshot["profiles"]["visiblewalker"]["position"], 1)
+        self.assertIn(monument.id, {row["id"] for row in snapshot["monuments"]})
+        self.assertIn(
+            monument,
+            progression_home_payload(guilds=[])["recent_monuments"],
+        )
         chronicle = self.client.get(reverse("daggerwalk_walker", args=["billcrystals"]))
         self.assertEqual(chronicle.status_code, 200)
         self.assertContains(chronicle, "billcrystals")
@@ -834,6 +875,11 @@ class ProgressionTests(TestCase):
         mages = next(guild for guild in guild_hall_page_payload() if guild["key"] == "mages")
         self.assertNotIn(hidden, mages["top_contributors"])
         self.assertEqual(mages["walkers"], 0)
+        self.assertIn(monument, mages["monuments"])
+        self.assertContains(
+            self.client.get(reverse("daggerwalk_monuments")),
+            "billcrystals",
+        )
 
     def test_progression_snapshot_uses_constant_query_count(self):
         quest = Quest.objects.create(status="completed", poi=self.poi, xp=25, completed_at=timezone.now())

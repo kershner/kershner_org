@@ -210,9 +210,7 @@ def progression_snapshot():
             position = index
             previous_xp = profile.xp_value
         payload[profile.twitch_username.casefold()] = profile_payload(profile, position)
-    monuments = list(exclude_publicly_unlisted(
-        Monument.objects.select_related("poi", "poi__region"), "owner__twitch_username"
-    ).values(
+    monuments = list(Monument.objects.select_related("poi", "poi__region").values(
         "id", "poi__name", "poi__region__name", "poi__map_pixel_x", "poi__map_pixel_y"
     ))
     return {"profiles": payload, "guilds": GUILDS, "monument_types": monument_type_payload(), "monuments": monuments}
@@ -583,8 +581,8 @@ def guild_hall_page_payload(guilds=None):
         )
         for walker in members:
             walker._guild_rank_levels = rank_levels_by_profile.get(walker.id, {})
-        guild["monuments"] = exclude_publicly_unlisted(
-            Monument.objects.filter(guild_at_placement=guild["key"]), "owner__twitch_username"
+        guild["monuments"] = Monument.objects.filter(
+            guild_at_placement=guild["key"]
         ).select_related("poi", "owner")[:8]
         rank_counts = Counter(
             guild_rank(guild["key"], walker.guild_xp_value, walker)[0]
@@ -621,15 +619,14 @@ def monument_display_rows(monuments):
 def progression_home_payload(guilds=None):
     """Small, cache-friendly progression summary for the Daggerwalk home page."""
     recent_monuments = list(
-        exclude_publicly_unlisted(Monument.objects, "owner__twitch_username")
-        .select_related("poi", "poi__region", "owner")
+        Monument.objects.select_related("poi", "poi__region", "owner")
         .annotate(
             latest_visit=Max(
                 "progression_events__created_at",
                 filter=Q(progression_events__event_type="monument_visit"),
             )
         )
-        .order_by("-created_at")[:8]
+        .order_by("-created_at")[:20]
     )
     return {
         "progression_guilds": guilds if guilds is not None else guild_hall_payload(),
