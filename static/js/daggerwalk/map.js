@@ -107,11 +107,6 @@ function zoomToVisibleMarkers() {
   if (!points.length) return;
   const markerBounds = L.latLngBounds(points);
   map.fitBounds(markerBounds, { padding: L.point(0, 0), animate: false });
-
-  // Put any spare space from the map's aspect ratio on the left and bottom.
-  const topRight = map.latLngToContainerPoint(markerBounds.getNorthEast());
-  const mapSize = map.getSize();
-  map.panBy([topRight.x - mapSize.x, topRight.y], { animate: false });
 }
 
 /* -------------------- Clustering (POIs only) -------------------- */
