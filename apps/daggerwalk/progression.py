@@ -618,6 +618,30 @@ def monument_display_rows(monuments):
 
 def progression_home_payload(guilds=None):
     """Small, cache-friendly progression summary for the Daggerwalk home page."""
+    recent_events = list(
+        ProgressionEvent.objects
+        .select_related("profile", "quest", "monument")
+        .order_by("-created_at")[:100]
+    )
+
+    recent_progression_events = []
+    used_types = set()
+
+    while recent_events and len(recent_progression_events) < 20:
+        event = next(
+            (event for event in recent_events if event.event_type not in used_types),
+            None,
+        )
+
+        if event is None:
+            used_types.clear()
+            continue
+
+        recent_events.remove(event)
+        used_types.add(event.event_type)
+        event.description = progression_event_description(event)
+        recent_progression_events.append(event)
+
     recent_monuments = list(
         Monument.objects.select_related("poi", "poi__region", "owner")
         .annotate(
@@ -629,6 +653,7 @@ def progression_home_payload(guilds=None):
         .order_by("-created_at")[:20]
     )
     return {
+        "progression_events": recent_progression_events,
         "progression_guilds": guilds if guilds is not None else guild_hall_payload(),
         "recent_monuments": monument_display_rows(recent_monuments),
         "monument_count": Monument.objects.count(),

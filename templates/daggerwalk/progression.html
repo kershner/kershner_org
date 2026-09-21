@@ -35,5 +35,9 @@
   {% endfor %}
 </div>
 
+<h4>Herald</h4>
+<p>Recent happenings in the Bay</p>
+{% include "daggerwalk/includes/herald_table.html" with progression_events=progression_events %}
+
 <h4>Recently Raised Monuments</h4>
 {% include "daggerwalk/includes/monument_table.html" with monuments=recent_monuments %}

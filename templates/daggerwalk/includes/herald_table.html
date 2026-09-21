@@ -1,0 +1,29 @@
+<div class="progression-table-wrapper herald-table-wrapper">
+  <table class="styled-table progression-table herald-table">
+    <thead>
+      <tr>
+        <th>Walker</th>
+        <th>Event</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in progression_events %}
+        <tr>
+          <td data-label="Walker">
+            <div class="chronicle-identity">
+                {% if event.profile.twitch_profile_image_url %}<img class="walker-avatar" src="{{ event.profile.twitch_profile_image_url }}" alt="" width="72" height="72">{% else %}<div class="walker-avatar"></div>{% endif %}
+                <a href="{% url 'daggerwalk_walker' event.profile.twitch_username %}">
+                    {{ event.profile.twitch_username }}
+                </a>
+            </div>
+          </td>
+          <td data-label="Event">
+            {{ event.description }}
+          </td>
+          <td data-label="Date">{{ event.created_at|date:'M j, Y' }}</td>          
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
