@@ -211,7 +211,7 @@ class BlueskyVideoTagTests(SimpleTestCase):
     AWS_SECRET_ACCESS_KEY="secret",
 )
 class CloudFrontInvalidationTests(SimpleTestCase):
-    @patch("apps.daggerwalk.management.commands.invalidate_cloudfront.boto3.client")
+    @patch("kershner.management.commands.invalidate_cloudfront.boto3.client")
     def test_invalidates_entire_distribution(self, boto_client):
         client = boto_client.return_value
         client.create_invalidation.return_value = {"Invalidation": {"Id": "INV123"}}
