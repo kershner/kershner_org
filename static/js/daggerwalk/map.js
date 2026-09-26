@@ -167,7 +167,7 @@ function attachClusterTooltip(clusterGroup) {
 }
 
 /* -------------------- Icons / Popups / Markers -------------------- */
-function makeIcon({ emoji, dot = false, quest = false, questImg = null, highlight = false }) {
+function makeIcon({ emoji, dot = false, quest = false, questImg = null, highlight = false, monument = false }) {
   const baseClass = "map-marker";
   function baseIconOptions() {
     return {
@@ -193,7 +193,7 @@ function makeIcon({ emoji, dot = false, quest = false, questImg = null, highligh
   return L.divIcon({
     ...baseIconOptions(),
     html: `<div>${emoji || "📍"}</div>`,
-    className: `${baseClass} poi-marker`,
+    className: `${baseClass} poi-marker ${monument ? "monument-marker" : ""}`,
   });
 }
 
@@ -311,7 +311,7 @@ function createMarker(lat, lng, icon, item) {
 }
 
 /* -------------------- Layers -------------------- */
-function buildLayer(data, { isPOI = false, isQuest = false, highlightId = null } = {}) {
+function buildLayer(data, { isPOI = false, isQuest = false, highlightId = null, isMonument = false } = {}) {
   const layer = isPOI ? createClusterGroup(true) : L.layerGroup();
   const zoom = map?.getZoom?.() ?? 1;
 
@@ -341,11 +341,12 @@ function buildLayer(data, { isPOI = false, isQuest = false, highlightId = null }
     const icon = isQuest
       ? makeIcon({ emoji: item.poi.emoji, quest: true, questImg: item.quest_giver_img_url })
       : (isPOI
-          ? makeIcon({ emoji: item.emoji })
+          ? makeIcon({ emoji: item.emoji, monument: isMonument })
           : makeIcon({ emoji: item.emoji, dot: true, highlight }));
 
     const marker = createMarker(lat, lng, icon, item);
     if (isPOI) marker.options.isPOI = true;
+    if (isMonument) marker.options.isMonument = true;
     if (!isPOI && !isQuest && highlight) marker.options.isLatest = true;
 
     layer.addLayer(marker);
@@ -548,7 +549,7 @@ async function refreshMapData() {
     [logLayer, poiLayer, monumentLayer, questLayer].forEach(layer => layer && map.hasLayer(layer) && map.removeLayer(layer));
 
     poiLayer = buildLayer(data.pois, { isPOI: true });
-    monumentLayer = buildLayer(data.monuments || [], { isPOI: true });
+    monumentLayer = buildLayer(data.monuments || [], { isPOI: true, isMonument: true });
     rebuildLogLayer(data.logs);
     questLayer = buildLayer(data.quests, { isQuest: true });
 
@@ -683,7 +684,7 @@ function daggerwalkMapInit() {
   window.SHAPE_EXTENTS = computeShapeExtents(window.shapes || []);
 
   poiLayer  = buildLayer(pois,  { isPOI: true });
-  monumentLayer = buildLayer(monuments, { isPOI: true });
+  monumentLayer = buildLayer(monuments, { isPOI: true, isMonument: true });
   logLayer = L.layerGroup();
   questLayer = buildLayer(quests, { isQuest: true });
 

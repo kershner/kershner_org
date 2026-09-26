@@ -4,10 +4,7 @@
   <p>Use <code>!renown</code> to see your XP and rank, <code>!guild</code> to manage your allegiance, and <code>!monument</code> when you have earned a Monument Token.</p>
 </section>
 
-<div class="progression-actions">
-  <a href="{% url 'daggerwalk_guild_hall' %}">Enter the Guild Hall</a>
-  <a href="{% url 'daggerwalk_monuments' %}">Browse all {{ monument_count }} Monuments</a>
-</div>
+<hr>
 
 <h4>The Four Guilds</h4>
 <div class="progression-grid guild-summary-grid">
@@ -35,9 +32,20 @@
   {% endfor %}
 </div>
 
+<div class="progression-actions">
+  <a href="{% url 'daggerwalk_guild_hall' %}">Enter the Guild Hall</a>
+</div>
+
 <h4>Herald</h4>
 <p>Recent happenings in the Bay</p>
 {% include "daggerwalk/includes/herald_table.html" with progression_events=progression_events %}
 
+<br>
+<br>
+
 <h4>Recently Raised Monuments</h4>
 {% include "daggerwalk/includes/monument_table.html" with monuments=recent_monuments %}
+
+<div class="progression-actions">
+  <a href="{% url 'daggerwalk_monuments' %}">Browse all Monuments</a>
+</div>

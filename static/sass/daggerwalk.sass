@@ -63,6 +63,9 @@ body
     --text-color: #FFFFFF
     --alternate-dark: #1A1A1A
 
+    * 
+      scrollbar-color: #555 #222
+
 hr
   margin: 2rem 0
   height: $border-width
@@ -231,15 +234,16 @@ a
       text-shadow: 0 1px 2px rgba(0,0,0,0.8), 0 0 2px rgba(255,255,255,0.4)
       transition: transform 0.2s ease, box-shadow 0.2s ease
 
-    &:hover div
-      transform: scale(3)
-      box-shadow: 0 3px 6px rgba(0,0,0,0.7)
-
     &.poi-marker
       div
         background: unset
         text-shadow: unset
         border: unset
+    
+    &.monument-marker
+      width: 1.5rem !important
+      height: 1.5rem !important
+      background: url("../img/daggerwalk/scroll.PNG") center / 100% 100% no-repeat
 
     &.quest-marker
       width: 1.5rem !important
