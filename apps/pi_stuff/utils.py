@@ -40,30 +40,6 @@ def get_or_create_qr_code(request, device_id):
     return qr_code_b64
 
 
-def extract_youtube_id(url):
-    """Extract video or playlist ID from various YouTube URL formats."""
-    try:
-        u = urlparse(url)
-        host = (u.netloc or "").lower()
-        qs = parse_qs(u.query)
-
-        # Check for playlist first
-        if 'list' in qs:
-            return ('playlist', qs['list'][0])
-
-        if host.endswith("youtu.be"):
-            video_id = u.path.lstrip("/") or None
-            return ('video', video_id) if video_id else None
-
-        if "youtube.com" in host:
-            video_id = qs.get("v", [None])[0]
-            return ('video', video_id) if video_id else None
-
-        return None
-    except Exception:
-        return None
-    
-
 def generate_qr_code(data):
     qr = qrcode.QRCode(
         version=1,
@@ -86,3 +62,27 @@ def generate_qr_code(data):
     buf = BytesIO()
     img.save(buf, format="PNG")
     return base64.b64encode(buf.getvalue()).decode()
+
+
+def extract_youtube_id(url):
+    """Extract video or playlist ID from various YouTube URL formats."""
+    try:
+        u = urlparse(url)
+        host = (u.netloc or "").lower()
+        qs = parse_qs(u.query)
+
+        # Check for playlist first
+        if 'list' in qs:
+            return ('playlist', qs['list'][0])
+
+        if host.endswith("youtu.be"):
+            video_id = u.path.lstrip("/") or None
+            return ('video', video_id) if video_id else None
+
+        if "youtube.com" in host:
+            video_id = qs.get("v", [None])[0]
+            return ('video', video_id) if video_id else None
+
+        return None
+    except Exception:
+        return None

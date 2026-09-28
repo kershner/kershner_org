@@ -237,3 +237,5 @@ DAGGERWALK_QUALIFYING_COMMANDS = [
 PLAYWRIGHT_CHROMIUM_PATH = os.getenv("PLAYWRIGHT_CHROMIUM_PATH", "/opt/playwright-browsers/chromium-1181/chrome-linux/chrome")
 
 YOUTUBE_API_KEY = PARAMETERS['youtube_api_key']
+
+PI_VIDEO_PLAY_API_KEY = PARAMETERS['pi_video_play_api_key']

@@ -1,15 +1,16 @@
 from apps.pi_stuff.consts import LATEST_PLAY_TTL, TOKEN_TTL, YOUTUBE_BASE_API_URL
 from django.views.decorators.http import require_POST, require_http_methods
 from apps.pi_stuff.utils import extract_youtube_id, get_or_create_qr_code
-from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse, HttpResponse
+from django.utils.dateparse import parse_datetime
 from django.views.generic import TemplateView
 from .serializers import CategorySerializer
+from .models import Category, VideoPlay
 from django.core.cache import cache
 from django.shortcuts import render
 from django.conf import settings
 from django.urls import reverse
-from .models import Category
 from html import unescape
 import requests
 import time
@@ -289,3 +290,40 @@ def youtube_search(request):
             'playlists': [],
             'error': f'Search failed: {str(e)}'
         })
+
+
+@require_POST
+@csrf_exempt
+def video_play(request):
+    if request.headers.get("Authorization") != f"Bearer {settings.PI_VIDEO_PLAY_API_KEY}":
+        return JsonResponse({"error": "unauthorized"}, status=401)
+
+    data = json.loads(request.body)
+
+    previous = data.get("previous")
+    if previous:
+        VideoPlay.objects.filter(
+            event_id=previous["event_id"]
+        ).update(
+            ended_at=parse_datetime(previous["ended_at"]),
+            watched_seconds=previous["watched_seconds"],
+            completed=previous["completed"],
+        )
+
+    current = data["current"]
+
+    VideoPlay.objects.get_or_create(
+        event_id=current["event_id"],
+        defaults={
+            "youtube_id": current["youtube_id"],
+            "title": current["title"],
+            "device_id": current["device_id"],
+            "playlist_id": current.get("playlist_id") or "",
+            "playlist_name": current.get("playlist_name") or "",
+            "category": current.get("category") or "",
+            "started_at": parse_datetime(current["started_at"]),
+            "duration": current["duration"],
+        },
+    )
+
+    return JsonResponse({"ok": True})
