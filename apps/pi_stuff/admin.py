@@ -1,6 +1,8 @@
+from django.contrib import admin
+from django.utils.html import format_html
+
 from kershner.mixins.admin_advanced_filter import AdminAdvancedFilterMixin
 from .models import Category, Playlist, VideoPlay
-from django.contrib import admin
 
 
 class PlaylistInline(admin.TabularInline):
@@ -31,9 +33,42 @@ class PlaylistAdmin(AdminAdvancedFilterMixin, admin.ModelAdmin):
 @admin.register(VideoPlay)
 class VideoPlayAdmin(admin.ModelAdmin):
     list_display = [
-        'title', 'device_id', 'started_at',
-        'watched_seconds', 'duration', 'completed'
+        'title', 'youtube', 'playlist', 'started_at',
+        'watched', 'video_duration', 'completed'
     ]
     list_filter = ['completed', 'category']
     search_fields = ['title', 'youtube_id', 'device_id']
     ordering = ['-started_at']
+    readonly_fields = [field.name for field in VideoPlay._meta.fields]
+
+    @admin.display(description='YouTube')
+    def youtube(self, obj):
+        return format_html(
+            '<a href="https://youtu.be/{}" target="_blank">'
+            '<img src="https://i.ytimg.com/vi/{}/mqdefault.jpg" width="120">'
+            '</a>',
+            obj.youtube_id,
+            obj.youtube_id,
+        )
+
+    @admin.display(description='Playlist')
+    def playlist(self, obj):
+        return f'{obj.category} • {obj.playlist_name}'
+
+    @admin.display(description='Watched')
+    def watched(self, obj):
+        return self._format_duration(obj.watched_seconds)
+
+    @admin.display(description='Duration')
+    def video_duration(self, obj):
+        return self._format_duration(obj.duration)
+
+    @staticmethod
+    def _format_duration(seconds):
+        return f'{seconds // 3600:02}:{seconds % 3600 // 60:02}:{seconds % 60:02}'
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
