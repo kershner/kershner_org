@@ -199,7 +199,7 @@ def _wait_until_ready(container_id, access_token):
     raise ThreadsError("Threads video processing timed out")
 
 
-def post_video(video_url, text):
+def post_video(video_url, text, topic_tag="Daggerfall"):
     if not str(video_url or "").startswith("https://"):
         raise ValueError("Threads video URL must use HTTPS")
 
@@ -212,6 +212,8 @@ def post_video(video_url, text):
         "text": _clamp_text(text),
         "access_token": access_token,
     }
+    if topic_tag:
+        data["topic_tag"] = topic_tag[:50]
     container = _request(
         "POST",
         f"{GRAPH_API}/{user_id}/threads",
