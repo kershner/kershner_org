@@ -199,7 +199,7 @@ def _wait_until_ready(container_id, access_token):
     raise ThreadsError("Threads video processing timed out")
 
 
-def post_video(video_url, text, topic_tag="Daggerfall"):
+def post_video(video_url, text):
     if not str(video_url or "").startswith("https://"):
         raise ValueError("Threads video URL must use HTTPS")
 
@@ -212,9 +212,6 @@ def post_video(video_url, text, topic_tag="Daggerfall"):
         "text": _clamp_text(text),
         "access_token": access_token,
     }
-    if topic_tag:
-        data["topic_tag"] = topic_tag[:50]
-
     container = _request(
         "POST",
         f"{GRAPH_API}/{user_id}/threads",
@@ -240,6 +237,76 @@ def post_video(video_url, text, topic_tag="Daggerfall"):
         "GET",
         f"{GRAPH_API}/{media_id}",
         "Threads permalink lookup",
+        params={"fields": "id,permalink", "access_token": access_token},
+    )
+    return media_id, str(details.get("permalink") or media_id)
+
+
+def post_image_reply(parent_id, image_urls, text, alt_texts=None):
+    """Reply with a carousel of public images."""
+    if len(image_urls) < 2:
+        raise ValueError("Threads carousel replies require at least two images")
+
+    tokens = _fresh_tokens()
+    access_token = tokens["access_token"]
+    user_id = tokens["user_id"]
+    alt_texts = alt_texts or []
+    child_ids = []
+
+    for index, image_url in enumerate(image_urls):
+        if not str(image_url or "").startswith("https://"):
+            raise ValueError("Threads image URLs must use HTTPS")
+        data = {
+            "media_type": "IMAGE",
+            "image_url": image_url,
+            "is_carousel_item": "true",
+            "access_token": access_token,
+        }
+        if index < len(alt_texts) and alt_texts[index]:
+            data["alt_text"] = alt_texts[index]
+        child = _request(
+            "POST",
+            f"{GRAPH_API}/{user_id}/threads",
+            "Threads image-container creation",
+            data=data,
+        )
+        child_id = str(child.get("id") or "")
+        if not child_id:
+            raise ThreadsError("Threads did not return an image-container ID")
+        _wait_until_ready(child_id, access_token)
+        child_ids.append(child_id)
+
+    container = _request(
+        "POST",
+        f"{GRAPH_API}/{user_id}/threads",
+        "Threads reply-container creation",
+        data={
+            "media_type": "CAROUSEL",
+            "children": ",".join(child_ids),
+            "text": _clamp_text(text),
+            "reply_to_id": parent_id,
+            "access_token": access_token,
+        },
+    )
+    container_id = str(container.get("id") or "")
+    if not container_id:
+        raise ThreadsError("Threads did not return a reply-container ID")
+
+    _wait_until_ready(container_id, access_token)
+    published = _request(
+        "POST",
+        f"{GRAPH_API}/{user_id}/threads_publish",
+        "Threads reply publishing",
+        data={"creation_id": container_id, "access_token": access_token},
+    )
+    media_id = str(published.get("id") or "")
+    if not media_id:
+        raise ThreadsError("Threads did not return a published reply ID")
+
+    details = _request(
+        "GET",
+        f"{GRAPH_API}/{media_id}",
+        "Threads reply permalink lookup",
         params={"fields": "id,permalink", "access_token": access_token},
     )
     return str(details.get("permalink") or media_id)

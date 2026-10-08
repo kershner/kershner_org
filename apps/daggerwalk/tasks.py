@@ -455,7 +455,7 @@ def post_video_to_bluesky(caption, video_blob, client: Client):
             }
         )
         logger.info("Post created successfully")
-        return response["uri"], response["cid"], text
+        return response["uri"], response["cid"]
     
     except Exception as e:
         logger.error(f"Video embed failed: {str(e)}")
@@ -505,18 +505,32 @@ def post_to_bluesky():
         caption = generate_bluesky_caption(log_data, stats_data)
         
         # Post video to Bluesky
-        uri, cid, post_text = post_video_to_bluesky(caption, video_blob, client)
+        uri, cid = post_video_to_bluesky(caption, video_blob, client)
 
         # Post screenshots as reply
-        post_screenshot_reply_to_video(client, uri, cid, log_data)
+        reply_text, reply_images, reply_alt_texts = post_screenshot_reply_to_video(
+            client, uri, cid, log_data
+        )
 
         if threads.is_configured():
             try:
-                permalink = threads.post_video(
+                threads_id, permalink = threads.post_video(
                     get_bluesky_blob_url(client, video_blob),
-                    post_text,
+                    caption,
                 )
                 logger.info("Posted to Threads: %s", permalink)
+                try:
+                    reply_permalink = threads.post_image_reply(
+                        threads_id,
+                        reply_images,
+                        reply_text,
+                        reply_alt_texts,
+                    )
+                    logger.info("Posted Threads screenshot reply: %s", reply_permalink)
+                except Exception:
+                    logger.exception(
+                        "Threads screenshot reply failed; video remains published"
+                    )
             except Exception:
                 logger.exception(
                     "Threads cross-post failed; Bluesky post remains published"
@@ -689,6 +703,8 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
     try:
         # Upload screenshots
         uploaded = []
+        image_urls = []
+        alt_texts = []
         for label, path in screenshots.items():
             with open(path, "rb") as f:
                 blob = client.com.atproto.repo.upload_blob(BytesIO(f.read()))
@@ -708,6 +724,8 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
                     "image": blob.blob,
                     "alt": alt
                 })
+                image_urls.append(get_bluesky_blob_url(client, blob.blob))
+                alt_texts.append(alt)
 
         # Post reply
         url = "https://kershner.org/daggerwalk"
@@ -742,6 +760,7 @@ def post_screenshot_reply_to_video(client: Client, uri: str, cid: str, log_data)
 
         client.com.atproto.repo.create_record(data=reply_record)
         logger.info("Screenshot reply posted successfully.")
+        return text, image_urls, alt_texts
 
     except Exception as e:
         logger.error(f"Failed to post screenshot reply: {str(e)}")
