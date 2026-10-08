@@ -62,17 +62,19 @@ class VideoPlayAdmin(admin.ModelAdmin):
     @admin.display(description='Ended', ordering='ended_at')
     def ended(self, obj):
         if obj.ended_at:
-            return timezone.localtime(obj.ended_at).strftime('%I:%M:%S %p')
+            ended_at = obj.ended_at
+        elif obj.watched_seconds:
+            ended_at = obj.started_at + timedelta(seconds=obj.watched_seconds)
+        else:
+            ends_at = obj.started_at + timedelta(seconds=obj.duration)
+            remaining = int((ends_at - timezone.now()).total_seconds())
 
-        ends_at = obj.started_at + timedelta(seconds=obj.duration)
-        remaining = max(
-            0,
-            int((ends_at - timezone.now()).total_seconds())
-        )
+            if remaining > 0:
+                return f'{self._format_duration(remaining)} remaining'
 
-        return (
-            f'{self._format_duration(remaining)} remaining'
-        )
+            ended_at = ends_at
+
+        return timezone.localtime(ended_at).strftime('%I:%M:%S %p')
 
     @admin.display(description='Watched')
     def watched(self, obj):

@@ -17,6 +17,7 @@ from apps.daggerwalk.bluesky_tags import (
     select_video_tags,
 )
 from apps.daggerwalk.journeys import completed_quest_detail_context
+from apps.daggerwalk import threads
 from apps.daggerwalk.progression import (
     guild_hall_page_payload,
     guild_hall_payload,
@@ -41,6 +42,7 @@ from celery import shared_task
 from atproto import Client
 from io import BytesIO
 from bisect import bisect_right
+from urllib.parse import quote
 import tempfile
 import requests
 import logging
@@ -299,6 +301,17 @@ def upload_video_as_blob(client: Client, video_path: str):
         raise
 
 
+def get_bluesky_blob_url(client, blob):
+    cid = getattr(getattr(blob, "ref", None), "link", None)
+    if not cid:
+        raise RuntimeError("Bluesky upload did not return a blob CID")
+    return (
+        "https://bsky.social/xrpc/com.atproto.sync.getBlob"
+        f"?did={quote(str(client.me.did), safe='')}"
+        f"&cid={quote(str(cid), safe='')}"
+    )
+
+
 def generate_bluesky_caption(log_data, stats_data):
     def get_qualified_season(date_str):
         season_map = [
@@ -442,7 +455,7 @@ def post_video_to_bluesky(caption, video_blob, client: Client):
             }
         )
         logger.info("Post created successfully")
-        return response["uri"], response["cid"]
+        return response["uri"], response["cid"], text
     
     except Exception as e:
         logger.error(f"Video embed failed: {str(e)}")
@@ -492,10 +505,22 @@ def post_to_bluesky():
         caption = generate_bluesky_caption(log_data, stats_data)
         
         # Post video to Bluesky
-        uri, cid = post_video_to_bluesky(caption, video_blob, client)
+        uri, cid, post_text = post_video_to_bluesky(caption, video_blob, client)
 
         # Post screenshots as reply
         post_screenshot_reply_to_video(client, uri, cid, log_data)
+
+        if threads.is_configured():
+            try:
+                permalink = threads.post_video(
+                    get_bluesky_blob_url(client, video_blob),
+                    post_text,
+                )
+                logger.info("Posted to Threads: %s", permalink)
+            except Exception:
+                logger.exception(
+                    "Threads cross-post failed; Bluesky post remains published"
+                )
         
         logger.info("Process completed successfully")
         

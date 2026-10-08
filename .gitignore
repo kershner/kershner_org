@@ -5,6 +5,7 @@ venv/
 .idea/
 *.map
 site_config/parameters.json
+apps/daggerwalk/data/threads_tokens.json
 www_kershner_org.cert
 www_kershner_org.ca-bundle
 kershner.org.combined.cert
