@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'apps.ai_quiz',
     'apps.color_doodle',
     'apps.daggerwalk',
+    'apps.no_mans_walk',
     'apps.pi_stuff',
     'storages',
     'django_filters',
@@ -239,3 +240,6 @@ PLAYWRIGHT_CHROMIUM_PATH = os.getenv("PLAYWRIGHT_CHROMIUM_PATH", "/opt/playwrigh
 YOUTUBE_API_KEY = PARAMETERS['youtube_api_key']
 
 PI_VIDEO_PLAY_API_KEY = PARAMETERS['pi_video_play_api_key']
+
+# No Man's Walk
+NO_MANS_WALK_API_TOKEN = PARAMETERS.get('no_mans_walk_api_token', '')

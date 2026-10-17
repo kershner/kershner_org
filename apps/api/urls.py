@@ -3,6 +3,7 @@ from apps.project.views import ProjectListAPIView
 from apps.ai_quiz.views import AiQuizListAPIView
 from apps.whoosh.views import WhooshListAPIView
 from apps.song.views import SongListAPIView
+from apps.no_mans_walk.views import PlanetListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.urls import path, include
@@ -18,6 +19,9 @@ ROOT_ENDPOINTS = [
 # Structure: Grouped endpoints under namespaces
 # Format: (namespace, [(endpoint, view, name), ...])
 GROUPED_ENDPOINTS = [
+    ('no_mans_walk', [
+        ('planets', PlanetListAPIView, 'planets'),
+    ]),
     ('daggerwalk', [
         ('logs', DaggerwalkLogListAPIView, 'daggerwalk_logs_list'),
         ('regions', RegionListAPIView, 'daggerwalk_regions'),
