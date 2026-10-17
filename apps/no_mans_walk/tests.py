@@ -235,6 +235,26 @@ class PlanetIngestionTests(TestCase):
         )
         self.assertEqual(self.client.get(self.url, {'galaxy_index': 'invalid'}).status_code, 400)
 
+    def test_get_includes_latest_visit_even_when_older_visits_arrive_later(self):
+        self.post([
+            dict(self.entry, timestamp='2026-10-16T02:30:00Z'),
+            self.entry,
+        ])
+        self.post([dict(self.entry, timestamp='2026-10-14T02:30:00Z')])
+        unvisited = dict(self.entry, planet_hex='216FA779F43A')
+        del unvisited['timestamp']
+        Planet.objects.create(**unvisited)
+        self.client.credentials()
+        with self.assertNumQueries(2):
+            response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        planets = {planet['planet_hex']: planet for planet in response.json()['results']}
+        self.assertEqual(
+            datetime.fromisoformat(planets[self.entry['planet_hex']]['last_visited']),
+            datetime(2026, 10, 16, 2, 30, tzinfo=timezone.utc),
+        )
+        self.assertIsNone(planets[unvisited['planet_hex']]['last_visited'])
+
     def test_get_paginates_with_stable_default_ordering(self):
         self.post([
             dict(self.entry, planet_hex=f'{index:012X}', name=f'Planet {index:02}')

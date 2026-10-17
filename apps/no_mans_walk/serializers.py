@@ -4,6 +4,8 @@ from .models import Planet
 
 
 class PlanetSerializer(serializers.ModelSerializer):
+    last_visited = serializers.DateTimeField(read_only=True)
+
     class Meta:
         model = Planet
         fields = '__all__'

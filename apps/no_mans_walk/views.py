@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Max
 from rest_framework.parsers import JSONParser
 from rest_framework.permissions import AllowAny
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
@@ -19,7 +20,7 @@ class PlanetBrowsableAPIRenderer(BrowsableAPIRenderer):
 
 
 class PlanetListAPIView(BaseListAPIView):
-    queryset = Planet.objects.all()
+    queryset = Planet.objects.annotate(last_visited=Max('visits__timestamp'))
     serializer_class = PlanetSerializer
     ordering = ['galaxy_index', 'name', 'id']
     authentication_classes = []
