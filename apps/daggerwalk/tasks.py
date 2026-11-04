@@ -1,7 +1,7 @@
 from apps.daggerwalk.serializers import POISerializer, QuestSerializer
 from django.template.loader import render_to_string
 from rest_framework.renderers import JSONRenderer
-from apps.daggerwalk.models import POI, ChatCommandLog, DaggerwalkLog, ProvinceShape, Quest, Region, TwitchUserProfile
+from apps.daggerwalk.models import POI, ChatCommandLog, DaggerwalkLog, ProvinceShape, Quest, TwitchUserProfile
 from apps.daggerwalk.cache_keys import (
     DAGGERWALK_HOME_HTML_CACHE_KEY,
     GUILD_HALL_HTML_CACHE_KEY,
@@ -379,11 +379,11 @@ def generate_bluesky_caption(log_data, stats_data):
     poi_data = log_data['poi']
 
     if region_name.lower() == "ocean":
-        try:
-            last_known_region = Region.objects.get(id=log_data['last_known_region'])
-            region_string = f"Walking through the ocean near {last_known_region.name} in {last_known_region.province}"
-        except Region.DoesNotExist:
-            region_string = "Walking through the Ocean."
+        last_known_region = log_data.get('last_known_region')
+        if last_known_region:
+            region_string = f"Walking through the ocean near {last_known_region['name']} in {last_known_region['province']}"
+        else:
+            region_string = "Walking through the Ocean"
     else:
         region_string = f"Walking through the {climate} wilderness of {region_name} in {region_province}"
 
