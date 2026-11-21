@@ -20,10 +20,8 @@ window.portfolio = {
 };
 
 const portfolio = window.portfolio;
-const mobileBreakpoint = 768;
-const isMobile = window.innerWidth <= mobileBreakpoint;
 
-portfolio.init = function(baseS3Url) {
+portfolio.init = function() {
     const darkMode = document.body.classList.contains('dark-mode');
 
     portfolio.currentColor = randomColor({luminosity: darkMode ? 'bright' : 'dark'});
@@ -35,49 +33,6 @@ portfolio.init = function(baseS3Url) {
             portfolio.rotateColors();
         });
     });
-
-    portfolio.startGraphicsWall(baseS3Url);
-};
-
-portfolio.startGraphicsWall = function(baseS3Url) {
-    const start = async () => {
-        try {
-            const { default: GraphicsWall } = await import(`${baseS3Url}/js/graphicsWall/graphicsWall.js`);
-
-            const mobileWallTypes = ['fabric', 'orbs', 'water'];
-            const desktopOnlyWallTypes = ['grass'];
-            const wallTypes = isMobile ? mobileWallTypes : [...mobileWallTypes, ...desktopOnlyWallTypes];
-            const type = wallTypes[Math.floor(Math.random() * wallTypes.length)];
-
-            window.graphicsWall = await GraphicsWall.init(baseS3Url, {
-                type,
-                global: {
-                    showControls: true,
-                    currentColor: portfolio.currentColor,
-                },
-            });
-
-            window.graphicsWall.set('wall.colorTransitionSpeed', 0.007);
-        } catch (error) {
-            console.warn('Graphics wall failed to load.', error);
-        }
-    };
-
-    const scheduleStart = () => {
-        requestAnimationFrame(() => {
-            if ('requestIdleCallback' in window) {
-                requestIdleCallback(start, { timeout: 2500 });
-            } else {
-                setTimeout(start, 1);
-            }
-        });
-    };
-
-    if (document.readyState === 'complete') {
-        scheduleStart();
-    } else {
-        window.addEventListener('load', scheduleStart, { once: true });
-    }
 };
 
 portfolio.addProjectHtml = function() {
@@ -206,14 +161,6 @@ portfolio.changeColors = function(rotate = true) {
     }
 
     document.documentElement.style.setProperty('--dynamic-color', portfolio.currentColor);
-
-    if (
-        window.graphicsWall &&
-        typeof window.graphicsWall.setCurrentColor === 'function' &&
-        window.graphicsWall.get('global.rotateColors')
-    ) {
-        window.graphicsWall.setCurrentColor(portfolio.currentColor);
-    }
 };
 
 const projectsClickHandler = (e) => {
@@ -338,6 +285,6 @@ const addOrRemoveFilterTerm = (text) => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    portfolio.init(window.PORTFOLIO_BASE_S3_URL);
+    portfolio.init();
     window.dispatchEvent(new Event('portfolioReady'));
 });
