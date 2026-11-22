@@ -116,9 +116,6 @@ html.portfolio-root
       .sticky-nav-control
         position: relative
 
-        input[type="radio"]
-          display: none
-
         input[type="text"]
           all: unset
           border: 0.15rem solid rgba(0, 0, 0, 0)
@@ -163,43 +160,6 @@ html.portfolio-root
               color: $black
               text-shadow: none
 
-        .radio
-          display: flex
-          border: none
-          padding: 0 0.5rem
-          
-          .radioButton
-            display: flex
-            position: relative
-            cursor: pointer
-            height: 2rem
-            width: 2rem
-            @include hover-state
-
-            &:not(:first-of-type)
-              margin-left: 0.5rem
-              bottom: 1px
-
-            label 
-              cursor: pointer
-            
-            .projectStyleIndicator
-              height: 0.18rem
-              width: 100%
-              background: var(--dynamic-color)
-              position: absolute
-              bottom: -0.2rem
-              border-radius: 0.15rem
-              opacity: 0
-
-            input[type="radio"]:checked + .projectStyleIndicator 
-              opacity: 1
-            
-            svg
-              cursor: pointer
-              height: 100%
-              width: 100%
-              fill: var(--dynamic-color)
 
 body
   font-family: $primary-font
@@ -352,46 +312,10 @@ a
   margin: 0 auto
   padding-top: 1rem
 
-  &.grid
-    display: flex
-    align-items: flex-start
-    flex-wrap: wrap
-    justify-content: space-between
-
-    .project-wrapper
-      align-items: center
-      flex-direction: column-reverse
-      width: calc(98% - 10px)
-      margin-bottom: 8rem
-
-      .left-content
-        max-width: 100%
-      
-      @media (min-width: $med-breakpoint)
-          margin-bottom: 3rem
-          width: calc(45% - 10px)
-      @media (min-width: $large-breakpoint)
-          width: calc(30% - 10px)
-
-      .right-content
-        display: block
-        justify-content: flex-start
-
-      .project-icon,
-      .project-img-2,
-      .project-img-3
-        display: none !important
-      .right-content,
-      .project-img-1 
-        margin-left: 0
-        width: 100%
-        padding-top: 0
-        transition: none
-        img
-          display: block
-          height: 20rem
-          object-fit: cover
-          object-position: top
+  display: flex
+  align-items: flex-start
+  flex-wrap: wrap
+  justify-content: space-between
 
 .no-projects-found
   position: relative
@@ -404,31 +328,26 @@ a
 
 .project-wrapper
   display: flex
-  flex-direction: row
-  margin: 0 auto
-  margin-bottom: 5em
-  @media (min-width: $large-breakpoint)
-    margin-bottom: 15em
+  position: relative
+  z-index: 1
+  align-items: center
+  flex-direction: column-reverse
+  width: calc(98% - 10px)
+  margin: 0 auto 8rem
   padding: 0 1rem
   max-width: 1280px
   pointer-events: none
 
+  @media (min-width: $med-breakpoint)
+    margin-bottom: 3rem
+    width: calc(45% - 10px)
+  @media (min-width: $large-breakpoint)
+    width: calc(30% - 10px)
+
   .left-content
     min-width: 300px
-    max-width: 33%
+    max-width: 100%
     position: relative
-
-    .project-icon
-      width: 120px
-      height: 120px
-
-      img
-        position: relative
-        z-index: 1
-        width: 100%        
-        margin-left: 0
-        margin-bottom: 20px
-        border-radius: .75em
 
     .project-title
       margin-bottom: .5em
@@ -499,31 +418,19 @@ a
         @extend %dynamic-color-btn
 
   .right-content
-    display: none
-    margin-left: 20px
+    display: block
+    width: 100%
 
-    div
-      display: inline-block
-      +animate($default-animation-speed)
+    .project-img-1
+      width: 100%
       pointer-events: auto
 
-      &:first-child,
-      &:last-child
-        padding-top: 2em
-
-      &.project-img-2
-        display: none
-        z-index: 2
-        margin-left: -1.5em
-        margin-right: -1.5em
-
-        @media(min-width: $med-breakpoint)
-          display: inline-block
-
-      img
-        display: none
     img
+      display: block
       width: 100%
+      height: 20rem
+      object-fit: cover
+      object-position: top
       max-width: 35rem
       position: relative
       z-index: 1
@@ -533,40 +440,6 @@ a
     &.drop-shadow
       img
         @extend %box-shadow
-
-// Image Orientations //////////////////////////////////////////////////////////////////////////////////////////////////
-.project-wrapper
-  position: relative
-  z-index: 1
-  
-  &.landscape
-    .right-content
-      justify-content: center
-      flex-wrap: wrap
-      margin-left: 5rem
-
-      @media(min-width: $med-breakpoint)
-        height: 80%
-
-      div
-        align-self: center
-
-        img
-          display: block
-
-      div.project-img-1
-        width: 100%
-
-      div.project-img-2
-        img
-          display: none !important
-
-      div.project-img-3
-        display: none
-
-        @media(min-width: $med-breakpoint)
-          display: inline-block
-          align-self: center
 
 // Project Breakpoints /////////////////////////////////////////////////////////////////////////////////////////////////
 @media(min-width: $small-breakpoint)
@@ -583,30 +456,6 @@ a
         font-size: 4rem
         line-height: 4rem
 
-  .project-wrapper
-    .right-content
-      display: flex
-      flex-grow: 1
-
-      div
-        &.project-img-1
-          img
-            display: block
-
-    &.portrait
-      .right-content
-        div
-          &.project-img-2
-            img
-              display: block
-
-@media(min-width: $large-breakpoint)
-  .project-wrapper
-    .right-content
-      div
-        &.project-img-3
-          img
-            display: block
 // END PROJECT BREAKPOINTS /////////////////////////////////////////////////////////////////////////////////////////////
 
 .more-projects-btn-wrapper

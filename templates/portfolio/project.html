@@ -1,6 +1,6 @@
 {% load kershner_tags %}
 
-<div class="project-wrapper {{ project.image_orientation }}" data-position="{{ project.position }}">
+<div class="project-wrapper" data-position="{{ project.position }}">
     <div class="left-content">
         <div class="project-title color-wave" tabindex="0">{{ project.title }}</div>
         <div class="project-blurb">{{ project.blurb }}</div>
@@ -54,16 +54,5 @@
             </a>
         </div>
 
-        <div class="project-img-2 {% if not project.image_2 %}hidden{% endif %}">
-            <a href="{{ project.site_url }}" target="_blank" title="{{ project.title }} second project image">
-                <img src="{{ project.image_2 }}" alt="{{ project.title }} second project image" loading="lazy">
-            </a>
-        </div>
-
-        <div class="project-img-3 {% if not project.image_3 %}hidden{% endif %}">
-            <a href="{{ project.site_url }}" target="_blank" title="{{ project.title }} third project image">
-                <img src="{{ project.image_3 }}" alt="{{ project.title }} third project image" loading="lazy">
-            </a>
-        </div>
     </div>
 </div>

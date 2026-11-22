@@ -37,7 +37,6 @@ portfolio.init = function() {
     portfolio.moreProjectsBtn = document.getElementById('more-projects-btn');
     portfolio.footer = document.querySelector('.footer');
     portfolio.projectsLink = document.querySelector('a[title="Projects"]');
-    portfolio.styleToggles = document.querySelectorAll('input[name="projectStyle"]');
     portfolio.projectSearch = document.getElementById('projectSearch');
     portfolio.suggestionsDiv = document.querySelector('.suggestions');
     portfolio.clearFiltersBtn = document.querySelector('.clearFiltersBtn');
@@ -127,31 +126,6 @@ portfolio.searchSuggestions = function() {
         li.addEventListener('click', suggestionFocusHandler);
         li.addEventListener('keydown', suggestionFocusHandler);
     });
-};
-
-portfolio.projectStyleToggles = function() {
-    const setProjectStyle = (newValue) => {
-        portfolio.projectsWrapper.classList.remove('grid', 'list');
-        portfolio.projectsWrapper.classList.add(newValue);
-        setQueryParam('style', newValue);
-    };
-
-    portfolio.styleToggles.forEach((radio) => {
-        radio.addEventListener('change', (e) => {
-            setProjectStyle(e.target.value);
-        });
-    });
-
-    const queryParamStyle = new URLSearchParams(window.location.search).get('style');
-
-    if (queryParamStyle) {
-        setProjectStyle(queryParamStyle);
-
-        const matchingToggle = [...portfolio.styleToggles].find((radio) => radio.value === queryParamStyle);
-        if (matchingToggle) {
-            matchingToggle.checked = true;
-        }
-    }
 };
 
 portfolio.scrollEvents = function() {
