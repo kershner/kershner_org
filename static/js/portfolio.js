@@ -1,19 +1,11 @@
+window.PORTFOLIO_BASE_S3_URL = document.currentScript.dataset.baseUrl;
+
 window.portfolio = {
     initialLoad: true,
     projectsPerPage: 0,
     projectsHtml: [],
     filteredProjects: [],
     colorChangeInterval: 10000,
-    stickyNav: document.querySelector('.sticky-nav'),
-    projectsWrapper: document.querySelector('.projects-wrapper'),
-    projectWrappers: document.getElementsByClassName('project-wrapper'),
-    moreProjectsBtn: document.getElementById('more-projects-btn'),
-    footer: document.querySelector('.footer'),
-    projectsLink: document.querySelector('a[title="Projects"]'),
-    styleToggles: document.querySelectorAll('input[name="projectStyle"]'),
-    projectSearch: document.getElementById('projectSearch'),
-    suggestionsDiv: document.querySelector('.suggestions'),
-    clearFiltersBtn: document.querySelector('.clearFiltersBtn'),
     currentColor: '',
     colorAnimationFrame: undefined,
     debounceTimeout: undefined,
@@ -22,10 +14,34 @@ window.portfolio = {
 
 const portfolio = window.portfolio;
 
-portfolio.init = function() {
-    const darkMode = document.body.classList.contains('dark-mode');
+portfolio.initColors = function() {
+    try {
+        portfolio.currentColor = sessionStorage.getItem('portfolio-color');
+    } catch (_) {}
 
-    portfolio.currentColor = randomColor({luminosity: darkMode ? 'bright' : 'dark'});
+    portfolio.currentColor = portfolio.currentColor || randomColor({luminosity: 'bright'});
+    document.documentElement.style.setProperty('--dynamic-color', portfolio.currentColor);
+
+    window.addEventListener('pagehide', () => {
+        try {
+            const color = getComputedStyle(document.documentElement).getPropertyValue('--dynamic-color').trim();
+            sessionStorage.setItem('portfolio-color', color);
+        } catch (_) {}
+    });
+};
+
+portfolio.init = function() {
+    portfolio.stickyNav = document.querySelector('.sticky-nav');
+    portfolio.projectsWrapper = document.querySelector('.projects-wrapper');
+    portfolio.projectWrappers = document.getElementsByClassName('project-wrapper');
+    portfolio.moreProjectsBtn = document.getElementById('more-projects-btn');
+    portfolio.footer = document.querySelector('.footer');
+    portfolio.projectsLink = document.querySelector('a[title="Projects"]');
+    portfolio.styleToggles = document.querySelectorAll('input[name="projectStyle"]');
+    portfolio.projectSearch = document.getElementById('projectSearch');
+    portfolio.suggestionsDiv = document.querySelector('.suggestions');
+    portfolio.clearFiltersBtn = document.querySelector('.clearFiltersBtn');
+
     portfolio.changeColors(false);
     portfolio.rotateColors();
 };
@@ -186,7 +202,7 @@ portfolio.changeColors = function(rotate = true) {
     const duration = parseFloat(durationValue) * (durationValue.endsWith('ms') ? 1 : 1000);
     const targetColor = portfolio.currentColor;
 
-    if (!duration || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (!rotate || !duration || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         root.style.setProperty('--dynamic-color', targetColor);
         return;
     }
@@ -335,6 +351,8 @@ const addOrRemoveFilterTerm = (text) => {
     portfolio.projectSearch.value = portfolio.currentFilterTerms;
     portfolio.projectSearch.dispatchEvent(new Event('input'));
 };
+
+portfolio.initColors();
 
 document.addEventListener('DOMContentLoaded', () => {
     portfolio.init();

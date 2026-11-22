@@ -1,13 +1,15 @@
 {% load kershner_tags %}
 
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="en-US" class="portfolio-root">
     <head lang="en">
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="Personal website of Tyler Kershner, a full stack software engineer.">
 
         <link rel="preconnect" href="https://{% settings_value "CLOUDFRONT_DOMAIN" %}">
+        <script src="{% settings_value "BASE_S3_URL" %}/vendor/js/randomColor.min.js"></script>
+        <script src="{% settings_value "BASE_S3_URL" %}/js/portfolio.js" data-base-url="{% settings_value 'BASE_S3_URL' %}"></script>
 
         {# Favicon #}
         <link rel="apple-touch-icon" sizes="180x180" href="{% settings_value "BASE_S3_URL" %}/img/favicon/apple-touch-icon.png">
@@ -24,8 +26,7 @@
         {% if title %}<title>Tyler Kershner - {{ title }}</title>{% else %}<title>Tyler Kershner</title>{% endif %}
     </head>
 
-    <body class="portfolio {% if request.GET.backgroundColor != "light" %}dark-mode{% endif %}">
-        <div class="portfolio-gradient-bg" aria-hidden="true"></div>
+    <body class="portfolio">
         
         {# Content#}
         <div id="page-wrapper" role="main">
@@ -80,12 +81,7 @@
         {% endblock %}
 
         {# JS #}
-        <script>
-            window.PORTFOLIO_BASE_S3_URL = "{% settings_value 'BASE_S3_URL' %}";
-        </script>
         <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/util.js"></script>
-        <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/vendor/js/randomColor.min.js"></script>
-        <script defer type="text/javascript" src="{% settings_value "BASE_S3_URL" %}/js/portfolio.js"></script>
         
         {% block javascripts %}
             {% block extra_javascripts %}{% endblock %}

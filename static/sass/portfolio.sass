@@ -61,7 +61,7 @@ $default-animation-speed: 3s
     background-color: var(--dynamic-color) !important
     text-shadow: $portfolio-text-shadow !important
 
-  body.dark-mode &
+  body.portfolio &
     color: $white !important
     background-color: $black !important
     &:hover
@@ -72,16 +72,10 @@ $default-animation-speed: 3s
   text-shadow: $portfolio-text-shadow !important
   color: $white !important
 
-.portfolio-gradient-bg
-  position: fixed
-  inset: 0
-  z-index: -2
-  pointer-events: none
+html.portfolio-root
   background-color: var(--dynamic-color)
   background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.08) 34%, rgba(0, 0, 0, 0.18) 68%, rgba(0, 0, 0, 0.48) 100%)
-  transition: none
-  transform: translateZ(0)
-  backface-visibility: hidden
+  background-attachment: fixed
 
 .sticky-nav
   position: relative
@@ -693,10 +687,9 @@ a
     line-height: 1.15rem
     @extend %dynamic-color-btn
     
-// Dark mode
-body.dark-mode
+// Portfolio text and surfaces over the rotating background.
+body.portfolio
   color: $white
-  background-color: $black
   text-shadow: $portfolio-text-shadow
 
   .welcome h1 a
