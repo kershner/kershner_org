@@ -48,6 +48,13 @@ portfolio.init = function() {
 portfolio.addProjectHtml = function() {
     portfolio.projectsWrapper.innerHTML = portfolio.filteredProjects.join('');
 
+    const currentDomain = window.location.hostname.replace(/^www\./, '');
+    portfolio.projectsWrapper.querySelectorAll('a[target="_blank"]').forEach(link => {
+        if (link.hostname.replace(/^www\./, '') === currentDomain) {
+            link.removeAttribute('target');
+        }
+    });
+
     updateTechTagClasses();
     projectTagClickEvents();
     portfolio.revealProjects();
