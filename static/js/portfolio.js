@@ -15,6 +15,7 @@ window.portfolio = {
     suggestionsDiv: document.querySelector('.suggestions'),
     clearFiltersBtn: document.querySelector('.clearFiltersBtn'),
     currentColor: '',
+    colorAnimationFrame: undefined,
     debounceTimeout: undefined,
     currentFilterTerms: [],
 };
@@ -26,13 +27,7 @@ portfolio.init = function() {
 
     portfolio.currentColor = randomColor({luminosity: darkMode ? 'bright' : 'dark'});
     portfolio.changeColors(false);
-
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            document.documentElement.classList.add('dynamic-colors-loaded');
-            portfolio.rotateColors();
-        });
-    });
+    portfolio.rotateColors();
 };
 
 portfolio.addProjectHtml = function() {
@@ -120,7 +115,6 @@ portfolio.projectStyleToggles = function() {
 };
 
 portfolio.scrollEvents = function() {
-    portfolio.footer.classList.add('fixed');
     updateFooterOnScroll();
 
     const originalOffset = portfolio.stickyNav.offsetTop + portfolio.stickyNav.offsetHeight;
@@ -160,7 +154,41 @@ portfolio.changeColors = function(rotate = true) {
         portfolio.currentColor = randomColor({luminosity: 'all'});
     }
 
-    document.documentElement.style.setProperty('--dynamic-color', portfolio.currentColor);
+    const root = document.documentElement;
+    cancelAnimationFrame(portfolio.colorAnimationFrame);
+
+    const styles = getComputedStyle(root);
+    const durationValue = styles.getPropertyValue('--dynamic-color-duration').trim();
+    const duration = parseFloat(durationValue) * (durationValue.endsWith('ms') ? 1 : 1000);
+    const targetColor = portfolio.currentColor;
+
+    if (!duration || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        root.style.setProperty('--dynamic-color', targetColor);
+        return;
+    }
+
+    const toChannels = hex => [1, 3, 5].map(offset =>
+        parseInt(hex.trim().slice(offset, offset + 2), 16));
+    const start = toChannels(styles.getPropertyValue('--dynamic-color'));
+    const target = toChannels(targetColor);
+    const startedAt = performance.now();
+
+    // Updating the shared color directly avoids Chrome's inherited-color border glitch.
+    const animate = (now) => {
+        const progress = Math.max(0, Math.min((now - startedAt) / duration, 1));
+        const eased = progress * progress * (3 - 2 * progress);
+        const color = '#' + start.map((channel, index) => {
+            return Math.round(channel + (target[index] - channel) * eased)
+                .toString(16).padStart(2, '0');
+        }).join('');
+
+        root.style.setProperty('--dynamic-color', color);
+        if (progress < 1) {
+            portfolio.colorAnimationFrame = requestAnimationFrame(animate);
+        }
+    };
+
+    portfolio.colorAnimationFrame = requestAnimationFrame(animate);
 };
 
 const projectsClickHandler = (e) => {

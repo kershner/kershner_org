@@ -7,7 +7,9 @@
   color: var(--dynamic-color)
 
 %dynamic-border-color
-  border: 1px solid var(--dynamic-color)
+  border-width: 1px
+  border-style: solid
+  border-color: var(--dynamic-color)
 
 =dynamic-icon($icon-name)
   @extend %dynamic-background-color
@@ -15,7 +17,7 @@
 
 // Dynamic color stuff
 .dynamic-color
-  // The inherited color is already animated on html; do not transition it again.
+  // The shared accent is updated each frame; do not transition it again.
   transition: none
   @extend %dynamic-background-color
 
@@ -95,7 +97,9 @@ input[type=range]
   &.dynamic-color
     background-color: rgba(0, 0, 0, 0.0)
     &::-webkit-slider-thumb
-      border: 0 solid var(--dynamic-color)
+      border-width: 0
+      border-style: solid
+      border-color: var(--dynamic-color)
       background: var(--dynamic-color)
 
     &:focus::-webkit-slider-runnable-track,

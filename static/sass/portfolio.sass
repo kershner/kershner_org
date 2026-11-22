@@ -8,22 +8,19 @@ $large-breakpoint: 1000px
 $light-black: lighten($black, 10%)
 $lighter-black: lighten($black, 78%)
 
-$portfolio-text-shadow: 1px 0.5px 2px $light-black
+$portfolio-text-shadow: 1px 0.25px 1px $light-black
 
 $default-animation-speed: 3s
-
-// Animate the inherited accent once so every consumer stays in sync.
-@property --dynamic-color
-  syntax: '<color>'
-  inherits: true
-  initial-value: #868686
 
 :root
   --dynamic-color-duration: 3s
   --dynamic-color: #{lighten($black, 40%)}
 
-html.dynamic-colors-loaded
-  transition: --dynamic-color var(--dynamic-color-duration) ease
+.accent-font
+  font-family: inherit
+  font-style: normal
+  font-weight: normal
+  letter-spacing: 0.05rem
 
 %tag-style
   margin-right: .25rem
@@ -46,10 +43,14 @@ html.dynamic-colors-loaded
   border-radius: 0.3rem
 
 %dynamic-color-btn
-  font-weight: bold
+  &:not(.accent-font)
+    font-weight: bold
   border-radius: 1rem
   background-color: $white !important
-  border: 2px solid var(--dynamic-color)
+  // Keep the border structure fixed while its color animates.
+  border-width: 2px
+  border-style: solid
+  border-color: var(--dynamic-color)
   color: $light-black !important
   text-shadow: none !important
   box-shadow: none !important
@@ -89,7 +90,9 @@ html.dynamic-colors-loaded
   top: 0
   left: 0
   height: 3rem
-  border-bottom: 0.15rem solid var(--dynamic-color)
+  border-bottom-width: 0.15rem
+  border-bottom-style: solid
+  border-bottom-color: var(--dynamic-color)
   color: $light-black  
   &.fixed
     background-color: $white
@@ -305,9 +308,10 @@ a
     
     h2
       position: relative
-      margin: 1rem
+      margin: 0.5rem
       text-align: center
       z-index: 1
+      font-size: 1.75rem
 
 // Project
 .projects-wrapper
@@ -622,7 +626,6 @@ a
 
       a
         text-decoration: none
-        font-family: $primary-font
         font-size: 1.5em
         color: $light-black
         transition: none

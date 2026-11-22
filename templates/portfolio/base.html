@@ -34,17 +34,17 @@
 
     {# Footer #}
     {% block footer %}
-        <div class="footer">
+        <div class="footer{% if request.resolver_match.url_name == 'home' %} fixed{% endif %}">
             <div class="footer-inner">
                 <div class="footer-links">
                     <div class="footer-link-wrapper">
                         <div class="footer-link">
                             {% if request.resolver_match.url_name == 'home' %}
-                            <a href="{% url 'home' %}" title="Projects" class="preserve-params">
+                            <a href="{% url 'home' %}" title="Projects" class="preserve-params accent-font">
                                 Projects
                             </a>
                             {% else %}
-                            <a href="{% url 'home' %}" title="Home" class="preserve-params">
+                            <a href="{% url 'home' %}" title="Home" class="preserve-params accent-font">
                                 Home
                             </a>
                             {% endif %}
@@ -53,7 +53,7 @@
 
                     <div class="footer-link-wrapper">
                         <div class="footer-link">
-                            <a href="{% url 'music' %}" title="Music" class="preserve-params">
+                            <a href="{% url 'music' %}" title="Music" class="preserve-params accent-font">
                                 Music
                             </a>
                         </div>
@@ -61,7 +61,7 @@
 
                     <div class="footer-link-wrapper">
                         <div class="footer-link">
-                            <a href="mailto:tylerkershner@gmail.com" target="_blank" title="Email">
+                            <a href="mailto:tylerkershner@gmail.com" target="_blank" title="Email" class="accent-font">
                                 Email
                             </a>
                         </div>
@@ -69,11 +69,11 @@
                 </div>
 
                 <div class="footer-extras">
-                    <a href="https://github.com/kershner/kershner_org" target="_blank" title="View this website's code">
+                    <a href="https://github.com/kershner/kershner_org" target="_blank" title="View this website's code" class="accent-font">
                         Github
                     </a>
 
-                    <a href="{% url 'api-root' %}" target="_blank" title="kershner.org API">API</a>
+                    <a href="{% url 'api-root' %}" target="_blank" title="kershner.org API" class="accent-font">API</a>
                 </div>
             </div>
         </div>
