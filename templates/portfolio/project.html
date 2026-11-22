@@ -1,16 +1,13 @@
-{% load kershner_tags %}
-
 <div class="project-wrapper" data-position="{{ project.position }}">
     <div class="left-content">
         <div class="project-title color-wave" tabindex="0">{{ project.title }}</div>
+        <hr class="dynamic-color">
         <div class="project-blurb">{{ project.blurb }}</div>
-    
-        <hr align="left" class="dynamic-color">
     
         <div class="project-info">
             <div class="project-info-section">
                 <div class="project-info-section-title">Code</div>
-                <div class="project-info-section-tags">
+                <div class="project-info-section-tags" tabindex="0" role="region" aria-label="{{ project.title }} code">
                     {% for tech in project.technologies %}
                     {% if tech.link %}
                     <a href="{{ tech.link }}" title="View the {{ tech.title }} code" target="_blank">
@@ -25,7 +22,7 @@
 
             <div class="project-info-section">
                 <div class="project-info-section-title">Tags</div>
-                <div class="project-info-section-tags project-tags">
+                <div class="project-info-section-tags project-tags" tabindex="0" role="region" aria-label="{{ project.title }} tags">
                     {% for tag in project.tags %}
                     <div class="tech-tag" tabindex="0" title="Filter by {{ tag.name }}">{{ tag.name }}</div>
                     {% endfor %}
@@ -39,20 +36,21 @@
             <div class="project-info-value">{{ project.extra_notes }}</div>
         </div>
         {% endif %}
-        
-        {% if project.site_url %}
-        <a href="{{ project.site_url }}" target="_blank" title="View {{ project.title }}">
-            <div class="project-link-btn dynamic-color">View →</div>
+    </div>
+
+    <div class="right-content">
+        {% if project.image_1 %}
+        <a href="{{ project.site_url }}" target="_blank" title="{{ project.title }} first project image">
+            <img src="{{ project.image_1 }}" alt="{{ project.title }} first project image" loading="lazy">
         </a>
         {% endif %}
     </div>
-    
-    <div class="right-content {% if project.drop_shadow %}drop-shadow{% endif %}">
-        <div class="project-img-1 {% if not project.image_1 %}hidden{% endif %}">
-            <a href="{{ project.site_url }}" target="_blank" title="{{ project.title }} first project image">
-                <img src="{{ project.image_1 }}" alt="{{ project.title }} first project image" loading="lazy">
-            </a>
-        </div>
 
-    </div>
+    {% if project.site_url %}
+    <a class="project-link" href="{{ project.site_url }}" target="_blank" title="View {{ project.title }}">
+        <span>View</span><span aria-hidden="true">↗</span>
+    </a>
+    {% else %}
+    <div class="project-link" aria-hidden="true"></div>
+    {% endif %}
 </div>

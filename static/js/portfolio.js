@@ -73,11 +73,14 @@ portfolio.revealProjects = function() {
             await Promise.allSettled([...project.querySelectorAll('img')]
                 .filter(image => image.getClientRects().length)
                 .map(image => image.decode()));
+            if (portfolio.projectObserver !== observer) return;
             project.classList.remove('project-reveal-pending');
+            project.classList.add('project-revealing');
         });
     }, {rootMargin: '0px 0px -32px 0px'});
 
     portfolio.projectsWrapper.querySelectorAll('.project-wrapper').forEach(project => {
+        project.classList.remove('project-revealing');
         project.classList.add('project-reveal-pending');
         portfolio.projectObserver.observe(project);
     });
@@ -156,11 +159,7 @@ portfolio.scrollEvents = function() {
 
         updateFooterOnScroll();
 
-        if (scrollPosition >= originalOffset) {
-            portfolio.stickyNav.classList.add('fixed');
-        } else {
-            portfolio.stickyNav.classList.remove('fixed');
-        }
+        portfolio.stickyNav.classList.toggle('fixed', scrollPosition >= originalOffset);
     });
 };
 
@@ -223,16 +222,38 @@ const projectsClickHandler = (e) => {
 };
 
 const updateFooterOnScroll = () => {
-    const isAtTop = window.scrollY === 0;
-    portfolio.footer.classList.toggle('fixed', isAtTop);
+    const isAtTop = window.scrollY <= 0;
+    if (isAtTop === portfolio.footerAtTop) return;
 
-    if (portfolio.projectsLink) {
-        portfolio.projectsLink.removeEventListener('click', projectsClickHandler);
+    const wasAtTop = portfolio.footerAtTop;
+    portfolio.footerAtTop = isAtTop;
+    portfolio.footerExit = null;
+    const animations = isAtTop || wasAtTop ? portfolio.footer.getAnimations({subtree: true}) : [];
+    const startTime = isAtTop ? 0 : Math.max(0, ...animations.map(animation => animation.currentTime));
+    portfolio.footer.classList.toggle('fixed', isAtTop || animations.length > 0);
+    animations.forEach(animation => {
+        animation.currentTime = startTime;
+        animation.playbackRate = isAtTop ? 1 : -3;
+        animation.play();
+    });
 
-        if (isAtTop) {
-            portfolio.projectsLink.addEventListener('click', projectsClickHandler);
-        }
+    if (isAtTop) {
+        if (wasAtTop === false) portfolio.revealProjects();
+    } else {
+        const exit = Promise.allSettled(animations.map(animation => animation.finished));
+        portfolio.footerExit = exit;
+        exit.then(() => {
+            if (portfolio.footerExit !== exit) return;
+            portfolio.footer.classList.remove('fixed');
+            animations.forEach(animation => {
+                animation.playbackRate = 1;
+                animation.finish();
+            });
+        });
     }
+
+    portfolio.projectsLink?.removeEventListener('click', projectsClickHandler);
+    if (isAtTop) portfolio.projectsLink?.addEventListener('click', projectsClickHandler);
 };
 
 const showHideSuggestions = (action) => {

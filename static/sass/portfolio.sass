@@ -8,8 +8,6 @@ $large-breakpoint: 1000px
 $light-black: lighten($black, 10%)
 $lighter-black: lighten($black, 78%)
 
-$default-animation-speed: 3s
-
 :root
   --portfolio-font: "Helvetica Neue", Helvetica, Arial, sans-serif
   --dynamic-color-duration: 3s
@@ -82,7 +80,7 @@ html.portfolio-root
   top: 0
   left: 0
   height: 3rem
-  border-bottom-width: 0.15rem
+  border-bottom-width: 4px
   border-bottom-style: solid
   border-bottom-color: var(--dynamic-color)
   color: $light-black  
@@ -100,7 +98,7 @@ html.portfolio-root
     .sticky-nav-title
       position: relative
       padding-left: 0.5rem
-      font-size: 1.1rem
+      font-size: 1.5rem
       cursor: pointer
 
     .sticky-nav-controls
@@ -179,7 +177,8 @@ body
   color: $purple
 
 a
-  +animate($default-animation-speed)
+  // The shared color already animates; a second transition makes links lag behind.
+  transition: none
   color: $purple
 
   &:hover
@@ -265,7 +264,9 @@ a
       z-index: 1
       font-size: 1.75rem
 
-// One-time welcome reveal on each page load.
+// Shared welcome, navigation, and project reveal.
+$reveal-easing: cubic-bezier(0.22, 1, 0.36, 1)
+
 .welcome
   // Main tuning controls; the stagger is the gap between letters.
   --intro-letter-duration: 580ms
@@ -277,8 +278,8 @@ a
   --intro-rise: 4px
 
 @media (prefers-reduced-motion: no-preference)
-  .welcome-letter, .welcome h2
-    animation: welcome-reveal 1200ms cubic-bezier(0.22, 1, 0.36, 1) 450ms both
+  .welcome-letter, .welcome h2, .footer .footer-link-wrapper, .footer .footer-extras, .project-wrapper.project-revealing
+    animation: welcome-reveal 1200ms $reveal-easing 450ms both
 
   .welcome-letter
     animation-duration: var(--intro-letter-duration)
@@ -286,13 +287,30 @@ a
 
   .welcome h1 a:after
     transform-origin: left
-    animation: welcome-underline 1000ms cubic-bezier(0.22, 1, 0.36, 1) 650ms both
+    animation: welcome-underline 1000ms $reveal-easing 650ms both
 
-  .projects-wrapper .project-wrapper
-    transition: opacity 450ms cubic-bezier(0.22, 1, 0.36, 1)
+  .footer .footer-link-wrapper, .footer .footer-extras
+    animation-duration: 360ms
+    animation-delay: 0ms
 
-    &.project-reveal-pending:not(:focus-within)
-      opacity: 0
+  .footer .footer-link-wrapper:nth-child(2)
+    animation-delay: 35ms
+
+  .footer .footer-link-wrapper:nth-child(3)
+    animation-delay: 70ms
+
+  .footer .footer-extras
+    animation-delay: 100ms
+
+  .project-wrapper.project-revealing
+    animation-delay: 0ms
+
+    &:focus-within
+      animation: none
+
+  .project-wrapper.project-reveal-pending:not(:focus-within)
+    opacity: 0
+    transform: translateY(8px)
 
 @keyframes welcome-reveal
   from
@@ -308,14 +326,19 @@ a
   min-height: 100vh
   max-width: 73em
   margin: 0 auto
-  padding-top: 1rem
+  padding: 1rem 1rem 3rem
+  display: grid
+  grid-template-columns: minmax(0, 1fr)
+  align-content: start
+  gap: 2rem
 
-  display: flex
-  align-items: flex-start
-  flex-wrap: wrap
-  justify-content: space-between
+  @media (min-width: $med-breakpoint)
+    grid-template-columns: repeat(2, minmax(0, 1fr))
+  @media (min-width: $large-breakpoint)
+    grid-template-columns: repeat(3, minmax(0, 1fr))
 
 .no-projects-found
+  grid-column: 1 / -1
   position: relative
   z-index: 1
   font-size: 1.3rem
@@ -325,76 +348,115 @@ a
     color: var(--dynamic-color)
 
 .project-wrapper
-  display: flex
+  $radius: 1.25rem
+  $image-height: 21rem
+  $divider-width: 3rem
+
+  display: grid
+  grid-template-rows: ($image-height - $radius) 22rem 3.5rem
   position: relative
   z-index: 1
-  align-items: center
-  flex-direction: column-reverse
-  width: calc(98% - 10px)
-  margin: 0 auto 8rem
-  padding: 0 1rem
-  max-width: 1280px
-  pointer-events: none
+  min-width: 0
+  border-radius: $radius
+  overflow: hidden
 
-  @media (min-width: $med-breakpoint)
-    margin-bottom: 3rem
-    width: calc(45% - 10px)
-  @media (min-width: $large-breakpoint)
-    width: calc(30% - 10px)
+  .left-content, .project-info-section-tags
+    scrollbar-width: none
+
+    &::-webkit-scrollbar
+      display: none
 
   .left-content
-    min-width: 300px
-    max-width: 100%
+    grid-row: 2
     position: relative
+    z-index: 2
+    display: flex
+    flex-direction: column
+    min-height: 0
+    overflow: auto
+    overflow-wrap: anywhere
+    box-sizing: border-box
+    padding: 1.25rem
+    background: $black
+    border: 4px solid var(--dynamic-color)
+    border-bottom: none
+    border-radius: $radius $radius 0 0
+
+    > *
+      flex-shrink: 0
 
     .project-title
       margin-bottom: .5em
-      font-family: inherit
       font-size: 2rem
       line-height: 1.15
       font-weight: bold
+      letter-spacing: -0.04em
 
     .project-blurb
       font-size: 1.125rem
       line-height: 1.55
+      margin-bottom: 1rem
+
+      + .project-info
+        margin-top: auto
 
     hr
-      margin: 1em 0
+      margin: 0 0 1rem
       border: 0
-      width: 50%
-      height: 0.4rem
-      border-radius: 0.75rem
+      width: $divider-width
+      height: 0.3rem
+      border-radius: 1rem
 
     .project-info
-      margin: .25em auto
-      font-size: 1.1em
-      pointer-events: auto
+      margin: .5rem 0 0
+      font-size: 0.9rem
+
+      .project-info-title, .project-info-value
+        display: inline-block
 
       .project-info-title
-        display: inline-block
         font-weight: bold
 
-      .project-info-value
-        display: inline-block
-
       .project-info-section
-        z-index: 1
-        position: relative
-        display: flex
-        flex-direction: column
-        flex-wrap: wrap
+        display: grid
+        grid-template-columns: 2.5rem minmax(0, 1fr)
+        align-items: baseline
+        gap: .5rem
         margin-top: 0.5rem
 
+        + .project-info-section::before
+          content: ""
+          grid-column: 1 / -1
+          width: $divider-width
+          height: 1px
+          background: rgba(255, 255, 255, .12)
+
         .project-info-section-title
-          font-size: 0.9rem
-          padding-left: 0.25rem
+          font-size: 0.8rem
 
         .project-info-section-tags
           display: flex
           flex-wrap: wrap
+          align-content: flex-start
+          height: 2.65rem
+          overflow-y: auto
+          overflow-x: hidden
+
+          > *
+            min-width: 0
+            max-width: 100%
+            box-sizing: border-box
           
           .tech-tag
             @extend %tag-style
+            color: $white
+            background-color: color-mix(in srgb, var(--dynamic-color) 15%, #{$black})
+            border-radius: .65rem
+            line-height: 1.4
+            padding: .2rem .5rem
+
+            &.dynamic-color
+              background: color-mix(in srgb, var(--dynamic-color) 35%, #{$black}) !important
 
             svg
               float: right
@@ -405,46 +467,37 @@ a
           &.project-tags .tech-tag
             @include hover-state
 
-    a
-      text-decoration: none
+  a
+    color: inherit
+    text-decoration: none
 
-      .project-link-btn
-        @extend %generic-btn
-        display: block !important
-        margin: 0
-        margin-top: 3rem
-        pointer-events: auto
-        @extend %dynamic-color-btn
+  .project-link
+    grid-row: 3
+    display: flex
+    align-items: baseline
+    justify-content: flex-end
+    gap: .65rem
+    padding: .75rem 1.25rem
+    background: var(--dynamic-color)
+    font-weight: bold
+    font-size: 1.25rem
+    @include hover-state
 
   .right-content
-    display: block
-    width: 100%
-
-    .project-img-1
-      width: 100%
-      pointer-events: auto
+    grid-row: 1
+    width: calc(100% - 1.5rem)
+    margin: 0 auto
 
     img
       display: block
       width: 100%
-      height: 20rem
+      height: $image-height
+      border-radius: $radius
       object-fit: cover
       object-position: top
-      max-width: 35rem
-      position: relative
-      z-index: 1
-      border-radius: .3em
       @include hover-state
 
-    &.drop-shadow
-      img
-        @extend %box-shadow
-
 // Project Breakpoints /////////////////////////////////////////////////////////////////////////////////////////////////
-@media(min-width: $small-breakpoint)
-  .project-wrapper
-    padding-left: 1.5em
-
 @media(min-width: $med-breakpoint)
   .welcome-wrapper
     section
@@ -538,17 +591,13 @@ a
 // Portfolio text and surfaces over the rotating background.
 body.portfolio
   color: $white
-  text-shadow: none
+  text-shadow: 0 1px 4px rgba(0, 0, 0, .2)
 
   .welcome h1 a
     color: $white
 
   .footer a
     color: $white !important
-
-  .project-wrapper .left-content .project-info .project-info-section .project-info-section-tags .tech-tag
-    background-color: $light-black
-    color: $white
 
   #kershner-music-player
     color: $white
