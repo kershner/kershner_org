@@ -35,6 +35,30 @@ portfolio.addProjectHtml = function() {
 
     updateTechTagClasses();
     projectTagClickEvents();
+    portfolio.revealProjects();
+};
+
+portfolio.revealProjects = function() {
+    portfolio.projectObserver?.disconnect();
+    if (!('IntersectionObserver' in window) ||
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    portfolio.projectObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(async ({target: project, isIntersecting}) => {
+            if (!isIntersecting) return;
+            observer.unobserve(project);
+
+            await Promise.allSettled([...project.querySelectorAll('img')]
+                .filter(image => image.getClientRects().length)
+                .map(image => image.decode()));
+            project.classList.remove('project-reveal-pending');
+        });
+    }, {rootMargin: '0px 0px -32px 0px'});
+
+    portfolio.projectsWrapper.querySelectorAll('.project-wrapper').forEach(project => {
+        project.classList.add('project-reveal-pending');
+        portfolio.projectObserver.observe(project);
+    });
 };
 
 portfolio.projectFilter = function() {

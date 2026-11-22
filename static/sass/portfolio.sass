@@ -313,6 +313,44 @@ a
       z-index: 1
       font-size: 1.75rem
 
+// One-time welcome reveal on each page load.
+.welcome
+  // Main tuning controls; the stagger is the gap between letters.
+  --intro-letter-duration: 580ms
+  --intro-letter-stagger: 38ms
+
+.welcome-letter
+  display: inline-block
+  white-space: pre
+  --intro-rise: 4px
+
+@media (prefers-reduced-motion: no-preference)
+  .welcome-letter, .welcome h2
+    animation: welcome-reveal 1200ms cubic-bezier(0.22, 1, 0.36, 1) 450ms both
+
+  .welcome-letter
+    animation-duration: var(--intro-letter-duration)
+    animation-delay: calc(80ms + var(--letter) * var(--intro-letter-stagger))
+
+  .welcome h1 a:after
+    transform-origin: left
+    animation: welcome-underline 1000ms cubic-bezier(0.22, 1, 0.36, 1) 650ms both
+
+  .projects-wrapper .project-wrapper
+    transition: opacity 450ms cubic-bezier(0.22, 1, 0.36, 1)
+
+    &.project-reveal-pending:not(:focus-within)
+      opacity: 0
+
+@keyframes welcome-reveal
+  from
+    opacity: 0
+    transform: translateY(var(--intro-rise, 8px))
+
+@keyframes welcome-underline
+  from
+    transform: scaleX(0)
+
 // Project
 .projects-wrapper
   min-height: 100vh

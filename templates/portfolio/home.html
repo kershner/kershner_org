@@ -6,7 +6,7 @@
     <!-- Big Text Blurbs -->
     <section class="welcome">
         <h1>
-            <a href="https://www.github.com/kershner" target="_blank" class="color-wave big-name" title="Tyler Kershner's Github">Tyler Kershner</a>
+            <a href="https://www.github.com/kershner" target="_blank" class="color-wave big-name" title="Tyler Kershner's Github" aria-label="Tyler Kershner"><span aria-hidden="true">{% for letter in "Tyler Kershner" %}<span class="welcome-letter" style="--letter: {{ forloop.counter0 }}">{{ letter }}</span>{% endfor %}</span></a>
         </h1>
 
         <h2 class="accent-font">
