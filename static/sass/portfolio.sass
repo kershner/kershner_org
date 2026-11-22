@@ -8,11 +8,10 @@ $large-breakpoint: 1000px
 $light-black: lighten($black, 10%)
 $lighter-black: lighten($black, 78%)
 
-$portfolio-text-shadow: 1px 0.25px 1px $light-black
-
 $default-animation-speed: 3s
 
 :root
+  --portfolio-font: "Helvetica Neue", Helvetica, Arial, sans-serif
   --dynamic-color-duration: 3s
   --dynamic-color: #{lighten($black, 40%)}
 
@@ -20,7 +19,7 @@ $default-animation-speed: 3s
   font-family: inherit
   font-style: normal
   font-weight: normal
-  letter-spacing: 0.05rem
+  letter-spacing: normal
 
 %tag-style
   margin-right: .25rem
@@ -59,7 +58,6 @@ $default-animation-speed: 3s
   &:hover
     color: $white !important
     background-color: var(--dynamic-color) !important
-    text-shadow: $portfolio-text-shadow !important
 
   body.portfolio &
     color: $white !important
@@ -69,7 +67,7 @@ $default-animation-speed: 3s
       
 .dynamic-color
   background: var(--dynamic-color) !important
-  text-shadow: $portfolio-text-shadow !important
+  text-shadow: none !important
   color: $white !important
 
 html.portfolio-root
@@ -162,7 +160,7 @@ html.portfolio-root
 
 
 body
-  font-family: $primary-font
+  font-family: var(--portfolio-font)
   color: $light-black
   overflow-x: hidden
 
@@ -248,7 +246,7 @@ a
       text-align: center
       font-size: 10.5vw
       margin: 0 auto
-      font-family: $secondary-font
+      font-family: inherit
       pointer-events: none
       font-weight: bold
 
@@ -351,13 +349,14 @@ a
 
     .project-title
       margin-bottom: .5em
-      font-family: $secondary-font
-      font-size: 2.5em
+      font-family: inherit
+      font-size: 2rem
+      line-height: 1.15
       font-weight: bold
 
     .project-blurb
-      font-size: 1.4em
-      line-height: 1.4em
+      font-size: 1.125rem
+      line-height: 1.55
 
     hr
       margin: 1em 0
@@ -539,7 +538,7 @@ a
 // Portfolio text and surfaces over the rotating background.
 body.portfolio
   color: $white
-  text-shadow: $portfolio-text-shadow
+  text-shadow: none
 
   .welcome h1 a
     color: $white
@@ -553,7 +552,7 @@ body.portfolio
 
   #kershner-music-player
     color: $white
-    text-shadow: $portfolio-text-shadow
+    text-shadow: none
 
   .sticky-nav
     color: $white

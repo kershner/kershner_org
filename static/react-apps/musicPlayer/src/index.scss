@@ -1,5 +1,5 @@
 // Accent colors inherit the single animation from the portfolio stylesheet.
-$text-shadow: 1px 1px 2px #444;
+$text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
 $box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.15);
 
 #kershner-music-player {
@@ -10,7 +10,7 @@ $box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.15);
   height: 77vh;
   color: #fff;
   overflow: hidden;
-  font-family: 'Verdana', sans-serif;
+  font-family: var(--portfolio-font, "Helvetica Neue", Helvetica, Arial, sans-serif);
 
   .songRow {
     .playerButton img {

@@ -16,7 +16,6 @@
   &.selected {
     background-color: var(--dynamic-color);
     color: #fff;
-    text-shadow: $text-shadow;
     .songName {
       font-size: 1.4em !important;
     }
