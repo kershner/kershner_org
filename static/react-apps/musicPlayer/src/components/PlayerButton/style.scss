@@ -15,9 +15,6 @@
     fill: var(--dynamic-color);
     height: 100%;
     width: 100%;
-    transition:
-      stroke,
-      fill 0.2s;
   }
 
   &:hover {

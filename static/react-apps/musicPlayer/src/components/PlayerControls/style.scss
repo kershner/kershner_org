@@ -14,7 +14,6 @@
     border: none;
     margin: 0;
     border-radius: 0.75rem;
-    transition: background-color $animation-speed ease;
   }
 
   .playerControlsInner {
@@ -69,7 +68,6 @@
             width: 2rem;
             height: 2rem;
             background-color: var(--dynamic-color);
-            transition: background-color $animation-speed ease;
             border-radius: 1rem;
             cursor: pointer;
             &:hover {

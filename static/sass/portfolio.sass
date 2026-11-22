@@ -11,14 +11,19 @@ $lighter-black: lighten($black, 78%)
 $portfolio-text-shadow: 1px 0.5px 2px $light-black
 
 $default-animation-speed: 3s
-$fast-animation-speed: 0.2s
+
+// Animate the inherited accent once so every consumer stays in sync.
+@property --dynamic-color
+  syntax: '<color>'
+  inherits: true
+  initial-value: #868686
 
 :root
-  --dynamic-color-transition: none
+  --dynamic-color-duration: 3s
   --dynamic-color: #{lighten($black, 40%)}
 
 html.dynamic-colors-loaded
-  --dynamic-color-transition: background-color #{$default-animation-speed}, background #{$default-animation-speed}
+  transition: --dynamic-color var(--dynamic-color-duration) ease
 
 %tag-style
   margin-right: .25rem
@@ -39,7 +44,6 @@ html.dynamic-colors-loaded
   right: 0
   background-color: var(--dynamic-color)
   border-radius: 0.3rem
-  transition: var(--dynamic-color-transition)
 
 %dynamic-color-btn
   font-weight: bold
@@ -49,7 +53,7 @@ html.dynamic-colors-loaded
   color: $light-black !important
   text-shadow: none !important
   box-shadow: none !important
-  transition: background-color $fast-animation-speed, border-color $default-animation-speed !important
+  transition: none !important
   z-index: 3
   &:hover
     color: $white !important
@@ -78,10 +82,6 @@ html.dynamic-colors-loaded
   transform: translateZ(0)
   backface-visibility: hidden
 
-html.dynamic-colors-loaded
-  .portfolio-gradient-bg
-    transition: background-color #{$default-animation-speed}
-
 .sticky-nav
   position: relative
   z-index: 3
@@ -91,7 +91,6 @@ html.dynamic-colors-loaded
   height: 3rem
   border-bottom: 0.15rem solid var(--dynamic-color)
   color: $light-black  
-  transition: border-color $default-animation-speed
   &.fixed
     background-color: $white
     position: fixed
@@ -130,7 +129,6 @@ html.dynamic-colors-loaded
           padding-left: 1rem
           border-radius: 1rem
           background-color: lighten($grey, 8)
-          transition: border-color .2s
           width: 85%
 
           &:focus
@@ -196,7 +194,6 @@ html.dynamic-colors-loaded
               bottom: -0.2rem
               border-radius: 0.15rem
               opacity: 0
-              transition: background $default-animation-speed
 
             input[type="radio"]:checked + .projectStyleIndicator 
               opacity: 1
@@ -206,7 +203,6 @@ html.dynamic-colors-loaded
               height: 100%
               width: 100%
               fill: var(--dynamic-color)
-              transition: fill $default-animation-speed
 
 body
   font-family: $primary-font
@@ -275,9 +271,6 @@ a
   &:after
     @extend %dynamic-border-bottom
     height: 0.5rem
-
-  span
-    transition: color $default-animation-speed, border $default-animation-speed
 
 // Welcome section
 .welcome-wrapper
@@ -372,7 +365,6 @@ a
   span
     display: block
     color: var(--dynamic-color)
-    transition: color $default-animation-speed
 
 .project-wrapper
   display: flex

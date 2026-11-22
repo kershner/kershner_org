@@ -15,10 +15,8 @@
 
 // Dynamic color stuff
 .dynamic-color
-  -webkit-transition: color .25s ease-in-out, background-color .25s ease-in-out, background .25s ease-in-out, background-image .25s ease-in-out
-  -moz-transition: color .25s ease-in-out, background-color .25s ease-in-out, background .25s ease-in-out, background-image .25s ease-in-out
-  -o-transition: color .25s ease-in-out, background-color .25s ease-in-out, background .25s ease-in-out, background-image .25s ease-in-out
-  transition: color .25s ease-in-out, background-color .25s ease-in-out, background .25s ease-in-out, background-image .25s ease-in-out
+  // The inherited color is already animated on html; do not transition it again.
+  transition: none
   @extend %dynamic-background-color
 
 h1
@@ -27,6 +25,7 @@ h1
     @extend %dynamic-text-color
 
 .site-code-link
+  transition: none
   background-color: rgba(0, 0, 0, 0.0) !important
   @extend %dynamic-text-color
 
