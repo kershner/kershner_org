@@ -1,0 +1,11 @@
+// Shared crossfade for navigation between participating pages on the same origin.
+@view-transition
+  navigation: auto
+
+::view-transition-old(root),
+::view-transition-new(root)
+  animation-duration: 300ms
+
+@media (prefers-reduced-motion: reduce)
+  @view-transition
+    navigation: none
