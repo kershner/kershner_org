@@ -232,18 +232,22 @@ a
   justify-content: center
   align-items: center
   min-height: 100vh
+  min-height: 100svh
+  box-sizing: border-box
 
   section
     &.welcome
-      margin-top: -5em
-      padding: 1em
+      margin: 0
+      padding: 1.5rem 1rem 6rem
       max-width: 100%
 
     h1
       z-index: 1
       position: relative
       text-align: center
-      font-size: 10.5vw
+      font-size: min(10.5vw, 4rem)
+      line-height: 1.08
+      white-space: nowrap
       margin: 0 auto
       font-family: inherit
       pointer-events: none
@@ -259,10 +263,27 @@ a
     
     h2
       position: relative
-      margin: 0.5rem
+      margin: 1.25rem auto 0
+      max-width: 26ch
       text-align: center
       z-index: 1
-      font-size: 1.75rem
+      font-size: clamp(1.125rem, 4vw, 1.75rem)
+      line-height: 1.4
+
+@media (max-width: ($med-breakpoint - 1px))
+  .welcome-wrapper section
+    &.welcome
+      padding-bottom: 8rem
+
+    h1
+      font-size: min(12vw, 4rem)
+
+    h2
+      margin-top: 1.25rem
+      font-size: min(5.6vw, 1.5rem)
+      line-height: 1.3
+      max-width: none
+      white-space: nowrap
 
 // Shared welcome, navigation, and project reveal.
 $reveal-easing: cubic-bezier(0.22, 1, 0.36, 1)
@@ -474,13 +495,18 @@ $reveal-easing: cubic-bezier(0.22, 1, 0.36, 1)
   .project-link
     grid-row: 3
     display: flex
-    align-items: baseline
+    align-items: center
     justify-content: flex-end
-    gap: .65rem
     padding: .75rem 1.25rem
     background: var(--dynamic-color)
+    color: $white
+    // Add definition only along the tab's bottom edge.
+    border-radius: 0 0 $radius $radius
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .16), inset 0 -5px 5px -3px rgba(0, 0, 0, .12)
+    text-shadow: none
     font-weight: bold
-    font-size: 1.25rem
+    font-size: 1.5rem
+    line-height: 1
     @include hover-state
 
   .right-content
@@ -503,10 +529,16 @@ $reveal-easing: cubic-bezier(0.22, 1, 0.36, 1)
     section
       &.welcome
         margin: auto 0
-        max-width: 50em
+        padding: 1.5rem 2rem 6rem
+        box-sizing: border-box
       h1
-        font-size: 4rem
-        line-height: 4rem
+        font-size: clamp(4rem, 7vw, 7rem)
+        line-height: 1.08
+      h2
+        font-size: clamp(1.5rem, 2.5vw, 2.25rem)
+        line-height: 1.3
+        max-width: none
+        white-space: nowrap
 
 // END PROJECT BREAKPOINTS /////////////////////////////////////////////////////////////////////////////////////////////
 
