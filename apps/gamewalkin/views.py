@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.views.decorators.cache import cache_page
 
 
 # Add or edit each channel's social links here: (label, URL).
@@ -17,5 +18,6 @@ CHANNELS = [
 ]
 
 
+@cache_page(60 * 60 * 24 * 30)  # 30 days
 def gamewalkin(request):
     return render(request, 'gamewalkin/index.html', {'channels': CHANNELS})
