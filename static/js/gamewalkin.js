@@ -27,8 +27,9 @@
     });
     chat.addEventListener('load', () => { delete chat.dataset.loading; });
     const names = Object.fromEntries(streams.map(stream => [stream.dataset.channel, stream.getAttribute('aria-label')]));
-    let touring = false;
-    let tourTimer;
+    let autoSwitching = false;
+    let switchTimer;
+    let switchSchedule;
 
     function readControls() {
         return Object.fromEntries(controls.map(control => [control.name,
@@ -58,13 +59,13 @@
     let state = { ...defaults };
     try { state = normalize(JSON.parse(localStorage.getItem('gamewalkin') || localStorage.getItem('walk'))); }
     catch (_) { /* Storage may be unavailable. */ }
-    state.muted = true; // Never restore sound or start a tour without a user action.
+    state.muted = true; // Never restore sound or start auto-switch without a user action.
 
-    const liveChannels = () => channels.filter(channel => live.get(channel) === true);
     const availableChannels = () => channels.filter(channel => !state.hideOffline || live.get(channel) !== false);
     const resolveChannel = value => value === 'follow' ? state.focused : value;
     const playbackAllowed = channel => state.background || channel === state.focused || (!state.muted && channel === resolveChannel(state.audio));
-    const focusChoices = () => touring ? liveChannels() : availableChannels();
+    // Hidden or paused embeds may not have reported a live status yet.
+    const switchChoices = () => availableChannels().filter(channel => live.get(channel) !== false || vods.has(channel));
 
     function applyAudio() {
         const source = state.muted ? null : resolveChannel(state.audio);
@@ -82,29 +83,36 @@
         }
     }
 
-    function scheduleTour() {
-        clearTimeout(tourTimer);
-        const candidates = liveChannels();
-        if (!touring || candidates.length < 2) return;
-        const others = candidates.filter(channel => channel !== state.focused);
-        const next = state.shuffle ? others[Math.floor(Math.random() * others.length)] :
-            candidates[(candidates.indexOf(state.focused) + 1) % candidates.length];
-        tourTimer = setTimeout(() => select(next), state.interval * 1000);
+    function scheduleSwitch() {
+        const candidates = switchChoices();
+        const schedule = autoSwitching && candidates.length > 1 ?
+            JSON.stringify([state.focused, state.interval, state.shuffle, candidates]) : null;
+        // Unrelated controls and repeated player events must not postpone a switch.
+        if (schedule === switchSchedule) return;
+        clearTimeout(switchTimer);
+        switchSchedule = schedule;
+        if (!schedule) return;
+        switchTimer = setTimeout(() => {
+            switchSchedule = null;
+            const others = candidates.filter(channel => channel !== state.focused);
+            const next = state.shuffle ? others[Math.floor(Math.random() * others.length)] :
+                candidates[(candidates.indexOf(state.focused) + 1) % candidates.length];
+            select(next);
+        }, state.interval * 1000);
     }
 
     function update() {
         const available = availableChannels();
-        const choices = focusChoices();
-        if (!choices.length) choices.push(...available);
-        if (choices.length && !choices.includes(state.focused)) state.focused = choices[0];
+        if (available.length && !available.includes(state.focused)) state.focused = available[0];
         controls.forEach(control => {
-            // Player events and Tour must not overwrite an in-progress edit.
+            // Player events and auto-switch must not overwrite an in-progress edit.
             if (control === document.activeElement) return;
             if (control.type === 'checkbox') control.checked = state[control.name];
             else control.value = state[control.name];
         });
         $('#streams').dataset.layout = state.layout;
         document.body.classList.toggle('compact', state.compact);
+        document.body.classList.toggle('edgeless', state.edgeless);
         $('#viewer').dataset.chatPosition = state.chatPosition;
         let visibleCount = 0;
         streams.forEach(stream => {
@@ -133,15 +141,15 @@
         players.forEach(applyPlayback);
         try { localStorage.setItem('gamewalkin', JSON.stringify(state)); }
         catch (_) { $('#message').textContent = 'Browser storage is unavailable; changes will last for this visit.'; }
-        $('#tour-toggle').checked = touring;
-        scheduleTour();
+        $('#auto-switch').checked = autoSwitching;
+        scheduleSwitch();
     }
 
     function select(channel, toggle = false) {
         if (!availableChannels().includes(channel)) return;
         const player = players.get(channel);
         const pause = toggle && channel === state.focused && player && !player.isPaused();
-        if (pause || (touring && !liveChannels().includes(channel))) touring = false;
+        if (pause) autoSwitching = false;
         state.focused = channel;
         update();
         autoPaused.delete(channel);
@@ -150,14 +158,14 @@
     }
 
     function step(direction) {
-        const choices = focusChoices();
+        const choices = availableChannels();
         if (choices.length) select(choices[(choices.indexOf(state.focused) + direction + choices.length) % choices.length]);
     }
 
-    function toggleTour() {
-        touring = !touring;
+    function toggleAutoSwitch() {
+        autoSwitching = !autoSwitching;
         update();
-        if (touring && live.get(state.focused)) players.get(state.focused)?.play();
+        if (autoSwitching && switchChoices().includes(state.focused)) players.get(state.focused)?.play();
     }
 
     async function fullscreen() {
@@ -173,7 +181,7 @@
     });
 
     $('#fullscreen').addEventListener('change', fullscreen);
-    $('#tour-toggle').addEventListener('change', toggleTour);
+    $('#auto-switch').addEventListener('change', toggleAutoSwitch);
     document.addEventListener('change', event => {
         if (!event.target.matches('[data-setting]')) return;
         state = normalize({ focused: state.focused, ...readControls() });
@@ -184,11 +192,15 @@
         ...Object.fromEntries(channels.map((channel, index) => [index + 1, () => select(channel)])),
         arrowleft: () => step(-1), arrowright: () => step(1),
         m: () => { state.muted = true; update(); },
-        t: toggleTour, f: fullscreen, c: () => { state.chatOpen = !state.chatOpen; update(); }
+        t: toggleAutoSwitch, f: fullscreen, c: () => { state.chatOpen = !state.chatOpen; update(); }
     };
     document.addEventListener('keydown', event => {
-        if (event.target.closest('input, select, textarea, button, summary, a, [contenteditable]') || event.ctrlKey || event.metaKey || event.altKey || event.repeat) return;
-        const action = shortcuts[event.key.toLowerCase()];
+        if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || event.repeat || event.defaultPrevented) return;
+        const key = event.key.toLowerCase();
+        const arrow = key === 'arrowleft' || key === 'arrowright';
+        if (event.target.closest('select, textarea, [contenteditable], input:not([type="checkbox"])')) return;
+        if (!arrow && event.target.closest('input, button, summary, a')) return;
+        const action = shortcuts[key];
         if (!action) return;
         event.preventDefault();
         action();
@@ -225,6 +237,7 @@
                     return;
                 }
                 vods.set(channel, video);
+                update();
                 player.setVideo(video);
                 applyAudio();
                 if (playbackAllowed(channel)) player.play();

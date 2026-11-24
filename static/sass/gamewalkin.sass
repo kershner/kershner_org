@@ -97,7 +97,7 @@ summary
   background: #111
   &.selected
     border-color: var(--accent)
-    box-shadow: 0 0 0 2px var(--accent)
+    box-shadow: 0 0 0 1px var(--accent)
   &:has(.social-links[open])
     z-index: 2
 
@@ -338,6 +338,7 @@ kbd
   &[data-layout="focus"], &[data-layout="strip"]
     .selected
       grid-row: 1
+      grid-column: 1
   &[data-layout="strip"] .selected
     grid-column: 1 / -1
   @media (min-width: 1000px)
@@ -389,6 +390,19 @@ kbd
     display: none
   .player
     border-radius: inherit
+
+.edgeless
+  #viewer
+    padding: 0
+    gap: 0
+  #streams
+    gap: 0
+  .stream, .stream-heading, .player
+    border-radius: 0
+  .stream
+    border: 0
+    &.selected
+      box-shadow: none
 
 [hidden]
   display: none !important

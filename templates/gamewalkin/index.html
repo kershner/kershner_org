@@ -36,11 +36,12 @@
                             <label><span>Hide offline streams</span><input type="checkbox" name="hideOffline" data-setting></label>
                             <label><span>Play background streams</span><input type="checkbox" name="background" data-setting checked></label>
                             <label><span>Hide stream headers</span><input type="checkbox" name="compact" data-setting></label>
+                            <label><span>Edgeless</span><input type="checkbox" name="edgeless" data-setting></label>
                         </fieldset>
                         <fieldset>
-                            <legend>Tour</legend>
-                            <label><span>Auto-switch streams</span><input id="tour-toggle" type="checkbox"></label>
-                            <label class="setting-field"><span>Seconds per stream</span><input type="number" name="interval" data-setting value="60" min="5" max="3600" list="tour-intervals"></label>
+                            <legend>Auto switch</legend>
+                            <label><span>Auto-switch streams</span><input id="auto-switch" type="checkbox"></label>
+                            <label class="setting-field"><span>Seconds per stream</span><input type="number" name="interval" data-setting value="60" min="5" max="3600" list="switch-intervals"></label>
                             <label><span>Shuffle</span><input type="checkbox" name="shuffle" data-setting></label>
                         </fieldset>
                         <fieldset>
@@ -68,7 +69,7 @@
                             </label>
                         </fieldset>
                     </div>
-                    <datalist id="tour-intervals">
+                    <datalist id="switch-intervals">
                         <option value="30">30 seconds</option>
                         <option value="60">1 minute</option>
                         <option value="300">5 minutes</option>
@@ -79,7 +80,7 @@
             <details id="shortcuts" class="toolbar-menu">
                 <summary>Shortcuts</summary>
                 <div class="toolbar-panel shortcuts-panel">
-                    <p>Click the page outside a player, chat, or control before using shortcuts.</p>
+                    <p>Use left/right to switch streams, including after clicking a stream name. Click outside a player or chat first; embedded Twitch players and chat handle their own keys.</p>
                     <table>
                         <thead>
                             <tr><th scope="col">Key</th><th scope="col">Action</th></tr>
@@ -91,7 +92,7 @@
                             <tr><td><kbd>←</kbd> / <kbd>→</kbd></td><td>Focus previous / next stream</td></tr>
                             <tr><td><kbd>C</kbd></td><td>Show / hide chat</td></tr>
                             <tr><td><kbd>M</kbd></td><td>Mute all streams</td></tr>
-                            <tr><td><kbd>T</kbd></td><td>Start / pause tour</td></tr>
+                            <tr><td><kbd>T</kbd></td><td>Start / pause auto switch</td></tr>
                             <tr><td><kbd>F</kbd></td><td>Toggle page fullscreen</td></tr>
                         </tbody>
                     </table>

@@ -127,7 +127,7 @@ summary::-webkit-details-marker {
 }
 .stream.selected {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 .stream:has(.social-links[open]) {
   z-index: 2;
@@ -423,6 +423,7 @@ kbd {
 }
 #streams[data-layout=focus] .selected, #streams[data-layout=strip] .selected {
   grid-row: 1;
+  grid-column: 1;
 }
 #streams[data-layout=strip] .selected {
   grid-column: 1/-1;
@@ -489,6 +490,23 @@ kbd {
 }
 .compact .player {
   border-radius: inherit;
+}
+
+.edgeless #viewer {
+  padding: 0;
+  gap: 0;
+}
+.edgeless #streams {
+  gap: 0;
+}
+.edgeless .stream, .edgeless .stream-heading, .edgeless .player {
+  border-radius: 0;
+}
+.edgeless .stream {
+  border: 0;
+}
+.edgeless .stream.selected {
+  box-shadow: none;
 }
 
 [hidden] {
