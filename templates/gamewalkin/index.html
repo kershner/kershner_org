@@ -10,81 +10,111 @@
     <script defer src="{% settings_value 'BASE_S3_URL' %}/js/gamewalkin.js"></script>
 </head>
 <body>
-    <header>
-        <h1>GameWalkin'</h1>
-        <div class="controls">
-            <label>Layout
-                <select name="layout" data-setting>
-                    <option value="focus">Focus</option>
-                    <option value="trio">Grid</option>
-                    <option value="cinema">Cinema</option>
-                    <option value="stack">Stack</option>
-                    <option value="strip">Main + strip</option>
-                </select>
-            </label>
-            <button id="fullscreen" type="button">Fullscreen</button>
-        </div>
-        <details id="settings">
-            <summary>Settings</summary>
-            <div class="settings-controls">
-                <fieldset>
-                    <legend>Viewing</legend>
-                    <label><input type="checkbox" name="hideOffline" data-setting> Hide offline streams</label>
-                    <label><input type="checkbox" name="background" data-setting checked> Keep non-focused streams playing</label>
-                    <label><input type="checkbox" name="compact" data-setting> Compact controls</label>
-                </fieldset>
-                <fieldset>
-                    <legend>Tour</legend>
-                    <label><input id="tour-toggle" type="checkbox"> Enabled</label>
-                    <label>Seconds per stream <input type="number" name="interval" data-setting value="60" min="5" max="3600" list="tour-intervals"></label>
-                    <label><input type="checkbox" name="shuffle" data-setting> Shuffle</label>
-                </fieldset>
-                <fieldset>
-                    <legend>Audio</legend>
-                    <label><input type="checkbox" name="muted" data-setting checked> Muted</label>
-                    <label>Audio
-                        <select name="audio" data-setting>
-                            {% include 'gamewalkin/includes/channel_options.html' %}
-                        </select>
-                    </label>
-                </fieldset>
-                <fieldset>
-                    <legend>Chat</legend>
-                    <label><input type="checkbox" name="chatOpen" data-setting aria-controls="chat-panel"> Enabled</label>
-                    <label>Channel
-                        <select name="chatChannel" data-setting>
-                            {% include 'gamewalkin/includes/channel_options.html' %}
-                        </select>
-                    </label>
-                    <label>Placement
-                        <select name="chatPosition" data-setting>
-                            <option value="side">Right side</option>
-                            <option value="below">Below players</option>
-                        </select>
-                    </label>
-                </fieldset>
-            </div>
-            <datalist id="tour-intervals">
-                <option value="30">30 seconds</option>
-                <option value="60">1 minute</option>
-                <option value="300">5 minutes</option>
-            </datalist>
-            <p id="message" role="status"></p>
-        </details>
+    <header class="toolbar">
+        <h1 aria-label="GameWalkin'"><span class="brand-prefix">Game</span><span>Walkin<span class="brand-mark">'</span></span></h1>
+        <nav class="controls" aria-label="Viewer controls">
+            <details id="settings" class="toolbar-menu">
+                <summary>Settings</summary>
+                <div class="toolbar-panel settings-panel">
+                    <div class="settings-controls">
+                        <fieldset>
+                            <legend>Viewing</legend>
+                            <label class="setting-field"><span>Layout</span>
+                                <select name="layout" data-setting>
+                                    <option value="focus">Focus</option>
+                                    <option value="trio">Grid</option>
+                                    <option value="cinema">Cinema</option>
+                                    <option value="stack">Stack</option>
+                                    <option value="strip">Main + strip</option>
+                                </select>
+                            </label>
+                            <label><span>Fullscreen</span><input id="fullscreen" type="checkbox"></label>
+                            <label><span>Hide offline streams</span><input type="checkbox" name="hideOffline" data-setting></label>
+                            <label><span>Play background streams</span><input type="checkbox" name="background" data-setting checked></label>
+                            <label><span>Hide stream headers</span><input type="checkbox" name="compact" data-setting></label>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Tour</legend>
+                            <label><span>Auto-switch streams</span><input id="tour-toggle" type="checkbox"></label>
+                            <label class="setting-field"><span>Seconds per stream</span><input type="number" name="interval" data-setting value="60" min="5" max="3600" list="tour-intervals"></label>
+                            <label><span>Shuffle</span><input type="checkbox" name="shuffle" data-setting></label>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Audio</legend>
+                            <label><span>Mute all streams</span><input type="checkbox" name="muted" data-setting checked></label>
+                            <label class="setting-field"><span>Source</span>
+                                <select name="audio" data-setting>
+                                    {% include 'gamewalkin/includes/channel_options.html' %}
+                                </select>
+                            </label>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Chat</legend>
+                            <label><span>Show chat</span><input type="checkbox" name="chatOpen" data-setting aria-controls="chat-panel"></label>
+                            <label class="setting-field"><span>Channel</span>
+                                <select name="chatChannel" data-setting>
+                                    {% include 'gamewalkin/includes/channel_options.html' %}
+                                </select>
+                            </label>
+                            <label class="setting-field"><span>Placement</span>
+                                <select name="chatPosition" data-setting>
+                                    <option value="side">Right side</option>
+                                    <option value="below">Below players</option>
+                                </select>
+                            </label>
+                        </fieldset>
+                    </div>
+                    <datalist id="tour-intervals">
+                        <option value="30">30 seconds</option>
+                        <option value="60">1 minute</option>
+                        <option value="300">5 minutes</option>
+                    </datalist>
+                    <p id="message" role="status"></p>
+                </div>
+            </details>
+            <details id="shortcuts" class="toolbar-menu">
+                <summary>Shortcuts</summary>
+                <div class="toolbar-panel shortcuts-panel">
+                    <p>Click the page outside a player, chat, or control before using shortcuts.</p>
+                    <table>
+                        <thead>
+                            <tr><th scope="col">Key</th><th scope="col">Action</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for channel in channels %}
+                            <tr><td><kbd>{{ forloop.counter }}</kbd></td><td>Focus {{ channel.name }}</td></tr>
+                            {% endfor %}
+                            <tr><td><kbd>←</kbd> / <kbd>→</kbd></td><td>Focus previous / next stream</td></tr>
+                            <tr><td><kbd>C</kbd></td><td>Show / hide chat</td></tr>
+                            <tr><td><kbd>M</kbd></td><td>Mute all streams</td></tr>
+                            <tr><td><kbd>T</kbd></td><td>Start / pause tour</td></tr>
+                            <tr><td><kbd>F</kbd></td><td>Toggle page fullscreen</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </nav>
     </header>
     <main id="viewer">
         <div id="streams" data-layout="focus">
             {% for channel in channels %}
             <section class="stream" data-channel="{{ channel.id }}" aria-label="{{ channel.name }}">
                 <div class="stream-heading">
-                    <button class="focus-stream" type="button" aria-pressed="{{ forloop.first|yesno:"true,false" }}" title="Focus this stream; click again to play or pause"><span class="playback-symbol" aria-hidden="true">&#9654;</span> {{ channel.name }}</button>
-                    <span class="status" role="status">Loading player...</span>
+                    <button class="focus-stream" type="button" aria-label="{{ channel.name }}" aria-pressed="{{ forloop.first|yesno:"true,false" }}" title="Focus this stream; click again to play or pause">
+                        <span class="channel-icon" aria-hidden="true">
+                            <img src="{{ channel.icon }}" alt="" width="44" height="44" decoding="async">
+                            <span class="playback-symbol">&#9654;</span>
+                        </span>
+                        <span class="stream-info">
+                            <span>{{ channel.name }}</span>
+                            <span class="status" role="status">Loading player...</span>
+                        </span>
+                    </button>
                     <details class="social-links">
                         <summary>Links</summary>
                         <nav aria-label="{{ channel.name }} links">
                             <a href="https://www.twitch.tv/{{ channel.id }}" target="_blank" rel="noopener">Twitch</a>
                             {% for label, url in channel.links %}
-                            <span aria-hidden="true">&bull;</span>
                             <a href="{{ url }}" target="_blank" rel="noopener">{{ label }}</a>
                             {% endfor %}
                         </nav>
@@ -99,25 +129,6 @@
             <iframe id="chat" title="Twitch chat"></iframe>
         </aside>
     </main>
-    <details id="shortcuts">
-        <summary>Keyboard shortcuts</summary>
-        <p>Click the page outside a player, chat, or control before using shortcuts.</p>
-        <table>
-            <thead>
-                <tr><th scope="col">Key</th><th scope="col">Action</th></tr>
-            </thead>
-            <tbody>
-                {% for channel in channels %}
-                <tr><td><kbd>{{ forloop.counter }}</kbd></td><td>Focus {{ channel.name }}</td></tr>
-                {% endfor %}
-                <tr><td><kbd>←</kbd> / <kbd>→</kbd></td><td>Focus previous / next stream</td></tr>
-                <tr><td><kbd>C</kbd></td><td>Show / hide chat</td></tr>
-                <tr><td><kbd>M</kbd></td><td>Mute all streams</td></tr>
-                <tr><td><kbd>T</kbd></td><td>Start / pause tour</td></tr>
-                <tr><td><kbd>F</kbd></td><td>Toggle page fullscreen</td></tr>
-            </tbody>
-        </table>
-    </details>
     <noscript>Enable JavaScript to watch here, or use the Twitch links above.</noscript>
 </body>
 </html>

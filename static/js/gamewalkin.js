@@ -7,6 +7,23 @@
     const live = new Map(); // Unknown channels remain visible until Twitch reports a status.
     const autoPaused = new Set();
     const chat = $('#chat');
+    const menus = [...document.querySelectorAll('details')];
+    function closeMenus(except) {
+        menus.forEach(menu => { if (menu !== except) menu.open = false; });
+    }
+    menus.forEach(menu => menu.addEventListener('toggle', () => {
+        if (menu.open) closeMenus(menu);
+    }));
+    document.addEventListener('click', event => {
+        if (!event.target.closest('details')) closeMenus();
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape') return;
+        const openMenu = menus.find(menu => menu.open);
+        if (!openMenu) return;
+        if (openMenu.contains(document.activeElement)) openMenu.querySelector('summary').focus();
+        closeMenus();
+    });
     chat.addEventListener('load', () => { delete chat.dataset.loading; });
     const names = Object.fromEntries(streams.map(stream => [stream.dataset.channel, stream.getAttribute('aria-label')]));
     let touring = false;
@@ -147,13 +164,14 @@
             if (document.fullscreenElement) await document.exitFullscreen();
             else await document.documentElement.requestFullscreen();
         } catch (_) { $('#message').textContent = 'Fullscreen is unavailable in this browser.'; $('#settings').open = true; }
+        finally { $('#fullscreen').checked = !!document.fullscreenElement; }
     }
-    $('#fullscreen').hidden = !document.fullscreenEnabled;
+    $('#fullscreen').disabled = !document.fullscreenEnabled;
     document.addEventListener('fullscreenchange', () => {
-        $('#fullscreen').textContent = document.fullscreenElement ? 'Exit fullscreen' : 'Fullscreen';
+        $('#fullscreen').checked = !!document.fullscreenElement;
     });
 
-    $('#fullscreen').addEventListener('click', fullscreen);
+    $('#fullscreen').addEventListener('change', fullscreen);
     $('#tour-toggle').addEventListener('change', toggleTour);
     document.addEventListener('change', event => {
         if (!event.target.matches('[data-setting]')) return;
