@@ -4,7 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GameWalkin' control panel</title>
+    <meta name="description" content="Explore classic games at a relaxing pace with several interactive Twitch streams.">
+    <title>GameWalkin'</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="{% settings_value 'BASE_S3_URL' %}/img/gamewalkin/favicon-32x32.png">
+    <link rel="icon" type="image/svg+xml" sizes="any" href="{% settings_value 'BASE_S3_URL' %}/img/gamewalkin/favicon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% settings_value 'BASE_S3_URL' %}/img/gamewalkin/apple-touch-icon.png">
     <link rel="stylesheet" href="{% settings_value 'BASE_S3_URL' %}/css/gamewalkin.css">
     <script defer src="https://player.twitch.tv/js/embed/v1.js"></script>
     <script defer src="{% settings_value 'BASE_S3_URL' %}/js/gamewalkin.js"></script>
