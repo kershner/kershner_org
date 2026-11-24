@@ -13,6 +13,7 @@ from apps.api.urls import api_patterns
 from django.urls import include, path
 from . import views as kersh_views
 from apps.bacon.views import bacon
+from apps.gamewalkin.views import gamewalkin
 from django.contrib import admin
 
 handler404 = 'kershner.views.custom_error_view_404'
@@ -52,6 +53,9 @@ urlpatterns = [
 
     # Daggerwalk
     path('daggerwalk/', include(daggerwalk_patterns)),
+
+    # GameWalkin'
+    path('walk/', gamewalkin, name='gamewalkin'),
 
     # Pi stuff
     path('pi/', include(pi_stuff_patterns)),

@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'apps.color_doodle',
     'apps.daggerwalk',
     'apps.no_mans_walk',
+    'apps.gamewalkin',
     'apps.pi_stuff',
     'storages',
     'django_filters',
