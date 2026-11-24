@@ -5,6 +5,7 @@
     const controls = [...document.querySelectorAll('[data-setting]')];
     const players = new Map(); // Ready players only.
     const live = new Map(); // Unknown channels remain visible until Twitch reports a status.
+    const vods = new Map();
     const autoPaused = new Set();
     const chat = $('#chat');
     const menus = [...document.querySelectorAll('details')];
@@ -208,6 +209,32 @@
         const player = new Twitch.Player(`player-${channel}`, {
             channel, width: '100%', height: '100%', parent: [location.hostname], autoplay: true, muted: true
         });
+        let vodRequested = false;
+        async function playOfflineVod() {
+            if (vodRequested) return;
+            vodRequested = true;
+            status.textContent = 'Offline · Loading latest VOD…';
+            try {
+                const response = await fetch(`/walk/vod/${encodeURIComponent(channel)}/`);
+                if (!response.ok) throw new Error('VOD lookup failed');
+                const { video } = await response.json();
+                // The channel may have come online while the lookup was pending.
+                if (live.get(channel) !== false) return;
+                if (!video) {
+                    status.textContent = 'Offline · No VODs available';
+                    return;
+                }
+                vods.set(channel, video);
+                player.setVideo(video);
+                applyAudio();
+                if (playbackAllowed(channel)) player.play();
+                else { autoPaused.add(channel); player.pause(); }
+                status.textContent = 'VOD';
+            } catch (_) {
+                if (live.get(channel) === false) status.textContent = 'Offline · VOD unavailable. Try the Twitch link in Links.';
+                vodRequested = false;
+            }
+        }
         player.addEventListener(Twitch.Player.READY, () => {
             players.set(channel, player);
             delete stream.dataset.loading;
@@ -215,11 +242,15 @@
             update();
         });
         Object.entries(events).forEach(([event, label]) => player.addEventListener(Twitch.Player[event], () => {
-            status.textContent = label;
+            // Channel status events from the VOD must not re-enter the fallback.
+            if (vods.has(channel) && (event === 'ONLINE' || event === 'OFFLINE')) return;
+            status.textContent = vods.has(channel) ? `VOD · ${label}` : label;
             symbol.textContent = player.isPaused() ? '\u25b6' : '\u23f8';
             if (event === 'ONLINE' || event === 'OFFLINE') {
                 live.set(channel, event === 'ONLINE');
                 update();
+                if (event === 'OFFLINE') playOfflineVod();
+                else vodRequested = false;
             }
             // Autoplay can finish after a background-pause setting was applied.
             if (event === 'PLAYING') applyPlayback(player, channel);
